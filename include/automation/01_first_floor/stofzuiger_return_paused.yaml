@@ -1,5 +1,5 @@
 id: return_stofzuiger
-alias: "Eerste Verdieping - Stofzuiger terug naar dock bij nietsnutten"
+alias: "F1 🏠 Vacuum back to dock in case it's doing nothing"
 trigger:
   - id: paused_return
     platform: state
@@ -12,12 +12,12 @@ trigger:
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Bericht naar telefoon Marleen"
+  - alias: "Notification to phone Marleen"
     service: notify.mobile_app_marleen_app
     data:
       message: "De stofzuiger staat al een kwartier te nietsnutten, en gaat over 10 minuten terug naar z'n dock"
       title: "Stofzuiger terug naar dock"
-  - alias: "Bericht naar telefoon Martijn"
+  - alias: "Notification to phone Martijn"
     service: notify.join_pixel5
     data:
       message: "De stofzuiger staat al een kwartier te nietsnutten, en gaat over 10 minuten terug naar z'n dock"
@@ -26,13 +26,13 @@ action:
         icon: "{{ external_url }}/local/pictures/broom.png"
         smallicon: "{{ external_url }}/local/pictures/broom.png"
   - delay: 10
-  - alias: "Nog steeds aan het nietsnutten?"
+  - alias: "Still doing nothing?"
     condition: state
     entity_id: vacuum.rockrobo_vacuum_v1
     state:
       - idle
       - paused
-  - alias: "Terug naar dock"
+  - alias: "Return to dock"
     service: vacuum.return_to_base
     target:
       entity_id: vacuum.rockrobo_vacuum_v1

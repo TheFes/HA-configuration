@@ -1,5 +1,5 @@
-id: pepijn_reset_dim_boolean
-alias: "Eerste Verdieping | Pepijn - Boolean met dim status weer uit zetten"
+id: 55f07dfc-2a00-46ea-97d2-0bd6b57458b3
+alias: "F1P 👦 Reset boolean with dim status"
 mode: single
 max_exceeded: silent
 trigger:
@@ -10,13 +10,12 @@ trigger:
       - input_datetime.pepijn_dim_on
       - input_datetime.pepijn_dim_off
 condition:
-  - alias: "Input boolean aan?"
+  - alias: "Input boolean on?"
     condition: state
     entity_id: input_boolean.dimmed_pepijn
     state: "on"
 action:
-  - alias: "Input boolean uit"
+  - alias: "Turn input boolean off"
     service: input_boolean.turn_off
     target:
       entity_id: input_boolean.dimmed_pepijn
-

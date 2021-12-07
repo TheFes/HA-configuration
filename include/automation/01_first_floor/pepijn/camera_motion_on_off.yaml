@@ -1,5 +1,5 @@
-id: camera_pepijn
-alias: "Eerste Verdieping | Pepijn - Motion detection PepijnCam aan en uit"
+id: c9932ea5-d3c1-4b8a-8849-e53179e5caf3
+alias: "F1P 👦 Motion detection PepijnCam on and off"
 mode: single
 max_exceeded: silent
 trigger:
@@ -8,39 +8,39 @@ trigger:
   - platform: event
     event_type: automation_reloaded
   - platform: time
-    at: 
+    at:
       - "07:30"
       - "12:30"
       - "16:30"
       - "19:30"
 condition:
-  - alias: "Iemand thuis"
+  - alias: "Someone home?"
     condition: state
     entity_id: group.m_en_m
     state: "home"
 action:
-  - alias: "Hoe laat is het?"
+  - alias: "Time?"
     choose:
-      - conditions: 
+      - conditions:
           - condition: time
             before: " 07:29:59"
         sequence:
-          - alias: "Motion detection Pepijncam aan"
+          - alias: "Motion detection Pepijncam on"
             service: switch.turn_on
             target:
               entity_id: switch.pepijncam_state
-      - conditions: 
+      - conditions:
           - condition: time
             before: " 12:29:59"
         sequence:
-          - alias: "Motion detection Pepijncam uit"
+          - alias: "Motion detection Pepijncam off"
             service: switch.turn_off
             target:
               entity_id: switch.pepijncam_state
       - conditions:
           - condition: time
             before: " 16:29:59"
-          - alias: "Geen opvang of oma?"
+          - alias: "No daycare or grandma?"
             condition: time
             weekday:
               - "wed"
@@ -48,14 +48,14 @@ action:
               - "sat"
               - "sun"
         sequence:
-          - alias: "Motion detection Pepijncam aan"
+          - alias: "Motion detection Pepijncam on"
             service: switch.turn_on
             target:
               entity_id: switch.pepijncam_state
       - conditions:
           - condition: time
             before: "19:29:59"
-          - alias: "Geen opvang of oma?"
+          - alias: "No daycare or grandma?"
             condition: time
             weekday:
               - "wed"
@@ -63,7 +63,7 @@ action:
               - "sat"
               - "sun"
         sequence:
-          - alias: "Motion detection Pepijncam uit"
+          - alias: "Motion detection Pepijncam off"
             service: switch.turn_off
             target:
               entity_id: switch.pepijncam_state
@@ -71,7 +71,7 @@ action:
           - condition: time
             after: "19:30:00"
         sequence:
-          - alias: "Motion detection Pepijncam aan"
+          - alias: "Motion detection Pepijncam on"
             service: switch.turn_on
             target:
               entity_id: switch.pepijncam_state

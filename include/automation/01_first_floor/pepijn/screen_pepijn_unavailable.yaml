@@ -1,5 +1,5 @@
-id: screen_pepijn_unavailalbe
-alias: "Eerste Verdieping | Pepijn - Screen reset via switch"
+id: fe0cf6f9-f40d-4ae4-ae4e-f187ed520705
+alias: "F1P 👦 Screen reset attempt by plug"
 mode: single
 max_exceeded: silent
 trigger:
@@ -7,15 +7,15 @@ trigger:
     entity_id: cover.pepijn_tahoma
     to: "unavailable"
 action:
-  - alias: "Proberen te resetten via switch"
+  - alias: "Try to reset using plug"
     repeat:
       sequence:
-        - alias: "Switch uitzetten"
+        - alias: "Turn plug off"
           service: switch.turn_off
           target:
             entity_id: switch.screen_pepijn
         - delay: 50
-        - alias: "Switch aanzetten"
+        - alias: "Turn plug on"
           service: switch.turn_on
           target:
             entity_id: switch.screen_pepijn
@@ -29,6 +29,6 @@ action:
                 - condition: state
                   entity_id: cover.pepijn_tahoma
                   state: "unavailable"
-            - alias: "Niet te vaak.."
+            - alias: "Stop after 10 attempts.."
               condition: template
-              value_template: "{{  repeat.index <= 20 }}"
+              value_template: "{{  repeat.index <= 10 }}"

@@ -1,5 +1,5 @@
-id: start_stofzuiger
-alias: "Eerste Verdieping - Stofzuigen op maandag"
+id: 43077f87-25be-4516-b241-0db9d1e4ff98
+alias: "F1 🏠 Start vacuum cleaner on Monday"
 trigger:
   - id: vacuum
     platform: time
@@ -7,14 +7,14 @@ trigger:
       - "08:00:00"
       - "09:00:00"
 condition:
-  - alias: "Is het maandag?"
+  - alias: "Monday?"
     condition: time
     weekday:
       - "mon"
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Welke actie?"
+  - alias: "Action?"
     choose:
       - conditions:
           - alias: "Na 9u?"
@@ -25,12 +25,12 @@ action:
             target:
               entity_id: vacuum.rockrobo_vacuum_v1
     default:
-      - alias: "Bericht naar telefoon Marleen"
+      - alias: "Notification to phone Marleen"
         service: notify.mobile_app_marleen_app
         data:
           message: "Is alles van de grond?"
           title: "De stofzuiger begint om 09:00"
-      - alias: "Bericht naar telefoon Martijn"
+      - alias: "Notification to phone Martijn"
         service: notify.join_pixel5
         data:
           message: "Is alles van de grond?"

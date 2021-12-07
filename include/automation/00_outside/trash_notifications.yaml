@@ -1,38 +1,38 @@
-id: notificatie_container
-alias: "Buiten - Notificaties containers avond ochtend"
+id: 3f3a1b56-9c34-47e1-b50f-2b96838b7133
+alias: "F0Z 🌳 Notificaties for trash containers"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: time
-    id: ochtend
+    id: morning
     at:
       - "07:00:00"
   - platform: time
-    id: avond
+    id: evening
     at:
       - "20:00:00"
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Avond voor, of ochtend van afvaldag?"
+  - alias: "Evening before, of day of trash day?"
     choose:
       - conditions:
           - condition: not
             conditions:
-              - alias: "Morgen afval buiten?"
+              - alias: "Trash day tomorrow?"
                 condition: state
                 entity_id: sensor.mijnafvalwijzer_morgen
                 state: "Geen"
-          - alias: "Avond?"
+          - alias: "Evening?"
             condition: trigger
-            id: avond
+            id: evening
         sequence:
-          - alias: "Notificatie telefoon Marleen"
+          - alias: "Notification phone Marleen"
             service: notify.mobile_app_marleen_app
             data:
               title: "Denk aan de container"
               message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-          - alias: "Notificatie telefoon Martijn"
+          - alias: "Notification phone Martijn"
             service: notify.join_pixel5
             data:
               message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
@@ -43,20 +43,20 @@ action:
       - conditions:
           - condition: not
             conditions:
-              - alias: "Vandaag afval buiten?"
+              - alias: "Trash day today?"
                 condition: state
                 entity_id: sensor.mijnafvalwijzer_vandaag
                 state: "Geen"
-          - alias: "Ochtend?"
+          - alias: "Morning?"
             condition: trigger
-            id: ochtend
+            id: morning
         sequence:
-          - alias: "Notificatie telefoon Marleen"
+          - alias: "Notification phone Marleen"
             service: notify.mobile_app_marleen_app
             data:
               title: "Denk aan de container"
               message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-          - alias: "Notificatie telefoon Martijn"
+          - alias: "Notification phone Martijn"
             service: notify.join_pixel5
             data:
               message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"

@@ -1,5 +1,5 @@
 id: buienaradar_screens
-alias: "Eerste Verdieping - Screens naar boven bij bui"
+alias: "F1 🏠 Screens up with upcoming rain"
 trigger:
   - platform: numeric_state
     entity_id: sensor.br_precipitation_forecast_total
@@ -21,25 +21,25 @@ condition:
       - alias: "Screens unavailable?"
         condition: template
         value_template: "{{ screens_unavailalbe | count > 0 }}"
-  - alias: "Regen?"
+  - alias: "Rain?"
     condition: numeric_state
     entity_id: sensor.br_precipitation_forecast_total
     above: 0
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Screen open doen"
+  - alias: "Screens up"
     service: cover.open_cover
     target:
       entity_id: "{{ screens_entityid }}"
-  - alias: "Alle screens beschikbaar?"
+  - alias: "All screens available?"
     choose:
       - conditions:
-          - alias: "Screens unavailable?"
+          - alias: "Some screens unavailable?"
             condition: template
             value_template: "{{ screens_unavailalbe | count > 0 and screens_closed > 0}}"
         sequence:
-          - alias: "Notificatie naar telefoon Martijn"
+          - alias: "Notificatie to phone Martijn"
             service: notify.join_pixel5
             data:
               title: "LET OP! Niet alle screens beschikbaar"
@@ -48,11 +48,11 @@ action:
                 icon: "{{ external_url }}/local/pictures/rain.png"
                 smallicon: "{{ external_url }}/local/pictures/rain.png"
       - conditions:
-          - alias: "Screens unavailable?"
+          - alias: "All screens unavailable?"
             condition: template
             value_template: "{{ screens_unavailalbe | count > 0 }}"
         sequence:
-          - alias: "Notificatie naar telefoon Martijn"
+          - alias: "Notificatie to phone Martijn"
             service: notify.join_pixel5
             data:
               title: "LET OP! Niet alle screens beschikbaar"
@@ -60,9 +60,8 @@ action:
               data:
                 icon: "{{ external_url }}/local/pictures/rain.png"
                 smallicon: "{{ external_url }}/local/pictures/rain.png"
-
     default:
-      - alias: "Notificatie naar telefoon Martijn"
+      - alias: "Notificatie to phone Martijn"
         service: notify.join_pixel5
         data:
           title: "Screens gaan open"

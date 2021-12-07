@@ -1,5 +1,5 @@
 id: zon_screens_achter
-alias: "Eerste Verdieping | Achter - Screens naar beneden bij zon"
+alias: "F1 🏠 Screens down when it is sunny"
 trigger:
   - platform: time
     at: "19:30"
@@ -14,31 +14,31 @@ trigger:
 variables:
   day: "{{ 0 if now().hour < 13 else 1 }}"
 condition:
-  - alias: "temperatuur"
+  - alias: "Warm"
     condition: template
     value_template: >
       {{ 
         state_attr('weather.climacell_daily', 'forecast')[day | int].temperature | float(20.0) 
         >= 21
       }}
-  - alias: "Zonnig of gedeeld bewolkt"
+  - alias: "Sunny or partly cloudy?"
     condition: template
     value_template: >
       {{ 
         state_attr('weather.climacell_daily', 'forecast')[day | int].condition 
         in ['sunny', 'partly_cloudy'] 
       }}
-  - alias: "Regen op komst?"
+  - alias: "Rain upcoming?"
     condition: template
     value_template: >
       {{ 
         is_state('binary_sensor.regen_tot_middag', 'off') if now().hour < 13 
         else is_state('binary_sensor.regen_tot_ochtend', 'off') 
       }}
-  - alias: "tijdconditie"
+  - alias: "Not after the sun is not at this side of the house"
     condition: time
-    after: " 19:29:59"
-    before: " 13:00:00"
+    after: "19:29:59"
+    before: "14:00:00"
 action:
   - service: cover.close_cover
     target:

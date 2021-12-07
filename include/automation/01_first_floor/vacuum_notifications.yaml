@@ -1,5 +1,5 @@
-id: vacuum_notifications
-alias: "Eerste Verdieping - Notificaties stofzuiger"
+id: 501645e8-f419-4349-9f0b-57a2f915b345
+alias: "F1 🏠 Notifications vacuum cleaner"
 mode: single
 max_exceeded: silent
 trigger:
@@ -21,12 +21,12 @@ action:
             entity_id: vacuum.rockrobo_vacuum_v1
             state: "docked"
         sequence:
-          - alias: "Bericht naar telefoon Marleen"
+          - alias: "Notification to phone Marleen"
             service: notify.mobile_app_marleen_app
             data:
               message: "De stofzuiger is klaar en staat weer op z'n plek"
               title: "Stofzuiger is klaar"
-          - alias: "Bericht naar telefoon Martijn"
+          - alias: "Notification to phone Martijn"
             service: notify.join_pixel5
             data:
               message: "De stofzuiger is klaar en staat weer op z'n plek"
@@ -40,12 +40,12 @@ action:
             entity_id: vacuum.rockrobo_vacuum_v1
             state: "error"
         sequence:
-          - alias: "Bericht naar telefoon Marleen"
+          - alias: "Notification to phone Marleen"
             service: notify.mobile_app_marleen_app
             data:
               title: "Probleem met stofzuiger"
               message: "Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}"
-          - alias: "Bericht naar telefoon Martijn"
+          - alias: "Notification to phone Martijn"
             service: notify.join_pixel5
             data:
               title: "Probleem met stofzuiger"
