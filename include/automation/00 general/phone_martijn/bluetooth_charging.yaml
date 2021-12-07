@@ -1,54 +1,54 @@
 id: d219003e-150b-49fc-8b9b-e627af61d560
-alias: Algemeen | Telefoon Martijn - Bluetooth aan en uit bij laden
+alias: "00 📱 Turn off bluetooth during night"
 trigger:
   - platform: state
     entity_id: sensor.pixel_5_type_oplader
     to: "wireless"
-    id: "uit"
+    id: "off"
   - platform: state
     entity_id: sensor.pixel_5_type_oplader
     from: "wireless"
-    id: "aan"
+    id: "on"
   - platform: time
     at: "22:30:00"
-    id: "uit"
+    id: "off"
 action:
-  - alias: "Uit of aan"
+  - alias: "On or off"
     choose:
       - conditions:
           - condition: trigger
-            id: "uit"
-          - alias: "Avond/nacht"
+            id: "off"
+          - alias: "Evening/Night"
             condition: time
             after: "22:29:59"
             before: "06:00:00"
-          - alias: "Op de lader"
+          - alias: "Wireless charging"
             condition: state
             entity_id: sensor.pixel_5_type_oplader
             state: "wireless"
         sequence:
-          - alias: "Bluetooth uit"
+          - alias: "Bluetooth off"
             service: notify.mobile_app_pixel_5
             data:
               message: command_bluetooth
               title: turn_off
           - delay: 0.5
-          - alias: "DND aan"
+          - alias: "DND on"
             service: notify.mobile_app_pixel_5
             data:
               message: command_dnd
               title: priority_only
       - conditions:
           - condition: trigger
-            id: "aan"
+            id: "on"
         sequence:
-          - alias: "Bluetooth uit"
+          - alias: "Bluetooth on"
             service: notify.mobile_app_pixel_5
             data:
               message: command_bluetooth
               title: turn_on
           - delay: 0.5
-          - alias: "DND uit"
+          - alias: "DND off"
             service: notify.mobile_app_pixel_5
             data:
               message: command_dnd

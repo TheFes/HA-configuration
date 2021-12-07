@@ -1,5 +1,5 @@
 id: 35106a4b-1055-44db-958c-99b9d9cf721b
-alias: Algemeen | Telefoon Martijn - Open muziek app bij BT connectie
+alias: "00 📱 Open music app on BT connection"
 mode: restart
 trigger:
   - platform: state
@@ -29,7 +29,8 @@ variables:
     - E0:67:81:01:F7:D3
 condition: "{{ bt_added in headphones }}"
 action:
-  - service: notify.mobile_app_pixel_5
+  - alias: "Send notification to select right app"
+    service: notify.mobile_app_pixel_5
     data:
       title: Muziekje?
       message: Wat wil je luisteren
@@ -47,7 +48,8 @@ action:
             uri: "app://tunein.player"
   - delay:
       minutes: 10
-  - service: notify.mobile_app_pixel_5
+  - alias: "Remove notification after 10 minutes"
+    service: notify.mobile_app_pixel_5
     data:
       message: "clear_notification"
       data:

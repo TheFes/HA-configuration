@@ -1,20 +1,20 @@
 id: 5e74e69a-7e31-4769-ad6a-c438fce816dc
-alias: "Algemeen -  HA update beschikbaar notificatie"
+alias: "00 🔧 Notifactions for new HA version"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
     entity_id: sensor.latest_version
 condition:
-  - alias: "Andere versie?"
+  - alias: "Other version?"
     condition: template
     value_template: "{{ states('sensor.latest_version') != states('sensor.current_version') }}"
 action:
-  - alias: "Eventuele oude notifications dismissen"
+  - alias: "Dismiss old notification"
     service: persistent_notification.dismiss
     data:
       notification_id: ha_update
-  - alias: "Persistant notificatie maken"
+  - alias: "Create persistant notification"
     service: persistent_notification.create
     data:
       title: "Update HA"
@@ -22,7 +22,7 @@ action:
       message: >
         Versie _{{ states('sensor.latest_version') }}_ is nu beschikbaar.
         [Changelog](https://github.com/home-assistant/core/releases/tag/{{states('sensor.latest_version')}})
-  - alias: "Notificatie naar telefoon Martijn"
+  - alias: "Send notification to phone"
     service: notify.mobile_app_pixel_5
     data:
       title: "Home Assistant upgrade"

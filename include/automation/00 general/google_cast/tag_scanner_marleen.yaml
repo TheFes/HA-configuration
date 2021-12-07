@@ -1,10 +1,10 @@
 id: 28e079ed-9263-47c6-80bc-257fea3c4651
-alias: "Algemeen | Cast - Audio en notificatie voor mama"
+alias: "00 🔊 Cast audio and send TTS to mom"
 mode: single
 max_exceeded: silent
 variables:
-  player: media_player.woonkamer_mini # media_player.zolder_stereo
-  notification_to: notify.mobile_app_marleen_app # notify.mobile_app_pixel_5
+  player: media_player.woonkamer_mini
+  notification_to: notify.mobile_app_marleen_app
   volume_tts: 40
   message_list: "{{ state_attr('input_select.mama', 'options') }}"
 trigger:
@@ -18,18 +18,18 @@ action:
       exclude_list: "{{ states('input_text.played_mama').split('|') | map('int') | list }}"
       to_play: "{{ playlist | reject('in', exclude_list) | list | random }}"
       message: "{{ message_list[to_play] }}"
-  - alias: "Eerste bericht in input_text weghalen, en nieuwe toevoegen"
+  - alias: "Remove oldest message from input_text, and add the latest one"
     service: input_text.set_value
     target:
       entity_id: input_text.played_mama
     data:
       value: "{{ ((states('input_text.played_mama').split('|') | map('int') | list)[1:] + [to_play]) | join('|') }}"
-  - alias: "Notificatie sturen"
+  - alias: "Send notification to phone"
     service: "{{ notification_to }}"
     data:
       title: "💖 Mama is.."
       message: "{{ message }}"
-  - alias: "Bericht uitspreken"
+  - alias: "Send TTS"
     service: script.turn_on
     target:
       entity_id: script.google_home_say

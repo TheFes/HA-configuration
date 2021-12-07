@@ -1,5 +1,5 @@
 id: 57fd8a56-c026-4011-afa6-0f73f1a44cf2
-alias: "Algemeen | Cast - Synchroniseer volume benedengroep"
+alias: "00 🔊 Sync volume speakers downstairs"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -8,21 +8,23 @@ trigger:
       - media_player.keuken_hub
       - media_player.woonkamer_mini
     attribute: volume_level
+variables:
+  group_members:
+    - media_player.keuken_hub
+    - media_player.woonkamer_mini
 condition:
-  - alias: "Groep actief?"
+  - alias: "Group active?"
     condition: state
     entity_id:
       - media_player.beneden_groep
     state: "playing"
-  - alias: "Volume verschillend?"
+  - alias: "Volume of speakers not equal"
     condition: template
     value_template: "{{ state_attr('media_player.keuken_hub', 'volume_level') != state_attr('media_player.woonkamer_mini', 'volume_level') }}"
 action:
-  - alias: "Volume syncen"
+  - alias: "Sync volume"
     service: media_player.volume_set
     target:
-      entity_id:
-        - media_player.keuken_hub
-        - media_player.woonkamer_mini
+      entity_id: "{{ group_members | reject(trigger.entity_id) | list }}"
     data:
       volume_level: "{{ trigger.to_state.attributes.volume_level }}"

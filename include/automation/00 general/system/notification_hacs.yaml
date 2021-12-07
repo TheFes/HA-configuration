@@ -1,5 +1,5 @@
 id: e97b9673-d253-437f-9c85-7079a4c82305
-alias: "Algemeen | Systeem - Notificaties voor updates van HACS"
+alias: "00 🔧 Notifications HACS updates"
 mode: single
 max_exceeded: silent
 trigger:
@@ -10,20 +10,22 @@ trigger:
 condition:
   - condition: not
     conditions:
-      - alias: "Niet onbekend?"
+      - alias: "HACS notification available?"
         condition: state
         entity_id: sensor.hacs
-        state: "unknown"
+        state:
+          - "unknown"
+          - "unavailable"
 action:
-  - alias: "Eventuele oude notifications dismissen"
+  - alias: "Dismiss old notifiaction"
     service: persistent_notification.dismiss
     data:
       notification_id: hacs_update
-  - alias: "Zijn er updates?"
+  - alias: "Are there updates?"
     choose:
       - conditions: "{{ not is_state('sensor.hacs', '0') }}"
         sequence:
-          - alias: "Persistant notificatie maken"
+          - alias: "Create new notification"
             service: persistent_notification.create
             data:
               title: "Updates HACS"

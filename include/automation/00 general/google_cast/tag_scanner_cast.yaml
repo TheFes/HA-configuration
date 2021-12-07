@@ -1,5 +1,5 @@
 id: 87b2cde7-68e9-4bd7-b666-db526fba0fa2
-alias: "Algemeen | Cast - Muziek en video casten met tag scanner"
+alias: "00 🔊 Play audio or video using tags"
 mode: single
 max_exceeded: silent
 variables:
@@ -16,7 +16,8 @@ action:
       tag_type: "{{ tags[trigger.event.data.tag_id].type }}"
       player_audio: media_player.woonkamer_mini
       player_video: media_player.shield
-  - service: script.turn_on
+  - alias: "Call script to cast audio or video"
+    service: script.turn_on
     target:
       entity_id: "script.script_start_{{tag_type}}_tag"
     data:
@@ -27,7 +28,7 @@ action:
         number_of_plays: "{{ tags[trigger.event.data.tag_id].number_of_plays }}"
         volume: "{{ tags[trigger.event.data.tag_id].volume if tag_type == 'audio' else 0 }}"
         thumb: "/local/pictures/tags/{{ tags[trigger.event.data.tag_id].card_id }}.jpg"
-  - alias: "Ledje groen"
+  - alias: "Turn led to green"
     service: light.turn_on
     target:
       entity_id: light.tag_reader_led
@@ -36,9 +37,9 @@ action:
         - 0
         - 255
         - 0
-  - alias: "Korte pauze zodat lampje groen blijft"
+  - alias: "Short delay while led remains green"
     delay: 2
-  - alias: "Ledje rood"
+  - alias: "Turn led red"
     service: light.turn_on
     target:
       entity_id: light.tag_reader_led
@@ -47,9 +48,9 @@ action:
         - 255
         - 0
         - 0
-  - alias: "Korte pauze waarin niet gescand kan worden"
+  - alias: "Add another delay to make sure no new tags can be scanned"
     delay: 4
-  - alias: "Ledje uit"
+  - alias: "Led off"
     service: light.turn_off
     target:
       entity_id: light.tag_reader_led

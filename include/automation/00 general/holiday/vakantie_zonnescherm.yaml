@@ -1,47 +1,51 @@
 id: d4fa325e-c2b5-4ec8-8c51-e574fa105eca
-alias: "Vakantie - Zonnescherm"
+alias: "00 🌞 Sunshade outside"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: time
-    id: scherm_uit
+    id: screen_open
     at: "06:30"
   - platform: time
-    id: scherm_in
+    id: screen_close
     at: "14:00"
 condition:
-  - alias: "Vakantiemodus aan?"
+  - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.huis_modus
     state: "Vakantie"
 action:
   - alias: "In of uit?"
     choose:
-    - conditions:
-        - condition: trigger
-          id: scherm_uit
-        - alias: "Warm?"
-          condition: template
-          value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature >= 22 }}"
-        - alias: "Zonnig?"
-          condition: template
-          value_template: >
-            {{ 
-              state_attr('weather.climacell_daily', 'forecast')[0].condition == 'partly_cloudy' 
-              or state_attr('weather.climacell_daily', 'forecast')[0].condition =='sunny' 
-            }}
-      sequence:
-        - delay:
-            minutes: "{{ range(0, 60) | random }}"
-        - service: cover.open_cover
-          target: 
-            entity_id: cover.veranda
-    - conditions:
-        - condition: trigger
-          id: scherm_in
-      sequence:
-        - delay:
-            minutes: "{{ range(0, 60) | random }}"
-        - service: cover.close_cover
-          target: 
-            entity_id: cover.veranda
+      - conditions:
+          - condition: trigger
+            id: screen_open
+          - alias: "Warm day?"
+            condition: template
+            value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature >= 22 }}"
+          - alias: "Sunny day?"
+            condition: template
+            value_template: >
+              {{ 
+                state_attr('weather.climacell_daily', 'forecast')[0].condition == 'partly_cloudy' 
+                or state_attr('weather.climacell_daily', 'forecast')[0].condition =='sunny' 
+              }}
+        sequence:
+          - alias: "Random delay"
+            delay:
+              minutes: "{{ range(0, 60) | random }}"
+          - alias: "Open sunshade"
+            service: cover.open_cover
+            target:
+              entity_id: cover.veranda
+      - conditions:
+          - condition: trigger
+            id: screen_close
+        sequence:
+          - alias: "Random delay"
+            delay:
+              minutes: "{{ range(0, 60) | random }}"
+          - alias: "Close sunshade"
+            service: cover.close_cover
+            target:
+              entity_id: cover.veranda

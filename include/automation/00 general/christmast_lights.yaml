@@ -1,53 +1,53 @@
 id: c9be7372-de6f-4763-b0d0-23665b7f1e9b
-alias: Algemeen - Kerstverlichting
+alias: "00 🏠 Christmass lights"
 mode: parallel
 trigger:
   - platform: state
     entity_id: light.tuinlampjes
     to:
-    id: ijspegels
+    id: icicles
   - platform: state
     entity_id: light.eettafel
     to: "on"
-    id: boom_ster
+    id: tree_star
   - platform: state
     entity_id: light.tv_lamp
     to:
-    id: vaas
+    id: vase
   - platform: event
     event_type: esphome.button_pressed
     event_data:
       device: Eettafel
       click_type: long
-    id: naar_bed
+    id: to_bed
 action:
-  - alias: "welke actie"
+  - alias: "Which action?"
     choose:
-      - conditions: "{{ trigger.id == 'ijspegels'}}"
+      - conditions: "{{ trigger.id == 'icicles'}}"
         sequence:
-          - alias: "IJspegels schakelen"
+          - alias: "Turn icicles on or off"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
               entity_id: switch.bw_plug_19
-      - conditions: "{{ trigger.id == 'vaas'}}"
+      - conditions: "{{ trigger.id == 'vase'}}"
         sequence:
-          - alias: "Wacht tot vaas beschikbaar is"
+          - alias: "Wait until vase is available"
             wait_template: "{{ states('switch.backup_02') not in [ 'unavailable', 'unknown'] }}"
-          - alias: "Vaas schakelen met kerststal"
+          - alias: "vase schakelen met kerststal"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
               entity_id: switch.backup_02
-      - conditions: "{{ trigger.id == 'boom_ster'}}"
+      - conditions: "{{ trigger.id == 'tree_star'}}"
         sequence:
-          - alias: "Kerstboom en ster aan als eettafel aan gaat"
+          - alias: "Turn christmas tree and star on"
             service: switch.turn_on
             target:
               entity_id:
                 - switch.bw_plug_20
                 - switch.backup_01
-      - conditions: "{{ trigger.id == 'naar_bed'}}"
+      - conditions: "{{ trigger.id == 'to_bed'}}"
         sequence:
-          - alias: "Kerstboom en ster aan als eettafel aan gaat"
+          - alias: "Turn christmas tree and star off"
             service: switch.turn_off
             target:
               entity_id:

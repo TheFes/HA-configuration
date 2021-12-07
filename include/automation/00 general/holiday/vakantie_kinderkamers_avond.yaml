@@ -1,5 +1,5 @@
 id: b2977df5-1481-4b19-b56a-ae79bbf9659d
-alias: "Vakantie - Lampen kinderkamers avond"
+alias: "00 🌞Lights on bedrooms children"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -10,22 +10,22 @@ trigger:
     id: pepijn
     at: "19:15"
 condition:
-  - alias: "Vakantiemodus aan?"
+  - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.huis_modus
     state: "Vakantie"
 action:
-  - alias: "Pauze voordat de lamp aangaat na de trigger"
+  - alias: "Random delay to turn light on"
     delay:
       minutes: "{{ range(0,30) | random }}"
-  - alias: "Lamp aanzetten op basis van trigger"
+  - alias: "Turn light on"
     service: light.turn_on
     target:
       entity_id: "light.{{ trigger.id }}"
-  - alias: "Pauze voordat de lamp uit gaat na het aanzetten"
+  - alias: "Random delay to turn light off"
     delay:
       minutes: "{{ range(20,40) | random }}"
-  - alias: "Lamp uitzetten op basis van trigger"
+  - alias: "Turn light off"
     service: light.turn_off
     target:
       entity_id: "light.{{ trigger.id }}"

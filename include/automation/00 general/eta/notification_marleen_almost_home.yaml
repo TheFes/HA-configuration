@@ -1,5 +1,5 @@
 id: 2068227c-13b2-4bc3-bc1b-50afe8da2deb
-alias: "Algemeen | ETA - Marleen bijna thuis"
+alias: "00 ⏱ Marleen is almost home"
 mode: single
 max_exceeded: silent
 trigger:
@@ -23,7 +23,7 @@ condition:
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Bericht naar telefoon Martijn"
+  - alias: "Message to phone Martijn"
     service: notify.join_pixel5
     data:
       title: "Hoera!"
@@ -31,7 +31,7 @@ action:
       data:
         icon: "{{ external_url }}/local/pictures/partypopper.png"
         smallicon: "{{ external_url }}/local/pictures/partypopper.png"
-  - alias: "TTS voor Nest Hub Keuken"
+  - alias: "TTS for Kitchen Hub"
     service: script.turn_on
     target:
       entity_id: script.google_home_say
@@ -42,9 +42,11 @@ action:
         tts_volume: 35
   - condition: or
     conditions:
-      - alias: "Muziek op zolder?"
+      - alias: "Music playing on attic?"
         condition: state
-        entity_id: media_player.zolder_stereo
+        entity_id:
+          - media_player.zolder_mini_martijn
+          - media_player.zolder_mini_marleen
         state: "playing"
       - alias: "Martijn op zolder"
         condition: state

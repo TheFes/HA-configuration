@@ -1,66 +1,65 @@
 id: 6cdd3311-fb90-47ea-a796-f679091021f2
-alias: "Vakantie - Vakantiemodes notificatie en aanzetten"
+alias: "00 🌞 Turn on holiday mode and send notification"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    id: boolean_on
     entity_id: group.m_en_m
     to: not_home
     for: "12:00:00"
+    id: boolean_on
   - platform: event
-    id: vakantie_aan
+    id: holiday_on
     event_type: mobile_app_notification_action
     event_data:
       action: "vakantie"
   - platform: event
-    id: geen_vakantie
+    id: no_holiday
     event_type: mobile_app_notification_action
     event_data:
-      action: "geen_vakantie"
+      action: "no_holiday"
   - platform: state
-    id: vakantie_voorbij
+    id: holiday_over
     entity_id: group.m_en_m
     to: home
 action:
-  - alias: "Acties vakantiemodus"
+  - alias: "Actions holiday mode"
     choose:
-    - conditions:
-        condition: trigger
-        id: boolean_on
-      sequence:
-        - service: input_boolean.turn_on
-          target:
-            entity_id: input_boolean.op_vakantie
-    - conditions:
-        condition: trigger
-        id: vakantie_aan
-      sequence:
-        - service: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.op_vakantie
-        - service: input_boolean.turn_on
-          target:
-            entity_id: input_boolean.vakantie
-        - service: notify.join_pixel5
-          data:
-            title: "☀️ Fijne vakantie! ☀️"
-            message: "Vakantiemodus is nu actief"
-            data: 
-              icon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
-              smallicon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
-    - conditions:
-        condition: trigger
-        id: geen_vakantie
-      sequence:
-        - service: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.op_vakantie
-    - conditions:
-        condition: trigger
-        id: vakantie_voorbij
-      sequence:
-        - service: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.vakantie
-
+      - conditions:
+          condition: trigger
+          id: boolean_on
+        sequence:
+          - service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.op_vakantie
+      - conditions:
+          condition: trigger
+          id: holiday_on
+        sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.op_vakantie
+          - service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.vakantie
+          - service: notify.join_pixel5
+            data:
+              title: "☀️ Fijne vakantie! ☀️"
+              message: "Vakantiemodus is nu actief"
+              data:
+                icon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
+                smallicon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
+      - conditions:
+          condition: trigger
+          id: no_holiday
+        sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.op_vakantie
+      - conditions:
+          condition: trigger
+          id: holiday_over
+        sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.vakantie

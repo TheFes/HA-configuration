@@ -1,5 +1,5 @@
 id: 8b5eb1fe-6ced-4435-82a0-7b4b6c62e832
-alias: "Algemeen | Cast - Volume wijzigen en terugzetten bij casten"
+alias: "00 🔊 Adjust volume when casting"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -31,10 +31,10 @@ trigger:
       - "idle"
     for: "00:00:06"
 condition:
-  - alias: "Wijziging in state?"
+  - alias: "Previous state not unavailable"
     condition: template
-    value_template: "{{ (trigger.from_state.state != trigger.to_state.state) and trigger.from_state.state not in ['unavailable'] }}"
-  - alias: "Google TTS script niet actief"
+    value_template: "{{ trigger.from_state.state not in ['unavailable', 'unkown'] }}"
+  - alias: "TTS active?"
     condition: state
     entity_id:
       - script.google_home_say
@@ -48,46 +48,46 @@ variables:
   volume: "{{ state_attr(trigger.to_state.entity_id, 'volume_level') | round(2, default=0.25) }}"
   binary_sensor: "{{ trigger.to_state.entity_id | replace('media_player', 'binary_sensor') }}"
 action:
-  - alias: "Aan of uit?"
+  - alias: "On or off?"
     choose:
       - conditions:
-          - alias: "Aan het afspelen?"
+          - alias: "Trigger to playing?"
             condition: trigger
             id: playing
-          - alias: "Nog niet aan het spelen?"
+          - alias: "Just recently playing?"
             condition: template
             value_template: "{{ is_state(binary_sensor, 'off') }}"
         sequence:
-          - alias: "Nieuws of muziek?"
+          - alias: "News or Music?"
             choose:
               - conditions:
-                  - alias: "Nieuws?"
+                  - alias: "News?"
                     condition: template
                     value_template: "{{ app == 'Google News' }}"
                 sequence:
-                  - alias: "Juiste volume voor nieuws instellen"
+                  - alias: "Set volume for news"
                     service: media_player.volume_set
                     target:
                       entity_id: "{{ player }}"
                     data:
                       volume_level: 0.3
               - conditions:
-                  - alias: "Muziek?"
+                  - alias: "Music?"
                     condition: template
                     value_template: "{{ type == 'music' }}"
                 sequence:
-                  - alias: "Juiste volume voor muziek instellen"
+                  - alias: "Set volume for music"
                     service: media_player.volume_set
                     target:
                       entity_id: "{{ player }}"
                     data:
                       volume_level: 0.25
       - conditions:
-          - alias: "Aan het afspelen?"
+          - alias: "Playing stopped?"
             condition: trigger
             id: stopped_playing
         sequence:
-          - alias: "Volume weer naar het oude"
+          - alias: "Set volume to default"
             service: media_player.volume_set
             target:
               entity_id: "{{ player }}"

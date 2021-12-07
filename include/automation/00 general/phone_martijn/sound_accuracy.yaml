@@ -1,5 +1,5 @@
 id: e7e51e10-c152-4514-bfc7-393c6d16d468
-alias: Algemeen | Telefoon Martijn - Geluid en high accuracy instellen
+alias: "00 📱 Turn on right sound mode, and high accururicy while on the move"
 mode: queued
 trigger:
   - platform: state
@@ -23,7 +23,7 @@ trigger:
       - "in_vehicle"
     id: "stationary"
 action:
-  - alias: "Thuis of niet?"
+  - alias: "Home or not?"
     choose:
       - conditions:
           - alias: "Home"
