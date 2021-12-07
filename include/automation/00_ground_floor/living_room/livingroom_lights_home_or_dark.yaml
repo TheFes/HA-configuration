@@ -1,5 +1,5 @@
-id: lichten_woonkamer
-alias: "Beneden | Woonkamer - Lichten aan als zon bijna onder is en bij thuiskomst"
+id: 56046ae8-2eaa-47c0-b6ad-953cd4b5c641
+alias: "F0 📺 Lights on sunset and arrival home"
 mode: single
 max_exceeded: silent
 trigger:
@@ -18,28 +18,52 @@ trigger:
 condition:
   - condition: or
     conditions:
-      - alias: "Vakantiemodus aan?"
+      - alias: "Holiday mode on?"
         condition: state
         entity_id: sensor.huis_modus
         state: "Vakantie"
-      - alias: "Iemand thuis?"
+      - alias: "Someone home?"
         condition: state
         entity_id: group.m_en_m
         state: "home"
-  - alias: "Shield niet unavailable"
+  - alias: "Triggered by Shield which turned unavailable"
     condition: template
     value_template: "{{ not (trigger.id == 'shield' and trigger.to_state.state == 'unavailable') }}"
 variables:
   tv_on: "{{ is_state('switch.tv_meubel', 'on') }}"
 action:
-  - alias: "Plug afzuigkap aanzetten"
-    service: switch.turn_on
-    target:
-      entity_id: switch.afzuigkap
-  - alias: "Stand van de zon laag?"
+  - alias: "Arriving home"
+    choose:
+      - conditions: "{{ trigger.id == 'home' }}"
+        sequence:
+          - alias: "Turn on exractor hood plug when arriving home"
+            service: switch.turn_on
+            target:
+              entity_id: switch.afzuigkap
+          - alias: "Not bed time yet"
+            condition: time
+            before: " 22:00:00"
+          - alias: "TV plug off"
+            condition: state
+            entity_id: switch.tv_meubel
+            state: "off"
+          - alias: "TV Meubel aan"
+            service: switch.turn_on
+            target:
+              entity_id: switch.tv_meubel
+          - alias: "TV opgestart"
+            wait_for_trigger:
+              - platform: state
+                entity_id: media_player.nvidia_shield
+                from: "unavailable"
+          - alias: "TV uitzetten"
+            service: media_player.turn_off
+            target:
+              entity_id: media_player.nvidia_shield
+  - alias: "Dark inside and sun low"
     choose:
       - conditions:
-          - alias: "Donker binnen?"
+          - alias: "Dark inside?"
             condition: state
             entity_id: binary_sensor.light_inside
             state: "off"
@@ -47,7 +71,7 @@ action:
             after: sunset
             after_offset: "-03:00:00"
         sequence:
-          - alias: "Lampen woonkamer aanzetten"
+          - alias: "Turn on lights"
             service: light.turn_on
             entity_id:
               - light.booglamp
@@ -55,7 +79,7 @@ action:
               - light.staande_lamp
               - light.keukenspotjes
               - light.speelhoek
-          - alias: "TV aan en Pepijn op bed of vakantiemodus aan?"
+          - alias: "TV on, bedtime children or holiday mode"
             choose:
               - conditions:
                   - condition: or
@@ -68,50 +92,24 @@ action:
                                 condition: state
                                 entity_id: media_player.nvidia_shield
                                 state: "off"
-                          - alias: "Na kinderbedtijd?"
+                          - alias: "After bedtime?"
                             condition: time
                             after: "19:15:00"
-                      - alias: "Vakantiemodus aan?"
+                      - alias: "Holiday mode on?"
                         condition: state
                         entity_id: sensor.huis_modus
                         state: "Vakantie"
                 sequence:
-                  - alias: "Licht eettafel dimmen"
+                  - alias: "Dim some lights"
                     service: light.turn_on
                     target:
                       entity_id:
                         - light.eettafel
                         - light.speelhoek
+                        - light.tv_lamp
                     data:
                       brightness: 100
-                  - alias: "Speelhoek tafel uit"
+                  - alias: "Turn play corner table light off"
                     service: light.turn_off
                     target:
                       entity_id: light.speelhoek_tafel
-  - alias: "TV Meubel aan?"
-    choose:
-      - conditions:
-          - condition: trigger
-            id: "home"
-          - alias: "Nog geen bedtijd"
-            condition: time
-            before: " 22:00:00"
-          - alias: "TV meubel uit"
-            condition: state
-            entity_id: switch.tv_meubel
-            state: "off"
-        sequence:
-          - alias: "TV Meubel aan"
-            service: switch.turn_on
-            target:
-              entity_id: switch.tv_meubel
-          - alias: "TV opgestart"
-            wait_for_trigger:
-              - platform: state
-                entity_id: media_player.nvidia_shield
-                from: "unavailable"
-          - delay: 10
-          - alias: "TV uitzetten"
-            service: media_player.turn_off
-            target:
-              entity_id: media_player.nvidia_shield

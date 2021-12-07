@@ -1,28 +1,28 @@
-id: pepijncam_cast
-alias: "Beneden | Keuken - Cast Pepijncam"
+id: 2342b80b-79ac-4efc-a652-561b615280bf
+alias: "F0 🍳 Cast Pepijncam"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
     entity_id: input_boolean.pepijncam_cast
-    from: 'off'
-    to: 'on'
+    from: "off"
+    to: "on"
 action:
   - service: media_player.turn_on
     target:
       entity_id: media_player.keuken_hub
-  - alias: "Korte pauze om te voorkomen dat het schakelaar schermpje er voor staat"
+  - alias: "Short delay"
     delay: 0.25
   - alias: "Cast camera"
     service: media_player.play_media
     data:
-      media_content_id: "https://thefes.nl/zm/cgi-bin/nph-zms?mode=jpeg&scale=100&maxfps=5&buffer=1000&monitor=1&user=admin&pass=QYXT4JDikiAi&3P5"
+      media_content_id: !secret pepijncam_stream
       media_content_type: image/jpg
     target:
       entity_id: media_player.keuken_hub
-  - alias: "Korte pauze"
+  - alias: "Short delay"
     delay: 1
-  - alias: "input boolean weer uitzetten"
+  - alias: "Turn off input boolean"
     service: input_boolean.turn_off
     target:
-      entity_id: input_boolean.pepijncam_cast
+      entity_id: input_boolean.floriscam_cast

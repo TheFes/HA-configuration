@@ -1,0 +1,26 @@
+id: 0e1530bf-1d74-4fc4-b756-9d4e16f6d638
+alias: "F0 🏠 Dim Shellies when they turn on"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id:
+      - light.keuken
+      - light.wc
+      - light.woonkamer_plafond
+    from: "off"
+    to: "on"
+variables:
+  light: "{{ trigger.to_state.entity_id }}"
+  object: "{{ trigger.to_state.object_id }}"
+  bright:
+    keuken: 30
+    wc: 80
+    woonkamer_plafond: 50
+action:
+  - alias: "Adjust brightness"
+    service: light.turn_on
+    target:
+      entity_id: "{{ light }}"
+    data:
+      brightness: "{{ bright[object] }}"

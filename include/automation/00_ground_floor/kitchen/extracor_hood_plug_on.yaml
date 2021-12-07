@@ -1,5 +1,5 @@
-id: afzuigkap_aan_ochtend
-alias: "Beneden | Keuken - Afzuigkap weer aan in ochtend"
+id: b776ef0d-e5f7-42d1-8bf8-744fe2b7127b
+alias: "F0 🍳 Extractor hood back on in the morning"
 mode: single
 max_exceeded: silent
 trigger:
@@ -7,12 +7,12 @@ trigger:
     entity_id: light.groep_beneden
     to: "on"
 condition:
-  - alias: "Afzuigkap uit?"
+  - alias: "Extractor hood off?"
     condition: state
     entity_id: switch.afzuigkap
     state: "off"
 action:
-  - alias: "Afzuigkap plug aan"
+  - alias: "Turn plug back on"
     service: switch.turn_on
     target:
       entity_id: switch.afzuigkap

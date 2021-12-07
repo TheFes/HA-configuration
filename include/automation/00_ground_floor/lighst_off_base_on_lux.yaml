@@ -1,28 +1,28 @@
-id: lichten_uit_overdag
-alias: "Beneden | Lichten - Lampen beneden uit overdag"
+id: 5f532453-807b-4170-9a1c-eff2857f73e8
+alias: "F0 🏠 Lights off based on lux sensor"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: numeric_state
     entity_id: sensor.licht_woonkamer
-    id: licht
+    id: light
     above: 300
   - platform: numeric_state
     entity_id: sensor.licht_woonkamer
-    id: heel_licht
+    id: very_light
     above: 600
 condition:
   - condition: sun
     after: sunrise
     after_offset: "03:00:00"
 action:
-  - alias: "Licht, of heel licht?"
+  - alias: "Light or very light?"
     choose:
       - conditions:
           - condition: trigger
-            id: licht
+            id: light
         sequence:
-          - alias: "Aantal lampen beneden uit"
+          - alias: "Turn of some lights"
             service: light.turn_off
             target:
               entity_id:
@@ -34,7 +34,7 @@ action:
                 - light.keuken
                 - light.speelhoek
     default:
-      - alias: "Alle lampen beneden uit"
+      - alias: "Turn off all lights"
         service: light.turn_off
         target:
           entity_id: light.groep_beneden
