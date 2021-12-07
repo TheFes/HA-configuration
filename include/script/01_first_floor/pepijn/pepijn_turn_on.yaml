@@ -1,0 +1,84 @@
+pepijn_turn_on:
+  alias: "F1P 👦 Actions for template light Pepijn"
+  icon: mdi:ceiling-light
+  sequence:
+    - alias: "No transaction active and not yet dimmed?"
+      choose:
+        - alias: "No transaction active and not yet dimmed"
+          conditions:
+            - alias: "No transition active?"
+              condition: state
+              entity_id: input_boolean.transition_pepijn_active
+              state: "off"
+            - alias: "Not yet dimmed?"
+              condition: state
+              entity_id: input_boolean.dimmed_pepijn
+              state: "off"
+          sequence:
+            - alias: "Turn on input boolean"
+              service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.dimmed_pepijn
+            - alias: "Time of day?"
+              choose:
+                - alias: "Morning"
+                  conditions:
+                    - condition: time
+                      after: input_datetime.pepijn_transition_on
+                      before: input_datetime.pepijn_transition_off
+                  sequence:
+                    - alias: "Turn on light using transition script"
+                      service: script.transition_lampen
+                      data:
+                        id: pepijn
+                        change_start: true
+                        bright_start: 39
+                        color_start: "{{ state_attr('light.pepijn', 'max_mireds') }}"
+                        bright_goal: 255
+                        color_goal: "{{ state_attr('light.pepijn', 'min_mireds') }}"
+                        bright_step: 2
+                        step_time: 0.5
+                        dim: false
+                - alias: "Evening or night"
+                  conditions:
+                    - condition: or
+                      conditions:
+                        - condition: time
+                          after: input_datetime.pepijn_dim_on
+                        - condition: time
+                          before: input_datetime.pepijn_dim_off
+                  sequence:
+                    - alias: "Turn on light dimmed"
+                      service: light.turn_on
+                      data:
+                        entity_id: light.pepijn
+                        brightness: 40
+                        color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
+              default:
+                - alias: "Ceiling light to 100%"
+                  service: light.turn_on
+                  target:
+                    entity_id: light.pepijn
+                  data:
+                    brightness: 255
+                - alias: "Bed time?"
+                  condition: time
+                  after: "18:00:00"
+                  before: "20:00:00"
+                - alias: "Turn on Miffy"
+                  service: light.turn_on
+                  target:
+                    entity_id: light.nijntje
+      default:
+        - alias: "Light on with current brightness and color temp"
+          service: light.turn_on
+          target:
+            entity_id: light.pepijn
+        - alias: "Bed time?"
+          condition: time
+          after: "18:00:00"
+          before: "20:00:00"
+        - alias: "Turn on Miffy"
+          service: light.turn_on
+          target:
+            entity_id: light.nijntje

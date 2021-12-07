@@ -1,0 +1,87 @@
+google_home_say_voice:
+  alias: "00 🔊 TTS for Google Home based on voice command"
+  icon: mdi:cast-audio
+  mode: single
+  max_exceeded: silent
+  variables:
+    speaker_groups:
+      - media_player.huis_groep
+      - media_player.boven_groep
+      - media_player.beneden_groep
+      - media_player.zolder_groep
+    check_for_title: "Witte ruis"
+    primary_spotcast: pepijn
+  sequence:
+    - variables:
+        entity_list: "{{ states.media_player | map(attribute='entity_id') | list }}"
+        entity_playing: "{{ states.media_player | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
+    - variables:
+        media_player_data: >
+          {% set entities = expand(entity_playing) %}
+          {% set ns = namespace(info=[]) %}
+          {% for entity in entities %}
+            {% set ns.info = ns.info +  [ 
+                                          dict(
+                                            entity_id = entity.entity_id, 
+                                            media_content_id = entity.attributes.media_content_id | default('no media_content'),
+                                            media_title = entity.attributes.media_title | default('no title'),
+                                            media_artist = entity.attributes.media_artist | default('no artist'),
+                                            media_content_type = entity.attributes.media_content_type | default('no type'),
+                                            app_name = entity.attributes.app_name | default('no app'),
+                                            entity_picture = entity.attributes.entity_picture | default('no pic'),
+                                            volume_level = entity.attributes.volume_level | round(2) 
+                                            )
+                                        ] 
+            %}
+          {% endfor %}
+          {{ ns.info }}
+        spotify_data: >
+          {% set spotify_entities = states.media_player 
+                                        | selectattr('entity_id', 'search', 'spotify') 
+                                        | map(attribute='entity_id') 
+                                        | list  
+          %}
+          {% set data = expand(spotify_entities) %}
+          {% set ns = namespace(spotcast=[]) %}
+          {% for entity in data %}
+            {% set ns.spotcast = ns.spotcast +  [ 
+                                                  dict(
+                                                    entity_id = entity.entity_id,
+                                                    source = entity.attributes.source
+                                                    )
+                                                ] 
+            %}
+          {% endfor %}
+          {{ ns.spotcast }}
+    - alias: "Wait until white noise started"
+      wait_template: >
+        {{ 
+          expand(states.media_player)
+            | selectattr('attributes.media_title', 'eq', check_for_title)
+            | map(attribute='entity_id') 
+            | list 
+            | count > 0 
+        }}
+    - variables:
+        tts_target: >
+          {{ 
+            expand(states.media_player)
+              | selectattr('attributes.media_title', 'eq', check_for_title)
+              | map(attribute='entity_id') 
+              | join
+          }}
+    - alias: "TTS"
+      service: script.google_home_say
+      data:
+        voice_tts_target: "{{ tts_target }}"
+        tts_message: "{{ tts_message }}"
+        tts_volume: "{{ tts_volume if tts_volume is defined else undefined }}"
+        restore_volume_all: "{{ restore_volume_all if restore_volume_all is defined else undefined }}"
+        speaker_group_split: "{{ speaker_group_split if speaker_group_split is defined else undefined }}"
+        volume_non_playing: "{{ volume_non_playing if volume_non_playing is defined else undefined }}"
+        voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', tts_target) | list }}"
+        voice_groups: "{{ entity_playing | select('in', speaker_groups) }}"
+        voice_spotcast: >
+          {% set friendly_name = expand(tts_target) | map(attribute='attributes.friendly_name') | join %}
+          {% set spotify_entity =  spotify_data | selectattr('source', 'eq', friendly_name) | map(attribute='entity_id') | join %}
+          {{ spotify_entity | replace('media_player.spotify_', '') if spotify_entity | count > 0 else primary_spotcast }}

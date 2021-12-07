@@ -1,0 +1,51 @@
+script_start_video_tag:
+  alias: "F0L 📺 Start video met tag"
+  icon: mdi:movie
+  mode: restart
+  max_exceeded: silent
+  sequence:
+    - alias: "TV plug on?"
+      choose:
+        - conditions:
+            - alias: "TV uit?"
+              condition: state
+              entity_id: switch.tv_meubel
+              state: "off"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.tv_meubel
+    - alias: "Wait until TV is available"
+      wait_template: >
+        {{ not is_state('media_player.nvidia_shield', 'unavailalbe') }}
+    - alias: "Play selected number of videos"
+      repeat:
+        count: "{{ number_of_plays }}"
+        sequence:
+          - variables:
+              playlist: "{{ range(0, media | count) | list }}"
+              exclude_list: "{{ states(input_text).split('|') | map('int') | list }}"
+              to_play: "{{ playlist | reject('in', exclude_list) | list | random }}"
+          - alias: "Remove first video from list, add new one"
+            service: input_text.set_value
+            target:
+              entity_id: "{{ input_text }}"
+            data:
+              value: "{{ ((states(input_text).split('|') | map('int') | list)[1:] + [to_play]) | join('|') }}"
+          - service: media_player.play_media
+            target:
+              entity_id: "{{ player }}"
+            data:
+              media_content_id: "{{ media[to_play] | replace('/media', 'media-source://media_source/local') }}"
+              media_content_type: "video/mp4"
+          - alias: "Delay to make sure video is playing"
+            delay: 10
+          - alias: "Wait until video is finished"
+            wait_template: >
+              {{
+                is_state(player, 'idle')
+                or is_state(player, 'off')
+              }}
+    - service: media_player.turn_off
+      target:
+        entity_id: media_player.shield

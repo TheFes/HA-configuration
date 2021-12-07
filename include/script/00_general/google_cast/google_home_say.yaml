@@ -1,0 +1,471 @@
+google_home_say:
+  alias: "00 🔊 TTS for Google Home"
+  description: Script for TTS messages to Google Home speakers
+  icon: mdi:cast-audio
+  mode: parallel
+  fields:
+    tts_message:
+      description: "Message to be uses as TTS for Google Home."
+      example: "Hello, this is a test message."
+      required: true
+      selector:
+        text:
+    tts_target:
+      description: "The target Google Home."
+      example: media_player.kitchen_hub
+      required: true
+      selector:
+        entity:
+          integration: cast
+          domain: media_player
+    tts_volume:
+      description: "Volume for TTS message (in %)."
+      example: 25
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 5
+          mode: slider
+          unit_of_measurement: "%"
+    restore_volume_all:
+      description: "Restore volume of all TTS targets, will cause a short delay in sending the TTS"
+      example: true
+      required: false
+      selector:
+        boolean:
+    volume_non_playing:
+      description: "Default volume to restore non playing devces to (in %). Only used in case tts_volume is set, and restore_volume_all is not set to True"
+      example: 25
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 5
+          mode: slider
+          unit_of_measurement: "%"
+    speaker_group_split:
+      description: "Set to True to split Google Home speaker groups in separate entities when sending the TTS"
+      example: true
+      required: false
+      selector:
+        boolean:
+  variables:
+    # Where [LIST] is mentioned, make sure you enter a list, and not a comma separated string
+    tts_service: tts.google_cloud_say # the tts service, if addional service data is required, edit in the script (line 288-292)
+    players_screen: # [LIST] Cast devices (Nest Hub (Max)) with a screen
+      - media_player.keuken_hub
+      - media_player.slaapkamer_hub
+    frequent_radio: # [LIST] frequently uses streams (only the part between http(s):// and the first / after that)
+      - icecast.omroep.nl # NPO radio 2 & 3FM (NL)
+      - playerservices.streamtheworld.com # Radio Veronica (NL)
+    spotify_media_players: # [LIST] media players from the spotify integration, should be named like "media_player.spotify_[spotcast account]"
+      - media_player.spotify_pepijn
+      - media_player.spotify_martijn
+      - media_player.spotify_marleen
+      - media_player.spotify_floris
+    speaker_groups: # [DICT/LIST] speaker groups, also list the entities belonging to the group
+      media_player.huis_groep:
+        - media_player.keuken_hub
+        - media_player.slaapkamer_hub
+        - media_player.pepijn_mini
+        - media_player.woonkamer_mini
+        - media_player.zolder_mini_marleen
+        - media_player.zolder_mini_martijn
+        - media_player.floris_mini
+      media_player.boven_groep:
+        - media_player.pepijn_mini
+        - media_player.slaapkamer_hub
+        - media_player.zolder_mini_marleen
+        - media_player.zolder_mini_martijn
+        - media_player.floris_mini
+      media_player.beneden_groep:
+        - media_player.keuken_hub
+        - media_player.woonkamer_mini
+      media_player.zolder_groep:
+        - media_player.zolder_mini_marleen
+        - media_player.zolder_mini_martijn
+    sub_groups:
+      media_player.huis_groep:
+        - media_player.boven_groep
+        - media_player.beneden_groep
+        - media_player.zolder_groep
+    primary_spotcast: "pepijn" # the spotify account which is used as primary spotcast account
+    silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3" # url to the silent mp3 used for volume level restore
+    default_volume_restore: True # set to True if you want to restore volume of non playing entities by default
+    delay_volume_restore: 3 # the delay which is used after playing the silent mp3 to make sure it is actually playing and the volume can be restored
+    default_volume_level: 0.25 # the default volume level to use in case the silent mp3 was not playing yet (delay too short)
+    default_group_split: False # set to True in case the TTS should be sent to the individual entities of a speaker group instead of the group itself
+    debug: False # set to True in case you want to write the variables used in the script to the logbook for debugging
+  sequence:
+    - alias: "Convert input to lists if not provided as such"
+      variables:
+        tts_target_list: >
+          {% if voice_tts_target is defined %}
+            {{ [ voice_tts_target ] }}
+          {% else %}
+            {% set tts_list = tts_target.replace(' ' , '').split(',') if tts_target is string else tts_target %}
+            {% set speaker_group_list = speaker_groups.keys() | list if speaker_groups is defined else [] %}
+            {% set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
+            {% set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
+            {% set ns = namespace(single = []) %}
+            {% for group in tts_target_group %}
+              {% set ns.single = ns.single + speaker_groups[group] %}
+            {% endfor %}
+            {% set tts_group_entities = ns.single | unique | list %}
+            {% set single_not_in_group = tts_target_single | reject('in', tts_group_entities) | list %}
+            {% if speaker_group_split | default(False) %}
+              {{ tts_group_entities + single_not_in_group }}
+            {% else %}
+              {{ tts_target_group + single_not_in_group }}
+            {% endif %}
+          {% endif %}
+        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
+    - alias: "Deterimine which entities are playing and should be resumed"
+      variables:
+        players_to_resume: >
+          {# use data from google_home_say_voice script in case it was used #}
+            {% if voice_media_player_data is defined %}
+              {{ voice_media_player_data }}
+            {% else %}
+              {# determine which media_players are playing and store attributes#}
+                {% 
+                  set all_players_playing = states.media_player 
+                                              | selectattr('state', 'eq', 'playing') 
+                                              | map(attribute='entity_id') 
+                                              | list  
+                %}
+              {# determine which Google Home speakers groups are playing #}
+                {% 
+                  set all_speaker_groups_playing =  voice_groups | default(
+                                                    all_players_playing 
+                                                      | select('in', speaker_group_list) 
+                                                      | list )
+                %}
+              {# determine which of the tts_targets are playing  #}
+                {% set tts_playing = tts_target_list | select('in', all_players_playing) | list %}
+              {# determine which groups should be resumed becaue a single tts target is part of that group #}
+                {% set ns = namespace(groups = []) %}
+                  {% for group in all_speaker_groups_playing %}
+                    {% for entity in speaker_groups[group] if entity in tts_target_list %}
+                      {% set ns.groups = ns.groups + [group] %}
+                    {% endfor %}
+                  {% endfor %}
+                {% set speaker_groups_resume = ns.groups | unique | list %}
+              {# determine if tts target has subgroups which are playing and add to speaker_groups_resume #}
+                {% set ns = namespace(groups = []) %}
+                  {% for target in tts_target_list %}
+                    {% set ns.groups = ns.groups + 
+                        (sub_groups[target] | select('in', all_speaker_groups_playing) | list)
+                        if sub_groups is defined else []     
+                  %}
+                  {% endfor %}
+                {% set speaker_groups_resume = speaker_groups_resume + ns.groups | unique | list %}
+              {# determine which single entities are in a group which is going to be resumed #}
+                {% set ns = namespace(reject = []) %}
+                {% for group in speaker_groups_resume %}
+                  {% set ns.reject = ns.reject + speaker_groups[group] %}
+                {% endfor %}
+                {% set reject_list = ns.reject %}
+              {# determine which single playing entities are in a group which is a tts_target #}
+                {% set tts_target_group = tts_target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
+                {% set ns = namespace(single_resume = []) %}
+                {% for group in tts_target_group %}
+                  {% set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
+                {% endfor %}
+                {% set single_resume_list = ns.single_resume %}
+              {# combine all the above to a list of players which should be resumed #}
+                {% set players_resume = (tts_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
+                {% set entities = expand(players_resume) %}
+                {% set ns = namespace(info=[]) %}
+                {% for entity in entities %}
+                  {% set ns.info = ns.info +  [ 
+                                                dict(
+                                                  entity_id = entity.entity_id, 
+                                                  media_content_id = entity.attributes.media_content_id | default('no media_content'),
+                                                  media_title = entity.attributes.media_title | default('no title'),
+                                                  media_artist = entity.attributes.media_artist | default('no artist'),
+                                                  media_content_type = entity.attributes.media_content_type | default('no type'),
+                                                  app_name = entity.attributes.app_name | default('no app'),
+                                                  entity_picture = entity.attributes.entity_picture | default('no pic'),
+                                                  volume_level = entity.attributes.volume_level | round(2) 
+                                                  )
+                                              ] 
+                  %}
+                {% endfor %}
+                {{ ns.info }}
+            {% endif %}
+    - alias: "Create lists with attributes of players to resume"
+      variables:
+        tts_target_not_playing: >
+          {% set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
+          {% set ns = namespace(members = []) %}
+          {% for entity in players_resume_entity %}
+            {% if entity in speaker_group_list %}
+              {% set ns.members = ns.members + speaker_groups[entity] | list %}
+            {% endif %}
+          {% endfor %}
+          {% set players_resume_all = players_resume_entity + ns.members %}
+          {{ tts_target_list | reject('in', players_resume_all) | list }}
+        spotify_players_info: >
+          {% 
+            set spotify_player_list = states.media_player 
+                                        | selectattr('state', 'eq', 'playing')
+                                        | selectattr('entity_id', 'search', 'media_player.spotify') 
+                                        | map(attribute='entity_id') 
+                                        | list
+          %}
+          {% set entities = expand(spotify_player_list) %}
+          {% set ns = namespace(info=[]) %}
+          {% for entity in entities %}
+            {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
+          {% endfor %}
+          {{ ns.info }}
+    - variables:
+        volume_restore_required: >
+          {{
+            restore_volume_all | default(default_volume_restore)
+            and tts_target_not_playing | count > 0
+            and tts_volume is defined
+          }}
+    - alias: "Play silent MP3 if volume of non playing targets should be restored"
+      choose:
+        - conditions: "{{ volume_restore_required }}"
+          sequence:
+            - alias: "Play silent MP3"
+              service: media_player.play_media
+              target:
+                entity_id: "{{ tts_target_not_playing }}"
+              data:
+                media_content_id: "{{ silent_mp3 }}"
+                media_content_type: "audio/mp3"
+            - delay: 3
+    - variables:
+        volume_old_not_playing: >
+          {% set entities = expand(tts_target_not_playing) %}
+          {% set ns = namespace(info=[]) %}
+          {% for entity in entities %}
+            {% set ns.info = ns.info +  [
+                                        dict(
+                                          entity_id = entity.entity_id, 
+                                          volume_level = entity.attributes.volume_level | default(default_volume_level) | round(2)
+                                          ) 
+                                        ] 
+            %}
+          {% endfor %}
+          {{ ns.info }}
+        screen_not_playing: >
+          {{ tts_target_not_playing | select('in', players_screen) | list }}
+    - alias: "Debug log"
+      choose:
+        - conditions: "{{ debug }}"
+          sequence:
+            - alias: "Debug info to log"
+              service: system_log.write
+              data:
+                level: info
+                message: |
+                  tts_target = {{ tts_target }}
+                  tts_message = {{ tts_message }}
+                  tts_volume = {{ tts_volume | default('undefined') }}
+                  restore_volume_all = {{ restore_volume_all | default('undefined') }}
+                  volume_not_playing = {{ volume_not_playing | default('undefined') }}
+                  speaker_group_split = {{ speaker_group_split | default('undefined') }}
+                  ## script_settings ##
+                  silent_mp3 = {{ silent_mp3 if silent_mp3 | default('undefined') }}
+                  default_volume_restore = {{ default_volume_restore | default('undefined') }}
+                  default_group_split = {{ default_group_split | default('undefined') }}
+                  tts_target_list = {{ tts_target_list | default('undefined') }}
+                  players_screen = {{ players_screen | default('undefined') }}
+                  frequent_radio = {{ frequent_radio | default('undefined') }} 
+                  speaker_groups = {{ speaker_groups | default('undefined') }}
+                  speaker_group_list = {{ speaker_group_list | default('undefined') }}
+                  ## data used ##
+                  players_to_resume = {{ players_to_resume | default('undefined') }}
+                  tts_target_not_playing = {{ tts_target_not_playing | default('undefined') }}
+                  spotify_players_info = {{ spotify_players_info | default('undefined') }}
+                  volume_old_not_playing = {{ volume_old_not_playing | default('undefined') }}
+                  screen_not_playing = {{ screen_not_playing | default('undefined') }}
+    - alias: "Set volume to TTS volume if set"
+      choose:
+        - conditions:
+            - alias: "TTS Volume set?"
+              condition: template
+              value_template: "{{ tts_volume is defined }}"
+          sequence:
+            - alias: "Apply TTS volume"
+              service: media_player.volume_set
+              target:
+                entity_id: "{{ tts_target_list }}"
+              data:
+                volume_level: "{{ tts_volume if tts_volume < 1 else tts_volume / 100 }}"
+    - alias: "Send TTS message"
+      service: "{{ tts_service }}"
+      data:
+        entity_id: "{{ tts_target_list }}"
+        message: "{{ tts_message }}"
+    - alias: "Short delay if required"
+      choose:
+        - conditions:
+            - alias: "Delay required"
+              condition: template
+              value_template: >
+                {{
+                  players_to_resume | count > 0
+                  or volume_restore_required
+                  or screen_not_playing | count > 0
+                }}
+          sequence:
+            - delay: 4
+    - alias: "Anything to resume?"
+      choose:
+        - conditions:
+            - alias: "Anything playing"
+              condition: template
+              value_template: "{{ players_to_resume | count > 0 }}"
+          sequence:
+            - alias: "Resume players"
+              repeat:
+                count: "{{ players_to_resume | count }}"
+                sequence:
+                  - alias: "Variables for specific media_player"
+                    variables:
+                      spotify: >
+                        {{ players_to_resume[repeat.index-1].app_name == 'Spotify' }}
+                      radio: >
+                        {{ 
+                          players_to_resume[repeat.index-1].app_name == 'TuneIn Free'
+                          or (
+                                  (players_to_resume[repeat.index-1].media_content_id).split('//')[1]
+                                    | default('no/tunein', true)
+                                ).split('/')[0]
+                            in frequent_radio
+                        }}
+                      spotcast_account: >
+                        {% if voice_spotcast is defined %}
+                          {{ voice_spotcast }}
+                        {% else %}
+                          {% set mp_names = players_to_resume | map(attribute='friendly_name') | list %}
+                          {% if players_to_resume[repeat.index - 1].app_name != 'Spotify' %}
+                            Not Spotify
+                          {% elif spotify_players_info | count == 1 %}
+                            {{ spotify_players_info[0].entity_id.split('_')[2] }}
+                          {% elif players_to_resume[repeat.index -1].entity_id in speaker_group_list %}
+                            {% set ha_group = players_to_resume[repeat.index -1].entity_id | replace('media_player', 'group') %}
+                            {% set members = state_attr(ha_group, 'entity_id') %}
+                            {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + [] if members == None else members | list %}
+                            {% set names_check = expand(list_check) | map(attribute='name') | list %}
+                            {{ spotify_players_info
+                                | selectattr('source', 'in', names_check) 
+                                | map(attribute='entity_id') 
+                                | join 
+                                | replace('media_player.spotify_', '')
+                            }}
+                          {% else %}
+                            {{ 
+                              (
+                                spotify_players_info 
+                                  | selectattr('source', 'eq', players_to_resume[repeat.index -1].friendly_name) 
+                                  | map(attribute='entity_id') 
+                                  | join
+                              ).split('_')[2]
+                              if players_to_resume[repeat.index - 1].friendly_name in (spotify_players_info | map(attribute='source') | list)
+                              else primary_spotcast 
+                            }}
+                          {% endif %}
+                        {% endif %}
+                  - alias: "Wait until TTS message is complete"
+                    wait_template: "{{ states(players_to_resume[repeat.index -1].entity_id) in ['idle', 'off'] }}"
+                  - alias: "Set volume to old volume in case TTS volume was set"
+                    choose:
+                      - conditions:
+                          - alias: "TTS Volume set?"
+                            condition: template
+                            value_template: "{{ tts_volume is defined }}"
+                        sequence:
+                          - alias: "Set volume back to old state"
+                            service: media_player.volume_set
+                            target:
+                              entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                            data:
+                              volume_level: "{{ players_to_resume[repeat.index -1].volume_level | float(default=0.25) | round(2) }}"
+                  - alias: "Resume playing"
+                    choose:
+                      - alias: "Spotify?"
+                        conditions: "{{ spotify }}"
+                        sequence:
+                          - alias: "Primary spotcast account?"
+                            choose:
+                              - conditions: "{{ spotcast_account == primary_spotcast }}"
+                                sequence:
+                                  - alias: "Resume spotify with primary spotcast account"
+                                    service: spotcast.start
+                                    data:
+                                      entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                                      force_playback: true
+                            default:
+                              - alias: "Resume spotify with specific account"
+                                service: spotcast.start
+                                data:
+                                  entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                                  account: "{{ spotcast_account }}"
+                                  force_playback: true
+                      - alias: "Radio?"
+                        conditions: "{{ radio }}"
+                        sequence:
+                          - alias: "Resume radio"
+                            service: media_player.play_media
+                            target:
+                              entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                            data:
+                              media_content_id: >
+                                {{ players_to_resume[repeat.index -1].media_content_id }}
+                              media_content_type: "music"
+                              extra:
+                                title: >
+                                  {% if players_to_resume[repeat.index -1].media_artist != 'no artist' %}
+                                    {{ players_to_resume[repeat.index -1].media_artist }}
+                                  {% else %}
+                                    {{ players_to_resume[repeat.index -1].media_title }}
+                                  {% endif %}
+                                thumb: "{{ players_to_resume[repeat.index -1].entity_picture }}"
+    - alias: "TTS sent to non playing devices?"
+      condition: template
+      value_template: "{{ tts_target_not_playing | count > 0 }}"
+    - alias: "Set volume non playing entites back if required"
+      choose:
+        - conditions: "{{ volume_non_playing is defined or volume_restore_required }}"
+          sequence:
+            - alias: "Resume players"
+              repeat:
+                count: "{{ volume_old_not_playing | count }}"
+                sequence:
+                  - alias: "Wait until TTS message is complete"
+                    wait_template: "{{ states(volume_old_not_playing[repeat.index -1].entity_id) in ['idle', 'off'] }}"
+                  - alias: "Set volume back to old state"
+                    service: media_player.volume_set
+                    target:
+                      entity_id: "{{ volume_old_not_playing[repeat.index -1].entity_id }}"
+                    data:
+                      volume_level: >
+                        {% if volume_restore_required %}
+                          {{ volume_old_not_playing[repeat.index -1].volume_level | float(default=0.25) | round(2) }}
+                        {% else %}
+                          {{ volume_non_playing if volume_non_playing < 1 else volume_non_playing / 100 }}
+                        {% endif %}
+    - alias: "Google Home with screen?"
+      choose:
+        - conditions: "{{ screen_not_playing | count > 0 }}"
+          sequence:
+            - alias: "Resume players"
+              repeat:
+                count: "{{ screen_not_playing | count }}"
+                sequence:
+                  - alias: "Wait until TTS message is complete"
+                    wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
+                  - alias: "Turn Google Home on to return to idle mode (photo display)"
+                    service: media_player.turn_on
+                    target:
+                      entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"

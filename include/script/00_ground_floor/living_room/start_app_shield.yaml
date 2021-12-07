@@ -1,0 +1,134 @@
+script_start_emby:
+  alias: "F0L 📺 Start Emby"
+  icon: mdi:emby
+  sequence:
+    - alias: "TV on"
+      choose:
+        - conditions:
+            - alias: "TV off"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wait unitl TV is available"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Start the app"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n tv.emby.embyatv/.startup.StartupActivity"
+
+script_start_netflix:
+  alias: "F0L 📺 Start Netflix"
+  icon: mdi:netflix
+  sequence:
+    - alias: "TV on"
+      choose:
+        - conditions:
+            - alias: "TV off"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wait unitl TV is available"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Start the app"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n com.netflix.ninja/.MainActivity"
+
+script_start_nlziet:
+  alias: "F0L 📺 Start NLZIET"
+  icon: mdi:television-classic
+  sequence:
+    - alias: "TV on"
+      choose:
+        - conditions:
+            - alias: "TV off"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wait unitl TV is available"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Start the app"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n nl.nlziet/.tv.app.di.tv.InjectActivity"
+
+script_start_youtube_kids:
+  alias: "F0L 📺 Start Youtube Kids"
+  icon: mdi:youtube-tv
+  sequence:
+    - alias: "TV on"
+      choose:
+        - conditions:
+            - alias: "TV off"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wait unitl TV is available"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Start the app"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n com.google.android.youtube.tvkids/com.google.android.apps.youtube.tvkids.activity.MainActivity"
+
+script_start_youtube:
+  alias: "F0L 📺 Start Youtube"
+  icon: mdi:youtube-tv
+  sequence:
+    - alias: "TV on"
+      choose:
+        - conditions:
+            - alias: "TV off"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wait unitl TV is available"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Start the app"
+      service: media_player.select_source
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        source: "YouTube"

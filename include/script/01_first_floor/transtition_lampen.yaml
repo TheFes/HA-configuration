@@ -1,0 +1,79 @@
+transition_lampen:
+  alias: "F1 🏠 Transition for lights bedrooms"
+  icon: mdi:ceiling-light
+  mode: parallel
+  max_exceeded: silent
+  sequence:
+    - variables:
+        light: "light.{{ id }}"
+        boolean: "input_boolean.transition_{{ id }}_active"
+    - alias: "Check if transition is already active"
+      condition: template
+      value_template: "{{ is_state(boolean, 'off') }}"
+    - alias: "Input booelan transition on"
+      service: input_boolean.turn_on
+      target:
+        entity_id: "{{ boolean }}"
+    - alias: "Change start brightness and color temp?"
+      choose:
+        - conditions: "{{ change_start }}"
+          sequence:
+            - alias: "Lamp aanzetten met aangepaste waardes"
+              service: light.turn_on
+              target:
+                entity_id: "{{ light }}"
+              data:
+                brightness: "{{ bright_start }}"
+                color_temp: "{{ color_start }}"
+      default:
+        - alias: "Turn on light with current settings"
+          service: light.turn_on
+          target:
+            entity_id: "{{ light }}"
+    - alias: "Delay"
+      delay: "{{ step_time }}"
+    - alias: "Dim or increase birghtness?"
+      choose:
+        - conditions: "{{ dim }}"
+          sequence:
+            - alias: "Start loop to dim"
+              repeat:
+                while: "{{ state_attr(light, 'brightness') >= (bright_goal + 1) }}"
+                sequence:
+                  - variables:
+                      bright: "{{ state_attr(light, 'brightness') }}"
+                      color: "{{ state_attr(light, 'color_temp') }}"
+                      steps_remaining: "{{ [ 1, ((bright - bright_goal) / bright_step) ] | max }}"
+                      color_step: "{{ ((color_goal - color) / steps_remaining ) + 1  }}"
+                  - alias: "Dim brightness and increase color_temp bit by bit"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data:
+                      brightness: "{{ [ bright_goal, bright | int(0)- bright_step] | max }}"
+                      color_temp: "{{ [ color_goal, color + color_step ] | min }}"
+                  - alias: "Pauze tussen stappen"
+                    delay: "{{ step_time }}"
+      default:
+        - alias: "Start loop to increase brightness"
+          repeat:
+            while: "{{ state_attr(light, 'brightness') < (bright_goal - 2) }}"
+            sequence:
+              - variables:
+                  bright: "{{ state_attr(light, 'brightness') }}"
+                  color: "{{ state_attr(light, 'color_temp') }}"
+                  steps_remaining: "{{ [ 1, ((bright_goal - bright ) / bright_step) ] | max  }}"
+                  color_step: "{{ ((color - color_goal) / steps_remaining ) + 1  }}"
+              - alias: "Increase brightness and decrease color temp bit by bit"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ light }}"
+                data:
+                  brightness: "{{ [ bright_goal, bright + bright_step] | min }}"
+                  color_temp: "{{ [ color_goal, color - color_step ] | max }}"
+              - alias: "Pauze tussen stappen"
+                delay: "{{ step_time }}"
+    - alias: "Turn input_boolean off"
+      service: input_boolean.turn_off
+      target:
+        entity_id: "{{ boolean }}"

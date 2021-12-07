@@ -1,0 +1,76 @@
+zolder_bol_actions:
+  alias: "F2 📦 Actions for Zolder Bol template light"
+  icon: mdi:lamp
+  sequence:
+    - alias: "Which action"
+      choose:
+        - conditions:
+            - alias: "On"
+              condition: template
+              value_template: "{{ action == 'on' }}"
+          sequence:
+            - alias: "Real light on"
+              choose:
+                - conditions:
+                    - alias: "Desk plug off?"
+                      condition: state
+                      entity_id: switch.bureau_marleen
+                      state: "off"
+                  sequence:
+                    - alias: "Turn on desk plug"
+                      service: switch.turn_on
+                      target:
+                        entity_id: switch.bureau_marleen
+                    - alias: "Wait until light is available"
+                      wait_for_trigger:
+                        - platform: state
+                          entity_id: light.zolder_bol
+                          from: "unavailable"
+                      timeout:
+                        seconds: 10
+                    - alias: "Turn light on"
+                      service: light.turn_on
+                      target:
+                        entity_id: light.zolder_bol
+              default:
+                - alias: "Turn light on"
+                  service: light.turn_on
+                  target:
+                    entity_id: light.zolder_bol
+        - conditions:
+            - alias: "Aan"
+              condition: template
+              value_template: "{{ action == 'off' }}"
+          sequence:
+            - alias: "Zolder Bol off"
+              choose:
+                - conditions:
+                    - alias: "Desk Marleen off?"
+                      condition: state
+                      entity_id: binary_sensor.imac_marleen
+                      state: "off"
+                    - condition: not
+                      conditions:
+                        - alias: "Printer active"
+                          condition: state
+                          entity_id: sensor.dcp_l2530dw_status
+                          state: "printing"
+                    - alias: "Low power consumption"
+                      condition: numeric_state
+                      entity_id: sensor.bureau_marleen_power
+                      below: 20
+                  sequence:
+                    - alias: "Turn light off"
+                      service: light.turn_off
+                      target:
+                        entity_id: light.zolder_bol
+                    - delay: 30
+                    - alias: "Turn desk plug off"
+                      service: switch.turn_off
+                      target:
+                        entity_id: switch.bureau_marleen
+              default:
+                - alias: "Turn light off"
+                  service: light.turn_off
+                  target:
+                    entity_id: light.zolder_bol
