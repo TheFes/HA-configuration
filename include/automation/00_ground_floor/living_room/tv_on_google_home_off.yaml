@@ -1,13 +1,13 @@
-id: tv_on_google_home_off
-alias: "Beneden | Woonkamer - Google Home uit als TV aan gaat"
+id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7f
+alias: "F0 📺 Google Homes off when TV turns on"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: remote.woonkamer
-    to: "on"
+    entity_id: media_player.shield
+    from: "off"
 action:
-  - alias: "Google Homes beneden uitzetten"
+  - alias: "Turn of Google Home speakers"
     service: media_player.turn_off
     target:
       entity_id:

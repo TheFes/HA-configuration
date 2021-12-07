@@ -1,5 +1,5 @@
-id: deurbel_acties
-alias: "Beneden | Hal - Deurbel acties"
+id: afcf34ca-7a3e-4f49-a332-9313d2a2eca5
+alias: "F0 🔔 Actions based on doorbell"
 trigger:
   - platform: state
     entity_id: binary_sensor.doorbell_button
@@ -7,22 +7,27 @@ trigger:
 mode: single
 max_exceeded: silent
 variables:
-  hue:
+  hue_lights:
     - light.slaapkamer
     - light.eettafel
     - light.zolder_bol
+  lights_doorbell:
+    - light.slaapkamer
+    - light.floris
+    - light.pepijn
+    - light.staande_lamp
 action:
   - variables:
       external_url: !secret ha_url
-  - alias: "Notificatie voor telefoon Marleen"
+  - alias: "Notification for phone Marleen"
     service: notify.mobile_app_marleen_app
     data:
-      title: '{{ "\uD83D\uDEA8" }} Ding dong!'
+      title: "🔔 Ding dong!"
       message: Er staat iemand aan de deur!
       data:
         channel: Deurbel
         importance: high
-  - alias: "Notificatie voor telefoon Martijn"
+  - alias: "Notification for phone Martijn"
     service: notify.join_pixel5
     data:
       message: "Er staat iemand aan de deur!"
@@ -30,7 +35,7 @@ action:
       data:
         icon: "{{ external_url }}/local/pictures/door.png"
         smallicon: "{{ external_url }}/local/pictures/text-balloon.png"
-  - alias: "Google Home zolder actief?"
+  - alias: "Google Home attic active or someone there"
     choose:
       - conditions:
           - condition: or
@@ -43,16 +48,16 @@ action:
                 condition: state
                 entity_id: media_player.zolder_mini_marleen
                 state: "playing"
-              - alias: "Marleen op zolder"
+              - alias: "Marleen on attic"
                 condition: state
                 entity_id: sensor.telefoon_marleen
                 state: "Zolder"
-              - alias: "Martijn op zolder"
+              - alias: "Martijn on attic"
                 condition: state
                 entity_id: sensor.telefoon_martijn
                 state: "Zolder"
         sequence:
-          - alias: "TTS Ding Dong voor Google Home"
+          - alias: "TTS Ding Dong for Google Home"
             service: script.turn_on
             target:
               entity_id: script.google_home_say
@@ -61,48 +66,48 @@ action:
                 tts_message: "Ding Dong! Er staat iemand aan de deur!"
                 tts_target: media_player.zolder_mini_martijn
                 tts_volume: 35
-  - alias: "Bel uit en iemand thuis?"
+  - alias: "Chime off and someone home?"
     choose:
-      # knipperen van eettafellamp, zolder bol, voordeurlamp en lampen eerste verdieping die aan staan als geluid uit staat en er iemand thuis is
+      # Blink lights when chime is off and someone is home
       - conditions:
-          - alias: "Bel niet actief?"
+          - alias: "Chime off?"
             condition: state
             entity_id: switch.doorbell_chime_active
             state: "off"
-          - alias: "Iemand thuis?"
+          - alias: "Someone home?"
             condition: state
             entity_id: group.m_en_m
             state: "home"
         sequence:
-          - alias: "Bepalen welke lampen moeten knipperen"
+          - alias: "Determine which lights are one and should blink"
             variables:
               lights: >
-                {{ expand('group.blink_lights_doorbell') | selectattr('state','eq','on') | map(attribute='entity_id') | list }}
-          - alias: "Scene aanmaken met huidige staat"
+                {{ expand(lights_doorbell) | selectattr('state','eq','on') | map(attribute='entity_id') | list }}
+          - alias: "Create scene with current state"
             service: scene.create
             data:
               scene_id: before
               snapshot_entities: "{{ [ 'light.zolder_bol', 'light.eettafel', 'light.voordeur' ] + lights }}"
-          - alias: "Zolder Bol en eettafel laten knipperen (hue)"
+          - alias: "Blink lights (hue_lights)"
             service: light.turn_on
             target:
-              entity_id: "{{ ['light.eettafel', 'light.zolder_bol'] + lights | select('in', hue) | list }}"
+              entity_id: "{{ ['light.eettafel', 'light.zolder_bol'] + lights | select('in', hue_lights) | list }}"
             data:
               flash: long
-          - alias: "Lampen knipper ESPHome?"
+          - alias: "ESPHome lights to blink?"
             choose:
               - conditions:
-                  - alias: "Staan er lampen aan?"
+                  - alias: "ESPHome lights on?"
                     condition: template
-                    value_template: "{{ lights | reject('in', hue) | list | length > 0 }}"
+                    value_template: "{{ lights | reject('in', hue_lights) | list | length > 0 }}"
                 sequence:
-                  - alias: "Lampen die aanstaan laten knipperen (ESPHome)"
+                  - alias: "Blink lights (ESPHome)"
                     service: light.turn_on
                     target:
-                      entity_id: "{{ lights | reject('in', hue) | list }}"
+                      entity_id: "{{ lights | reject('in', hue_lights) | list }}"
                     data:
                       effect: "Fast Pulse"
-          - alias: "Loopje met knipper voor voordeur"
+          - alias: "Blink front door light using loop"
             repeat:
               count: 10
               sequence:
@@ -112,22 +117,22 @@ action:
                     entity_id: light.voordeur
                 - alias: "Pauze tussen knipper"
                   delay: 0.5
-          - alias: "Scene met oude staat weer terugzetten"
+          - alias: "Restore state"
             service: scene.turn_on
             target:
               entity_id: scene.before
-      # knipperen van voordeurlamp als geluid uit staat en er niemand thuis is
+      # Blink front door light when nobody is home
       - conditions:
-          - alias: "Bel niet actief?"
+          - alias: "Chime not active"
             condition: state
             entity_id: switch.doorbell_chime_active
             state: "off"
-          - alias: "Niemand thuis?"
+          - alias: "Nobobdy home?"
             condition: state
             entity_id: group.m_en_m
             state: "not_home"
         sequence:
-          - alias: "Scene met huidge staat voordeur aanmaken"
+          - alias: "Create scene with current state"
             service: scene.create
             data:
               scene_id: before
@@ -136,15 +141,15 @@ action:
             repeat:
               count: 10
               sequence:
-                - alias: "Knipper"
+                - alias: "Blink"
                   service: light.toggle
                   data:
                     entity_id: light.voordeur
                 - alias: "Pauze tussen knipper"
-                  delay: 0.2
-          - alias: "Scene met oude staat voordeur weer terugzetten"
+                  delay: 0.5
+          - alias: "Restore scene"
             service: scene.turn_on
             target:
               entity_id: scene.before
-  - alias: "Pauze van 10 seconden"
+  - alias: "Delay to avoid too much blinking"
     delay: 10

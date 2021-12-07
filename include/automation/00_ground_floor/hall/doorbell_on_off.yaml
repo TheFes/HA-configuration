@@ -1,34 +1,34 @@
-id: deurbel_aan_uit
-alias: "Beneden | Hal - Deurbel aan- en uitzetten"
+id: 86f3e0f1-cbaf-4897-a603-cb0e33f76793
+alias: "F0 🔔 Turn doorbell sound on and off"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: homeassistant
     event: start
   - platform: time
-    at: 
+    at:
       - "07:00:00"
       - "19:00:00"
 action:
-  - alias: "Bedtijd kinderen?"
+  - alias: "Bedtime children?"
     choose:
       - conditions:
-          - alias: "Avond of nacht?"
+          - alias: "Evening or night?"
             condition: time
             after: "19:00:00"
             before: "07:00:00"
         sequence:
-          - alias: "Bel uit"
+          - alias: "Turn chime off"
             service: switch.turn_off
             data:
               entity_id: switch.doorbell_chime_active
       - conditions:
-          - alias: "Overdag?"
+          - alias: "Daytime?"
             condition: time
             after: "07:00:00"
             before: "19:00:00"
         sequence:
-          - alias: "Bel aan"
+          - alias: "Turn chime on"
             service: switch.turn_on
             data:
               entity_id: switch.doorbell_chime_active

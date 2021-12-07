@@ -1,5 +1,5 @@
 id: f0fc0c8c-662d-4477-9002-5ec4b49da7ba
-alias: "Algemeen - Lampen helderheid en kleurtemperatuur"
+alias: "00 🏠 Change color temperature of lights based on brightness"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -23,14 +23,14 @@ variables:
     {{ 325 if light in hue else state_attr(light, 'min_mireds') }}
   bright: "{{ state_attr(light, 'brightness') }}"
 condition:
-  - alias: "Lamp aan?"
+  - alias: "Light on?"
     condition: template
     value_template: "{{ is_state(light, 'on') }}"
-  - alias: "Al eerder gedimd"
+  - alias: "Already dimmed before?"
     condition: template
     value_template: "{{ not is_state(input_boolean_dimmed, 'off') }}"
 action:
-  - alias: "Kleurtemperatuur instellen op basis van helderheid"
+  - alias: "Set colore temperature based on brightness"
     service: light.turn_on
     target:
       entity_id: "{{ light }}"

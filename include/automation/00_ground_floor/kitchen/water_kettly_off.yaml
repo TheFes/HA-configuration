@@ -1,10 +1,10 @@
-id: fe09f19c-86eb-4bd8-be3f-096bed6308f1
-alias: "Beneden | Keuken - Espressomachine switch uit"
+id: d826bab6-6791-425b-90b6-cae882317c5f
+alias: "F0 🍳 Water kettle plug off"
 mode: restart
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: switch.espresso
+    entity_id: switch.waterkoker
     from: "off"
     to: "on"
   - platform: homeassistant
@@ -12,31 +12,31 @@ trigger:
   - platform: event
     event_type: automation_reloaded
   - platform: numeric_state
-    entity_id: sensor.espresso_power
+    entity_id: sensor.waterkoker_power
     above: 25
-    id: "actief"
+    id: "active"
 condition:
-  - alias: "Espressomachine aan?"
+  - alias: "Kettle on?"
     condition: state
-    entity_id: switch.espresso
+    entity_id: switch.waterkoker
     state: "on"
 action:
   - alias: "Trigger type"
     choose:
       - conditions:
           - condition: trigger
-            id: "actief"
+            id: "active"
         sequence:
-          - alias: "Espressomachine 30 minuten inactief"
+          - alias: "Kettle inactive for 10 minutes"
             wait_for_trigger:
               - platform: numeric_state
-                entity_id: sensor.espresso_power
+                entity_id: sensor.waterkoker_power
                 below: 25
-                for: "00:31:00"
+                for: "00:10:00"
     default:
       - delay:
-          minutes: 31
-  - alias: "Plug voor espresso weer uitzetten"
+          minutes: 30
+  - alias: "Turn plug off"
     service: switch.turn_off
     target:
-      entity_id: switch.espresso
+      entity_id: switch.waterkoker

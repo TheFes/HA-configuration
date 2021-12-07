@@ -1,5 +1,5 @@
-id: shelly_knop_eettafel
-alias: "Beneden | Eettafel - Acties met Shelly"
+id: e19adef6-a6f2-4ab0-b7a6-694accb15b21
+alias: "F0 🍴 Actions for dining table shelly"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -8,61 +8,61 @@ trigger:
     event_data:
       device: Eettafel
 action:
-  - alias: "Shelly aan of niet?"
+  - alias: "Shelly on or not?"
     choose:
       - conditions:
-          - alias: "Shelly eettafel uit?"
+          - alias: "Shelly off"
             condition: state
             entity_id: switch.shelly1_eettafel
             state: "off"
         sequence:
-          - alias: "Shelly aanzetten"
+          - alias: "Turn on shelly"
             service: switch.turn_on
             target:
               entity_id: switch.shelly1_eettafel
     default:
-      - alias: "Welk click type?"
+      - alias: "Click type?"
         choose:
           - conditions:
-              - alias: "Korte klik?"
+              - alias: "Short?"
                 condition: template
                 value_template: "{{ trigger.event.data.click_type == 'short' }}"
             sequence:
-              - alias: "Licht schakelen"
+              - alias: "Toggle light"
                 service: light.toggle
                 target:
                   entity_id: light.eettafel
           - conditions:
-              - alias: "Dubbelklik?"
+              - alias: "Double?"
                 condition: template
                 value_template: "{{ trigger.event.data.click_type == 'double' }}"
             sequence:
-              - alias: "Licht op 100%"
+              - alias: "Light on 100%"
                 service: light.turn_on
                 target:
                   entity_id: light.eettafel
                 data:
                   brightness: 255
           - conditions:
-              - alias: "Lange klik?"
+              - alias: "Long?"
                 condition: template
                 value_template: "{{ trigger.event.data.click_type == 'long' }}"
             sequence:
-              - alias: "Lichten beneden uit"
+              - alias: "Turn off lights downstairs"
                 service: light.turn_off
                 target:
                   entity_id: light.groep_beneden
-              - alias: "TV uit"
+              - alias: "TV off"
                 service: media_player.turn_off
                 target:
                   entity_id: media_player.nvidia_shield
-              - alias: "Google Homes uit"
+              - alias: "Google Homes off"
                 service: media_player.turn_off
                 target:
                   entity_id:
                     - media_player.keuken_hub
                     - media_player.woonkamer_mini
-              - alias: "Afzuigkap uit?"
+              - alias: "Extractor hood off if needed?"
                 choose:
                   - conditions:
                       - alias: "Afzuigkap of lichtje actief?"
@@ -70,20 +70,20 @@ action:
                         entity_id: sensor.afzuigkap_power
                         above: 0.5
                     sequence:
-                      - alias: "Plug afzuigkap uit"
+                      - alias: "Turn off power plug extractor hood"
                         service: switch.turn_off
                         target:
                           entity_id: switch.afzuigkap
-              - alias: "TV Meubel uit?"
+              - alias: "TV plug off"
                 choose:
                   - conditions:
-                      - alias: "TV Meubel override uit"
+                      - alias: "Check for override"
                         condition: state
                         entity_id: input_boolean.tv_meubel_override
                         state: "off"
                     sequence:
                       - delay: 20
-                      - alias: "TV Meubel uitzetten"
+                      - alias: "Turn off plug"
                         service: switch.turn_off
                         target:
                           entity_id: switch.tv_meubel
