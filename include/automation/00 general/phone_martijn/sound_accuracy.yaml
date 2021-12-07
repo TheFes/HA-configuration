@@ -1,0 +1,68 @@
+id: e7e51e10-c152-4514-bfc7-393c6d16d468
+alias: Algemeen | Telefoon Martijn - Geluid en high accuracy instellen
+mode: queued
+trigger:
+  - platform: state
+    entity_id: person.martijn
+    to: home
+    id: "home"
+  - platform: state
+    entity_id: person.martijn
+    from: home
+    id: "away"
+  - platform: state
+    entity_id: sensor.pixel_5_gedetecteerde_activiteit
+    to:
+      - "on_bicycle"
+      - "in_vehicle"
+    id: "on_the_move"
+  - platform: state
+    entity_id: sensor.pixel_5_gedetecteerde_activiteit
+    from:
+      - "on_bicycle"
+      - "in_vehicle"
+    id: "stationary"
+action:
+  - alias: "Thuis of niet?"
+    choose:
+      - conditions:
+          - alias: "Home"
+            condition: trigger
+            id: "home"
+        sequence:
+          - service: notify.mobile_app_pixel_5
+            data:
+              message: "command_ringer_mode"
+              title: "normal"
+          - delay: 0.5
+          - service: notify.mobile_app_pixel_5
+            data:
+              message: "command_high_accuracy_mode"
+              title: "turn_off"
+      - conditions:
+          - alias: "Away"
+            condition: trigger
+            id: "away"
+        sequence:
+          - service: notify.mobile_app_pixel_5
+            data:
+              message: "command_ringer_mode"
+              title: "vibrate"
+      - conditions:
+          - alias: "On the move"
+            condition: trigger
+            id: "on_the_move"
+        sequence:
+          - service: notify.mobile_app_pixel_5
+            data:
+              message: "command_high_accuracy_mode"
+              title: "turn_on"
+      - conditions:
+          - alias: "No longer on the move"
+            condition: trigger
+            id: "stationary"
+        sequence:
+          - service: notify.mobile_app_pixel_5
+            data:
+              message: "command_high_accuracy_mode"
+              title: "turn_off"

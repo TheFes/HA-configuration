@@ -1,0 +1,150 @@
+id: deurbel_acties
+alias: "Beneden | Hal - Deurbel acties"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.doorbell_button
+    to: "on"
+mode: single
+max_exceeded: silent
+variables:
+  hue:
+    - light.slaapkamer
+    - light.eettafel
+    - light.zolder_bol
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Notificatie voor telefoon Marleen"
+    service: notify.mobile_app_marleen_app
+    data:
+      title: '{{ "\uD83D\uDEA8" }} Ding dong!'
+      message: Er staat iemand aan de deur!
+      data:
+        channel: Deurbel
+        importance: high
+  - alias: "Notificatie voor telefoon Martijn"
+    service: notify.join_pixel5
+    data:
+      message: "Er staat iemand aan de deur!"
+      title: "Ding Dong!"
+      data:
+        icon: "{{ external_url }}/local/pictures/door.png"
+        smallicon: "{{ external_url }}/local/pictures/text-balloon.png"
+  - alias: "Google Home zolder actief?"
+    choose:
+      - conditions:
+          - condition: or
+            conditions:
+              - alias: "Google zolder Martijn actief?"
+                condition: state
+                entity_id: media_player.zolder_mini_martijn
+                state: "playing"
+              - alias: "Google zolder Marleen actief?"
+                condition: state
+                entity_id: media_player.zolder_mini_marleen
+                state: "playing"
+              - alias: "Marleen op zolder"
+                condition: state
+                entity_id: sensor.telefoon_marleen
+                state: "Zolder"
+              - alias: "Martijn op zolder"
+                condition: state
+                entity_id: sensor.telefoon_martijn
+                state: "Zolder"
+        sequence:
+          - alias: "TTS Ding Dong voor Google Home"
+            service: script.turn_on
+            target:
+              entity_id: script.google_home_say
+            data:
+              variables:
+                tts_message: "Ding Dong! Er staat iemand aan de deur!"
+                tts_target: media_player.zolder_mini_martijn
+                tts_volume: 35
+  - alias: "Bel uit en iemand thuis?"
+    choose:
+      # knipperen van eettafellamp, zolder bol, voordeurlamp en lampen eerste verdieping die aan staan als geluid uit staat en er iemand thuis is
+      - conditions:
+          - alias: "Bel niet actief?"
+            condition: state
+            entity_id: switch.doorbell_chime_active
+            state: "off"
+          - alias: "Iemand thuis?"
+            condition: state
+            entity_id: group.m_en_m
+            state: "home"
+        sequence:
+          - alias: "Bepalen welke lampen moeten knipperen"
+            variables:
+              lights: >
+                {{ expand('group.blink_lights_doorbell') | selectattr('state','eq','on') | map(attribute='entity_id') | list }}
+          - alias: "Scene aanmaken met huidige staat"
+            service: scene.create
+            data:
+              scene_id: before
+              snapshot_entities: "{{ [ 'light.zolder_bol', 'light.eettafel', 'light.voordeur' ] + lights }}"
+          - alias: "Zolder Bol en eettafel laten knipperen (hue)"
+            service: light.turn_on
+            target:
+              entity_id: "{{ ['light.eettafel', 'light.zolder_bol'] + lights | select('in', hue) | list }}"
+            data:
+              flash: long
+          - alias: "Lampen knipper ESPHome?"
+            choose:
+              - conditions:
+                  - alias: "Staan er lampen aan?"
+                    condition: template
+                    value_template: "{{ lights | reject('in', hue) | list | length > 0 }}"
+                sequence:
+                  - alias: "Lampen die aanstaan laten knipperen (ESPHome)"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ lights | reject('in', hue) | list }}"
+                    data:
+                      effect: "Fast Pulse"
+          - alias: "Loopje met knipper voor voordeur"
+            repeat:
+              count: 10
+              sequence:
+                - alias: "Knipper voordeur"
+                  service: light.toggle
+                  data:
+                    entity_id: light.voordeur
+                - alias: "Pauze tussen knipper"
+                  delay: 0.5
+          - alias: "Scene met oude staat weer terugzetten"
+            service: scene.turn_on
+            target:
+              entity_id: scene.before
+      # knipperen van voordeurlamp als geluid uit staat en er niemand thuis is
+      - conditions:
+          - alias: "Bel niet actief?"
+            condition: state
+            entity_id: switch.doorbell_chime_active
+            state: "off"
+          - alias: "Niemand thuis?"
+            condition: state
+            entity_id: group.m_en_m
+            state: "not_home"
+        sequence:
+          - alias: "Scene met huidge staat voordeur aanmaken"
+            service: scene.create
+            data:
+              scene_id: before
+              snapshot_entities: light.voordeur
+          - alias: "Loopje met knipper"
+            repeat:
+              count: 10
+              sequence:
+                - alias: "Knipper"
+                  service: light.toggle
+                  data:
+                    entity_id: light.voordeur
+                - alias: "Pauze tussen knipper"
+                  delay: 0.2
+          - alias: "Scene met oude staat voordeur weer terugzetten"
+            service: scene.turn_on
+            target:
+              entity_id: scene.before
+  - alias: "Pauze van 10 seconden"
+    delay: 10

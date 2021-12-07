@@ -1,0 +1,10 @@
+binary_sensor:
+  unique_id: 2b4278b7-2dbb-403a-9f03-4a2d14973245
+  name: "Slaapkamer Hub"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.slaapkamer_hub', 'playing') }}
+  delay_off: "00:00:05"
+  delay_on: "00:00:05"
+  attributes:
+    volume: 0.25

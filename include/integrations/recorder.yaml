@@ -1,0 +1,18 @@
+recorder:
+  db_url: !secret mariadb_url
+  purge_keep_days: 3
+  exclude:
+    entities:
+      - sensor.time
+      - sensor.ha_uptime
+    entity_globs:
+      - sensor.tag*
+      - sensor.pixel*
+      - sensor.telefoon*
+      - input*
+    domains:
+      - updater
+      - scene
+      - weblink
+      - calendar
+      - camera

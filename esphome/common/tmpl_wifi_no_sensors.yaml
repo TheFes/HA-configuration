@@ -1,0 +1,19 @@
+<<: !include tmpl_wifi_minimal.yaml
+
+# Enable Web server
+web_server:
+  port: 80
+
+# Sync time with Home Assistant.
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+text_sensor:
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} ${device_type}
+  - platform: version
+    id: text_sensor_version
+    name: "${device_name} ESPHome Version"

@@ -1,0 +1,15 @@
+id: tv_on_google_home_off
+alias: "Beneden | Woonkamer - Google Home uit als TV aan gaat"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: remote.woonkamer
+    to: "on"
+action:
+  - alias: "Google Homes beneden uitzetten"
+    service: media_player.turn_off
+    target:
+      entity_id:
+        - media_player.keuken_hub
+        - media_player.woonkamer_mini

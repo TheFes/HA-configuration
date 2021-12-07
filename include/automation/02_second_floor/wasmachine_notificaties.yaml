@@ -1,0 +1,29 @@
+id: wasmachine
+alias: "Zolder - Notificaties wasmachine"
+mode: single
+max_exceeded: silent
+trigger:
+  #  - platform: event
+  #    event_type: mobile_app_notification_action
+  #    event_data:
+  #      action: "was_opgehangen"
+  - entity_id: sensor.wasmachine_remain_time
+    platform: state
+    from: 0:01
+    to: 0:00
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Berichtje naar telefoon Marleen"
+    service: notify.mobile_app_marleen_app
+    data:
+      message: "Haal snel de was er uit voordat het allemaal kreukt."
+      title: "💦 Wasmachine is klaar"
+  - alias: "Berichtje naar telefoon Martijn"
+    service: notify.join_pixel5
+    data:
+      message: "Haal snel de was er uit voordat het allemaal kreukt."
+      title: "Wasmachine is klaar"
+      data:
+        icon: "{{ external_url }}/local/pictures/laundry.png"
+        smallicon: "{{ external_url }}/local/pictures/laundry.png"

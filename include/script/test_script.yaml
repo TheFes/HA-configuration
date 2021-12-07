@@ -1,0 +1,26 @@
+test_script:
+  alias: "ZZ - Test"
+  icon: mdi:test-tube
+  sequence:
+    - variables:
+        info:
+          "Hallo Kids Radio":
+            type: stream
+            media_content_id: "https://ice.cr1.streamzilla.xlcdn.com:8000/sz=Hallokidsradio=mp3"
+            image_url: "https://www.hallokidsradio.nl/wp-content/uploads/2021/03/Logo_HKR-300x150.png"
+          "Q-Music":
+            type: stream
+            media_content_id: "https://ice.cr1.streamzilla.xlcdn.com:8000/sz=Hallokidsradio=mp3"
+            metadataType: 3 #ook optioneel, standaard wordt 3 gekozen
+            image_url: "https://qmusic.nl/logo.png"
+          "Youtube - Test":
+            type: youtube
+            media_content_id: "xGN0iBi1zUY"
+            title:
+        option: "Youtube - Test"
+    - service: persistent_notification.create
+      data:
+        title: test
+        message: >
+          {% set title = info[option].title | default(option) %}
+          {{ title if title != None else option }}

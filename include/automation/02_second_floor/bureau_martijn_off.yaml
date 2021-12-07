@@ -1,0 +1,25 @@
+id: 012eb968-e871-4029-8096-a63044a42029
+alias: "Zolder - Bureau Martijn uitzetten"
+trigger:
+  - platform: state
+    entity_id: 
+      - binary_sensor.computer_zolder
+      - binary_sensor.laptop_werk_martijn_lan
+      - binary_sensor.laptop_werk_martijn_wifi
+      - media_player.zolder_mini_martijn
+    to: "off"
+    for: "00:30:00"
+condition:
+  - alias: "Alles uit"
+    condition: state
+    entity_id: 
+      - binary_sensor.computer_zolder
+      - binary_sensor.laptop_werk_martijn_lan
+      - binary_sensor.laptop_werk_martijn_wifi
+      - media_player.zolder_mini_martijn
+    state: "off"
+action:
+  - alias: "Switch uitzetten"
+    service: switch.turn_off
+    target:
+      entity_id: switch.bureau_martijn

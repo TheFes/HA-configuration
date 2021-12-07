@@ -1,0 +1,95 @@
+id: printer_status
+alias: "Zolder - Statusmeldingen voor printer"
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.dcp_l2530dw_black_toner_remaining
+    below: 26
+  - platform: numeric_state
+    entity_id: sensor.dcp_l2530dw_drum_remaining_life
+    below: 26
+  - platform: numeric_state
+    entity_id: sensor.dcp_l2530dw_black_toner_remaining
+    below: 11
+  - platform: numeric_state
+    entity_id: sensor.dcp_l2530dw_drum_remaining_life
+    below: 11
+condition:
+  - alias: "From state niet unavailable?"
+    condition: template
+    value_template: "{{ trigger.from_state.state != 'unavailable' }}"
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Toner of drum?"
+    choose:
+      - conditions:
+          - alias: "Toner?"
+            condition: template
+            value_template: "{{ trigger.entity_id == 'sensor.dcp_l2530dw_black_toner_remaining' }}"
+        sequence:
+          - alias: "Toner vrij leeg of bijna leeg?"
+            choose:
+              - conditions:
+                  - alias: "Toner raakt leeg?"
+                    condition: numeric_state
+                    entity_id: sensor.dcp_l2530dw_black_toner_remaining
+                    below: 26
+                sequence:
+                  - alias: "Notificatie naar telefoon Martijn"
+                    service: notify.join_pixel5
+                    data:
+                      title: "Printer toner raakt leeg"
+                      message: "De toner is nog maar voor 25% vol"
+                      data:
+                        icon: "{{ external_url }}/local/pictures/printer.png"
+                        smallicon: "{{ external_url }}/local/pictures/printer.png"
+              - conditions:
+                  - alias: "Toner bijna leeg?"
+                    condition: numeric_state
+                    entity_id: sensor.dcp_l2530dw_black_toner_remaining
+                    below: 11
+                sequence:
+                  - alias: "Notificatie naar telefoon Martijn"
+                    service: notify.join_pixel5
+                    data:
+                      title: "Printer toner is bijna leeg"
+                      message: "De toner is nog maar voor 10% vol"
+                      data:
+                        icon: "{{ external_url }}/local/pictures/printer.png"
+                        smallicon: "{{ external_url }}/local/pictures/printer.png"
+  - choose:
+      - conditions:
+          - alias: "Drum?"
+            condition: template
+            value_template: "{{ trigger.entity_id == 'sensor.dcp_l2530dw_drum_remaining_life' }}"
+        sequence:
+          - alias: "Toner vrij op of bijna op?"
+            choose:
+              - conditions:
+                  - alias: "Drum begint dood te gaan?"
+                    condition: numeric_state
+                    entity_id: sensor.dcp_l2530dw_drum_remaining_life
+                    below: 26
+                sequence:
+                  - alias: "Notificatie naar telefoon Martijn"
+                    service: notify.join_pixel5
+                    data:
+                      title: "Drum printer"
+                      message: "De levensduur van de drum is nog maar 25%"
+                      data:
+                        icon: "{{ external_url }}/local/pictures/printer.png"
+                        smallicon: "{{ external_url }}/local/pictures/printer.png"
+              - conditions:
+                  - alias: "Drum bijna dood?"
+                    condition: numeric_state
+                    entity_id: sensor.dcp_l2530dw_drum_remaining_life
+                    below: 11
+                sequence:
+                  - alias: "Notificatie naar telefoon Martijn"
+                    service: notify.join_pixel5
+                    data:
+                      title: "Drum printer"
+                      message: "De levensduur van de drum is nog maar 10%"
+                      data:
+                        icon: "{{ external_url }}/local/pictures/printer.png"
+                        smallicon: "{{ external_url }}/local/pictures/printer.png"

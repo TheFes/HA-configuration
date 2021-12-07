@@ -1,0 +1,26 @@
+bedtime_script:
+  alias: "Beneden - Klaarmaken voor bedtijd"
+  icon: mdi:bed
+  sequence:
+    - service: remote.turn_off
+      target:
+        entity_id: remote.woonkamer
+    - service: light.turn_off
+      target:
+        entity_id:
+          - light.staande_lamp
+          - light.booglamp
+          - light.keuken
+          - light.speelhoek
+          - light.tv_lamp
+          - light.woonkamer_plafond
+          - light.speelhoek_tafel
+    - service: light.turn_on
+      target:
+        entity_id: light.eettafel
+      data:
+        brightness: 255
+        color_temp: 153
+    - delay: 00:05:00
+    - service: light.turn_off
+      entity_id: light.groep_beneden

@@ -1,0 +1,272 @@
+icon: "mdi:home-floor-1"
+cards:
+  # overzichtje
+  - type: glance
+    show_name: false
+    entities:
+      - entity: sensor.telefoon_marleen
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Marleen
+            card:
+              type: custom:more-info-card
+              entity: person.marleen
+      - entity: sensor.telefoon_martijn
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Martijn
+            card:
+              type: custom:more-info-card
+              entity: person.martijn
+      - entity: weather.climacell_daily
+        name: Weer
+      - entity: sun.sun
+        name: Zon
+        show_state: false
+      - entity: sensor.huis_modus
+        show_state: false
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Huis Modus
+            card:
+              type: entities
+              entities:
+                - entity: sensor.huis_modus
+                - entity: input_boolean.vakantie
+                  name: Vakantie
+                - entity: input_boolean.gast
+                  name: Gast
+  - type: vertical-stack
+    cards:
+      - type: entities
+        title: Slaapkamer
+        show_header_toggle: false
+        entities:
+          - entity: light.slaapkamer_template
+            type: "custom:slider-entity-row"
+            toggle: true
+            hide_when_off: true
+            name: Plafondlamp
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Plafondlamp
+                card:
+                  type: entities
+                  entities:
+                    - type: custom:more-info-card
+                      entity: light.slaapkamer_template
+                    - entity: switch.shelly1_slaapkamer
+          - entity: cover.slaapkamer
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Screens Slaapkamer
+                card:
+                  type: vertical-stack
+                  cards:
+                    - type: entities
+                      show_header_toggle: false
+                      title: false
+                      entities:
+                        - entity: input_boolean.cover_slaapkamer_invert
+                    - type: entities
+                      show_header_toggle: false
+                      title: false
+                      entities:
+                        - cover.slaapkamer_links
+                        - cover.slaapkamer_midden
+                        - cover.slaapkamer_rechts
+                    - type: custom:more-info-card
+                      entity: cover.slaapkamer
+          - entity: input_boolean.wakeup_enabled
+            name: Wake-up light
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Wakeup Light
+                card:
+                  type: entities
+                  show_header_toggle: false
+                  title: false
+                  entities:
+                    - entity: input_number.wakeup_start
+                      name: Aantal minuten voordat de wekker afgaat
+                    - entity: sensor.wakeup_start
+                      name: Start van wakeup light
+                    - entity: input_number.wakeup_end
+                      name: Hoe lang doorgaan na de wekker (snooze-tijd)
+      - type: custom:mini-graph-card
+        name: Slaapkamer
+        icon: mdi:bed-double
+        hour24: true
+        align_header: left
+        align_icon: left
+        font_size: 80
+        points_per_hour: 2
+        show:
+          extrema: true
+        entities:
+          - entity: sensor.slaapkamer_temp
+          - entity: sensor.slaapkamer_vocht
+            show_graph: false
+            show_state: true
+          - entity: sensor.slaapkamer_druk
+            show_graph: false
+            show_state: true
+          - color: gray
+            entity: sensor.nightstate
+            name: Nacht
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+  - type: vertical-stack
+    cards:
+      - type: entities
+        title: Slaapkamer Pepijn
+        show_header_toggle: false
+        entities:
+          - entity: light.pepijn_template
+            type: "custom:slider-entity-row"
+            toggle: true
+            name: Plafondlamp
+            hide_when_off: true
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Plafondlamp
+                card:
+                  type: entities
+                  entities:
+                    - type: custom:more-info-card
+                      entity: light.pepijn_template
+                    - entity: switch.shelly1_pepijn
+          - entity: light.nijntje
+          - entity: light.pepijn_leeslamp
+            type: "custom:slider-entity-row"
+            toggle: true
+            hide_when_off: true
+            name: Leeslamp
+          - entity: cover.pepijn
+            name: Screen
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Screen Pepijn
+                card:
+                  type: vertical-stack
+                  cards:
+                    - type: entities
+                      show_header_toggle: false
+                      title: false
+                      entities:
+                        - entity: input_boolean.cover_pepijn_invert
+                    - type: custom:more-info-card
+                      entity: cover.pepijn
+      - type: custom:mini-graph-card
+        name: Pepijn
+        icon: mdi:bed
+        hour24: true
+        align_header: left
+        align_icon: left
+        font_size: 80
+        points_per_hour: 2
+        show:
+          extrema: true
+        entities:
+          - entity: sensor.pepijn_temp
+          - entity: sensor.pepijn_vocht
+            show_graph: false
+            show_state: true
+          - entity: sensor.pepijn_druk
+            show_graph: false
+            show_state: true
+          - color: gray
+            entity: sensor.nightstate
+            name: Nacht
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+  - type: vertical-stack
+    cards:
+      - type: entities
+        title: Slaapkamer Floris
+        show_header_toggle: false
+        entities:
+          - entity: light.floris_template
+            type: "custom:slider-entity-row"
+            toggle: true
+            hide_when_off: true
+            name: Plafondlamp
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Plafondlamp
+                card:
+                  type: entities
+                  entities:
+                    - type: custom:more-info-card
+                      entity: light.floris_template
+                    - entity: switch.shelly1_floris
+          - entity: light.floris_leeslamp
+            name: Leeslamp
+          - entity: cover.floris
+            name: Screen
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Screen FLoris
+                card:
+                  type: vertical-stack
+                  cards:
+                    - type: entities
+                      show_header_toggle: false
+                      title: false
+                      entities:
+                        - entity: input_boolean.cover_floris_invert
+                    - type: custom:more-info-card
+                      entity: cover.floris
+      - type: custom:mini-graph-card
+        name: Floris
+        icon: mdi:bed
+        hour24: true
+        align_header: left
+        align_icon: left
+        font_size: 80
+        points_per_hour: 2
+        show:
+          extrema: true
+        entities:
+          - entity: sensor.floris_temp
+          - entity: sensor.floris_vocht
+            show_graph: false
+            show_state: true
+          - entity: sensor.floris_druk
+            show_graph: false
+            show_state: true
+          - color: gray
+            entity: sensor.nightstate
+            name: Nacht
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+  - type: entities
+    title: Alle lampen
+    entities:
+      - entity: light.groep_eerste_verdieping

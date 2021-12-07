@@ -1,0 +1,26 @@
+script_start_emby:
+  alias: "Beneden | Woonkamer - Start Emby"
+  icon: mdi:emby
+  sequence:
+    - alias: "TV al aan?"
+      choose:
+        - conditions:
+            - alias: "TV uit?"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wachten tot TV aan staat"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Juiste app starten"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n tv.emby.embyatv/.startup.StartupActivity"

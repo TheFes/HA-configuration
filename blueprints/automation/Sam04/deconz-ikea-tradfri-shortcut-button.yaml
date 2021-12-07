@@ -1,0 +1,43 @@
+blueprint:
+  name: deCONZ - Tradfri Shortcut Button
+  description: Control anything using Tradfri Shortcut Button remote
+  domain: automation
+  input:
+    remote:
+      name: Remote
+      description: Tradfri Shortcut Button to use
+      selector:
+        device:
+          integration: deconz
+          manufacturer: IKEA of Sweden
+          model: TRADFRI SHORTCUT Button
+    button_short:
+      name: Button short press
+      description: Action to run on press button
+      default: []
+      selector:
+        action: {}
+    button_long:
+      name: Button long press
+      description: Action to run on hold button
+      default: []
+      selector:
+        action: {}
+  source_url: https://community.home-assistant.io/t/deconz-ikea-tradfri-shortcut-button/282684
+mode: restart
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: deconz_event
+  event_data:
+    device_id: !input 'remote'
+action:
+- variables:
+    event: '{{ trigger.event.data.event }}'
+- choose:
+  - conditions:
+    - '{{ event == 1002 }}'
+    sequence: !input 'button_short'
+  - conditions:
+    - '{{ event == 1001 }}'
+    sequence: !input 'button_long'

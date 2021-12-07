@@ -1,0 +1,55 @@
+id: vacuum_notifications
+alias: "Eerste Verdieping - Notificaties stofzuiger"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: vacuum.rockrobo_vacuum_v1
+    from: returning
+    to: docked
+  - platform: state
+    entity_id: vacuum.rockrobo_vacuum_v1
+    to: error
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Stofzuiger in dock?"
+    choose:
+      - conditions:
+          - alias: "Docked?"
+            condition: state
+            entity_id: vacuum.rockrobo_vacuum_v1
+            state: "docked"
+        sequence:
+          - alias: "Bericht naar telefoon Marleen"
+            service: notify.mobile_app_marleen_app
+            data:
+              message: "De stofzuiger is klaar en staat weer op z'n plek"
+              title: "Stofzuiger is klaar"
+          - alias: "Bericht naar telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              message: "De stofzuiger is klaar en staat weer op z'n plek"
+              title: "Stofzuiger is klaar"
+              data:
+                icon: "{{ external_url }}/local/pictures/broom.png"
+                smallicon: "{{ external_url }}/local/pictures/broom.png"
+      - conditions:
+          - alias: "Docked?"
+            condition: state
+            entity_id: vacuum.rockrobo_vacuum_v1
+            state: "error"
+        sequence:
+          - alias: "Bericht naar telefoon Marleen"
+            service: notify.mobile_app_marleen_app
+            data:
+              title: "Probleem met stofzuiger"
+              message: "Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}"
+          - alias: "Bericht naar telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              title: "Probleem met stofzuiger"
+              message: "Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}"
+              data:
+                icon: "{{ external_url }}/local/pictures/broom.png"
+                smallicon: "{{ external_url }}/local/pictures/broom.png"

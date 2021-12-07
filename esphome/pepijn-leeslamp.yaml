@@ -1,0 +1,13 @@
+substitutions:
+  device_name: Pepijn Leeslamp
+  device_type: Light
+  ip: 192.168.2.40
+
+esphome:
+  name: pepijn-leeslamp
+  platform: ESP8266
+  board: esp01_1m
+
+# Config LSC Filament bulb
+<<: !include common/tmpl_lsc_rgbcw_e14.yaml
+

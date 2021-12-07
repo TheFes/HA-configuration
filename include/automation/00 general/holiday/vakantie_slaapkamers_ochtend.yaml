@@ -1,0 +1,54 @@
+id: 6d6452d1-f65e-49c5-9ed6-3c6c8754911a
+alias: "Vakantie - Lampen slaapkamers ochtend"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at: "06:30"
+condition:
+  - alias: "Vakantiemodus aan?"
+    condition: state
+    entity_id: sensor.huis_modus
+    state: "Vakantie"
+action:
+  - variables:
+      light_list: 
+        - light.floris
+        - light.pepijn
+      light_select: "{{ range(0,1) | random }}"
+      light_select2: "{{ range(0,1) | random }}"
+  - delay:
+      minutes: "{{ range(0,60) | random }}"
+  - service: light.turn_on
+    target:
+      entity_id: light.slaapkamer_template
+  - delay:
+      minutes: "{{ range(3,8) | random }}"
+  - service: light.turn_on
+    target:
+      entity_id: "{{ light_list[light_select] }}"
+  - delay:
+      minutes: "{{ range(2,8) | random }}"
+  - service: light.turn_on
+    target:
+      entity_id: "{{ light_list[0 if light_select == 1 else 1] }}"
+  - delay:
+      minutes: "{{ range(20,30) | random }}" 
+  - service: script.turn_on
+    target:
+      entity_id: script.lights_morning_script
+  - delay:
+      minutes: "{{ range(10,25) | random }}"
+  - service: light.turn_off
+    target:
+      entity_id: "{{ light_list[light_select2] }}"
+  - delay:
+      minutes: "{{ range(2,8) | random }}"
+  - service: light.turn_off
+    target:
+      entity_id: "{{ light_list[0 if light_select2 == 1 else 1] }}"
+  - delay:
+      minutes: "{{ range(3,8) | random }}"
+  - service: light.turn_off
+    target:
+      entity_id: light.slaapkamer_template

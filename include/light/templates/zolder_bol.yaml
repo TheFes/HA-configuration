@@ -1,0 +1,29 @@
+platform: template
+lights:
+  zolder_bol_template:
+    unique_id: 72bae41e-6235-4ace-b4b1-12dfdec05800
+    friendly_name: "Zolder Bol Template"
+    level_template: "{{ state_attr('light.zolder_bol', 'brightness') | default(0, True) }}"
+    value_template: "{{ 'off' if is_state('switch.bureau_marleen', 'off') else states('light.zolder_bol') }}"
+    temperature_template: "{{ state_attr('light.zolder_bol', 'color_temp') | default(140, True) }}"
+    min_mireds_template: "{{ state_attr('light.zolder_bol', 'min_mireds') | int(140) }}"
+    max_mireds_template: "{{ state_attr('light.zolder_bol', 'max_mireds') | int(650) }}"
+    availability_template: "{{ not (is_state('light.eettafel', 'unavailable') and is_state('switch.bureau_marleen', 'unavailable')) }}"
+    turn_on:
+      service: script.zolder_bol_actions
+      data:
+        action: "on"
+    turn_off:
+      service: script.zolder_bol_actions
+      data:
+        action: "off"
+    set_level:
+      service: light.turn_on
+      data:
+        entity_id: light.zolder_bol
+        brightness: "{{ brightness }}"
+    set_temperature:
+      service: light.turn_on
+      data:
+        entity_id: light.zolder_bol
+        color_temp: "{{ color_temp }}"

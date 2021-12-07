@@ -1,0 +1,27 @@
+utility_meter:
+###### WATER METER ######
+  quarter_hourly_water:
+    source: sensor.water_meter_usage
+    cycle: quarter-hourly
+  hourly_water:
+    source: sensor.water_meter_usage
+    cycle: hourly
+  daily_water:
+    source: sensor.water_meter_usage
+    cycle: daily
+  weekly_water:
+    source: sensor.water_meter_usage
+    cycle: weekly
+  monthly_water:
+    source: sensor.water_meter_usage
+    cycle: monthly
+  yearly_water:
+    source: sensor.water_meter_usage
+    cycle: yearly
+###### ENERGY CALCULATIONS ######
+  bureau_martijn_energy_year:
+    source: sensor.bureau_martijn_energy
+    cycle: yearly
+  server_energy_year:
+    source: sensor.server_energy
+    cycle: yearly

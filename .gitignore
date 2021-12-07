@@ -1,0 +1,30 @@
+!.gitignore
+!*.md
+!LICENSE
+www/*
+!www/community
+
+# Ignore Folders
+.vscode
+.storage
+.google_api
+.inactive
+tts
+
+# Ignore Extensions
+*.db
+*.old
+*.log
+*.conf
+*.HA_VERSION
+*.db-shm
+*.db-wal
+*.csv
+*.log.*
+
+# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+include/integrations/anniversaries.yaml
+include/integrations/bodymiscale.yaml

@@ -1,0 +1,65 @@
+id: 2068227c-13b2-4bc3-bc1b-50afe8da2deb
+alias: "Algemeen | ETA - Marleen bijna thuis"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: numeric_state
+    entity_id: proximity.marleen
+    below: 4000
+condition:
+  - alias: "Richting huis?"
+    condition: state
+    entity_id: proximity.marleen
+    attribute: "dir_of_travel"
+    state: "towards"
+  - alias: "Marleen niet thuis?"
+    condition: state
+    entity_id: person.marleen
+    state: "not_home"
+  - alias: "Martijn wel thuis?"
+    condition: state
+    entity_id: person.martijn
+    state: "home"
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Bericht naar telefoon Martijn"
+    service: notify.join_pixel5
+    data:
+      title: "Hoera!"
+      message: "Marleen is bijna thuis"
+      data:
+        icon: "{{ external_url }}/local/pictures/partypopper.png"
+        smallicon: "{{ external_url }}/local/pictures/partypopper.png"
+  - alias: "TTS voor Nest Hub Keuken"
+    service: script.turn_on
+    target:
+      entity_id: script.google_home_say
+    data:
+      variables:
+        tts_message: "Hoera! Marleen is bijna thuis!"
+        tts_target: media_player.keuken_hub
+        tts_volume: 35
+  - condition: or
+    conditions:
+      - alias: "Muziek op zolder?"
+        condition: state
+        entity_id: media_player.zolder_stereo
+        state: "playing"
+      - alias: "Martijn op zolder"
+        condition: state
+        entity_id: sensor.telefoon_martijn
+        state: "Zolder"
+      - alias: "Marleen op zolder"
+        condition: state
+        entity_id: sensor.telefoon_marleen
+        state: "Zolder"
+  - alias: "TTS voor Zolder Martijn"
+    service: script.turn_on
+    target:
+      entity_id: script.google_home_say
+    data:
+      variables:
+        tts_message: "Hoera! Marleen is bijna thuis!"
+        tts_target: media_player.zolder_mini_martijn
+        tts_volume: 35

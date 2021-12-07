@@ -1,0 +1,25 @@
+id: zon_screens_slaapkamer
+alias: "Eerste Verdieping | Slaapkamer - Screens naar beneden bij zon"
+trigger:
+  - platform: time
+    at: "12:30"
+condition:
+  - alias: "temperatuur"
+    condition: template
+    value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature | float(0.0) >= 23 }}"
+  - condition: or
+    conditions:
+      - alias: "Zonnig?"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].condition == 'sunny' }}"
+      - alias: "Gedeeld bewolkt?"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].condition == 'partlycloudy' }}"
+  - alias: "Geen regen op komst?"
+    condition: template
+    value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[:4] | map(attribute='precipitation') | sum | float(0.0) == 0 }}"
+action:
+  - service: cover.close_cover
+    target:
+      entity_id:
+        - cover.slaapkamer

@@ -1,0 +1,30 @@
+id: transition_cancel
+alias: "Eerste Verdieping - Transition slaapkamers annuleren"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: 
+      - light.floris
+      - light.pepijn
+      - light.slaapkamer
+    to: "off"
+variables:
+  name: "{{ trigger.to_state.entity_id | replace('light.', '')}}"
+  input_boolean: "{{ 'input_boolean.transition_' + name + '_active' }}"
+condition:
+  - alias: "Transition script actief?"
+    condition: template
+    value_template: "{{ is_state( input_boolean, 'on') }}"
+action: 
+  - alias: "Script stoppen"
+    service: script.turn_off
+    target:
+      entity_id: script.transition_lampen
+  - alias: "Input boolean uitzetten"
+    service: input_boolean.turn_off
+    target:
+      entity_id: "{{ input_boolean }}"
+
+
+

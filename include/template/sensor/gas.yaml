@@ -1,0 +1,17 @@
+sensor:
+  - name: Prijs Gas
+    state: >
+      {{
+        [
+          state_attr('sensor.prijs_gas', 'levering'),
+          state_attr('sensor.prijs_gas', 'belasting'),
+          state_attr('sensor.prijs_gas', 'opslag')
+        ] | map('float', 0) | sum
+      }}
+    icon: mdi:cash
+    unique_id: cdeebd47-06a1-488e-a27b-e2505fbd4c74
+    unit_of_measurement: "€/m³"
+    attributes:
+      levering: 0.35396
+      belasting: 0.42176
+      opslag: 0.10297

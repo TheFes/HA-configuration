@@ -1,0 +1,55 @@
+id: d219003e-150b-49fc-8b9b-e627af61d560
+alias: Algemeen | Telefoon Martijn - Bluetooth aan en uit bij laden
+trigger:
+  - platform: state
+    entity_id: sensor.pixel_5_type_oplader
+    to: "wireless"
+    id: "uit"
+  - platform: state
+    entity_id: sensor.pixel_5_type_oplader
+    from: "wireless"
+    id: "aan"
+  - platform: time
+    at: "22:30:00"
+    id: "uit"
+action:
+  - alias: "Uit of aan"
+    choose:
+      - conditions:
+          - condition: trigger
+            id: "uit"
+          - alias: "Avond/nacht"
+            condition: time
+            after: "22:29:59"
+            before: "06:00:00"
+          - alias: "Op de lader"
+            condition: state
+            entity_id: sensor.pixel_5_type_oplader
+            state: "wireless"
+        sequence:
+          - alias: "Bluetooth uit"
+            service: notify.mobile_app_pixel_5
+            data:
+              message: command_bluetooth
+              title: turn_off
+          - delay: 0.5
+          - alias: "DND aan"
+            service: notify.mobile_app_pixel_5
+            data:
+              message: command_dnd
+              title: priority_only
+      - conditions:
+          - condition: trigger
+            id: "aan"
+        sequence:
+          - alias: "Bluetooth uit"
+            service: notify.mobile_app_pixel_5
+            data:
+              message: command_bluetooth
+              title: turn_on
+          - delay: 0.5
+          - alias: "DND uit"
+            service: notify.mobile_app_pixel_5
+            data:
+              message: command_dnd
+              title: "off"

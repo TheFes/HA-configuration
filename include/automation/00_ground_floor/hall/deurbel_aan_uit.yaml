@@ -1,0 +1,34 @@
+id: deurbel_aan_uit
+alias: "Beneden | Hal - Deurbel aan- en uitzetten"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time
+    at: 
+      - "07:00:00"
+      - "19:00:00"
+action:
+  - alias: "Bedtijd kinderen?"
+    choose:
+      - conditions:
+          - alias: "Avond of nacht?"
+            condition: time
+            after: "19:00:00"
+            before: "07:00:00"
+        sequence:
+          - alias: "Bel uit"
+            service: switch.turn_off
+            data:
+              entity_id: switch.doorbell_chime_active
+      - conditions:
+          - alias: "Overdag?"
+            condition: time
+            after: "07:00:00"
+            before: "19:00:00"
+        sequence:
+          - alias: "Bel aan"
+            service: switch.turn_on
+            data:
+              entity_id: switch.doorbell_chime_active

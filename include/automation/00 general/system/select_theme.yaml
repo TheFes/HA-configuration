@@ -1,0 +1,29 @@
+id: 83b1b77c-bda8-4fd3-abef-f37650e2524b
+alias: "Algemeen | Systeem - Thema instellen op basis van zon"
+initial_state: "on"
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+  - platform: state
+    entity_id: sun.sun
+    to: 
+      - above_horizon
+      - below_horizon
+action:
+- alias: "Zon op of onder?"
+  choose:
+    - conditions:
+      - alias: "Zon onder?"
+        condition: state
+        entity_id: sun.sun
+        state: "below_horizon"
+      sequence:
+        - service: frontend.set_theme
+          data:
+            name: "Google Dark Theme"
+  default:
+    - service: frontend.set_theme
+      data:
+        name: "Google Light Theme"

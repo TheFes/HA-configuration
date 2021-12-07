@@ -1,0 +1,57 @@
+blueprint:
+  name: deCONZ - Xiaomi Aqara Wireless Switch
+  description: Control anything using Xiaomi Aqara WXKG11LM (single button) remote
+  domain: automation
+  input:
+    remote:
+      name: Remote
+      description: Button to use
+      selector:
+        device:
+          integration: deconz
+          manufacturer: LUMI
+          model: lumi.remote.b1acn01
+    button_press_in:
+      name: Single press
+      default: []
+      selector:
+        action: {}
+    button_double_press:
+      name: Double press
+      default: []
+      selector:
+        action: {}
+    button_hold:
+      name: Button hold
+      default: []
+      selector:
+        action: {}
+    button_hold_release:
+      name: Button hold release
+      default: []
+      selector:
+        action: {}
+mode: restart
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: deconz_event
+  event_data:
+    device_id: !input 'remote'
+action:
+- variables:
+    event: '{{ trigger.event.data.event }}'
+- choose:
+  - conditions:
+    - '{{ event == 1001 }}'
+    sequence: !input 'button_hold'
+  - conditions:
+    - '{{ event == 1003 }}'
+    sequence: !input 'button_hold_release'
+  - conditions:
+    - '{{ event == 1002 }}'
+    sequence: !input 'button_press_in'
+  - conditions:
+    - '{{ event == 1004 }}'
+    sequence: !input 'button_double_press'
+

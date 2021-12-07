@@ -1,0 +1,100 @@
+slaapkamer_turn_on:
+  alias: "Eerste Verdieping | Slaapkamer - Acties bij lamp aan"
+  icon: "mdi:ceiling-light"
+  mode: restart
+  sequence:
+    - alias: "Aan"
+      choose:
+        - conditions: "{{ action == 'aan' }}"
+          sequence:
+            - alias: "Lamp uit en geen transition acitef?"
+              choose:
+                - conditions:
+                    - alias: "Nog niet eerder gedimd?"
+                      condition: state
+                      entity_id: input_boolean.dimmed_slaapkamer
+                      state: "off"
+                  sequence:
+                    - alias: "Ochtend, overdag of avond?"
+                      choose:
+                        - alias: "Ochtend"
+                          conditions:
+                            - condition: time
+                              after: input_datetime.slaapkamer_transition_on
+                              before: input_datetime.slaapkamer_transition_off
+                          sequence:
+                            - alias: "Lamp gedimd aan"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.slaapkamer
+                              data:
+                                brightness: 1
+                                color_temp: 650
+                            - delay: 0.5
+                            - alias: "Lamp langzaam aan"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.slaapkamer
+                              data:
+                                brightness: 190
+                                color_temp: 375
+                                transition: 300
+                            - alias: "Input boolean aan"
+                              service: input_boolean.turn_on
+                              target:
+                                entity_id: input_boolean.dimmed_slaapkamer
+                        - conditions:
+                            - alias: "Avond"
+                              condition: or
+                              conditions:
+                                - condition: time
+                                  after: input_datetime.slaapkamer_dim_on
+                                - condition: time
+                                  before: input_datetime.slaapkamer_dim_off
+                          sequence:
+                            - alias: "Lamp aan op 100%"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.slaapkamer
+                              data:
+                                brightness: 255
+                                color_temp: 325
+                            - delay: 0.5
+                            - alias: "Lamp dimmen"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.slaapkamer
+                              data:
+                                brightness: 80
+                                color_temp: 525
+                                transition: 300
+                            - alias: "Input boolean aan"
+                              service: input_boolean.turn_on
+                              target:
+                                entity_id: input_boolean.dimmed_slaapkamer
+                      default:
+                        - alias: "Overdag lamp op 100%"
+                          service: light.turn_on
+                          target:
+                            entity_id: light.slaapkamer
+                          data:
+                            brightness: 255
+                            color_temp: 325
+                        - alias: "Input boolean aan"
+                          service: input_boolean.turn_on
+                          target:
+                            entity_id: input_boolean.dimmed_slaapkamer
+              default:
+                - alias: "Lamp ongewijzigd aan als hij niet al eens aan is geweest"
+                  service: light.turn_on
+                  target:
+                    entity_id: light.slaapkamer
+      default:
+        - alias: "Input boolean aan"
+          service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.dimmed_slaapkamer
+        - alias: "Licht uit"
+          service: light.turn_off
+          target:
+            entity_id: light.slaapkamer

@@ -1,0 +1,54 @@
+id: 35106a4b-1055-44db-958c-99b9d9cf721b
+alias: Algemeen | Telefoon Martijn - Open muziek app bij BT connectie
+mode: restart
+trigger:
+  - platform: state
+    entity_id: sensor.pixel_5_bluetooth_connection
+    attribute: connected_paired_devices
+variables:
+  bt_added: >
+    {% set bt_old_list = 
+      (
+        trigger.from_state.attributes.connected_paired_devices 
+          | replace('[', '') 
+          | replace(']', '')
+      ).split(',') %}
+    {% set bt_new_list =
+      (
+        trigger.to_state.attributes.connected_paired_devices 
+          | replace('[', '') 
+          | replace(']', '')
+      ).split(',') %}
+    {{ 
+      bt_new_list
+        | reject('in', bt_old_list) 
+        | join
+    }}
+  headphones:
+    - 60:AB:D2:3C:85:66
+    - E0:67:81:01:F7:D3
+condition: "{{ bt_added in headphones }}"
+action:
+  - service: notify.mobile_app_pixel_5
+    data:
+      title: Muziekje?
+      message: Wat wil je luisteren
+      data:
+        tag: "music_choose"
+        actions:
+          - action: "URI"
+            title: "Spotify"
+            uri: "app://com.spotify.music"
+          - action: "URI"
+            title: "YT Music"
+            uri: "app://com.google.android.apps.youtube.music"
+          - action: "URI"
+            title: "TuneIn"
+            uri: "app://tunein.player"
+  - delay:
+      minutes: 10
+  - service: notify.mobile_app_pixel_5
+    data:
+      message: "clear_notification"
+      data:
+        tag: "music_choose"

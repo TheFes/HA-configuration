@@ -1,0 +1,20 @@
+sensor:
+  unique_id: abc767ef-4439-4aa9-9408-db0082ed5a0b
+  name: Wakeup start
+  unit_of_measurement: "minuten"
+  state: >-
+    {{ 
+      as_timestamp
+        ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
+        - timedelta(minutes = states('input_number.wakeup_start')|int(20))) 
+          | timestamp_custom('%H:%M') 
+    }}
+  icon: mdi:sun-wireless
+  attributes:
+    date: >
+      {{ 
+        as_timestamp
+          ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
+          - timedelta(minutes = states('input_number.wakeup_start')|int(20))) 
+            | timestamp_custom('%d/%m/%Y')
+      }}

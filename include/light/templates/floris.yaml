@@ -1,0 +1,26 @@
+platform: template
+lights:
+  floris_template:
+    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+    friendly_name: "Floris Template"
+    level_template: "{{ [ 1, ((state_attr('light.floris', 'brightness') | int(0) - 255 * 0.145) / 0.855) | round ] | max }}"
+    value_template: "{{ states('light.floris') }}"
+    temperature_template: "{{ [ 153, state_attr('light.floris', 'color_temp') | int(0)] | max }}"
+    min_mireds_template: "{{ state_attr('light.floris', 'min_mireds') | int(153) }}"
+    max_mireds_template: "{{ state_attr('light.floris', 'max_mireds') | int(370) }}"
+    availability_template: "{{ not is_state('light.floris', 'unavailable') }}"
+    turn_on:
+      service: script.floris_turn_on
+    turn_off:
+      service: light.turn_off
+      entity_id: light.floris
+    set_level:
+      service: light.turn_on
+      data:
+        entity_id: light.floris
+        brightness: "{{ (brightness | float*0.855 + 255*0.145)|round }}"
+    set_temperature:
+      service: light.turn_on
+      data:
+        entity_id: light.floris
+        color_temp: "{{ color_temp }}"

@@ -1,0 +1,34 @@
+<<: !include tmpl_wifi_sensors.yaml 
+
+output:
+  - platform: esp8266_pwm
+    id: output_warm_white
+    pin: GPIO12
+  - platform: esp8266_pwm
+    id: output_daylight
+    pin: GPIO14
+
+light:
+  - platform: cwww
+    name: ${device_name}
+    id: light_bulb
+    cold_white: output_daylight
+    warm_white: output_warm_white
+    cold_white_color_temperature: 153 mireds
+    warm_white_color_temperature: 370 mireds
+    restore_mode: RESTORE_DEFAULT_ON
+    effects:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "Slow Pulse"
+
+switch:
+  - platform: restart
+    name: "${device_name} ${device_type} Restart"
+
+binary_sensor:
+  - platform: status
+    name: ${device_name} ${device_type} Status

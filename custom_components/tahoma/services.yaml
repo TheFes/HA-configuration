@@ -1,0 +1,62 @@
+set_cover_my_position:
+  name: My position (cover)
+  description: Move to preset position, simulating the "my" button.
+  target:
+    entity:
+      integration: tahoma
+      domain: cover
+
+set_light_my_position:
+  name: My position (light)
+  description: Move to preset position, simulating the "my" button.
+  target:
+    entity:
+      integration: tahoma
+      domain: light
+
+set_cover_position_low_speed:
+  name: Set cover position with low speed
+  description: Move cover to specific position with a low speed.
+  target:
+    entity:
+      integration: tahoma
+      domain: cover
+  fields:
+    position:
+      name: Position
+      description: Position of the cover
+      required: true
+      example: 30
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+          mode: slider
+
+execute_command:
+  name: Execute command
+  description: Execute a specific command on the chosen device
+  target:
+    entity:
+      integration: tahoma
+  fields:
+    command:
+      name: Command
+      description: Name of the command
+      required: true
+      example: "setIntensity"
+      selector:
+        text:
+    args:
+      name: Arguments
+      description: List of arguments
+      required: false
+      example: [30]
+      selector:
+        object:
+
+get_execution_history:
+  name: Get execution history
+  description: Retrieve execution history and write output to log.

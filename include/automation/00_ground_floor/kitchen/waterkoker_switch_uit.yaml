@@ -1,0 +1,42 @@
+id: d826bab6-6791-425b-90b6-cae882317c5f
+alias: "Beneden | Keuken - Waterkoker switch uit"
+mode: restart
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: switch.waterkoker
+    from: "off"
+    to: "on"
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+  - platform: numeric_state
+    entity_id: sensor.waterkoker_power
+    above: 25
+    id: "actief"
+condition:
+  - alias: "Waterkoker aan?"
+    condition: state
+    entity_id: switch.waterkoker
+    state: "on"
+action:
+  - alias: "Trigger type"
+    choose:
+      - conditions:
+          - condition: trigger
+            id: "actief"
+        sequence:
+          - alias: "Waterkoker 10 minuten inactief"
+            wait_for_trigger:
+              - platform: numeric_state
+                entity_id: sensor.waterkoker_power
+                below: 25
+                for: "00:10:00"
+    default:
+      - delay:
+          minutes: 30
+  - alias: "Plug voor waterkoker weer uitzetten"
+    service: switch.turn_off
+    target:
+      entity_id: switch.waterkoker

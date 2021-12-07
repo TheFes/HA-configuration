@@ -1,0 +1,12 @@
+<<: !include tmpl_wifi_no_sensors.yaml 
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${device_name} ${device_type} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} ${device_type} WiFi Signal
+    update_interval: 60s 

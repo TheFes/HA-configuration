@@ -1,0 +1,39 @@
+id: db9267c5-2f6a-4462-b1cb-d60f6b2476e4
+alias: "Zolder - Bureau Marleen uit"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.imac_marleen
+    to: "off"
+    for: "00:30:00"
+  - platform: state
+    entity_id: sensor.dcp_l2530dw_status
+    from: "printing"
+    for: "00:30:00"
+  - platform: numeric_state
+    entity_id: sensor.bureau_marleen_power
+    below: 20
+    for: "00:30:00"
+condition:
+  - alias: "Computer Marleen uit"
+    condition: state
+    entity_id: binary_sensor.imac_marleen
+    state: "off"
+  - condition: not
+    conditions:
+      - alias: "Printer actief"
+        condition: state
+        entity_id: sensor.dcp_l2530dw_status
+        state: "printing"
+  - alias: "Weinig verbruik"
+    condition: numeric_state
+    entity_id: sensor.bureau_marleen_power
+    below: 20
+  - alias: "Light zolder bol off"
+    condition: state
+    entity_id: light.zolder_bol
+    state: "off"
+action:
+  - alias: "Bureau Marleen uit"
+    service: switch.turn_off
+    target:
+      entity_id: switch.bureau_marleen

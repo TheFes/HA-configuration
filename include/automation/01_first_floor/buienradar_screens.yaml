@@ -1,0 +1,72 @@
+id: buienaradar_screens
+alias: "Eerste Verdieping - Screens naar boven bij bui"
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.br_precipitation_forecast_total
+    above: 0
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+variables:
+  screens_closed: "{{ expand('group.screens') | rejectattr('attributes.current_position', 'eq', 100.0) | map(attribute='name') | list }}"
+  screens_entityid: "{{ expand('group.screens') | rejectattr('attributes.current_position', 'eq', 100.0) | map(attribute='entity_id') | list }}"
+  screens_unavailable: "{{ expand('group.screens') | selectattr('state', 'eq', 'unavailable') | map(attribute='name') | list }}"
+condition:
+  - condition: or
+    conditions:
+      - alias: "Screens open?"
+        condition: template
+        value_template: "{{ screens_closed | count > 0 }}"
+      - alias: "Screens unavailable?"
+        condition: template
+        value_template: "{{ screens_unavailalbe | count > 0 }}"
+  - alias: "Regen?"
+    condition: numeric_state
+    entity_id: sensor.br_precipitation_forecast_total
+    above: 0
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Screen open doen"
+    service: cover.open_cover
+    target:
+      entity_id: "{{ screens_entityid }}"
+  - alias: "Alle screens beschikbaar?"
+    choose:
+      - conditions:
+          - alias: "Screens unavailable?"
+            condition: template
+            value_template: "{{ screens_unavailalbe | count > 0 and screens_closed > 0}}"
+        sequence:
+          - alias: "Notificatie naar telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              title: "LET OP! Niet alle screens beschikbaar"
+              message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
+              data:
+                icon: "{{ external_url }}/local/pictures/rain.png"
+                smallicon: "{{ external_url }}/local/pictures/rain.png"
+      - conditions:
+          - alias: "Screens unavailable?"
+            condition: template
+            value_template: "{{ screens_unavailalbe | count > 0 }}"
+        sequence:
+          - alias: "Notificatie naar telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              title: "LET OP! Niet alle screens beschikbaar"
+              message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open"
+              data:
+                icon: "{{ external_url }}/local/pictures/rain.png"
+                smallicon: "{{ external_url }}/local/pictures/rain.png"
+
+    default:
+      - alias: "Notificatie naar telefoon Martijn"
+        service: notify.join_pixel5
+        data:
+          title: "Screens gaan open"
+          message: "Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}"
+          data:
+            icon: "{{ external_url }}/local/pictures/rain.png"
+            smallicon: "{{ external_url }}/local/pictures/rain.png"

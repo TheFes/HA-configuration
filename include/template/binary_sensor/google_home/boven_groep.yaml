@@ -1,0 +1,10 @@
+binary_sensor:
+  unique_id: a6b80372-b590-418a-87ff-d67603c7b14c
+  name: "Boven Groep"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.boven_groep', 'playing') }}
+  delay_off: "00:00:05"
+  delay_on: "00:00:05"
+  attributes:
+    volume: 0.25

@@ -1,0 +1,171 @@
+google_home_say_voice:
+  alias: "Algemeen | TTS voor Google Home op basis van stem"
+  icon: mdi:cast-audio
+  mode: single
+  max_exceeded: silent
+  variables:
+    speaker_groups:
+      - media_player.huis_groep
+      - media_player.boven_groep
+      - media_player.beneden_groep
+      - media_player.zolder_groep
+    check_for_title: "Witte ruis"
+    primary_spotcast: pepijn
+  sequence:
+    - variables:
+        entity_list: "{{ states.media_player | map(attribute='entity_id') | list }}"
+        entity_playing: "{{ states.media_player | selectattr('state', 'eq', 'playing') }}"
+        friendly_name_list: "{{ states.media_player | map(attribute='attributes.friendly_name') | list }}"
+    - variables:
+        media_player_data: >
+          {% set entities = expand(entity_playing) %}
+          {% set ns = namespace(info=[]) %}
+          {% for entity in entities %}
+            {% set ns.info = ns.info +  [ 
+                                          dict(
+                                            entity_id = entity.entity_id, 
+                                            media_content_id = entity.attributes.media_content_id | default('no media_content'),
+                                            media_title = entity.attributes.media_title | default('no title'),
+                                            media_artist = entity.attributes.media_artist | default('no artist'),
+                                            media_content_type = entity.attributes.media_content_type | default('no type'),
+                                            app_name = entity.attributes.app_name | default('no app'),
+                                            entity_picture = entity.attributes.entity_picture | default('no pic'),
+                                            volume_level = entity.attributes.volume_level | round(2) 
+                                            )
+                                        ] 
+            %}
+          {% endfor %}
+          {{ ns.info }}
+        media_content_list: >
+          {% set ns = namespace(media_content = []) %}
+          {% for entity in entity_list %}
+            {% set ns.media_content = ns.media_content +
+              [
+                states.media_player 
+                  | selectattr('entity_id', 'eq', entity) 
+                  | map(attribute='attributes.media_content_id') 
+                  | join
+                  | default('idle', true)
+              ]
+            %}
+          {% endfor %} 
+          {{ ns.media_content }}
+        media_artist_list: >
+          {% set ns = namespace(media_artist = []) %}
+          {% for entity in entity_list %}
+            {% set ns.media_artist = ns.media_artist +
+              [
+                states.media_player 
+                  | selectattr('entity_id', 'eq', entity) 
+                  | map(attribute='attributes.media_artist') 
+                  | join
+                  | default('idle', true)
+              ]
+            %}
+          {% endfor %} 
+          {{ ns.media_artist }}
+        media_title_list: >
+          {% set ns = namespace(media_title = []) %}
+          {% for entity in entity_list %}
+            {% set ns.media_title = ns.media_title +
+              [
+                states.media_player 
+                  | selectattr('entity_id', 'eq', entity) 
+                  | map(attribute='attributes.media_title') 
+                  | join
+                  | default('idle', true)
+              ]
+            %}
+          {% endfor %} 
+          {{ ns.media_title }}
+        app_name_list: >
+          {% set ns = namespace(app_name = []) %}
+          {% for entity in entity_list %}
+            {% set ns.app_name = ns.app_name +
+              [
+                states.media_player 
+                  | selectattr('entity_id', 'eq', entity) 
+                  | map(attribute='attributes.app_name') 
+                  | join
+                  | default('idle', true)
+              ]
+            %}
+          {% endfor %} 
+          {{ ns.app_name }}
+        media_picture_list: >
+          {% set ns = namespace(media_picture = []) %}
+          {% for entity in entity_list %}
+            {% set ns.media_picture = ns.media_picture +
+              [
+                states.media_player 
+                  | selectattr('entity_id', 'eq', entity) 
+                  | map(attribute='attributes.entity_picture') 
+                  | join
+                  | default('idle', true)
+              ]
+            %}
+          {% endfor %} 
+          {{ ns.media_picture }}
+        groups_playing: >
+          {% set speaker_group_list = speaker_groups.replace(' ' , '').split(',') if speaker_groups is string else speaker_groups %}
+          {# determine which media_players are playing #}
+          {{
+            states.media_player 
+              | selectattr('entity_id', 'in', speaker_group_list)
+              | selectattr('state', 'eq', 'playing') 
+              | map(attribute='entity_id') 
+              | list  
+          }}
+    - variables:
+        spotcast_list: >
+          {% set ns = namespace(spotcast = []) %}
+          {% for name in friendly_name_list %}
+            {% set ns.spotcast = ns.spotcast +
+              [  
+                states.media_player 
+                  | selectattr('entity_id', 'search', 'spotify') 
+                  | selectattr('attributes.source', 'eq', name)
+                  | map(attribute='entity_id') 
+                  | join
+                  | default('pepijn', true)
+                  | replace('media_player.spotify_', '') 
+              ]
+            %}
+          {% endfor %}
+          {{ ns.spotcast }}
+    - alias: "Wait until white noise started"
+      wait_template: >
+        {{ 
+          expand(states.media_player)
+            | selectattr('attributes.media_title', 'eq', check_for_title)
+            | map(attribute='entity_id') 
+            | list 
+            | count > 0 
+        }}
+    - variables:
+        tts_target: >
+          {{ 
+            expand(states.media_player)
+              | selectattr('attributes.media_title', 'eq', check_for_title)
+              | map(attribute='entity_id') 
+              | join
+          }}
+    - variables:
+        list_index: "{{ entity_list.index(tts_target) }}"
+        target_playing: "{{ media_player_data | map(attribute='entity_id') | list }}"
+    - alias: "TTS"
+      service: script.google_home_say
+      data:
+        voice_tts_target: "{{ tts_target }}"
+        tts_message: "{{ tts_message }}"
+        tts_volume: "{{ tts_volume if tts_volume is defined else undefined }}"
+        restore_volume_all: "{{ restore_volume_all if restore_volume_all is defined else undefined }}"
+        speaker_group_split: "{{ speaker_group_split if speaker_group_split is defined else undefined }}"
+        volume_non_playing: "{{ volume_non_playing if volume_non_playing is defined else undefined }}"
+        voice_media_content: "{{ media_content_list[list_index] }}"
+        voice_media_artist: "{{ media_artist_list[list_index] }}"
+        voice_media_picture: "{{ media_picture_list[list_index] }}"
+        voice_media_title: "{{ media_title_list[list_index] }}"
+        voice_app_name: "{{ app_name_list[list_index] }}"
+        voice_groups: "{{ groups_playing if groups_playing | count > 0 else undefined }}"
+        voice_spotcast: "{{ spotcast_list[list_index] }}"

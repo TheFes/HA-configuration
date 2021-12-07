@@ -1,0 +1,8 @@
+binary_sensor:
+  unique_id: 8ed58124-b19f-4453-8ae9-52458d43defb
+  name: "Licht binnen"
+  device_class: light
+  state: >-
+    {{ states('sensor.licht_woonkamer') | float(0) > states('input_number.light_inside') | float(0) }}
+  delay_off: "00:05:00"
+  delay_on: "00:05:00"

@@ -1,0 +1,30 @@
+id: 376b6b93-e8ed-43cf-89e3-1b915e5ff236
+alias: "00 ⏱ Send notification when Martijn or Marleen leaves from work"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: person.marleen
+    from: "TRN"
+    to: "not_home"
+  - platform: state
+    entity_id: person.martijn
+    from: "Fujifilm"
+    to: "not_home"
+variables:
+  name: "{{ trigger.to_state.entity_id | replace('person.', '') }}"
+  notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.join_pixel5' }}"
+  gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
+  sensor: "{{ 'sensor.' + name + '_naar_huis' }}"
+  eta: >
+    {% if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' %}
+      {{ (as_timestamp(now()) + 60 * 40 | float) | timestamp_custom('%H:%M') }}
+    {% else %}
+      {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
+    {% endif %}
+action:
+  - alias: "Berichtje sturen"
+    service: "{{ notify }}"
+    data:
+      title: "{{ name | capitalize }} is onderweg"
+      message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"

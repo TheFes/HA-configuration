@@ -1,0 +1,34 @@
+id: e97b9673-d253-437f-9c85-7079a4c82305
+alias: "Algemeen | Systeem - Notificaties voor updates van HACS"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: state
+    entity_id: sensor.hacs
+condition:
+  - condition: not
+    conditions:
+      - alias: "Niet onbekend?"
+        condition: state
+        entity_id: sensor.hacs
+        state: "unknown"
+action:
+  - alias: "Eventuele oude notifications dismissen"
+    service: persistent_notification.dismiss
+    data:
+      notification_id: hacs_update
+  - alias: "Zijn er updates?"
+    choose:
+      - conditions: "{{ not is_state('sensor.hacs', '0') }}"
+        sequence:
+          - alias: "Persistant notificatie maken"
+            service: persistent_notification.create
+            data:
+              title: "Updates HACS"
+              notification_id: hacs_update
+              message: >
+                {% for repo in state_attr(trigger.entity_id, 'repositories') %}
+                  **{{ repo.display_name }}** _{{ repo["installed_version"] }}_ -> _{{ repo["available_version"] }}_
+                {% endfor %}

@@ -1,0 +1,47 @@
+id: zon_screens_achter
+alias: "Eerste Verdieping | Achter - Screens naar beneden bij zon"
+trigger:
+  - platform: time
+    at: "19:30"
+  - platform: state
+    entity_id: binary_sensor.regen_tot_ochtend
+    from: "on"
+    to: "off"
+  - platform: state
+    entity_id: binary_sensor.regen_tot_middag
+    from: "on"
+    to: "off"
+variables:
+  day: "{{ 0 if now().hour < 13 else 1 }}"
+condition:
+  - alias: "temperatuur"
+    condition: template
+    value_template: >
+      {{ 
+        state_attr('weather.climacell_daily', 'forecast')[day | int].temperature | float(20.0) 
+        >= 21
+      }}
+  - alias: "Zonnig of gedeeld bewolkt"
+    condition: template
+    value_template: >
+      {{ 
+        state_attr('weather.climacell_daily', 'forecast')[day | int].condition 
+        in ['sunny', 'partly_cloudy'] 
+      }}
+  - alias: "Regen op komst?"
+    condition: template
+    value_template: >
+      {{ 
+        is_state('binary_sensor.regen_tot_middag', 'off') if now().hour < 13 
+        else is_state('binary_sensor.regen_tot_ochtend', 'off') 
+      }}
+  - alias: "tijdconditie"
+    condition: time
+    after: " 19:29:59"
+    before: " 13:00:00"
+action:
+  - service: cover.close_cover
+    target:
+      entity_id:
+        - cover.pepijn
+        - cover.floris

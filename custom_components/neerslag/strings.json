@@ -1,0 +1,51 @@
+{
+  "title": "Neerslag App (Buienalarm / Buienradar)",
+  "config": {
+    "step": {
+      "user": {
+        "title" : "Neerslag App set-up",
+        "description" : "It can take a couple of minutes before the sensors to become active.",
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "buienradar": "Enable Buienradar",
+          "buienradarLatitude": "Latitude",
+          "buienradarLongitude": "Longitude",
+          "buienalarm": "Enable Buienalarm",
+          "buienalarmLatitude": "Latitude",
+          "buienalarmLongitude": "Longitude",
+          "NeerslagSensorUseHAforLocation" : "Use the location settings (latitude/longitude) of Home Assistant (Overrides all other location settings)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options":{
+    "step": {
+      "init": {
+        "title" : "Neerslag App options",
+        "description" : "Changes (after clicking submit) take a couple of minutes to process.",
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "buienradar": "Enable Buienradar",
+          "buienradarLatitude": "Latitude",
+          "buienradarLongitude": "Longitude",
+          "buienalarm": "Enable Buienalarm",
+          "buienalarmLatitude": "Latitude",
+          "buienalarmLongitude": "Longitude",
+          "NeerslagSensorUseHAforLocation" : "Use the location settings (latitude/longitude) of Home Assistant (Overrides all other location settings)"
+        }
+      }
+    }
+  }
+}

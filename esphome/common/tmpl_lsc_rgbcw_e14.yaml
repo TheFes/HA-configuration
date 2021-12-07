@@ -1,0 +1,57 @@
+<<: !include tmpl_wifi_sensors.yaml
+
+sm2135:
+  data_pin: GPIO12
+  clock_pin: GPIO14
+
+output:
+  - platform: sm2135
+    id: output_red
+    channel: 0
+  - platform: sm2135
+    id: output_green
+    channel: 1
+    max_power: 0.46
+  - platform: sm2135
+    id: output_blue
+    channel: 2
+    max_power: 0.3
+  - platform: sm2135
+    id: output_white
+    channel: 3
+    max_power: 0.8
+  - platform: sm2135
+    id: output_warmwhite
+    channel: 4
+    max_power: 0.8
+
+light:
+  - platform: rgbww
+    name: ${device_name}
+    cold_white: output_white
+    warm_white: output_warmwhite
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+    default_transition_length: 0.2s
+    red: output_red
+    green: output_green
+    blue: output_blue
+    color_interlock: true
+    restore_mode: RESTORE_DEFAULT_ON
+    gamma_correct: 0
+    effects:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "Slow Pulse"
+      - strobe:
+      - flicker:
+      - random:
+          transition_length: 100ms
+          update_interval: 150ms
+
+switch:
+  - platform: restart
+    name: "${device_name} ${device_type} Restart"

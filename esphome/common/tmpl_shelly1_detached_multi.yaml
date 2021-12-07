@@ -1,0 +1,95 @@
+<<: !include tmpl_wifi_sensors.yaml 
+
+switch:
+  - platform: gpio
+    name: Shelly1 ${device_name}
+    pin: GPIO4
+    id: shelly_relay
+    restore_mode: restore_default_off
+  - platform: restart
+    name: "${device_name} ${device_type} Restart"
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+      #mode: INPUT_PULLUP
+      #inverted: True
+    name: ${device_name} button
+    on_multi_click:
+    - timing:
+        - ON for at most 1s
+        - OFF for at most 1s
+        - ON for at most 1s
+        - OFF for at least 0.2s
+      then: 
+        - if: 
+            condition: 
+              and:
+                - api.connected:
+                - switch.is_on: shelly_relay
+                - not:
+                    text_sensor.state:
+                      id: light_status
+                      state: 'unavailable'
+            then: 
+              - homeassistant.event:
+                  event: esphome.button_pressed
+                  data:
+                    device: ${device_name}
+                    click_type: double
+            else: 
+              - switch.toggle: shelly_relay
+    - timing:
+        - ON for at least 1.5s
+      then: 
+        - if: 
+            condition: 
+              and:
+                - api.connected:
+                - switch.is_on: shelly_relay
+            then: 
+              - homeassistant.event:
+                  event: esphome.button_pressed
+                  data:
+                    device: ${device_name}
+                    click_type: long
+            else: 
+              - switch.toggle: shelly_relay
+    - timing:
+        - ON for at most 1s
+        - OFF for at least 0.25s
+      then: 
+        - if: 
+            condition: 
+              and:
+                - api.connected:
+                - switch.is_on: shelly_relay
+            then: 
+              - homeassistant.event:
+                  event: esphome.button_pressed
+                  data:
+                    device: ${device_name}
+                    click_type: short
+            else: 
+              - switch.toggle: shelly_relay 
+    on_release:
+      then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${device_name}
+              click_type: release
+    internal: true
+    id: button
+
+text_sensor:
+  - platform: homeassistant
+    name: "Light ${device_name} status"
+    entity_id: light.${device_lower}
+    id: light_status
+    internal: true
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} ${device_type} IP

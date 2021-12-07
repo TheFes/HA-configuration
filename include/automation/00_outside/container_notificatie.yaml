@@ -1,0 +1,66 @@
+id: notificatie_container
+alias: "Buiten - Notificaties containers avond ochtend"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    id: ochtend
+    at:
+      - "07:00:00"
+  - platform: time
+    id: avond
+    at:
+      - "20:00:00"
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Avond voor, of ochtend van afvaldag?"
+    choose:
+      - conditions:
+          - condition: not
+            conditions:
+              - alias: "Morgen afval buiten?"
+                condition: state
+                entity_id: sensor.mijnafvalwijzer_morgen
+                state: "Geen"
+          - alias: "Avond?"
+            condition: trigger
+            id: avond
+        sequence:
+          - alias: "Notificatie telefoon Marleen"
+            service: notify.mobile_app_marleen_app
+            data:
+              title: "Denk aan de container"
+              message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
+          - alias: "Notificatie telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
+              title: "Denk aan de container"
+              data:
+                icon: "{{ external_url }}/local/pictures/waste.png"
+                smallicon: "{{ external_url }}/local/pictures/waste.png"
+      - conditions:
+          - condition: not
+            conditions:
+              - alias: "Vandaag afval buiten?"
+                condition: state
+                entity_id: sensor.mijnafvalwijzer_vandaag
+                state: "Geen"
+          - alias: "Ochtend?"
+            condition: trigger
+            id: ochtend
+        sequence:
+          - alias: "Notificatie telefoon Marleen"
+            service: notify.mobile_app_marleen_app
+            data:
+              title: "Denk aan de container"
+              message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
+          - alias: "Notificatie telefoon Martijn"
+            service: notify.join_pixel5
+            data:
+              message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
+              title: "Denk aan de container"
+              data:
+                icon: "{{ external_url }}/local/pictures/waste.png"
+                smallicon: "{{ external_url }}/local/pictures/waste.png"

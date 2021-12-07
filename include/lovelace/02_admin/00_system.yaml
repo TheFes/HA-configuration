@@ -1,0 +1,78 @@
+icon: 'mdi:raspberry-pi'
+badges: []
+cards: 
+  # processor, load en geheugen
+  - type: vertical-stack
+    title: Systeem
+    cards:
+    - type: 'custom:mini-graph-card'
+      name: Load
+      entities:
+        - entity: sensor.load_1m
+      hour24: true
+      hours_to_show: 12
+      points_per_hour: 12
+      show:
+        labels: true
+    - type: 'custom:mini-graph-card'
+      name: Processor gebruik  
+      entities:
+        - entity: sensor.processor_use
+      hour24: true
+      hours_to_show: 12
+      points_per_hour: 12
+      show:
+        labels: true
+    - type: 'custom:mini-graph-card'
+      entities:
+        - entity: sensor.memory_use_percent
+      hour24: true
+      hours_to_show: 12
+      name: Geheugen gebruik
+      points_per_hour: 12
+      show:
+        labels: true
+    - type: entities
+      entities:
+      - entity: sensor.last_boot
+        name: 'VM opgestart'
+      - entity: sensor.home_assistant_uptime
+        icon: mdi:clock-time-three
+      - entity: sensor.database_grootte
+        icon: 'mdi:database'
+      - entity: sensor.memory_use
+        name: 'Geheugen gebruik'
+      - entity: sensor.memory_free
+        name: 'Geheugen vrij'
+      - entity: sensor.disk_use
+        name: 'MicroSD gebruikt'
+      - entity: sensor.disk_free
+        name: 'MicroSD vrij'
+      - entity: sensor.disk_use_percent
+        name: 'MicroSD gebruikt %'
+  # netwerk
+  - type: vertical-stack
+    title: Netwerk
+    cards:
+    - type: 'custom:mini-graph-card'
+      name: Network usage
+      entities:
+        - entity: sensor.network_throughput_in_eth0
+          name: netwerk in
+        - entity: sensor.network_throughput_out_eth0
+          name: netwerk uit
+      hour24: true
+      hours_to_show: 12
+      icon: 'mdi:router-network'
+      points_per_hour: 12
+      show:
+        labels: true
+    - type: entities
+      entities:
+        - entity: sensor.network_in_eth0
+          name: 'Netwerk in totaal'
+        - entity: sensor.network_out_eth0
+          name: 'Netwerk uit totaal'
+        - entity: sensor.ipv4_address_eth0
+          icon: 'mdi:router-network'
+          name: 'IPv4 adres'

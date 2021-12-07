@@ -1,0 +1,175 @@
+id: shelly_knop_floris
+alias: "Eerste verdieping | Floris - Acties met Shelly"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Floris
+      click_type: long
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Floris
+      click_type: short
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Floris
+      click_type: double
+condition:
+  - condition: not
+    conditions:
+      - alias: "Knop los?"
+        condition: template
+        value_template: "{{ trigger.event.data.click_type == 'release' }}"
+action:
+  - alias: "Shelly aan?"
+    choose:
+      - conditions:
+          - alias: "Shelly uit?"
+            condition: state
+            entity_id: switch.shelly1_floris
+            state: "off"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.shelly1_floris
+    default:
+      - alias: "Welk clicktype?"
+        choose:
+          - conditions:
+              - alias: "Korte klik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            sequence:
+              - alias: "Lamp aan of uit?"
+                choose:
+                  - conditions:
+                      - alias: "Lamp uit?"
+                        condition: state
+                        entity_id: light.floris
+                        state: "off"
+                    sequence:
+                      - alias: "Lamp aan"
+                        service: light.turn_on
+                        target:
+                          entity_id: light.floris_template
+                default:
+                  - alias: "Lamp uit"
+                    service: light.turn_off
+                    target:
+                      entity_id:
+                        - light.floris_leeslamp
+                        - light.floris
+          - conditions:
+              - alias: "Dubelklik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            sequence:
+              - alias: "Lamp op 100%"
+                service: light.turn_on
+                target:
+                  entity_id: light.floris
+                data:
+                  brightness: 255
+                  color_temp: "{{ state_attr('light.floris', 'min_mireds') }}"
+              - alias: "Input boolean naar dimmen"
+                service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.floris_dim
+          - conditions:
+              - alias: "Lange klik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            sequence:
+              - alias: "Lamp aan of uit, gedimd of fel?"
+                choose:
+                  - conditions:
+                      - alias: "Lamp uit?"
+                        condition: state
+                        entity_id: light.floris
+                        state: "off"
+                    sequence:
+                      - alias: "Lamp aan als hij uit is"
+                        service: light.toggle
+                        target:
+                          entity_id: light.floris
+                        data:
+                          brightness: 76
+                          color_temp: 306
+                  #              - conditions:
+                  #                  - alias: "Helderheid laag?"
+                  #                    condition: numeric_state
+                  #                    entity_id: light.floris
+                  #                    attribute: brightness
+                  #                    below: 53
+                  #                    above: 1
+                  #                sequence:
+                  #                  - alias: "Lamp naar 10% als brightness laag is"
+                  #                    service: light.turn_on
+                  #                    target:
+                  #                      entity_id: light.floris
+                  #                    data:
+                  #                      brightness: 25
+                  - conditions:
+                      - alias: "Boolean aan?"
+                        condition: state
+                        entity_id: input_boolean.floris_dim
+                        state: "on"
+                    sequence:
+                      - alias: "Lamp dimmen"
+                        repeat:
+                          sequence:
+                            - alias: "Lamp dimmen stappen"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.floris
+                              data:
+                                brightness: "{{ [35, state_attr('light.floris', 'brightness') - 10] | max }}"
+                            - delay: 0.5
+                          until:
+                            - condition: or
+                              conditions:
+                                - condition: state
+                                  entity_id: input_boolean.floris_release
+                                  state: "on"
+                                - condition: numeric_state
+                                  entity_id: light.floris
+                                  attribute: brightness
+                                  below: 36
+                      - alias: "Input boolean schakelen"
+                        service: input_boolean.turn_off
+                        target:
+                          entity_id: input_boolean.floris_dim
+                  - conditions:
+                      - alias: "Boolean uit?"
+                        condition: state
+                        entity_id: input_boolean.floris_dim
+                        state: "off"
+                    sequence:
+                      - alias: "Lamp feller"
+                        repeat:
+                          sequence:
+                            - alias: "Lamp feller stappen"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.floris
+                              data:
+                                brightness: "{{ [255, state_attr('light.floris', 'brightness') + 10] | min }}"
+                            - delay: 0.5
+                          until:
+                            - condition: or
+                              conditions:
+                                - condition: state
+                                  entity_id: input_boolean.floris_release
+                                  state: "on"
+                                - condition: numeric_state
+                                  entity_id: light.floris
+                                  attribute: brightness
+                                  above: 254
+                      - alias: "Input boolean schakelen"
+                        service: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.floris_dim

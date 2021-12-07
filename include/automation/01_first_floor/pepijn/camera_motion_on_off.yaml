@@ -1,0 +1,77 @@
+id: camera_pepijn
+alias: "Eerste Verdieping | Pepijn - Motion detection PepijnCam aan en uit"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+  - platform: time
+    at: 
+      - "07:30"
+      - "12:30"
+      - "16:30"
+      - "19:30"
+condition:
+  - alias: "Iemand thuis"
+    condition: state
+    entity_id: group.m_en_m
+    state: "home"
+action:
+  - alias: "Hoe laat is het?"
+    choose:
+      - conditions: 
+          - condition: time
+            before: " 07:29:59"
+        sequence:
+          - alias: "Motion detection Pepijncam aan"
+            service: switch.turn_on
+            target:
+              entity_id: switch.pepijncam_state
+      - conditions: 
+          - condition: time
+            before: " 12:29:59"
+        sequence:
+          - alias: "Motion detection Pepijncam uit"
+            service: switch.turn_off
+            target:
+              entity_id: switch.pepijncam_state
+      - conditions:
+          - condition: time
+            before: " 16:29:59"
+          - alias: "Geen opvang of oma?"
+            condition: time
+            weekday:
+              - "wed"
+              - "fri"
+              - "sat"
+              - "sun"
+        sequence:
+          - alias: "Motion detection Pepijncam aan"
+            service: switch.turn_on
+            target:
+              entity_id: switch.pepijncam_state
+      - conditions:
+          - condition: time
+            before: "19:29:59"
+          - alias: "Geen opvang of oma?"
+            condition: time
+            weekday:
+              - "wed"
+              - "fri"
+              - "sat"
+              - "sun"
+        sequence:
+          - alias: "Motion detection Pepijncam uit"
+            service: switch.turn_off
+            target:
+              entity_id: switch.pepijncam_state
+      - conditions:
+          - condition: time
+            after: "19:30:00"
+        sequence:
+          - alias: "Motion detection Pepijncam aan"
+            service: switch.turn_on
+            target:
+              entity_id: switch.pepijncam_state

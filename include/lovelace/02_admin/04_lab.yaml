@@ -1,0 +1,89 @@
+icon: "mdi:test-tube"
+cards:
+  - type: "custom:auto-entities"
+    card:
+      type: entities
+      title: Helpers
+      show_header_toggle: false
+    filter:
+      include:
+        - entity_id: "input*"
+  - type: "custom:auto-entities"
+    card:
+      type: entities
+      title: Covers
+      show_header_toggle: false
+    filter:
+      include:
+        - domain: cover
+  - type: entities
+    title: Media control woonkamer
+    entities:
+      - entity: media_player.nvidia_shield
+      - entity: media_player.philips_tv
+      - entity: switch.samsung_soundbar
+      - entity: sensor.samsung_soundbar_media_playback_status
+      - entity: sensor.samsung_soundbar_volume
+  - type: custom:browser-player
+  - type: entities
+    title: TTS Service
+    entities:
+      - entity: input_select.tts_service
+        name: TTS Service voor script
+  - type: entities
+    title: Power
+    entities:
+      - entity: sensor.bureau_marleen_power
+      - entity: sensor.bureau_martijn_power
+      - entity: sensor.server_power
+  - type: statistics-graph
+    title: "My Graph"
+    entities:
+      - sensor.bureau_marleen_power
+      - sensor.bureau_martijn_power
+  - type: statistics-graph
+    days_to_show: 5
+    title: "Temperatuur"
+    entities:
+      - entity: sensor.zolder_temp
+        name: Zolder
+  - type: statistics-graph
+    title: "Server"
+    days_to_show: 3
+    entities:
+      - entity: sensor.server_power
+        name: Server
+  - type: statistics-graph
+    title: "Koelkast"
+    days_to_show: 3
+    entities:
+      - entity: sensor.koelkast_power
+  - type: statistics-graph
+    title: "Droger en sporthoekje"
+    days_to_show: 3
+    entities:
+      - entity: sensor.droger_power
+  - type: statistics-graph
+    title: "Unknown Power"
+    days_to_show: 3
+    entities:
+      - entity: sensor.unknown_power
+  - type: statistics-graph
+    title: "Gewicht TheFes"
+    days_to_show: 30
+    entities:
+      - entity: sensor.weight_martijn
+  - type: statistics-graph
+    title: "Test"
+    days_to_show: 1
+    chart_type: bar
+    entities:
+      - entity: sensor.vaatwasser_energy
+  - type: entities
+    title: Power
+    entities:
+      - entity: input_boolean.tv_kijken
+      - entity: input_boolean.film_kijken
+      - entity: input_boolean.netflix_kijken
+      - entity: input_boolean.media_kijken_uit
+      - entity: input_select.tv_modus

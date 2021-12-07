@@ -1,0 +1,709 @@
+blueprint:
+  name: Mi Magic Cube
+  description: 'Control anything using Mi Magic Cube.
+
+    Remember not to use an action on every combination, then you won''t be able to
+    start from anywhere without triggering an action
+
+    '
+  domain: automation
+  input:
+    remote:
+      name: Magic Cube
+      description: Mi Magic Cube
+      selector:
+        device:
+          integration: deconz
+          manufacturer: LUMI
+          model: lumi.sensor_cube.aqgl01
+    flip_90:
+      name: Flip 90 degrees
+      description: 'Actions to run when cube flips 90 degrees
+
+
+        This cancels all specific 90 degrees functions
+
+        e.g From side 1 to side 2 will be the same as from side 6 to side 2
+
+        '
+      default: false
+      selector:
+        boolean: {}
+    cube_flip_90:
+      name: Flip cube 90 degrees
+      description: Action to run when cube flips 90 degrees. This only works if 'Flip
+        90 degrees' is toggled
+      default: []
+      selector:
+        action: {}
+    flip_180:
+      name: Flip 180 degrees
+      description: 'Actions to run when cube flips 180 degrees.
+
+        This cancels all specific 180 degrees functions
+
+        e.g From side 1 to side 6 will be the same as from side 5 to side 2
+
+        '
+      default: false
+      selector:
+        boolean: {}
+    cube_flip_180:
+      name: Flip cube 180 degrees
+      description: Action to run when cube flips 180 degrees. This only works if 'Flip
+        180 degrees' is toggled
+      default: []
+      selector:
+        action: {}
+    one_side_slide:
+      name: Slide any side
+      description: 'Actions to run when cube slides on any side
+
+
+        This cancels all specific slide functions
+
+        e.g Slide on side 1 will be the same as slide on side 2
+
+        '
+      default: false
+      selector:
+        boolean: {}
+    cube_one_side_slide:
+      name: Slide cube on any side
+      description: Action to run when cube slides on any slide. This only works if
+        'Slide any side' is toggled
+      default: []
+      selector:
+        action: {}
+    double_tap_any_side:
+      name: Double tap on any side
+      description: 'Actions to run when double tapping cube regardless of the side.
+
+
+        This cancels all specific double tap functions
+
+        e.g Double tap on side 1 will be the same as double tapping side 2
+
+        '
+      default: false
+      selector:
+        boolean: {}
+    cube_double_tap_any:
+      name: Double tap cube on any side
+      description: Action to run when double tapping cube on any side. This only works
+        if 'Double tap on any side' is toggled
+      default: []
+      selector:
+        action: {}
+    one_to_two:
+      name: From side 1 to side 2
+      description: Action to run when cube goes from side 1 to side 2
+      default: []
+      selector:
+        action: {}
+    one_to_three:
+      name: From side 1 to side 3
+      description: Action to run when cube goes from side 1 to side 3
+      default: []
+      selector:
+        action: {}
+    one_to_four:
+      name: From side 1 to side 4
+      description: Action to run when cube goes from side 1 to side 4
+      default: []
+      selector:
+        action: {}
+    one_to_five:
+      name: From side 1 to side 5
+      description: Action to run when cube goes from side 1 to side 5
+      default: []
+      selector:
+        action: {}
+    one_to_six:
+      name: From side 1 to side 6
+      description: Action to run when cube goes from side 1 to side 6
+      default: []
+      selector:
+        action: {}
+    two_to_one:
+      name: From side 2 to side 1
+      description: Action to run when cube goes from side 2 to side 1
+      default: []
+      selector:
+        action: {}
+    two_to_three:
+      name: From side 2 to side 3
+      description: Action to run when cube goes from side 2 to side 3
+      default: []
+      selector:
+        action: {}
+    two_to_four:
+      name: From side 2 to side 4
+      description: Action to run when cube goes from side 2 to side 4
+      default: []
+      selector:
+        action: {}
+    two_to_five:
+      name: From side 2 to side 5
+      description: Action to run when cube goes from side 2 to side 5
+      default: []
+      selector:
+        action: {}
+    two_to_six:
+      name: From side 2 to side 6
+      description: Action to run when cube goes from side 2 to side 6
+      default: []
+      selector:
+        action: {}
+    three_to_one:
+      name: From side 3 to side 1
+      description: Action to run when cube goes from side 3 to side 1
+      default: []
+      selector:
+        action: {}
+    three_to_two:
+      name: From side 3 to side 2
+      description: Action to run when cube goes from side 3 to side 2
+      default: []
+      selector:
+        action: {}
+    three_to_four:
+      name: From side 3 to side 4
+      description: Action to run when cube goes from side 3 to side 4
+      default: []
+      selector:
+        action: {}
+    three_to_five:
+      name: From side 3 to side 5
+      description: Action to run when cube goes from side 3 to side 5
+      default: []
+      selector:
+        action: {}
+    three_to_six:
+      name: From side 3 to side 6
+      description: Action to run when cube goes from side 3 to side 6
+      default: []
+      selector:
+        action: {}
+    four_to_one:
+      name: From side 4 to side 1
+      description: Action to run when cube goes from side 4 to side 1
+      default: []
+      selector:
+        action: {}
+    four_to_two:
+      name: From side 4 to side 2
+      description: Action to run when cube goes from side 4 to side 2
+      default: []
+      selector:
+        action: {}
+    four_to_three:
+      name: From side 4 to side 3
+      description: Action to run when cube goes from side 4 to side 3
+      default: []
+      selector:
+        action: {}
+    four_to_five:
+      name: From side 4 to side 5
+      description: Action to run when cube goes from side 4 to side 5
+      default: []
+      selector:
+        action: {}
+    four_to_six:
+      name: From side 4 to side 6
+      description: Action to run when cube goes from side 4 to side 6
+      default: []
+      selector:
+        action: {}
+    five_to_one:
+      name: From side 5 to side 1
+      description: Action to run when cube goes from side 5 to side 1
+      default: []
+      selector:
+        action: {}
+    five_to_two:
+      name: From side 5 to side 2
+      description: Action to run when cube goes from side 5 to side 2
+      default: []
+      selector:
+        action: {}
+    five_to_three:
+      name: From side 5 to side 3
+      description: Action to run when cube goes from side 5 to side 3
+      default: []
+      selector:
+        action: {}
+    five_to_four:
+      name: From side 5 to side 4
+      description: Action to run when cube goes from side 5 to side 4
+      default: []
+      selector:
+        action: {}
+    five_to_six:
+      name: From side 5 to side 6
+      description: Action to run when cube goes from side 5 to side 6
+      default: []
+      selector:
+        action: {}
+    six_to_one:
+      name: From side 6 to side 1
+      description: Action to run when cube goes from side 6 to side 1
+      default: []
+      selector:
+        action: {}
+    six_to_two:
+      name: From side 6 to side 2
+      description: Action to run when cube goes from side 6 to side 2
+      default: []
+      selector:
+        action: {}
+    six_to_three:
+      name: From side 6 to side 3
+      description: Action to run when cube goes from side 6 to side 3
+      default: []
+      selector:
+        action: {}
+    six_to_four:
+      name: From side 6 to side 4
+      description: Action to run when cube goes from side 6 to side 4
+      default: []
+      selector:
+        action: {}
+    six_to_five:
+      name: From side 6 to side 5
+      description: Action to run when cube goes from side 6 to side 5
+      default: []
+      selector:
+        action: {}
+    one_to_one:
+      name: Double tap - Side 1
+      description: Action to run when double tap on side 1
+      default: []
+      selector:
+        action: {}
+    two_to_two:
+      name: Double tap - Side 2
+      description: Action to run when double tap on side 2
+      default: []
+      selector:
+        action: {}
+    three_to_three:
+      name: Double tap - Side 3
+      description: Action to run when double tap on side 3
+      default: []
+      selector:
+        action: {}
+    four_to_four:
+      name: Double tap - Side 4
+      description: Action to run when double tap on side 4
+      default: []
+      selector:
+        action: {}
+    five_to_five:
+      name: Double tap - Side 5
+      description: Action to run when double tap on side 5
+      default: []
+      selector:
+        action: {}
+    six_to_six:
+      name: Double tap - Side 6
+      description: Action to run when double tap on side 6
+      default: []
+      selector:
+        action: {}
+    rotate_clockwise:
+      name: Rotate clockwise
+      description: Action to run when cube rotates clockwise
+      default: []
+      selector:
+        action: {}
+    rotate_counter_clockwise:
+      name: Rotate counter clockwise
+      description: Action to run when cube rotates counter clockwise
+      default: []
+      selector:
+        action: {}
+    slide_on_one:
+      name: Slide - Side 1 up
+      description: Action to run when slides with Side 1 up
+      default: []
+      selector:
+        action: {}
+    slide_on_two:
+      name: Slide - Side 2 up
+      description: Action to run when slides with Side 2 up
+      default: []
+      selector:
+        action: {}
+    slide_on_three:
+      name: Slide - Side 3 up
+      description: Action to run when slides with Side 3 up
+      default: []
+      selector:
+        action: {}
+    slide_on_four:
+      name: Slide - Side 4 up
+      description: Action to run when slides with Side 4 up
+      default: []
+      selector:
+        action: {}
+    slide_on_five:
+      name: Slide - Side 5 up
+      description: Action to run when slides with Side 5 up
+      default: []
+      selector:
+        action: {}
+    slide_on_six:
+      name: Slide - Side 6 up
+      description: Action to run when slides with Side 6 up
+      default: []
+      selector:
+        action: {}
+    cube_wake:
+      name: Wake up the cube
+      description: Action to run when cube wakes up
+      default: []
+      selector:
+        action: {}
+    cube_fall:
+      name: Cube falls
+      description: 'Action to run when cube falls
+
+        pro tip: throw up and catch
+
+        '
+      default: []
+      selector:
+        action: {}
+    cube_shake:
+      name: Shake cube
+      description: Action to run when you shake the cube
+      default: []
+      selector:
+        action: {}
+  source_url: https://community.home-assistant.io/t/mi-magic-cube-deconz-45-actions/256656
+mode: restart
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: deconz_event
+  event_data:
+    device_id: !input 'remote'
+action:
+- variables:
+    event: '{{ trigger.event.data.event }}'
+    gesture: '{{ trigger.event.data.gesture }}'
+    flip_90: !input 'flip_90'
+    flip_180: !input 'flip_180'
+    one_side_slide: !input 'one_side_slide'
+    double_tap_any_side: !input 'double_tap_any_side'
+- choose:
+  - conditions:
+    - '{{ event == 1001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'one_to_one'
+  - conditions:
+    - '{{ event == 2001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'one_to_two'
+  - conditions:
+    - '{{ event == 3001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'one_to_three'
+  - conditions:
+    - '{{ event == 4001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'one_to_four'
+  - conditions:
+    - '{{ event == 5001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'one_to_five'
+  - conditions:
+    - '{{ event == 6001 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'one_to_six'
+  - conditions:
+    - '{{ event == 1002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'two_to_one'
+  - conditions:
+    - '{{ event == 2002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'two_to_two'
+  - conditions:
+    - '{{ event == 3002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'two_to_three'
+  - conditions:
+    - '{{ event == 4002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'two_to_four'
+  - conditions:
+    - '{{ event == 5002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'two_to_five'
+  - conditions:
+    - '{{ event == 6002 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'two_to_six'
+  - conditions:
+    - '{{ event == 1003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'three_to_one'
+  - conditions:
+    - '{{ event == 2003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'three_to_two'
+  - conditions:
+    - '{{ event == 3003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'three_to_three'
+  - conditions:
+    - '{{ event == 4003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'three_to_four'
+  - conditions:
+    - '{{ event == 5003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'three_to_five'
+  - conditions:
+    - '{{ event == 6003 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'three_to_six'
+  - conditions:
+    - '{{ event == 1004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'four_to_one'
+  - conditions:
+    - '{{ event == 2004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'four_to_two'
+  - conditions:
+    - '{{ event == 3004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'four_to_three'
+  - conditions:
+    - '{{ event == 4004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'four_to_four'
+  - conditions:
+    - '{{ event == 5004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'four_to_five'
+  - conditions:
+    - '{{ event == 6004 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'four_to_six'
+  - conditions:
+    - '{{ event == 1005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'five_to_one'
+  - conditions:
+    - '{{ event == 2005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'five_to_two'
+  - conditions:
+    - '{{ event == 3005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'five_to_three'
+  - conditions:
+    - '{{ event == 4005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'five_to_four'
+  - conditions:
+    - '{{ event == 5005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'five_to_five'
+  - conditions:
+    - '{{ event == 6005 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'five_to_six'
+  - conditions:
+    - '{{ event == 1006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_180 }}'
+        sequence: !input 'cube_flip_180'
+      default: !input 'six_to_one'
+  - conditions:
+    - '{{ event == 2006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'six_to_two'
+  - conditions:
+    - '{{ event == 3006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'six_to_three'
+  - conditions:
+    - '{{ event == 4006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'six_to_four'
+  - conditions:
+    - '{{ event == 5006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ flip_90 }}'
+        sequence: !input 'cube_flip_90'
+      default: !input 'six_to_five'
+  - conditions:
+    - '{{ event == 6006 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ double_tap_any_side }}'
+        sequence: !input 'cube_double_tap_any'
+      default: !input 'six_to_six'
+  - conditions:
+    - '{{ event == 1000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_one'
+  - conditions:
+    - '{{ event == 2000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_two'
+  - conditions:
+    - '{{ event == 3000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_three'
+  - conditions:
+    - '{{ event == 4000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_four'
+  - conditions:
+    - '{{ event == 5000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_five'
+  - conditions:
+    - '{{ event == 6000 }}'
+    sequence:
+    - choose:
+      - conditions: '{{ one_side_slide }}'
+        sequence: !input 'cube_one_side_slide'
+      default: !input 'slide_on_six'
+  - conditions:
+    - '{{ gesture == 7 }}'
+    sequence: !input 'rotate_clockwise'
+  - conditions:
+    - '{{ gesture == 8 }}'
+    sequence: !input 'rotate_counter_clockwise'
+  - conditions:
+    - '{{ event == 7000 }}'
+    sequence: !input 'cube_wake'
+  - conditions:
+    - '{{ event == 7007 }}'
+    sequence: !input 'cube_shake'
+  - conditions:
+    - '{{ event == 7008 }}'
+    sequence: !input 'cube_fall'

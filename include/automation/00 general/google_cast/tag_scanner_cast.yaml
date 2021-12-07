@@ -1,0 +1,55 @@
+id: 87b2cde7-68e9-4bd7-b666-db526fba0fa2
+alias: "Algemeen | Cast - Muziek en video casten met tag scanner"
+mode: single
+max_exceeded: silent
+variables:
+  tags: !include_dir_merge_named /config/tag_reader/tags_media
+trigger:
+  platform: event
+  event_type: tag_scanned
+condition:
+  - alias: "Tag in lijst?"
+    condition: template
+    value_template: "{{ trigger.event.data.tag_id in tags }}"
+action:
+  - variables:
+      tag_type: "{{ tags[trigger.event.data.tag_id].type }}"
+      player_audio: media_player.woonkamer_mini
+      player_video: media_player.shield
+  - service: script.turn_on
+    target:
+      entity_id: "script.script_start_{{tag_type}}_tag"
+    data:
+      variables:
+        input_text: "{{ 'input_text.played_' + tags[trigger.event.data.tag_id].card_id }}"
+        media: "{{ state_attr('sensor.'~tags[trigger.event.data.tag_id].card_id, 'file_list') | sort }}"
+        player: "{{player_audio if tag_type == 'audio' else player_video}}"
+        number_of_plays: "{{ tags[trigger.event.data.tag_id].number_of_plays }}"
+        volume: "{{ tags[trigger.event.data.tag_id].volume if tag_type == 'audio' else 0 }}"
+        thumb: "/local/pictures/tags/{{ tags[trigger.event.data.tag_id].card_id }}.jpg"
+  - alias: "Ledje groen"
+    service: light.turn_on
+    target:
+      entity_id: light.tag_reader_led
+    data:
+      rgb_color:
+        - 0
+        - 255
+        - 0
+  - alias: "Korte pauze zodat lampje groen blijft"
+    delay: 2
+  - alias: "Ledje rood"
+    service: light.turn_on
+    target:
+      entity_id: light.tag_reader_led
+    data:
+      rgb_color:
+        - 255
+        - 0
+        - 0
+  - alias: "Korte pauze waarin niet gescand kan worden"
+    delay: 4
+  - alias: "Ledje uit"
+    service: light.turn_off
+    target:
+      entity_id: light.tag_reader_led

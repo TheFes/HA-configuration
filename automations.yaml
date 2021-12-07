@@ -1,0 +1,71 @@
+- id: '1632656512140'
+  alias: Zolder - Xiaomi Cube
+  description: Acties voor cube
+  use_blueprint:
+    path: bergstrom/mi-magic-cube-deconz-45-actions.yaml
+    input:
+      remote: f6774ae0411495f22b9ffa91f9f11c0b
+      cube_shake:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.bureau_martijn
+      rotate_clockwise:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.zolder_mini_martijn
+        data:
+          volume_level: '{{ [1, state_attr(''media_player.zolder_mini_martijn'', ''volume_level'')
+            | float + 0.05 ] | min | round(2) }}'
+      rotate_counter_clockwise:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.zolder_mini_martijn
+        data:
+          volume_level: '{{ [0, state_attr(''media_player.zolder_mini_martijn'', ''volume_level'')
+            | float - 0.05 ] | max | round(2) }}'
+- id: '1632657081970'
+  alias: Zolder - Xiaomi Button Bureau Marleen
+  description: ''
+  use_blueprint:
+    path: xiaomi_button/xiaomi_button.yaml
+    input:
+      remote: 8a2ea6de85f43628d4eb06833825f0bc
+      button_press_in:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.bureau_marleen
+      button_double_press:
+      - service: light.toggle
+        target:
+          area_id: zolder
+      button_hold: []
+- id: '1632657881228'
+  alias: Beneden | Keuken - Xiaomi Button
+  description: ''
+  use_blueprint:
+    path: xiaomi_button/xiaomi_button.yaml
+    input:
+      remote: c953df250e726edcad4416de43bb3ac2
+      button_press_in:
+      - service: light.toggle
+        target:
+          entity_id: light.keukenspotjes
+      button_double_press:
+      - service: light.toggle
+        target:
+          entity_id: light.keuken
+- id: '1636316842202'
+  alias: Beneden | Speelhoek - Lichten speelhoek met IKEA knop
+  description: ''
+  use_blueprint:
+    path: Sam04/deconz-ikea-tradfri-shortcut-button.yaml
+    input:
+      remote: 49bde0c562800b4a58c3ec0a59e77579
+      button_short:
+      - service: light.toggle
+        target:
+          entity_id: light.speelhoek_tafel
+      button_long:
+      - service: light.toggle
+        target:
+          entity_id: light.speelhoek

@@ -1,0 +1,10 @@
+binary_sensor:
+  unique_id: a9b6643e-2a79-45d5-99cf-5714b06efe6d
+  name: "Woonkamer Mini"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.woonkamer_mini', 'playing') }}
+  delay_off: "00:00:05"
+  delay_on: "00:00:05"
+  attributes:
+    volume: 0.25

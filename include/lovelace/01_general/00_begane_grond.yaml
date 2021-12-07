@@ -1,0 +1,258 @@
+icon: "mdi:home-floor-0"
+cards:
+  # overzichtje
+  - type: glance
+    show_name: false
+    entities:
+      - entity: sensor.telefoon_marleen
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Marleen
+            card:
+              type: custom:more-info-card
+              entity: person.marleen
+      - entity: sensor.telefoon_martijn
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Martijn
+            card:
+              type: custom:more-info-card
+              entity: person.martijn
+      - entity: weather.climacell_daily
+        name: Weer
+      - entity: sun.sun
+        name: Zon
+        show_state: false
+      - entity: sensor.huis_modus
+        show_state: false
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Huis Modus
+            card:
+              type: entities
+              entities:
+                - entity: sensor.huis_modus
+                - entity: input_boolean.vakantie
+                  name: Vakantie
+                - entity: input_boolean.gast
+                  name: Gast
+  # woonkamer
+  - type: entities
+    title: Woonkamer & Speelhoek
+    show_header_toggle: false
+    entities:
+      - type: conditional
+        conditions:
+          - entity: switch.tv_meubel
+            state: "off"
+        row:
+          type: custom:hui-element
+          card_type: markdown
+          content: >
+            De TV-Meubel schakelaar staat uit, zet hem aan om alles te zien.
+      - entity: light.booglamp
+      - entity: light.tv_lamp_template
+        name: Kerststal # KERST
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+      - type: conditional # KERST
+        conditions:
+          - entity: switch.tv_meubel
+            state_not: "off"
+        row:
+          entity: switch.backup_02
+          name: Kerstvaas
+          state_color: true
+      - entity: light.woonkamer_plafond
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+        state_color: true
+      - type: conditional
+        conditions:
+          - entity: switch.tv_meubel
+            state_not: "off"
+        row:
+          entity: media_player.shield_en_soundbar
+          name: TV en Soundbar
+          icon: mdi:television
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: TV
+              card: !include /config/include/lovelace/cards/remote_shield.yaml
+      - entity: light.speelhoek_template
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+        name: Speelhoek Sfeer
+      - entity: light.speelhoek_tafel
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+        name: Speelhoek Tafel
+      - type: divider
+      - entity: switch.tv_meubel
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: TV Meubel
+            card:
+              type: entities
+              entities:
+                - entity: switch.tv_meubel
+                - entity: input_boolean.tv_meubel_override
+                  name: Aan laten staan tijdens slapen
+                - sensor.tv_meubel_power
+                - sensor.tv_meubel_energy
+      - type: divider
+      - type: custom:mini-graph-card
+        name: Woonkamer
+        icon: mdi:sofa
+        hour24: true
+        align_header: left
+        align_icon: left
+        font_size: 80
+        points_per_hour: 2
+        show:
+          extrema: true
+        entities:
+          - entity: sensor.woonkamer_temp
+          - entity: sensor.woonkamer_vocht
+            show_graph: false
+            show_state: true
+          - entity: sensor.woonkamer_druk
+            show_graph: false
+            show_state: true
+          - color: gray
+            entity: sensor.nightstate
+            name: Nacht
+            show_legend: false
+            show_line: false
+            show_points: false
+            y_axis: secondary
+  # eettafel en keuken
+  - type: vertical-stack
+    cards:
+      - type: entities
+        title: Eettafel & Keuken
+        show_header_toggle: false
+        entities:
+          - entity: light.eettafel
+            type: "custom:slider-entity-row"
+            toggle: true
+            hide_when_off: true
+            name: Eettafel
+          - entity: light.keuken
+            type: "custom:slider-entity-row"
+            toggle: true
+            hide_when_off: true
+            name: Keuken
+          - entity: light.keukenspotjes
+            name: Spotjes Keukenkastje
+          - entity: switch.espresso
+            icon: "mdi:coffee-maker"
+            name: Espressomachine
+          - entity: switch.waterkoker
+            icon: "mdi:tea-outline"
+            name: Waterkoker
+          - entity: switch.bw_plug_20 # KERST
+            state_color: true
+          - entity: switch.backup_01 # KERST
+            state_color: true
+          - entity: sensor.afzuigkap_modus
+            name: Afzuigkap
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: Afzuigkap
+                card:
+                  type: entities
+                  entities:
+                    - entity: sensor.afzuigkap_modus
+                    - entity: switch.afzuigkap
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.vaatwasser_actief
+            state: "on"
+        card:
+          type: custom:vertical-stack-in-card
+          title: Vaatwasser
+          cards:
+            - type: markdown
+              content: >
+                {% if is_state('timer.vaatwasser_timer', 'active') %}
+                  De vaatwasser zou rond {{ as_timestamp(state_attr('timer.vaatwasser_timer', 'finishes_at')) | timestamp_custom('%H:%M') }} klaar moeten zijn (gebaseerd op het ECO programma)
+                {% else %}
+                  De vaatwasser zou eigenlijk al klaar moeten zijn, heel even geduld nog dus
+                {% endif %}
+            - type: entities
+              entities:
+                - entity: timer.vaatwasser_timer
+                  name: Resterende tijd
+  # WC, Hal & Trapkast
+  - type: entities
+    title: WC, Hal & Trapkast
+    show_header_toggle: false
+    entities:
+      - entity: light.wc
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+        name: WC
+      - entity: switch.doorbell_chime_active
+        name: Deurbel
+        icon: mdi:doorbell
+      - entity: light.trapkast
+        name: Trapkast
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+      - entity: binary_sensor.deur_trapkast
+  # Buiten
+  - type: entities
+    title: Buiten
+    show_header_toggle: false
+    entities:
+      - entity: light.tuinlampjes
+      - entity: switch.bw_plug_19 # KERST
+        state_color: true
+      - entity: light.voordeur
+        name: Voordeur
+      - entity: light.veranda
+        type: "custom:slider-entity-row"
+        toggle: true
+        hide_when_off: true
+        name: Veranda
+      - entity: cover.veranda
+        name: Zonwering
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: Containers
+    filter:
+      include:
+        - entity_id: "*mijnafvalwijzer*"
+      exclude:
+        - entity_id: "*vandaag*"
+        - entity_id: "*morgen*"
+    sort:
+      method: attribute
+      attribute: "Sort-date"
+      reverse: false
+      numeric: true
+  # Alle lampen
+  - type: entities
+    title: Alle lampen
+    entities:
+      - entity: light.groep_beneden

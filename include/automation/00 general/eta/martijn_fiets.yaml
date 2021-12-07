@@ -1,0 +1,38 @@
+id: 6757b053-0f63-4c30-98bd-1038ab57700e
+alias: "00 ⏱ Check if Martijn is on his bicycle for ETA calculation"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    id: "on_bike"
+    entity_id: sensor.pixel_5_gedetecteerde_activiteit
+    to: "on_bicycle"
+  - platform: state
+    id: "back_home"
+    entity_id: person.martijn
+    to: "home"
+action:
+  - alias: "🚲 of 🏡"
+    choose:
+      - conditions:
+          - alias: "🚲"
+            condition: trigger
+            id: "on_bike"
+        sequence:
+          - alias: "Turn on input_boolean"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.martijn_fiets
+      - conditions:
+          - alias: "Martijn was on 🚲?"
+            condition: state
+            entity_id: input_boolean.martijn_fiets
+            state: "on"
+          - alias: "Back 🏡"
+            condition: trigger
+            id: "back_home"
+        sequence:
+          - alias: "Turn off input_boolean"
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.martijn_fiets

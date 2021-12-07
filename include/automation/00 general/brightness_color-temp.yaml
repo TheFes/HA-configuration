@@ -1,0 +1,39 @@
+id: f0fc0c8c-662d-4477-9002-5ec4b49da7ba
+alias: "Algemeen - Lampen helderheid en kleurtemperatuur"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id:
+      - light.eettafel_template
+      - light.slaapkamer_template
+      - light.pepijn_template
+      - light.floris_template
+      - light.tv_lamp_template
+      - light.speelhoek_template
+    attribute: brightness
+variables:
+  hue:
+    - light.slaapkamer_template
+  name: "{{ (trigger.to_state.entity_id | replace('light.', ''))| replace('_template', '')}}"
+  input_boolean_dimmed: "{{ 'input_boolean.dimmed_' + name }}"
+  light: "{{ trigger.to_state.entity_id }}"
+  max_ct: "{{ state_attr(light, 'max_mireds') }}"
+  min_ct: >
+    {{ 325 if light in hue else state_attr(light, 'min_mireds') }}
+  bright: "{{ state_attr(light, 'brightness') }}"
+condition:
+  - alias: "Lamp aan?"
+    condition: template
+    value_template: "{{ is_state(light, 'on') }}"
+  - alias: "Al eerder gedimd"
+    condition: template
+    value_template: "{{ not is_state(input_boolean_dimmed, 'off') }}"
+action:
+  - alias: "Kleurtemperatuur instellen op basis van helderheid"
+    service: light.turn_on
+    target:
+      entity_id: "{{ light }}"
+    data:
+      color_temp: >-
+        {{ [ max_ct, (( max_ct - (( bright - 1) * ((max_ct - min_ct) / 254))) | int)] | min }}

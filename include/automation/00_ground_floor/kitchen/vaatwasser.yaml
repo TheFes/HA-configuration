@@ -1,0 +1,44 @@
+id: 341786d9-1a4e-4328-be86-1e3d68d5744c
+alias: "Beneden | Keuken - Vaatwasser timer en notificatie"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: binary_sensor.vaatwasser_actief
+condition:
+  - alias: "Niet unavailalbe"
+    condition: template
+    value_template: "{{ trigger.from_state.state != 'unavailable' }}"
+action:
+  - variables:
+      external_url: !secret ha_url
+  - alias: "Welke actie"
+    choose:
+      - conditions:
+          - alias: "Vaatwasser aan"
+            condition: state
+            entity_id: binary_sensor.vaatwasser_actief
+            state: "on"
+        sequence:
+          - alias: "Timer aan"
+            service: timer.start
+            target:
+              entity_id: timer.vaatwasser_timer
+      - conditions:
+          - alias: "Vaatwasser aan"
+            condition: state
+            entity_id: binary_sensor.vaatwasser_actief
+            state: "off"
+        sequence:
+          - alias: "Timer uit"
+            service: timer.finish
+            target:
+              entity_id: timer.vaatwasser_timer
+          - alias: "Notificatie"
+            service: notify.join_pixel5
+            data:
+              title: "De vaatwasser is klaar"
+              message: "Doe hem snel open zodat hij kan uitwasemen"
+              data:
+                icon: "{{ external_url }}/local/pictures/dish.png"
+                smallicon: "{{ external_url }}/local/pictures/dish.png"

@@ -1,0 +1,89 @@
+id: shelly_knop_eettafel
+alias: "Beneden | Eettafel - Acties met Shelly"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Eettafel
+action:
+  - alias: "Shelly aan of niet?"
+    choose:
+      - conditions:
+          - alias: "Shelly eettafel uit?"
+            condition: state
+            entity_id: switch.shelly1_eettafel
+            state: "off"
+        sequence:
+          - alias: "Shelly aanzetten"
+            service: switch.turn_on
+            target:
+              entity_id: switch.shelly1_eettafel
+    default:
+      - alias: "Welk click type?"
+        choose:
+          - conditions:
+              - alias: "Korte klik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            sequence:
+              - alias: "Licht schakelen"
+                service: light.toggle
+                target:
+                  entity_id: light.eettafel
+          - conditions:
+              - alias: "Dubbelklik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            sequence:
+              - alias: "Licht op 100%"
+                service: light.turn_on
+                target:
+                  entity_id: light.eettafel
+                data:
+                  brightness: 255
+          - conditions:
+              - alias: "Lange klik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            sequence:
+              - alias: "Lichten beneden uit"
+                service: light.turn_off
+                target:
+                  entity_id: light.groep_beneden
+              - alias: "TV uit"
+                service: media_player.turn_off
+                target:
+                  entity_id: media_player.nvidia_shield
+              - alias: "Google Homes uit"
+                service: media_player.turn_off
+                target:
+                  entity_id:
+                    - media_player.keuken_hub
+                    - media_player.woonkamer_mini
+              - alias: "Afzuigkap uit?"
+                choose:
+                  - conditions:
+                      - alias: "Afzuigkap of lichtje actief?"
+                        condition: numeric_state
+                        entity_id: sensor.afzuigkap_power
+                        above: 0.5
+                    sequence:
+                      - alias: "Plug afzuigkap uit"
+                        service: switch.turn_off
+                        target:
+                          entity_id: switch.afzuigkap
+              - alias: "TV Meubel uit?"
+                choose:
+                  - conditions:
+                      - alias: "TV Meubel override uit"
+                        condition: state
+                        entity_id: input_boolean.tv_meubel_override
+                        state: "off"
+                    sequence:
+                      - delay: 20
+                      - alias: "TV Meubel uitzetten"
+                        service: switch.turn_off
+                        target:
+                          entity_id: switch.tv_meubel

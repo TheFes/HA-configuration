@@ -1,0 +1,10 @@
+binary_sensor:
+  unique_id: 129e8a9a-2660-4c6e-93a1-a4e857572c2c
+  name: "Huis Groep"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.huis_groep', 'playing') }}
+  delay_off: "00:00:05"
+  delay_on: "00:00:05"
+  attributes:
+    volume: 0.25

@@ -1,0 +1,32 @@
+id: wasmachinelamp
+alias: "Zolder - Wasmachinelamp mee schakelen met zolderlamp"
+trigger:
+  - platform: state
+    entity_id: light.zolder
+action:
+  - alias: "Lamp aan of uit?"
+    choose:
+    - conditions: 
+        - alias: "Lamp uit?"
+          condition: state
+          entity_id: light.zolder
+          state: "off"
+      sequence:
+        - alias: "Zolder bol en wasmachinelamp mee uitzetten"
+          service: light.turn_off
+          target:
+            entity_id: 
+              - light.zolder_bol
+              - light.wasmachinelamp
+    - conditions: 
+        - alias: "Lamp aan?"
+          condition: state
+          entity_id: light.zolder
+          state: "on"
+      sequence:
+        - alias: "Wasmachinelamp mee aanzetten"
+          service: light.turn_on
+          target:
+            entity_id: light.wasmachinelamp
+          data:
+            brightness: "{{ state_attr('light.zolder' ,'brightness') }}"

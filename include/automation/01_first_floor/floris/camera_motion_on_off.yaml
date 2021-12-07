@@ -1,0 +1,37 @@
+id: camera_floris
+alias: "Eerste verdieping | Floris - Motion detection FlorisCam aan en uit"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+  - platform: time
+    at: 
+      - "07:00"
+      - "18:30"
+action:
+  - alias: "Hoe laat?"
+    choose:
+    - conditions: 
+      - condition: time
+        before: " 06:59:59"
+      sequence:
+      - alias: "Motion detection Floriscam aan"
+        service: switch.turn_on
+        target:
+          entity_id: switch.floriscam_state
+    - conditions:
+      - condition: time
+        before: "18:29:59"
+      sequence:
+      - alias: "Motion detection Floriscam uit"
+        service: switch.turn_off
+        target:
+          entity_id: switch.floriscam_state
+    default:
+    - alias: "Motion detection Floriscam aan"
+      service: switch.turn_on
+      target:  
+        entity_id: switch.floriscam_state

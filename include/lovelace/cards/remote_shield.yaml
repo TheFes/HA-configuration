@@ -1,0 +1,139 @@
+type: "custom:vertical-stack-in-card"
+cards:
+  - type: custom:more-info-card
+    entity: media_player.shield_en_soundbar
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      # ROW 1
+      - type: "custom:button-card"
+        entity: script.script_start_nlziet
+        name: NLZiet
+        styles:
+          icon:
+            - color: "#FC46AA"
+        tap_action:
+          service: script.script_start_nlziet
+        template: menu_button
+      - type: "custom:button-card"
+        entity: script.script_start_emby
+        name: Emby
+        styles:
+          icon:
+            - color: green
+        tap_action:
+          service: script.script_start_emby
+        template: menu_button
+      - type: "custom:button-card"
+        entity: script.script_start_netflix
+        name: Netflix
+        styles:
+          icon:
+            - color: red
+        tap_action:
+          service: script.script_start_netflix
+        template: menu_button
+      # ROW 2
+      - type: "custom:button-card"
+        entity: script.script_start_youtube
+        name: YouTube
+        tap_action:
+          service: script.script_start_youtube
+        styles:
+          icon:
+            - color: red
+        template: menu_button
+      - type: "custom:button-card"
+        entity: script.lounge_tv_up
+        icon: "mdi:arrow-up-bold"
+        name: Up
+        styles:
+          card:
+            - background: var(--secondary-background-color-alpha)
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "UP"
+        template: icon_button
+      - type: "custom:button-card"
+        entity: script.script_start_youtube_kids
+        name: YT Kids
+        styles:
+          icon:
+            - color: red
+        tap_action:
+          service: script.script_start_youtube_kids
+        template: menu_button
+      # ROW 3
+      - type: "custom:button-card"
+        entity: script.lounge_tv_left
+        icon: "mdi:arrow-left-bold"
+        name: Left
+        styles:
+          card:
+            - background: var(--secondary-background-color-alpha)
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "LEFT"
+        template: icon_button
+      - type: "custom:button-card"
+        entity: script.lounge_tv_ok
+        name: Ok
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "CENTER"
+        template: icon_button
+        icon: mdi:circle-outline
+      - type: "custom:button-card"
+        entity: script.lounge_tv_right
+        icon: "mdi:arrow-right-bold"
+        name: Right
+        styles:
+          card:
+            - background: var(--secondary-background-color-alpha)
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "RIGHT"
+        template: icon_button
+      # ROW 4
+      - type: "custom:button-card"
+        entity: script.lounge_tv_return
+        name: Back
+        icon: mdi:step-backward
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "BACK"
+        template: menu_button
+      - type: "custom:button-card"
+        entity: script.lounge_tv_down
+        icon: "mdi:arrow-down-bold"
+        name: Down
+        styles:
+          card:
+            - background: var(--secondary-background-color-alpha)
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "DOWN"
+        template: icon_button
+      - type: "custom:button-card"
+        entity: script.lounge_tv_exit
+        name: Home
+        icon: mdi:circle
+        tap_action:
+          service: androidtv.adb_command
+          service_data:
+            entity_id: media_player.nvidia_shield
+            command: "HOME"
+        template: menu_button

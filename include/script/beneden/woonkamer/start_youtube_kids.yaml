@@ -1,0 +1,26 @@
+script_start_youtube_kids:
+  alias: "Beneden | Woonkamer - Start Youtube Kids"
+  icon: mdi:youtube-tv
+  sequence:
+    - alias: "TV al aan?"
+      choose:
+        - conditions:
+            - alias: "TV uit?"
+              condition: state
+              entity_id: media_player.nvidia_shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.nvidia_shield
+    - alias: "Wachten tot TV aan staat"
+      wait_template: >
+        {{ 
+          not states('media_player.nvidia_shield') in ['off', 'unavailable'] 
+        }}
+    - alias: "Juiste app starten"
+      service: androidtv.adb_command
+      target:
+        entity_id: media_player.nvidia_shield
+      data:
+        command: "am start -a android.intent.action.VIEW -d -n com.google.android.youtube.tvkids/com.google.android.apps.youtube.tvkids.activity.MainActivity"

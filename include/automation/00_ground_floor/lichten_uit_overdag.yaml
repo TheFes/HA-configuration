@@ -1,0 +1,40 @@
+id: lichten_uit_overdag
+alias: "Beneden | Lichten - Lampen beneden uit overdag"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.licht_woonkamer
+    id: licht
+    above: 300
+  - platform: numeric_state
+    entity_id: sensor.licht_woonkamer
+    id: heel_licht
+    above: 600
+condition:
+  - condition: sun
+    after: sunrise
+    after_offset: "03:00:00"
+action:
+  - alias: "Licht, of heel licht?"
+    choose:
+      - conditions:
+          - condition: trigger
+            id: licht
+        sequence:
+          - alias: "Aantal lampen beneden uit"
+            service: light.turn_off
+            target:
+              entity_id:
+                - light.staande_lamp
+                - light.booglamp
+                - light.tv_lamp
+                - light.speelhoek
+                - light.woonkamer_plafond
+                - light.keuken
+                - light.speelhoek
+    default:
+      - alias: "Alle lampen beneden uit"
+        service: light.turn_off
+        target:
+          entity_id: light.groep_beneden

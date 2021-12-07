@@ -1,0 +1,63 @@
+<<: !include tmpl_wifi_sensors.yaml 
+
+binary_sensor:
+  - platform: status
+    name: ${device_name} Status
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: true
+    name: ${device_name} Button
+    internal: true
+    id: button
+    on_multi_click:
+    - timing:
+        - ON for at most 1s
+        - OFF for at most 1s
+        - ON for at most 1s
+        - OFF for at least 0.2s
+      then: 
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${device_name}
+              click_type: double
+    - timing:
+        - ON for at most 1s
+        - OFF for at least 0.25s
+      then: 
+        - switch.toggle: relay_and_light
+#    on_press:
+#      - switch.toggle: relay_and_light
+
+output:
+  - platform: esp8266_pwm
+    id: led
+    pin:
+      number: GPIO4
+      inverted: true
+
+light:
+  - platform: monochromatic
+    id: status_led
+    name: ${device_name} Light
+    output: led
+    internal: true
+
+switch:
+  - platform: gpio
+    id: relay
+    pin: GPIO12
+  - platform: template
+    name: ${device_name}
+    optimistic: true
+    id: relay_and_light
+    turn_on_action:
+      - switch.turn_on: relay
+      - light.turn_on: status_led
+    turn_off_action:
+      - switch.turn_off: relay
+      - light.turn_off: status_led
+  - platform: restart
+    name: "${device_name} ${device_type} Restart"

@@ -1,0 +1,15 @@
+substitutions:
+  device_name: Pepijn
+  device_type: Light
+  ip: 192.168.2.35
+
+
+esphome:
+  name: pepijn_light
+  platform: ESP8266
+  board: esp01_1m
+  
+#<<: !include common/tmpl_wifi_minimal.yaml
+
+# Config LSC Filament bulb
+<<: !include common/tmpl_lsc_filament.yaml

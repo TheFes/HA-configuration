@@ -1,0 +1,43 @@
+id: wake_up_light
+alias: "Eerste Verdieping | Slaapkamer - Wake-up Light"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: template
+    value_template: >
+      {{ 
+        as_timestamp
+          ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
+          - timedelta(minutes = states('input_number.wakeup_start')|int)) 
+        == as_timestamp(now()) | int
+      }}
+condition:
+  - alias: "Lamp uit?"
+    condition: state
+    entity_id: light.slaapkamer
+    state: "off"
+  - alias: "Wake up light aangezet?"
+    condition: state
+    entity_id: input_boolean.wakeup_enabled
+    state: "on"
+action:
+  - alias: "Lamp gedimd aan"
+    service: light.turn_on
+    target:
+      entity_id: light.slaapkamer
+    data:
+      brightness: 1
+      color_temp: 650
+  - alias: "Lamp langzaam aan"
+    service: light.turn_on
+    target:
+      entity_id: light.slaapkamer
+    data:
+      brightness: 190
+      color_temp: 375
+      transition: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"
+  - alias: "Input boolean aan"
+    service: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.dimmed_slaapkamer
+  - delay: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"

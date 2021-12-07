@@ -1,0 +1,1 @@
+"""The tgtg component."""

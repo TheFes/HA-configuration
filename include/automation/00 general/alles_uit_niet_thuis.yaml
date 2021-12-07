@@ -1,0 +1,113 @@
+id: eb769e97-f6dd-471a-90ee-29d4666e0718
+alias: "Algemeen - Alles uit als we niet thuis zijn"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: sensor.huis_modus
+    to: "Afwezig"
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+condition: 
+  - alias: "Niemand thuis?"
+    condition: state
+    entity_id: sensor.huis_modus
+    state: "Afwezig"
+action:
+  - alias: "TV aan"
+    choose:
+    - conditions:
+        - alias: "condition alias (name)"
+          condition: state
+          entity_id: remote.woonkamer
+          state: "on"
+      sequence:
+        - alias: "Gast Modus aanzetten"
+          service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.gast
+    default:
+      - alias: "Alle lampen uit"
+        service: light.turn_off
+        target:
+          entity_id: light.groep_huis
+      - alias: "TV uit"
+        service: remote.turn_off
+        target:
+          entity_id: remote.woonkamer
+      - alias: "Media players uit"
+        service: media_player.turn_off
+        target:
+          entity_id: all
+      - alias: "Afzuigkap aan of niet?"
+        choose:
+          - conditions: 
+              - alias: "Afzuigkap of lichtje actief?"
+                condition: numeric_state
+                entity_id: sensor.afzuigkap_power
+                above: 1
+            sequence:
+              - alias: "Plug afzuigkap uit"
+                service: switch.turn_off
+                target:
+                  entity_id: switch.afzuigkap
+      - alias: "TV Meubel uit?"
+        choose:
+        - conditions:
+            - alias: "TV Meubel verbruikt weinig power"
+              condition: numeric_state
+              entity_id: sensor.tv_meubel_power
+              below: 40
+          sequence:
+            - alias: "TV Meubel uit"
+              service: switch.turn_off
+              target:
+                entity_id: switch.tv_meubel
+      - alias: "Droger uit?"
+        choose:
+        - conditions:
+            - alias: "Droger verbruikt weinig power"
+              condition: numeric_state
+              entity_id: sensor.droger_power
+              below: 40
+          sequence:
+            - alias: "Droger switch uit"
+              service: switch.turn_off
+              target:
+                entity_id: switch.droger
+      - alias: "Bureau Marleen uit?"
+        choose:
+        - conditions:
+            - alias: "Computer Marleen uit"
+              condition: state
+              entity_id: binary_sensor.imac_marleen
+              state: "off"
+            - condition: not
+              conditions:
+                - alias: "Printer actief"
+                  condition: state
+                  entity_id: sensor.dcp_l2530dw_status
+                  state: "printing"
+            - alias: "Weinig verbruik"
+              condition: numeric_state
+              entity_id: sensor.bureau_marleen_power
+              below: 20
+          sequence:
+            - alias: "Bureau Marleen uit"
+              service: switch.turn_off
+              target:
+                entity_id: switch.bureau_marleen
+      - alias: "Bureau Martijn uit?"
+        choose:
+        - conditions:
+            - alias: "Computer Martijn uit"
+              condition: state
+              entity_id: binary_sensor.computer_zolder
+              state: "off"
+          sequence:
+            - alias: "Bureau Martijn uit"
+              service: switch.turn_off
+              target:
+                entity_id: switch.bureau_martijn

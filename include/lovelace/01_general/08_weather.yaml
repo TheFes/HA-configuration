@@ -1,0 +1,96 @@
+icon: "mdi:weather-sunny"
+cards:
+  - type: weather-forecast
+    entity: weather.climacell_daily
+  - type: picture-entity
+    camera_image: camera.buienradar
+    entity: camera.buienradar
+    show_name: false
+    show_state: false
+  - type: 'custom:neerslag-card'
+    title: Neerslag
+    entities:
+      - sensor.neerslag_buienradar_regen_data
+  - type: entities
+    title: Weer
+    entities:
+      - entity: sensor.br_symbol
+        name: Huidige weer
+      - entity: sensor.br_temperature
+        name: Temperatuur
+      - entity: sensor.br_humidity
+        name: Luchtvochtigheid
+      - entity: sensor.br_precipitation
+        name: Huidige regen
+      - entity: sensor.br_precipitation_forecast_total
+        name: Regen in komende uur
+      - entity: sensor.br_wind_speed
+        name: Windsnelheid
+      - entity: sensor.br_wind_direction
+        name: Windrichting
+      - entity: sensor.br_pressure
+        name: Luchtdruk
+      - entity: sensor.br_irradiance
+        name: Zonne-intensiteit
+  - type: "custom:mini-graph-card"
+    name: Temperatuur
+    entities:
+      - entity: sensor.br_temperature
+    hour24: true
+    line_color: orange
+    points_per_hour: 12
+    show:
+      labels: true
+  - type: "custom:mini-graph-card"
+    name: Zonne-intensiteit
+    entities:
+      - entity: sensor.br_irradiance
+    hour24: true
+    line_color: yellow
+    points_per_hour: 12
+    show:
+      labels: true
+  - type: "custom:mini-graph-card"
+    name: Licht binnen
+    entities:
+      - entity: sensor.licht_keuken
+        name: Keuken
+      - entity: sensor.licht_woonkamer
+        name: Woonkamer
+    hour24: true
+    points_per_hour: 12
+    show:
+      labels: true
+  - type: vertical-stack
+    cards:
+      - type: "custom:mini-graph-card"
+        name: Zonnepanelen
+        entities:
+          - entity: sensor.qjb29100a4_output_power
+        hour24: true
+        line_color: green
+        points_per_hour: 12
+        show:
+          labels: true
+      - type: entity
+        entity: sensor.qjb29100a4_energy_today
+        name: Vandaag opgewekte energie
+  - type: "custom:sun-card"
+    language: nl
+    showAzimuth: true
+    showElevation: true
+  - type: entities
+    title: Pollen
+    entities:
+      - entity: sensor.pollen_grass
+        name: Aantal graspollen
+      - entity: sensor.pollen_grass_risk
+        name: Risico graspollen
+      - entity: sensor.pollen_tree
+        name: Aantal boompollen
+      - entity: sensor.pollen_tree_risk
+        name: Risico boompollen
+      - entity: sensor.pollen_weed
+        name: Aantal onkruidpollen
+      - entity: sensor.pollen_weed_risk
+        name: Risico onkruidpollen

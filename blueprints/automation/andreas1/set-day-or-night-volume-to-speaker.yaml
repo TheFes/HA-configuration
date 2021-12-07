@@ -1,0 +1,85 @@
+blueprint:
+  name: Set volyme of speakers based of time of day
+  description: Set volyme to different level on different times a day
+  domain: automation
+  input:
+    daytime_starts:
+      name: Time of day
+      description: Change level depending of time of day, Daytime level
+      default: 07:00:00
+      selector:
+        time: {}
+    daytime_ends:
+      name: Time of night
+      description: Change level depending of time of day, Nighttime level
+      default: '20:00:00'
+      selector:
+        time: {}
+    volume_day:
+      name: Set volume day
+      description: The volume you want your media player to be reset to
+      default: '0.5'
+      selector:
+        number:
+          min: 0.0
+          max: 1.0
+          step: 0.1
+          mode: slider
+    volume_night:
+      name: Set volume night
+      description: The volume you want your media player to be reset to
+      default: '0.1'
+      selector:
+        number:
+          min: 0.0
+          max: 1.0
+          step: 0.1
+          mode: slider
+    filter:
+      name: Filter players
+      description: Players not to be reset or not. Only entities are supported, devices
+        must be expanded!
+      default:
+        entity_id: []
+      selector:
+        target:
+          entity:
+            domain: media_player
+    include_exclude:
+      name: Filter invert
+      description: Turn off to reset choosen and on to choose all other
+      default: true
+      selector:
+        boolean: {}
+  source_url: https://community.home-assistant.io/t/set-day-or-night-volume-to-speaker/294217
+variables:
+  filter: !input 'filter'
+  player: "{% set result = namespace(player=[]) %} {% for state in states.media_player\
+    \ %}\n  {% if include_exclude == 'true' %}\n    {% if not state.state == 'playing'\
+    \ and not state.entity_id in filter.entity_id %}\n      {% set result.player =\
+    \ result.player + [state.entity_id] %}\n    {% endif %}\n  {% else %}\n    {%\
+    \ if state.state != 'playing' and state.entity_id in filter.entity_id %}\n   \
+    \   {% set result.player = result.player + [state.entity_id] %}\n    {% endif\
+    \ %}\n  {% endif %}\n{% endfor %} {{result.player|join(\",\")}}\n"
+trigger:
+- platform: time
+  at: !input 'daytime_starts'
+- platform: time
+  at: !input 'daytime_ends'
+action:
+- choose:
+  - conditions:
+    - after: !input 'daytime_starts'
+      before: !input 'daytime_ends'
+      condition: time
+    sequence:
+    - service: media_player.volume_set
+      data_template:
+        entity_id: '{{ player }}'
+        volume_level: !input 'volume_day'
+  default:
+  - service: media_player.volume_set
+    data_template:
+      entity_id: '{{ player }}'
+      volume_level: !input 'volume_night'
+mode: single

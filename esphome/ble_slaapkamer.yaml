@@ -1,0 +1,11 @@
+substitutions:
+  device_name: BLE Slaapkamer
+  device_type: BLE
+  ip: 192.168.2.86
+
+esphome:
+  name: slaapkamer-ble
+  platform: esp32
+  board: lolin32_lite
+
+<<: !include common/tmpl_ble.yaml

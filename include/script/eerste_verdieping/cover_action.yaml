@@ -1,0 +1,9 @@
+cover_action:
+  alias: "Eerste Verdieping - Acties voor template covers"
+  icon: mdi:window-shutter
+  mode: parallel
+  max_exceeded: silent
+  sequence:
+  - variables:
+      cover: "cover.{{ cover_id }}" 
+      boolean: "input_boolean.cover_{{ cover_id }}_invert"

@@ -1,0 +1,22 @@
+id: slaapkamer_reset_dim_boolean
+alias: "Eerste Verdieping | Slaapkamer - Boolean met dim status weer uit zetten"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at:
+      - input_datetime.slaapkamer_transition_on
+      - input_datetime.slaapkamer_transition_off
+      - input_datetime.slaapkamer_dim_on
+      - input_datetime.slaapkamer_dim_off
+condition: 
+  - alias: "Input boolean aan?"
+    condition: state
+    entity_id: input_boolean.dimmed_slaapkamer
+    state: "on"
+action:
+  - alias: "Input boolean weer"
+    service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.dimmed_slaapkamer
+

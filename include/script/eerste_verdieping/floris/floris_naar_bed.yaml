@@ -1,0 +1,33 @@
+bedtime_floris:
+  alias: "Eerste Verdieping | Flors - Floris gaat naar bed"
+  sequence:
+    - alias: "Licht aan"
+      service: light.turn_on
+      target:
+        entity_id: light.floris_template
+    - alias: "Slaapliedjes"
+      service: spotcast.start
+      data:
+        entity_id: media_player.floris_mini
+        account: floris
+        uri: spotify:artist:4lZvaAA1Gi2vrGLusUrEBV
+        shuffle: true
+        force_playback: true
+    - delay: 5
+    - alias: "Volume iets hoger"
+      service: media_player.volume_set
+      target:
+        entity_id: media_player.floris_mini
+      data:
+        volume_level: 0.35
+    - alias: "Wachten tot licht uit gaat"
+      wait_for_trigger:
+        - platform: state
+          entity_id: light.floris_template
+          to: "off"
+          from: "on"
+    - alias: "Muziek uit"
+      service: media_player.turn_off
+      target:
+        entity_id: media_player.floris_mini
+  mode: restart

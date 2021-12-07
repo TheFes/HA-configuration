@@ -1,0 +1,41 @@
+platform: template
+covers:
+  floris:
+    device_class: blind
+    availability_template: "{{ not is_state('cover.floris_tahoma', 'unavailable') }}"
+    friendly_name: "Screen Floris"
+    position_template: >
+      {% if is_state('input_boolean.cover_floris_invert', 'on') %}
+        {{ 100 - state_attr('cover.floris_tahoma', 'current_position') | float(100) }}
+      {% else %}
+        {{ state_attr('cover.floris_tahoma', 'current_position') | float(0) }}
+      {% endif %}
+    open_cover:
+      service: >
+        {% if is_state('input_boolean.cover_floris_invert', 'on') %}
+          cover.close_cover
+        {% else %}
+          cover.open_cover
+        {% endif %}
+      entity_id: cover.floris_tahoma
+    close_cover:
+      service: >
+        {% if is_state('input_boolean.cover_floris_invert', 'on') %}
+          cover.open_cover
+        {% else %}
+          cover.close_cover
+        {% endif %}
+      entity_id: cover.floris_tahoma
+    stop_cover:
+      service: cover.stop_cover
+      entity_id: cover.floris_tahoma
+    set_cover_position:
+      service: cover.set_cover_position
+      entity_id: cover.floris_tahoma
+      data:
+        position: >
+          {% if is_state('input_boolean.cover_floris_invert', 'on') %}
+            {{ 100 - position }}
+          {% else %}
+            {{ position }}
+          {% endif %}

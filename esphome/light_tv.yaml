@@ -1,0 +1,12 @@
+substitutions:
+  device_name: TV
+  device_type: Light
+  ip: 192.168.2.36
+
+esphome:
+  name: tv-light
+  platform: ESP8266
+  board: esp01_1m
+
+# Config LSC Filament bulb
+<<: !include common/tmpl_lsc_filament.yaml

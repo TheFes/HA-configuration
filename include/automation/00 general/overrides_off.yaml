@@ -1,0 +1,13 @@
+id: 6eb7db41-ecea-414c-b546-7fe518299fb4
+alias: Algemeen - Overrides uit
+trigger:
+  - platform: time
+    at: "05:00:00"
+action:
+  - alias: "Overrrides uit"
+    service: input_boolean.turn_off
+    target:
+      entity_id:
+        - input_boolean.bureau_marleen_override
+        - input_boolean.bureau_martijn_override
+        - input_boolean.tv_meubel_override

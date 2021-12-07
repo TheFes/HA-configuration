@@ -1,0 +1,50 @@
+id: acc9dd2b-9696-475a-91d5-7c538394dec1
+alias: "Beneden | Woonkamer - Zet TV Meubel weer aan"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      id: switch_67
+      event: 1002
+    id: button
+  - platform: state
+    entity_id:
+      - light.groep_beneden
+      - light.wc
+    from: "off"
+    to: "on"
+    id: light
+  - platform: state
+    entity_id: switch.tv_meubel
+    from: "off"
+    to: "on"
+condition:
+  - alias: "TV Meubel uit"
+    condition: state
+    entity_id: switch.tv_meubel
+    state: "off"
+action:
+  - condition: not
+    conditions:
+      - condition: and
+        conditions:
+          - condition: trigger
+            id: light
+          - alias: "Tussen 6 en 21"
+            condition: time
+            after: "21:00:00"
+            before: "06:00:00"
+  - alias: "TV Meubel aanzetten"
+    service: switch.turn_on
+    target:
+      entity_id: switch.tv_meubel
+  - alias: "TV opgestart"
+    wait_for_trigger:
+      - platform: state
+        entity_id: media_player.nvidia_shield
+        from: "unavailable"
+  - delay: 10
+  - alias: "TV uitzetten"
+    service: media_player.turn_off
+    target:
+      entity_id: media_player.nvidia_shield

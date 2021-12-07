@@ -1,0 +1,25 @@
+sensor:
+  unique_id: sensor_afzuigkap_modus
+  name: Afzuigkap
+  state: >-
+    {% if is_state('switch.afzuigkap', 'on') 
+        and states('sensor.afzuigkap_power') | float(0) > 5 %}
+      Afzuigen
+    {% elif is_state('switch.afzuigkap', 'on') 
+        and states('sensor.afzuigkap_power') | float(0) > 0.5 %}
+      Licht aan
+    {% elif is_state('switch.afzuigkap', 'on') %}
+      Inactief
+    {% else %}
+      Plug uit
+    {% endif %}
+  icon: >-
+    {% if is_state('sensor.afzuigkap_modus', 'Licht aan') %}
+      mdi:lightbulb
+    {% elif is_state('sensor.afzuigkap_modus', 'Afzuigen') %}
+      mdi:weather-windy
+    {% elif is_state('sensor.afzuigkap_modus', 'Inactief') %}
+      mdi:lightning-bolt
+    {% elif is_state('sensor.afzuigkap_modus', 'Plug uit') %}
+      mdi:power-plug-off-outline
+    {% endif %}

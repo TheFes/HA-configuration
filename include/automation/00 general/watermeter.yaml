@@ -1,0 +1,16 @@
+id: 03f12f5e-24d3-4700-a590-b252b980a978
+alias: "Algemeen - Meterstand watermeter"
+trigger:
+  - platform: time
+    at: "01:00:00"
+condition:
+  - alias: "1 januari?"
+    condition: template
+    value_template: "{{ now().day == 1 and now().month == 1 }}"
+action:
+  - alias: "Correctie goed instellen op basis van verbruik vorig jaar"
+    service: input_number.set_value
+    target:
+      entity_id: input_number.correction_water_meter
+    data:
+      value: "{{ (states('input_number.correction_water_meter') | float(0) + (state_attr('sensor.yearly_water','last_period') | float(0) / 1000))|round(3) }}"

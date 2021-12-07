@@ -1,0 +1,31 @@
+id: b2977df5-1481-4b19-b56a-ae79bbf9659d
+alias: "Vakantie - Lampen kinderkamers avond"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: time
+    id: floris
+    at: "19:00"
+  - platform: time
+    id: pepijn
+    at: "19:15"
+condition:
+  - alias: "Vakantiemodus aan?"
+    condition: state
+    entity_id: sensor.huis_modus
+    state: "Vakantie"
+action:
+  - alias: "Pauze voordat de lamp aangaat na de trigger"
+    delay:
+      minutes: "{{ range(0,30) | random }}"
+  - alias: "Lamp aanzetten op basis van trigger"
+    service: light.turn_on
+    target:
+      entity_id: "light.{{ trigger.id }}"
+  - alias: "Pauze voordat de lamp uit gaat na het aanzetten"
+    delay:
+      minutes: "{{ range(20,40) | random }}"
+  - alias: "Lamp uitzetten op basis van trigger"
+    service: light.turn_off
+    target:
+      entity_id: "light.{{ trigger.id }}"

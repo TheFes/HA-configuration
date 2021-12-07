@@ -1,0 +1,9 @@
+sensor:
+  unique_id: sensor_nightstate
+  name: Nightstate
+  state: >-
+    {% if is_state('sun.sun', 'below_horizon') %}
+      1
+    {% else %}
+      0
+    {% endif %}

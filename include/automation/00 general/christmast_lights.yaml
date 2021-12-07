@@ -1,0 +1,55 @@
+id: c9be7372-de6f-4763-b0d0-23665b7f1e9b
+alias: Algemeen - Kerstverlichting
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: light.tuinlampjes
+    to:
+    id: ijspegels
+  - platform: state
+    entity_id: light.eettafel
+    to: "on"
+    id: boom_ster
+  - platform: state
+    entity_id: light.tv_lamp
+    to:
+    id: vaas
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Eettafel
+      click_type: long
+    id: naar_bed
+action:
+  - alias: "welke actie"
+    choose:
+      - conditions: "{{ trigger.id == 'ijspegels'}}"
+        sequence:
+          - alias: "IJspegels schakelen"
+            service: "switch.turn_{{ trigger.to_state.state }}"
+            target:
+              entity_id: switch.bw_plug_19
+      - conditions: "{{ trigger.id == 'vaas'}}"
+        sequence:
+          - alias: "Wacht tot vaas beschikbaar is"
+            wait_template: "{{ states('switch.backup_02') not in [ 'unavailable', 'unknown'] }}"
+          - alias: "Vaas schakelen met kerststal"
+            service: "switch.turn_{{ trigger.to_state.state }}"
+            target:
+              entity_id: switch.backup_02
+      - conditions: "{{ trigger.id == 'boom_ster'}}"
+        sequence:
+          - alias: "Kerstboom en ster aan als eettafel aan gaat"
+            service: switch.turn_on
+            target:
+              entity_id:
+                - switch.bw_plug_20
+                - switch.backup_01
+      - conditions: "{{ trigger.id == 'naar_bed'}}"
+        sequence:
+          - alias: "Kerstboom en ster aan als eettafel aan gaat"
+            service: switch.turn_off
+            target:
+              entity_id:
+                - switch.bw_plug_20
+                - switch.backup_01

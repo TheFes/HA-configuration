@@ -1,0 +1,10 @@
+binary_sensor:
+  unique_id: ec052efd-9784-4ba9-983f-cddaddfbeb6e
+  name: "Zolder Mini Martijn"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.zolder_mini_martijn', 'playing') }}
+  delay_on: "00:00:05"
+  delay_off: "00:00:05"
+  attributes:
+    volume: 0.25

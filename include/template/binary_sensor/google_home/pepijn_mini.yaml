@@ -1,0 +1,15 @@
+binary_sensor:
+  unique_id: 71f2f295-401a-4364-8c93-715a2b0f67a6
+  name: "Pepijn Mini"
+  device_class: running
+  state: >-
+    {{ is_state('media_player.pepijn_mini', 'playing') }}
+  delay_off: "00:00:05"
+  delay_on: "00:00:05"
+  attributes:
+    volume: >
+      {% if now() > today_at("19:00") %}
+        0.0
+      {% else %}
+        0.25
+      {% endif %}

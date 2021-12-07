@@ -1,0 +1,34 @@
+id: 2a73c7ac-123a-4d5b-99dd-9a0bec93e125
+alias: "Vakantie - Lampen bedtijd"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at: "22:00"
+condition:
+  - alias: "Vakantiemodus aan?"
+    condition: state
+    entity_id: sensor.huis_modus
+    state: "Vakantie"
+action:
+  - alias: "Pauze voordat de lamp aan gaat na de trigger"
+    delay:
+      minutes: "{{ range(0,30) | random }}"
+  - alias: "Lamp slaapkamer aanzetten"
+    service: light.turn_on
+    target:
+      entity_id: light.slaapkamer_template
+  - alias: "Pauze voordat de lampen beneden uit gaan"
+    delay:
+      minutes: "{{ range(5,10) | random }}"
+  - alias: "Lampen beneden uitzetten"
+    service: light.turn_off
+    target:
+      entity_id: light.groep_beneden
+  - alias: "Pauze voordat de alle lampen uit gaan"
+    delay:
+      minutes: "{{ range(15,20) | random }}"
+  - alias: "Alle lampen uit"
+    service: light.turn_off
+    target:
+      entity_id: light.groep_huis

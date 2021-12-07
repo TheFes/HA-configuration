@@ -1,0 +1,24 @@
+platform: systemmonitor
+resources:
+  - type: network_in
+    arg: 'eth0'
+  - type: network_out
+    arg: 'eth0'
+  - type: disk_use_percent
+    arg: /
+  - type: disk_use
+    arg: /
+  - type: disk_free
+    arg: /
+  - type: memory_free
+  - type: memory_use
+  - type: memory_use_percent
+  - type: load_1m
+  - type: ipv4_address
+    arg: 'eth0'
+  - type: processor_use
+  - type: last_boot
+  - type: throughput_network_in
+    arg: 'eth0'
+  - type: throughput_network_out
+    arg: 'eth0'

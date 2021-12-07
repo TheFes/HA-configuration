@@ -1,0 +1,56 @@
+id: shelly_knop_pepijn
+alias: "Eerste Verdieping | Pepijn - Acties met Shelly"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Pepijn
+action:
+  - alias: "Shelly aan of uit?"
+    choose:
+      - conditions: 
+          - alias: "Shelly uit?"
+            condition: state
+            entity_id: switch.shelly1_pepijn
+            state: "off"
+        sequence:
+          - alias: "Shelly aanzetten"
+            service: switch.turn_on
+            target:
+              entity_id: switch.shelly1_pepijn
+    default:
+      - alias: "Welk kliktype?"
+        choose:
+          - conditions: 
+              - alias: "Korte klik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            sequence:
+              - alias: "Lamp schakelen"
+                service: light.toggle
+                target:
+                  entity_id: light.pepijn_template
+          - conditions: 
+              - alias: "Dubbelklik?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            sequence:
+              - alias: "Lamp op 100%"
+                service: light.turn_on
+                target:
+                  entity_id: light.pepijn
+                data:
+                  brightness: 255
+                  color_temp: "{{ state_attr('light.pepijn', 'min_mireds') }}"
+          - conditions: 
+              - alias: "Lange klik"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            sequence:
+              - alias: "Nijntje schakelen"
+                service: light.toggle
+                target:
+                  entity_id: light.nijntje        
+

@@ -1,0 +1,9 @@
+binary_sensor:
+  unique_id: rain_until_afternoon
+  name: "Regen tot middag"
+  state: >-
+    {% set uur = now().hour | int(0)%}
+    {% set aantal_uur = (13 - uur) if uur < 13 else (13 + (24 - uur)) %}
+    {% set regen = state_attr('weather.climacell_hourly', 'forecast')[1:uur] | map(attribute='precipitation') | sum | float(0) %}
+    {% set regenkans_komend_uur = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
+    {{ (regenkans_komend_uur + regen) > 0 }}
