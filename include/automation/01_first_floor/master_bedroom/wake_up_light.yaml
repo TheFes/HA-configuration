@@ -5,12 +5,15 @@ max_exceeded: silent
 trigger:
   - platform: template
     value_template: >
-      {{ 
-        as_timestamp
-          ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
-          - timedelta(minutes = states('input_number.wakeup_start')|int)) 
-        == as_timestamp(now()) | int
-      }}
+      {% if states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
+        False
+      {% else %}
+        {{ 
+              now() >= 
+              (states('sensor.slaapkamer_hub_alarms') | as_datetime)
+                - timedelta(minutes = states('input_number.wakeup_start')|int)
+        }}
+      {% endif %}
 condition:
   - alias: "Light off?"
     condition: state

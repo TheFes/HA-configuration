@@ -4,11 +4,6 @@ test_script:
   sequence:
     - variables:
         extra_data:
-          language: nl
-          voice: thefes
-    - service: tts.google_cloud_say
-      data: >
-        {{ dict(
-                  entity_id = 'media_player.whatever',
-                  message = 'test'
-        )}}
+    - service: persistent_notification.create
+      data:
+        message: "value is {{extra_data}}"

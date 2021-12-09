@@ -58,6 +58,7 @@ google_home_say:
         boolean:
   variables:
     tts_service: tts.google_cloud_say
+    service_data:
     players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
@@ -314,8 +315,12 @@ google_home_say:
       service: "{{ tts_service }}"
       target:
         entity_id: "{{ tts_target_list }}"
-      data:
-        message: "{{ tts_message }}"
+      data: >
+        {% if service_data is defined and service_data != None %}
+          {{ dict( message = tts_message, **service_data ) }}
+        {% else %}
+          {{ dict( message = tts_message ) }}
+        {% endif %}
     - alias: "Short delay if required"
       choose:
         - conditions:
