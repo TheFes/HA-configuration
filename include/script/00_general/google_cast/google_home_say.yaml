@@ -61,9 +61,6 @@ google_home_say:
     players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
-    frequent_radio:
-      - icecast.omroep.nl # NPO radio 2 & 3FM (NL)
-      - playerservices.streamtheworld.com # Radio Veronica (NL)
     spotify_media_players:
       - media_player.spotify_pepijn
       - media_player.spotify_martijn
@@ -189,7 +186,7 @@ google_home_say:
                                                   entity_id = entity.entity_id,
                                                   media_content_id = entity.attributes.media_content_id | default('no media_content'),
                                                   media_title = entity.attributes.media_title | default('no title'),
-                                                  media_artist = entity.attributes.media_artist | default('no artist'),
+                                                  media_artist = entity.attributes.media_artist | default('No artist'),
                                                   media_content_type = entity.attributes.media_content_type | default('no type'),
                                                   app_name = entity.attributes.app_name | default('no app'),
                                                   entity_picture = entity.attributes.entity_picture | default('no pic'),
@@ -292,7 +289,6 @@ google_home_say:
                   default_group_split = {{ default_group_split | default(False) }}
                   tts_target_list = {{ tts_target_list | default('undefined') }}
                   players_screen = {{ players_screen | default('undefined') }}
-                  frequent_radio = {{ frequent_radio | default('undefined') }} 
                   speaker_groups = {{ speaker_groups | default('undefined') }}
                   speaker_group_list = {{ speaker_group_list | default('undefined') }}
                   ## data used ##
@@ -316,8 +312,9 @@ google_home_say:
                 volume_level: "{{ tts_volume if tts_volume < 1 else tts_volume / 100 }}"
     - alias: "Send TTS message"
       service: "{{ tts_service }}"
-      data:
+      target:
         entity_id: "{{ tts_target_list }}"
+      data:
         message: "{{ tts_message }}"
     - alias: "Short delay if required"
       choose:
@@ -347,14 +344,9 @@ google_home_say:
                     variables:
                       spotify: >
                         {{ players_to_resume[repeat.index-1].app_name == 'Spotify' }}
-                      radio: >
+                      stream: >
                         {{ 
-                          players_to_resume[repeat.index-1].app_name == 'TuneIn Free'
-                          or (
-                                  (players_to_resume[repeat.index-1].media_content_id).split('//')[1]
-                                    | default('no/tunein', true)
-                                ).split('/')[0]
-                            in frequent_radio
+                          (players_to_resume[repeat.index-1].media_content_id).startswith('http')
                         }}
                       spotcast_account: >
                         {% if voice_spotcast is defined %}
@@ -425,10 +417,10 @@ google_home_say:
                                   entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
                                   account: "{{ spotcast_account }}"
                                   force_playback: true
-                      - alias: "Radio?"
-                        conditions: "{{ radio }}"
+                      - alias: "Stream?"
+                        conditions: "{{ stream }}"
                         sequence:
-                          - alias: "Resume radio"
+                          - alias: "Resume stream"
                             service: media_player.play_media
                             target:
                               entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
@@ -438,7 +430,7 @@ google_home_say:
                               media_content_type: "music"
                               extra:
                                 title: >
-                                  {% if players_to_resume[repeat.index -1].media_artist != 'no artist' %}
+                                  {% if (players_to_resume[repeat.index -1].app_name).startswith('TuneIn') %}
                                     {{ players_to_resume[repeat.index -1].media_artist }}
                                   {% else %}
                                     {{ players_to_resume[repeat.index -1].media_title }}
@@ -482,3 +474,6 @@ google_home_say:
                     service: media_player.turn_on
                     target:
                       entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"
+    # This last part is a specific use case for my setup, not required for the script itself. It will do no harm if you leave it in though
+    - delay: >
+        {{ 0 if not is_state('script.script_start_audio_tag', 'on') else 3 }}

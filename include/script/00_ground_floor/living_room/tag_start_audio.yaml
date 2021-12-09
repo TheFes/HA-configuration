@@ -81,8 +81,11 @@ script_start_audio_tag:
           - alias: "Wait until music is stopped"
             wait_template: >
               {{
-                is_state(player, 'idle')
-                or is_state(player, 'off')
+                (
+                  is_state(player, 'idle')
+                  or is_state(player, 'off')
+                )
+                and is_state('script.google_home_say', 'off')
               }}
     - alias: "Short delay"
       delay: 1
