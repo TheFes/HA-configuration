@@ -1,3 +1,7 @@
+# Script to resume streams on Google Home speakes after a TTS is sent
+# Supports TuneIn and Spotify
+# for more details: https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634
+#
 google_home_say:
   alias: "00 🔊 TTS for Google Home"
   description: Script for TTS messages to Google Home speakers
@@ -53,20 +57,20 @@ google_home_say:
       selector:
         boolean:
   variables:
-    # Where [LIST] is mentioned, make sure you enter a list, and not a comma separated string
-    tts_service: tts.google_cloud_say # the tts service, if addional service data is required, edit in the script (line 288-292)
-    players_screen: # [LIST] Cast devices (Nest Hub (Max)) with a screen
+    tts_service: tts.google_cloud_say
+    service_data: &service_data
+    players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
-    frequent_radio: # [LIST] frequently uses streams (only the part between http(s):// and the first / after that)
+    frequent_radio:
       - icecast.omroep.nl # NPO radio 2 & 3FM (NL)
       - playerservices.streamtheworld.com # Radio Veronica (NL)
-    spotify_media_players: # [LIST] media players from the spotify integration, should be named like "media_player.spotify_[spotcast account]"
+    spotify_media_players:
       - media_player.spotify_pepijn
       - media_player.spotify_martijn
       - media_player.spotify_marleen
       - media_player.spotify_floris
-    speaker_groups: # [DICT/LIST] speaker groups, also list the entities belonging to the group
+    speaker_groups:
       media_player.huis_groep:
         - media_player.keuken_hub
         - media_player.slaapkamer_hub
@@ -92,13 +96,13 @@ google_home_say:
         - media_player.boven_groep
         - media_player.beneden_groep
         - media_player.zolder_groep
-    primary_spotcast: "pepijn" # the spotify account which is used as primary spotcast account
-    silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3" # url to the silent mp3 used for volume level restore
-    default_volume_restore: True # set to True if you want to restore volume of non playing entities by default
-    delay_volume_restore: 3 # the delay which is used after playing the silent mp3 to make sure it is actually playing and the volume can be restored
-    default_volume_level: 0.25 # the default volume level to use in case the silent mp3 was not playing yet (delay too short)
-    default_group_split: False # set to True in case the TTS should be sent to the individual entities of a speaker group instead of the group itself
-    debug: False # set to True in case you want to write the variables used in the script to the logbook for debugging
+    primary_spotcast: "pepijn"
+    silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3"
+    default_volume_restore: True
+    delay_volume_restore: 3
+    default_volume_level: 0.25
+    default_group_split: False
+    debug: False
   sequence:
     - alias: "Convert input to lists if not provided as such"
       variables:
@@ -116,7 +120,7 @@ google_home_say:
             {% endfor %}
             {% set tts_group_entities = ns.single | unique | list %}
             {% set single_not_in_group = tts_target_single | reject('in', tts_group_entities) | list %}
-            {% if speaker_group_split | default(False) %}
+            {% if speaker_group_split | default(default_group_split | default(False)) %}
               {{ tts_group_entities + single_not_in_group }}
             {% else %}
               {{ tts_target_group + single_not_in_group }}
@@ -226,7 +230,12 @@ google_home_say:
     - variables:
         volume_restore_required: >
           {{
-            restore_volume_all | default(default_volume_restore)
+            True if
+              (
+                default_volume_restore is not boolean
+                and silent_mp3 is defined
+              )
+            else False
             and tts_target_not_playing | count > 0
             and tts_volume is defined
           }}
@@ -241,16 +250,21 @@ google_home_say:
               data:
                 media_content_id: "{{ silent_mp3 }}"
                 media_content_type: "audio/mp3"
-            - delay: 3
+            - delay: >
+                {{ delay_volume_restore | int(3) }}
     - variables:
         volume_old_not_playing: >
           {% set entities = expand(tts_target_not_playing) %}
           {% set ns = namespace(info=[]) %}
+          {% set volume = default_volume_level | float(0.25) %}
+          {% set volume_restore = volume if volume < 1 else [1, volume / 100] | min %}
           {% for entity in entities %}
             {% set ns.info = ns.info +  [
                                         dict(
                                           entity_id = entity.entity_id, 
-                                          volume_level = entity.attributes.volume_level | default(default_volume_level) | round(2)
+                                          volume_level = entity.attributes.volume_level | default(
+                                                                                                    volume_restore
+                                                                                                  ) | round(2)
                                           ) 
                                         ] 
             %}
@@ -260,7 +274,7 @@ google_home_say:
           {{ tts_target_not_playing | select('in', players_screen) | list }}
     - alias: "Debug log"
       choose:
-        - conditions: "{{ debug }}"
+        - conditions: "{{ False if debug is not boolean else debug }}"
           sequence:
             - alias: "Debug info to log"
               service: system_log.write
@@ -275,8 +289,8 @@ google_home_say:
                   speaker_group_split = {{ speaker_group_split | default('undefined') }}
                   ## script_settings ##
                   silent_mp3 = {{ silent_mp3 if silent_mp3 | default('undefined') }}
-                  default_volume_restore = {{ default_volume_restore | default('undefined') }}
-                  default_group_split = {{ default_group_split | default('undefined') }}
+                  default_volume_restore = {{ default_volume_restore | default(True if silent_mp3 is defined else False) }}
+                  default_group_split = {{ default_group_split | default(False) }}
                   tts_target_list = {{ tts_target_list | default('undefined') }}
                   players_screen = {{ players_screen | default('undefined') }}
                   frequent_radio = {{ frequent_radio | default('undefined') }} 
@@ -306,6 +320,7 @@ google_home_say:
       data:
         entity_id: "{{ tts_target_list }}"
         message: "{{ tts_message }}"
+        <<: *service_data
     - alias: "Short delay if required"
       choose:
         - conditions:

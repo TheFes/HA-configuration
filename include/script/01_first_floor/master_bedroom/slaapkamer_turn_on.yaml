@@ -36,9 +36,19 @@ slaapkamer_turn_on:
                               target:
                                 entity_id: light.slaapkamer
                               data:
-                                brightness: 190
-                                color_temp: 375
-                                transition: 300
+                                brightness_pct: 25
+                                color_temp: 570
+                                transition: 30
+                            - delay: 30
+                            - alias: "Increase brightness"
+                              service: light.turn_on
+                              target:
+                                entity_id: light.slaapkamer
+                              data:
+                                brightness_pct: 100
+                                color_temp: 323
+                                transition: 270
+                            - delay: 270
                             - alias: "Turn on input_boolean"
                               service: input_boolean.turn_on
                               target:
@@ -62,9 +72,9 @@ slaapkamer_turn_on:
                               target:
                                 entity_id: light.slaapkamer
                               data:
-                                brightness: 80
-                                color_temp: 525
-                                transition: 300
+                                brightness_ptc: 15
+                                color_temp: 600
+                                transition: 60
                             - alias: "Turn on input_boolean"
                               service: input_boolean.turn_on
                               target:

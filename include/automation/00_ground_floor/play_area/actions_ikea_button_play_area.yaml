@@ -1,0 +1,26 @@
+id: 089a1b6a-4dfa-490e-bda3-675de31e1807
+alias: "F0P 🪀 IKEA button play area"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: 49bde0c562800b4a58c3ec0a59e77579
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: light.speelhoek_tafel
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1001 }}"
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: light.speelhoek

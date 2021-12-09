@@ -1,0 +1,40 @@
+id: 54d22a6f-c74e-4bd7-8047-a45a3c05c109
+alias: "F0L 📺 Xiaomi button TV area"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: f2bccbc6effd6709b9dea5b2de97be27
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: light.tv_lamp
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1001 }}"
+        sequence:
+          - service: switch.toggle
+            target:
+              entity_id: switch.backup_02
+      - conditions:
+          - alias: "Double"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1004 }}"
+        sequence:
+          - service: switch.toggle
+            target:
+              entity_id: switch.tv_meubel
+      - conditions:
+          - alias: "Release"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1003 }}"
+        sequence:
+          - delay: 0

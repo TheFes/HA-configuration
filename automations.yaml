@@ -1,5 +1,5 @@
 - id: "1632656512140"
-  alias: "F2 📦 Xiaomi Cube"
+  alias: F2 📦 Xiaomi Cube
   description: Acties voor cube
   use_blueprint:
     path: bergstrom/mi-magic-cube-deconz-45-actions.yaml
@@ -25,49 +25,3 @@
             volume_level:
               "{{ [0, state_attr('media_player.zolder_mini_martijn', 'volume_level')
               | float - 0.05 ] | max | round(2) }}"
-- id: "1632657081970"
-  alias: "F2 📦 Plug desk Marleen"
-  description: ""
-  use_blueprint:
-    path: xiaomi_button/xiaomi_button.yaml
-    input:
-      remote: 8a2ea6de85f43628d4eb06833825f0bc
-      button_press_in:
-        - service: switch.turn_on
-          target:
-            entity_id: switch.bureau_marleen
-      button_double_press:
-        - service: light.toggle
-          target:
-            area_id: zolder
-      button_hold: []
-- id: "1632657881228"
-  alias: "F0K 🍳 Lights with xiaomi button"
-  description: ""
-  use_blueprint:
-    path: xiaomi_button/xiaomi_button.yaml
-    input:
-      remote: c953df250e726edcad4416de43bb3ac2
-      button_press_in:
-        - service: light.toggle
-          target:
-            entity_id: light.keukenspotjes
-      button_double_press:
-        - service: light.toggle
-          target:
-            entity_id: light.keuken
-- id: "1636316842202"
-  alias: "F0P 🪀 Lights play area with IKEA button"
-  description: ""
-  use_blueprint:
-    path: Sam04/deconz-ikea-tradfri-shortcut-button.yaml
-    input:
-      remote: 49bde0c562800b4a58c3ec0a59e77579
-      button_short:
-        - service: light.toggle
-          target:
-            entity_id: light.speelhoek_tafel
-      button_long:
-        - service: light.toggle
-          target:
-            entity_id: light.speelhoek

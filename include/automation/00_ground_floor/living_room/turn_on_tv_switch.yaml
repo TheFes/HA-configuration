@@ -1,12 +1,6 @@
 id: acc9dd2b-9696-475a-91d5-7c538394dec1
 alias: "F0L 📺 Turn TV plug back on"
 trigger:
-  - platform: event
-    event_type: "deconz_event"
-    event_data:
-      id: switch_67
-      event: 1002
-    id: button
   - platform: state
     entity_id:
       - light.groep_beneden
@@ -14,10 +8,6 @@ trigger:
     from: "off"
     to: "on"
     id: light
-  - platform: state
-    entity_id: switch.tv_meubel
-    from: "off"
-    to: "on"
 condition:
   - alias: "TV plug off"
     condition: state
