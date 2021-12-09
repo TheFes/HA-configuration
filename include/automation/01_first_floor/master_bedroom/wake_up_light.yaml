@@ -23,6 +23,9 @@ condition:
     condition: state
     entity_id: input_boolean.wakeup_enabled
     state: "on"
+  - alias: "Home Assistant utime > 5 minutes"
+    condition: template
+    value_template: "{{ (now() | as_timestamp - states('sensor.home_assistant_uptime') | as_timestamp) / 60 > 5 }}"
 action:
   - alias: "Light on dimmed"
     service: light.turn_on

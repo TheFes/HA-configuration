@@ -99,7 +99,6 @@ google_home_say:
     delay_volume_restore: 3
     default_volume_level: 0.25
     default_group_split: False
-    debug: False
   sequence:
     - alias: "Convert input to lists if not provided as such"
       variables:
@@ -269,35 +268,6 @@ google_home_say:
           {{ ns.info }}
         screen_not_playing: >
           {{ tts_target_not_playing | select('in', players_screen) | list }}
-    - alias: "Debug log"
-      choose:
-        - conditions: "{{ False if debug is not boolean else debug }}"
-          sequence:
-            - alias: "Debug info to log"
-              service: system_log.write
-              data:
-                level: info
-                message: |
-                  tts_target = {{ tts_target }}
-                  tts_message = {{ tts_message }}
-                  tts_volume = {{ tts_volume | default('undefined') }}
-                  restore_volume_all = {{ restore_volume_all | default('undefined') }}
-                  volume_not_playing = {{ volume_not_playing | default('undefined') }}
-                  speaker_group_split = {{ speaker_group_split | default('undefined') }}
-                  ## script_settings ##
-                  silent_mp3 = {{ silent_mp3 if silent_mp3 | default('undefined') }}
-                  default_volume_restore = {{ default_volume_restore | default(True if silent_mp3 is defined else False) }}
-                  default_group_split = {{ default_group_split | default(False) }}
-                  tts_target_list = {{ tts_target_list | default('undefined') }}
-                  players_screen = {{ players_screen | default('undefined') }}
-                  speaker_groups = {{ speaker_groups | default('undefined') }}
-                  speaker_group_list = {{ speaker_group_list | default('undefined') }}
-                  ## data used ##
-                  players_to_resume = {{ players_to_resume | default('undefined') }}
-                  tts_target_not_playing = {{ tts_target_not_playing | default('undefined') }}
-                  spotify_players_info = {{ spotify_players_info | default('undefined') }}
-                  volume_old_not_playing = {{ volume_old_not_playing | default('undefined') }}
-                  screen_not_playing = {{ screen_not_playing | default('undefined') }}
     - alias: "Set volume to TTS volume if set"
       choose:
         - conditions:
@@ -442,43 +412,44 @@ google_home_say:
                                   {% endif %}
                                 thumb: "{{ players_to_resume[repeat.index -1].entity_picture }}"
     - alias: "TTS sent to non playing devices?"
-      condition: template
-      value_template: "{{ tts_target_not_playing | count > 0 }}"
-    - alias: "Set volume non playing entites back if required"
       choose:
-        - conditions: "{{ volume_non_playing is defined or volume_restore_required }}"
+        - conditions: "{{ tts_target_not_playing | count > 0 }}"
           sequence:
-            - alias: "Resume players"
-              repeat:
-                count: "{{ volume_old_not_playing | count }}"
-                sequence:
-                  - alias: "Wait until TTS message is complete"
-                    wait_template: "{{ states(volume_old_not_playing[repeat.index -1].entity_id) in ['idle', 'off'] }}"
-                  - alias: "Set volume back to old state"
-                    service: media_player.volume_set
-                    target:
-                      entity_id: "{{ volume_old_not_playing[repeat.index -1].entity_id }}"
-                    data:
-                      volume_level: >
-                        {% if volume_restore_required %}
-                          {{ volume_old_not_playing[repeat.index -1].volume_level | float(default=0.25) | round(2) }}
-                        {% else %}
-                          {{ volume_non_playing if volume_non_playing < 1 else volume_non_playing / 100 }}
-                        {% endif %}
-    - alias: "Google Home with screen?"
-      choose:
-        - conditions: "{{ screen_not_playing | count > 0 }}"
-          sequence:
-            - alias: "Resume players"
-              repeat:
-                count: "{{ screen_not_playing | count }}"
-                sequence:
-                  - alias: "Wait until TTS message is complete"
-                    wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
-                  - alias: "Turn Google Home on to return to idle mode (photo display)"
-                    service: media_player.turn_on
-                    target:
-                      entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"
+            - alias: "Set volume non playing entites back if required"
+              choose:
+                - conditions: "{{ volume_non_playing is defined or volume_restore_required }}"
+                  sequence:
+                    - alias: "Resume players"
+                      repeat:
+                        count: "{{ volume_old_not_playing | count }}"
+                        sequence:
+                          - alias: "Wait until TTS message is complete"
+                            wait_template: "{{ states(volume_old_not_playing[repeat.index -1].entity_id) in ['idle', 'off'] }}"
+                          - alias: "Set volume back to old state"
+                            service: media_player.volume_set
+                            target:
+                              entity_id: "{{ volume_old_not_playing[repeat.index -1].entity_id }}"
+                            data:
+                              volume_level: >
+                                {% if volume_restore_required %}
+                                  {{ volume_old_not_playing[repeat.index -1].volume_level | float(default=0.25) | round(2) }}
+                                {% else %}
+                                  {{ volume_non_playing if volume_non_playing < 1 else volume_non_playing / 100 }}
+                                {% endif %}
+            - alias: "Google Home with screen?"
+              choose:
+                - conditions: "{{ screen_not_playing | count > 0 }}"
+                  sequence:
+                    - alias: "Resume players"
+                      repeat:
+                        count: "{{ screen_not_playing | count }}"
+                        sequence:
+                          - alias: "Wait until TTS message is complete"
+                            wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
+                          - alias: "Turn Google Home on to return to idle mode (photo display)"
+                            service: media_player.turn_on
+                            target:
+                              entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"
     # This last part is a specific use case for my setup, not required for the script itself. It will do no harm if you leave it in though
     - delay: >
         {{ 0 if not is_state('script.script_start_audio_tag', 'on') else 3 }}

@@ -3,7 +3,7 @@ alias: "00 🔊 Play audio or video using tags"
 mode: single
 max_exceeded: silent
 variables:
-  tags: !include_dir_merge_named /config/tag_reader/tags_media
+  tags: !include_dir_merge_named /config/include/tag_reader/tags_media
 trigger:
   platform: event
   event_type: tag_scanned
