@@ -7,7 +7,7 @@ cards:
     entity: camera.buienradar
     show_name: false
     show_state: false
-  - type: 'custom:neerslag-card'
+  - type: "custom:neerslag-card"
     title: Neerslag
     entities:
       - sensor.neerslag_buienradar_regen_data
@@ -73,24 +73,9 @@ cards:
         show:
           labels: true
       - type: entity
-        entity: sensor.qjb29100a4_energy_today
+        entity: sensor.growatt_total_energy_today
         name: Vandaag opgewekte energie
   - type: "custom:sun-card"
     language: nl
     showAzimuth: true
     showElevation: true
-  - type: entities
-    title: Pollen
-    entities:
-      - entity: sensor.pollen_grass
-        name: Aantal graspollen
-      - entity: sensor.pollen_grass_risk
-        name: Risico graspollen
-      - entity: sensor.pollen_tree
-        name: Aantal boompollen
-      - entity: sensor.pollen_tree_risk
-        name: Risico boompollen
-      - entity: sensor.pollen_weed
-        name: Aantal onkruidpollen
-      - entity: sensor.pollen_weed_risk
-        name: Risico onkruidpollen
