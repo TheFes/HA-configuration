@@ -1,9 +1,9 @@
 binary_sensor:
-  unique_id: rain_until_morning
-  name: "Regen tot ochtend"
+  unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
+  name: "Rain until morning"
   state: >-
-    {% set uur = now().hour | int(0)%}
-    {% set aantal_uur = (7 - uur) if uur < 7 else  (7 + (24 - uur)) %}
-    {% set regen = state_attr('weather.climacell_hourly', 'forecast')[1:uur] | map(attribute='precipitation') | sum | float(0) %}
-    {% set regenkans_komend_uur = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
-    {{ (regenkans_komend_uur + regen) > 0 }}
+    {% set hour = now().hour | int(0)%}
+    {% set number_of_hours = (7 - hour) if hour < 7 else  (7 + (24 - hour)) %}
+    {% set rain = state_attr('weather.climacell_hourly', 'forecast')[1:numer_of_hours] | map(attribute='precipitation') | sum | float(0) %}
+    {% set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
+    {{ (rain_expectation_next_hour + rain) > 0 }}

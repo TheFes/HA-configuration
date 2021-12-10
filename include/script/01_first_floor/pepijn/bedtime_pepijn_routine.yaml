@@ -1,0 +1,23 @@
+bedtime_pepijn_routine:
+  alias: "F1P 👦 Pepijn is going to sleep"
+  icon: mdi:bed
+  sequence:
+    - alias: "Dim ceiling light"
+      service: light.turn_on
+      target:
+        entity_id: light.pepijn_template
+      data:
+        brightness_pct: 40
+    - alias: "Turn on Miffy light"
+      service: light.turn_on
+      target:
+        entity_id:
+          - light.nijntje
+    - alias: "Turn on reading light"
+      service: light.turn_on
+      target:
+        entity_id:
+          - light.pepijn_leeslamp
+      data:
+        brightness: 100
+        color_temp: 265

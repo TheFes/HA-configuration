@@ -8,38 +8,38 @@ cards:
     cards:
       # ROW 1
       - type: "custom:button-card"
-        entity: script.script_start_nlziet
+        entity: script.start_nlziet_routine
         name: NLZiet
         styles:
           icon:
             - color: "#FC46AA"
         tap_action:
-          service: script.script_start_nlziet
+          service: script.start_nlziet_routine
         template: menu_button
       - type: "custom:button-card"
-        entity: script.script_start_emby
+        entity: script.start_emby_routine
         name: Emby
         styles:
           icon:
             - color: green
         tap_action:
-          service: script.script_start_emby
+          service: script.start_emby_routine
         template: menu_button
       - type: "custom:button-card"
-        entity: script.script_start_netflix
+        entity: script.start_netflix_routine
         name: Netflix
         styles:
           icon:
             - color: red
         tap_action:
-          service: script.script_start_netflix
+          service: script.start_netflix_routine
         template: menu_button
       # ROW 2
       - type: "custom:button-card"
-        entity: script.script_start_youtube
+        entity: script.start_youtube_routine
         name: YouTube
         tap_action:
-          service: script.script_start_youtube
+          service: script.start_youtube_routine
         styles:
           icon:
             - color: red
@@ -58,13 +58,13 @@ cards:
             command: "UP"
         template: icon_button
       - type: "custom:button-card"
-        entity: script.script_start_youtube_kids
+        entity: script.start_youtube_kids_routine
         name: YT Kids
         styles:
           icon:
             - color: red
         tap_action:
-          service: script.script_start_youtube_kids
+          service: script.start_youtube_kids_routine
         template: menu_button
       # ROW 3
       - type: "custom:button-card"

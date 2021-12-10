@@ -5,6 +5,9 @@ max_exceeded: silent
 trigger:
   - platform: state
     entity_id: binary_sensor.vaatwasser_actief
+    from:
+      - "on"
+      - "off"
 action:
   - variables:
       external_url: !secret ha_url

@@ -1,5 +1,5 @@
 sensor:
-  unique_id: water_meter_usage
+  unique_id: 398d2263-18b8-48d0-b463-1fbf873b50f7
   name: "Watermeter usage in L"
   state: "{{ (states('sensor.water_meter_total_consumption') | float(0) * 1000) | int(0) }}"
   icon: mdi:water

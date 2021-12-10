@@ -19,7 +19,7 @@ action:
   - alias: "Call script to cast audio or video"
     service: script.turn_on
     target:
-      entity_id: "script.script_start_{{tag_type}}_tag"
+      entity_id: "script.start_{{tag_type}}_tag"
     data:
       variables:
         input_text: "{{ 'input_text.played_' + tags[trigger.event.data.tag_id].card_id }}"

@@ -450,6 +450,3 @@ google_home_say:
                             service: media_player.turn_on
                             target:
                               entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"
-    # This last part is a specific use case for my setup, not required for the script itself. It will do no harm if you leave it in though
-    - delay: >
-        {{ 0 if not is_state('script.script_start_audio_tag', 'on') else 3 }}

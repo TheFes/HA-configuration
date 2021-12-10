@@ -10,11 +10,11 @@ lights:
     max_mireds_template: "{{ state_attr('light.zolder_bol', 'max_mireds') | int(650) }}"
     availability_template: "{{ not (is_state('light.eettafel', 'unavailable') and is_state('switch.bureau_marleen', 'unavailable')) }}"
     turn_on:
-      service: script.zolder_bol_actions
+      service: script.attic_desk_light_actions
       data:
         action: "on"
     turn_off:
-      service: script.zolder_bol_actions
+      service: script.attic_desk_light_actions
       data:
         action: "off"
     set_level:

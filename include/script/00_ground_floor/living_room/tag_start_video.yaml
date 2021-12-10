@@ -1,5 +1,5 @@
-script_start_video_tag:
-  alias: "F0L 📺 Start video met tag"
+start_video_tag:
+  alias: "F0L 📺 Start video with tag"
   icon: mdi:movie
   mode: restart
   max_exceeded: silent
@@ -7,7 +7,7 @@ script_start_video_tag:
     - alias: "TV plug on?"
       choose:
         - conditions:
-            - alias: "TV uit?"
+            - alias: "TV plug off?"
               condition: state
               entity_id: switch.tv_meubel
               state: "off"
@@ -18,6 +18,19 @@ script_start_video_tag:
     - alias: "Wait until TV is available"
       wait_template: >
         {{ not is_state('media_player.nvidia_shield', 'unavailalbe') }}
+    - alias: "TV off"
+      choose:
+        - conditions:
+            - alias: "TV off?"
+              condition: state
+              entity_id: media_player.shield
+              state: "off"
+          sequence:
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.shield
+            - alias: "Short delay while TV and Soundbar start up"
+              delay: 8
     - alias: "Play selected number of videos"
       repeat:
         count: "{{ number_of_plays }}"

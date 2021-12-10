@@ -20,7 +20,7 @@ condition:
     conditions:
       - alias: "Holiday mode on?"
         condition: state
-        entity_id: sensor.huis_modus
+        entity_id: sensor.house_mode
         state: "Vakantie"
       - alias: "Someone home?"
         condition: state
@@ -97,7 +97,7 @@ action:
                             after: "19:15:00"
                       - alias: "Holiday mode on?"
                         condition: state
-                        entity_id: sensor.huis_modus
+                        entity_id: sensor.house_mode
                         state: "Vakantie"
                 sequence:
                   - alias: "Dim some lights"

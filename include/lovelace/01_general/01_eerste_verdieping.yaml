@@ -4,7 +4,7 @@ cards:
   - type: glance
     show_name: false
     entities:
-      - entity: sensor.telefoon_marleen
+      - entity: sensor.location_phone_marleen
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -13,7 +13,7 @@ cards:
             card:
               type: custom:more-info-card
               entity: person.marleen
-      - entity: sensor.telefoon_martijn
+      - entity: sensor.location_phone_martijn
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -27,7 +27,7 @@ cards:
       - entity: sun.sun
         name: Zon
         show_state: false
-      - entity: sensor.huis_modus
+      - entity: sensor.house_mode
         show_state: false
         tap_action:
           action: fire-dom-event
@@ -37,7 +37,7 @@ cards:
             card:
               type: entities
               entities:
-                - entity: sensor.huis_modus
+                - entity: sensor.house_mode
                 - entity: input_boolean.vakantie
                   name: Vakantie
                 - entity: input_boolean.gast

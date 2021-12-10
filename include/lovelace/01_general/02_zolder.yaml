@@ -1,10 +1,10 @@
-icon: 'mdi:home-floor-2'
+icon: "mdi:home-floor-2"
 cards:
   # overzichtje
   - type: glance
     show_name: false
     entities:
-      - entity: sensor.telefoon_marleen
+      - entity: sensor.location_phone_marleen
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -13,7 +13,7 @@ cards:
             card:
               type: custom:more-info-card
               entity: person.marleen
-      - entity: sensor.telefoon_martijn
+      - entity: sensor.location_phone_martijn
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -27,7 +27,7 @@ cards:
       - entity: sun.sun
         name: Zon
         show_state: false
-      - entity: sensor.huis_modus
+      - entity: sensor.house_mode
         show_state: false
         tap_action:
           action: fire-dom-event
@@ -37,7 +37,7 @@ cards:
             card:
               type: entities
               entities:
-                - entity: sensor.huis_modus
+                - entity: sensor.house_mode
                 - entity: input_boolean.vakantie
                   name: Vakantie
                 - entity: input_boolean.gast
@@ -48,16 +48,16 @@ cards:
     entities:
       - entity: light.wasmachinelamp
         name: Wasmachine
-        type: 'custom:slider-entity-row'
+        type: "custom:slider-entity-row"
         toggle: true
         hide_when_off: true
       - entity: light.zolder_bol_template
         name: Bol
-        type: 'custom:slider-entity-row'
+        type: "custom:slider-entity-row"
         toggle: true
         hide_when_off: true
       - entity: light.zolder
-        type: 'custom:slider-entity-row'
+        type: "custom:slider-entity-row"
         toggle: true
         hide_when_off: true
       - entity: switch.computer_zolder

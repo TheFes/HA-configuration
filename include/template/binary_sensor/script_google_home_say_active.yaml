@@ -1,0 +1,7 @@
+binary_sensor:
+  unique_id: 8d8f5101-bd89-4d74-84aa-f9e5ca2d3be6
+  name: "Script Google Home Say active"
+  device_class: running
+  state: >-
+    {{ is_state('script.google_home_say', 'on') }}
+  delay_off: "00:00:05"

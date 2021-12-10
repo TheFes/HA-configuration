@@ -1,0 +1,17 @@
+holiday_mode:
+  name: "Activate Holiday Mode?"
+  title: "❓ Op vakantie?"
+  message: "Jullie zijn al even niet thuis, zijn jullie op vakantie?"
+  entity_id: input_boolean.op_vakantie
+  state: "on"
+  repeat: 60
+  can_acknowledge: true
+  skip_first: false
+  notifiers:
+    - mobile_app_pixel_5
+  data:
+    actions:
+      - action: "vakantie"
+        title: "Yep ☀️"
+      - action: "no_holiday"
+        title: "Nope 😞"

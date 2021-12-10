@@ -28,7 +28,7 @@ pepijn_turn_on:
                       before: input_datetime.pepijn_transition_off
                   sequence:
                     - alias: "Turn on light using transition script"
-                      service: script.transition_lampen
+                      service: script.transition_lights
                       data:
                         id: pepijn
                         change_start: true

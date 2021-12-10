@@ -1,0 +1,49 @@
+vacuum_master_bedroom_routine:
+  alias: "F1M 🛌 Vacuum master bedroom (Google Home)"
+  icon: mdi:broom
+  sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo_vacuum_v1
+        command: app_zoned_clean
+        params: [[24145, 22380, 28925, 25965, 1]]
+
+vacuum_pepijn_routine:
+  alias: "F1P 👦 Vacuum bedroom Pepijn (Google Home)"
+  icon: mdi:broom
+  sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo_vacuum_v1
+        command: app_zoned_clean
+        params: [[28906, 22304, 32795, 25946, 1]]
+
+vacuum_floris_routine:
+  alias: "F1F 👶 Vacuum bedroom Floris (Google Home)"
+  icon: mdi:broom
+  sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo_vacuum_v1
+        command: app_zoned_clean
+        params: [[30196, 20180, 32814, 22304, 1]]
+
+vacuum_hallway_routine:
+  alias: "F1 🏠 Vacuum hall first floor (Google Home)"
+  icon: mdi:broom
+  sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo_vacuum_v1
+        command: app_zoned_clean
+        params: [[27104, 20217, 30234, 22380, 1]]
+# Badkamer
+vacuum_bathroom_routine:
+  alias: "F1B 🛀 Vacuum bathroom floor (Google Home)"
+  icon: mdi:broom
+  sequence:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo_vacuum_v1
+        command: app_zoned_clean
+        params: [[24012, 20199, 27161, 22418, 1]]

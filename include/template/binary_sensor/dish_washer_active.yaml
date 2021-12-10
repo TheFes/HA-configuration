@@ -1,0 +1,8 @@
+binary_sensor:
+  unique_id: 34f17b8a-dd3e-4b19-b0d9-5b00d80d0ad0
+  name: "Dish washer active"
+  device_class: running
+  state: >-
+    {{ states('sensor.vaatwasser_power') | float(0) > 0 }}
+  delay_on: "00:02:00"
+  delay_off: "00:02:00"

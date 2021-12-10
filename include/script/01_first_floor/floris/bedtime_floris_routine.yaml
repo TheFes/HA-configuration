@@ -1,0 +1,33 @@
+bedtime_floris_routine:
+  alias: "F1F 👶 Floris is going to sleep (Google Home)"
+  sequence:
+    - alias: "Light on"
+      service: light.turn_on
+      target:
+        entity_id: light.floris_template
+    - alias: "Play bedtime songs"
+      service: spotcast.start
+      data:
+        entity_id: media_player.floris_mini
+        account: floris
+        uri: spotify:artist:4lZvaAA1Gi2vrGLusUrEBV
+        shuffle: true
+        force_playback: true
+    - delay: 5
+    - alias: "Increase voulume media player"
+      service: media_player.volume_set
+      target:
+        entity_id: media_player.floris_mini
+      data:
+        volume_level: 0.35
+    - alias: "Wait until light is turned off"
+      wait_for_trigger:
+        - platform: state
+          entity_id: light.floris
+          to: "off"
+          from: "on"
+    - alias: "Turn off music"
+      service: media_player.turn_off
+      target:
+        entity_id: media_player.floris_mini
+  mode: restart
