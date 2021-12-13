@@ -4,6 +4,6 @@ binary_sensor:
   state: >-
     {% set hour = now().hour | int(0)%}
     {% set number_of_hours = (7 - hour) if hour < 7 else  (7 + (24 - hour)) %}
-    {% set rain = state_attr('weather.climacell_hourly', 'forecast')[1:numer_of_hours] | map(attribute='precipitation') | sum | float(0) %}
+    {% set rain = state_attr('weather.climacell_hourly', 'forecast')[1:number_of_hours] | map(attribute='precipitation') | sum | float(0) %}
     {% set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
     {{ (rain_expectation_next_hour + rain) > 0 }}

@@ -1,27 +1,45 @@
 """Support for Overkiz select devices."""
-from homeassistant.components.cover import DOMAIN as COVER
+from __future__ import annotations
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyhoma.enums import OverkizCommand, OverkizCommandParam, OverkizState
 
-from custom_components.tahoma.coordinator import OverkizDataUpdateCoordinator
-from custom_components.tahoma.cover_devices.tahoma_cover import (
-    COMMAND_CLOSE,
-    COMMAND_OPEN,
-)
+from .const import DOMAIN, IGNORED_OVERKIZ_DEVICES
+from .entity import OverkizDescriptiveEntity, OverkizSelectDescription
 
-from .const import DOMAIN
-from .entity import OverkizEntity
-
-CORE_OPEN_CLOSED_PEDESTRIAN_STATE = "core:OpenClosedPedestrianState"
-COMMAND_SET_PEDESTRIAN_POSITION = "setPedestrianPosition"
-
-OPTION_TO_COMMAND = {
-    "closed": COMMAND_CLOSE,
-    "open": COMMAND_OPEN,
-    "pedestrian": COMMAND_SET_PEDESTRIAN_POSITION,
-}
+SELECT_DESCRIPTIONS = [
+    OverkizSelectDescription(
+        key=OverkizState.CORE_OPEN_CLOSED_PEDESTRIAN,
+        name="Position",
+        icon="mdi:content-save-cog",
+        options=[
+            OverkizCommandParam.CLOSED,
+            OverkizCommandParam.OPEN,
+            OverkizCommandParam.PEDESTRIAN,
+        ],
+        select_option=lambda option, execute_command: execute_command(
+            {
+                OverkizCommandParam.CLOSED: OverkizCommand.CLOSE,
+                OverkizCommandParam.OPEN: OverkizCommand.OPEN,
+                OverkizCommandParam.PEDESTRIAN: OverkizCommand.SET_PEDESTRIAN_POSITION,
+            }[option]
+        ),
+    ),
+    OverkizSelectDescription(
+        key=OverkizState.IO_MEMORIZED_SIMPLE_VOLUME,
+        name="Memorized Simple Volume",
+        icon="mdi:volume-high",
+        options=[OverkizCommandParam.HIGHEST, OverkizCommandParam.STANDARD],
+        select_option=lambda option, execute_command: execute_command(
+            OverkizCommand.SET_MEMORIZED_SIMPLE_VOLUME, option
+        ),
+        entity_category=EntityCategory.CONFIG,
+    ),
+]
 
 
 async def async_setup_entry(
@@ -33,40 +51,48 @@ async def async_setup_entry(
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator = data["coordinator"]
 
-    entities = [
-        PedestrianGateSelect(device.device_url, coordinator)
-        for device in data["platforms"][COVER]
-        if CORE_OPEN_CLOSED_PEDESTRIAN_STATE in device.states
-    ]
+    entities = []
+
+    key_supported_states = {
+        description.key: description for description in SELECT_DESCRIPTIONS
+    }
+
+    for device in coordinator.data.values():
+        if (
+            device.widget not in IGNORED_OVERKIZ_DEVICES
+            and device.ui_class not in IGNORED_OVERKIZ_DEVICES
+        ):
+            for state in device.definition.states:
+                if description := key_supported_states.get(state.qualified_name):
+                    entities.append(
+                        OverkizSelect(
+                            device.device_url,
+                            coordinator,
+                            description,
+                        )
+                    )
 
     async_add_entities(entities)
 
 
-class PedestrianGateSelect(OverkizEntity, SelectEntity):
-    """Representation of the various state for a pedestrian gate."""
-
-    _attr_icon = "mdi:content-save-cog"
-
-    def __init__(
-        self,
-        device_url: str,
-        coordinator: OverkizDataUpdateCoordinator,
-    ):
-        """Initialize the device."""
-        super().__init__(device_url, coordinator)
-        self._attr_name = f"{super().name} Position"
+class OverkizSelect(OverkizDescriptiveEntity, SelectEntity):
+    """Representation of an Overkiz Number entity."""
 
     @property
-    def current_option(self):
+    def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return self.device.states.get(CORE_OPEN_CLOSED_PEDESTRIAN_STATE).value
+        if state := self.device.states.get(self.entity_description.key):
+            return state.value
+
+        return None
 
     @property
     def options(self):
         """Return a set of selectable options."""
-        return ["closed", "open", "pedestrian"]
+        return self.entity_description.options
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        if option in OPTION_TO_COMMAND:
-            await self.executor.async_execute_command(OPTION_TO_COMMAND[option])
+        await self.entity_description.select_option(
+            option, self.executor.async_execute_command
+        )

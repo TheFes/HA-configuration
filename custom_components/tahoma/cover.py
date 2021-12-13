@@ -1,9 +1,11 @@
 """Support for Overkiz covers - shutters etc."""
-from homeassistant.components.cover import ATTR_POSITION, DOMAIN as COVER
+from homeassistant.components.cover import ATTR_POSITION
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyhoma.enums import UIClass
 import voluptuous as vol
 
 from .const import DOMAIN
@@ -13,7 +15,6 @@ from .cover_devices.vertical_cover import VerticalCover
 SERVICE_COVER_MY_POSITION = "set_cover_my_position"
 SERVICE_COVER_POSITION_LOW_SPEED = "set_cover_position_low_speed"
 
-SUPPORT_MY = 512
 SUPPORT_COVER_POSITION_LOW_SPEED = 1024
 
 
@@ -26,22 +27,19 @@ async def async_setup_entry(
 
     entities = [
         Awning(device.device_url, coordinator)
-        for device in data["platforms"][COVER]
-        if device.ui_class == "Awning"
+        for device in data["platforms"][Platform.COVER]
+        if device.ui_class == UIClass.AWNING
     ]
 
     entities += [
         VerticalCover(device.device_url, coordinator)
-        for device in data["platforms"][COVER]
-        if device.ui_class != "Awning"
+        for device in data["platforms"][Platform.COVER]
+        if device.ui_class != UIClass.AWNING
     ]
 
     async_add_entities(entities)
 
     platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(
-        SERVICE_COVER_MY_POSITION, {}, "async_my", [SUPPORT_MY]
-    )
 
     platform.async_register_entity_service(
         SERVICE_COVER_POSITION_LOW_SPEED,

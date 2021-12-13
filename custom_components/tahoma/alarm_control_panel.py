@@ -1,10 +1,7 @@
 """Support for Overkiz alarm control panels."""
 from __future__ import annotations
 
-from homeassistant.components.alarm_control_panel import (
-    DOMAIN as ALARM_CONTROL_PANEL,
-    AlarmControlPanelEntity,
-)
+from homeassistant.components.alarm_control_panel import AlarmControlPanelEntity
 from homeassistant.components.alarm_control_panel.const import (
     SUPPORT_ALARM_ARM_AWAY,
     SUPPORT_ALARM_ARM_CUSTOM_BYPASS,
@@ -20,6 +17,7 @@ from homeassistant.const import (
     STATE_ALARM_DISARMED,
     STATE_ALARM_PENDING,
     STATE_ALARM_TRIGGERED,
+    Platform,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -90,7 +88,7 @@ async def async_setup_entry(
 
     entities = [
         OverkizAlarmControlPanel(device.device_url, coordinator)
-        for device in data["platforms"][ALARM_CONTROL_PANEL]
+        for device in data["platforms"][Platform.ALARM_CONTROL_PANEL]
     ]
     async_add_entities(entities)
 

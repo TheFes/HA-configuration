@@ -24,24 +24,24 @@ from homeassistant.components.climate.const import (
     SWING_VERTICAL,
 )
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
+from pyhoma.enums import OverkizCommand, OverkizCommandParam, OverkizState
 
 from ..entity import OverkizEntity
 
-COMMAND_GLOBAL_CONTROL = "globalControl"
-
-CORE_TARGET_TEMPERATURE_STATE = "core:TargetTemperatureState"
-
 PRESET_HOLIDAY_MODE = "holiday_mode"
 
-FAN_SPEED_STATE = ["ovp:FanSpeedState", "hlrrwifi:FanSpeedState"]
-LEAVE_HOME_STATE = ["ovp:LeaveHomeState", "hlrrwifi:LeaveHomeState"]
-MAIN_OPERATION_STATE = ["ovp:MainOperationState", "hlrrwifi:MainOperationState"]
-MODE_CHANGE_STATE = ["ovp:ModeChangeState", "hlrrwifi:ModeChangeState"]
-ROOM_TEMPERATURE_STATE = ["ovp:RoomTemperatureState", "hlrrwifi:RoomTemperatureState"]
-SWING_STATE = ["ovp:SwingState", "hlrrwifi:SwingState"]
-
-STATE_ON = "on"
-STATE_OFF = "off"
+FAN_SPEED_STATE = [OverkizState.OVP_FAN_SPEED, OverkizState.HLRRWIFI_FAN_SPEED]
+LEAVE_HOME_STATE = [OverkizState.OVP_LEAVE_HOME, OverkizState.HLRRWIFI_LEAVE_HOME]
+MAIN_OPERATION_STATE = [
+    OverkizState.OVP_MAIN_OPERATION,
+    OverkizState.HLRRWIFI_MAIN_OPERATION,
+]
+MODE_CHANGE_STATE = [OverkizState.OVP_MODE_CHANGE, OverkizState.HLRRWIFI_MODE_CHANGE]
+ROOM_TEMPERATURE_STATE = [
+    OverkizState.OVP_ROOM_TEMPERATURE,
+    OverkizState.HLRRWIFI_ROOM_TEMPERATURE,
+]
+SWING_STATE = [OverkizState.OVP_SWING, OverkizState.HLRRWIFI_SWING]
 
 TAHOMA_TO_HVAC_MODES = {
     "autocooling": HVAC_MODE_AUTO,
@@ -110,7 +110,7 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
     @property
     def hvac_mode(self) -> str:
         """Return hvac operation ie. heat, cool mode."""
-        if self._select_state(*MAIN_OPERATION_STATE) == STATE_OFF:
+        if self._select_state(*MAIN_OPERATION_STATE) == OverkizCommandParam.OFF:
             return HVAC_MODE_OFF
 
         return TAHOMA_TO_HVAC_MODES[self._select_state(*MODE_CHANGE_STATE)]
@@ -118,10 +118,11 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
         if hvac_mode == HVAC_MODE_OFF:
-            await self._global_control(main_operation=STATE_OFF)
+            await self._global_control(main_operation=OverkizCommandParam.OFF)
         else:
             await self._global_control(
-                main_operation=STATE_ON, hvac_mode=HVAC_MODES_TO_TAHOMA[hvac_mode]
+                main_operation=OverkizCommandParam.ON,
+                hvac_mode=HVAC_MODES_TO_TAHOMA[hvac_mode],
             )
 
     @property
@@ -159,7 +160,7 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
     @property
     def target_temperature(self) -> None:
         """Return the temperature."""
-        return self._select_state(CORE_TARGET_TEMPERATURE_STATE)
+        return self._select_state(OverkizState.CORE_TARGET_TEMPERATURE)
 
     @property
     def current_temperature(self) -> None:
@@ -174,10 +175,10 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
     @property
     def preset_mode(self) -> Optional[str]:
         """Return the current preset mode, e.g., home, away, temp."""
-        if self._select_state(*LEAVE_HOME_STATE) == STATE_ON:
+        if self._select_state(*LEAVE_HOME_STATE) == OverkizCommandParam.ON:
             return PRESET_HOLIDAY_MODE
 
-        if self._select_state(*LEAVE_HOME_STATE) == STATE_OFF:
+        if self._select_state(*LEAVE_HOME_STATE) == OverkizCommandParam.OFF:
             return PRESET_NONE
 
         return None
@@ -185,10 +186,10 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set new preset mode."""
         if preset_mode == PRESET_HOLIDAY_MODE:
-            await self._global_control(leave_home=STATE_ON)
+            await self._global_control(leave_home=OverkizCommandParam.ON)
 
         if preset_mode == PRESET_NONE:
-            await self._global_control(leave_home=STATE_OFF)
+            await self._global_control(leave_home=OverkizCommandParam.OFF)
 
     @property
     def device_info(self) -> Dict[str, Any]:
@@ -210,12 +211,12 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
         """Execute globalControl command with all parameters."""
         if self.device.controllable_name == "ovp:HLinkMainController":
             await self.executor.async_execute_command(
-                COMMAND_GLOBAL_CONTROL,
+                OverkizCommand.GLOBAL_CONTROL,
                 main_operation
                 or self._select_state(*MAIN_OPERATION_STATE),  # Main Operation
                 target_temperature
                 or self._select_state(
-                    CORE_TARGET_TEMPERATURE_STATE
+                    OverkizState.CORE_TARGET_TEMPERATURE
                 ),  # Target Temperature
                 fan_mode or self._select_state(*FAN_SPEED_STATE),  # Fan Mode
                 hvac_mode or self._select_state(*MODE_CHANGE_STATE),  # Mode
@@ -223,12 +224,12 @@ class HitachiAirToAirHeatPump(OverkizEntity, ClimateEntity):
             )
         else:
             await self.executor.async_execute_command(
-                COMMAND_GLOBAL_CONTROL,
+                OverkizCommand.GLOBAL_CONTROL,
                 main_operation
                 or self._select_state(*MAIN_OPERATION_STATE),  # Main Operation
                 target_temperature
                 or self._select_state(
-                    CORE_TARGET_TEMPERATURE_STATE
+                    OverkizState.CORE_TARGET_TEMPERATURE
                 ),  # Target Temperature
                 fan_mode or self._select_state(*FAN_SPEED_STATE),  # Fan Mode
                 hvac_mode or self._select_state(*MODE_CHANGE_STATE),  # Mode

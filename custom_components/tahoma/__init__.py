@@ -5,8 +5,8 @@ import logging
 
 from aiohttp import ClientError, ServerDisconnectedError
 from homeassistant.components.scene import DOMAIN as SCENE
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.const import CONF_EXCLUDE, CONF_PASSWORD, CONF_SOURCE, CONF_USERNAME
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import (
@@ -28,7 +28,6 @@ import voluptuous as vol
 
 from .const import (
     CONF_HUB,
-    DEFAULT_HUB,
     DOMAIN,
     IGNORED_OVERKIZ_DEVICES,
     OVERKIZ_DEVICE_TO_PLATFORM,
@@ -42,86 +41,12 @@ _LOGGER = logging.getLogger(__name__)
 
 SERVICE_EXECUTE_COMMAND = "execute_command"
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.All(
-            cv.deprecated(CONF_EXCLUDE),
-            vol.Schema(
-                {
-                    vol.Required(CONF_USERNAME): cv.string,
-                    vol.Required(CONF_PASSWORD): cv.string,
-                    vol.Optional(CONF_EXCLUDE, default=[]): vol.All(
-                        cv.ensure_list, [cv.string]
-                    ),
-                }
-            ),
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
-
-
-async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the TaHoma component."""
-    configuration = config.get(DOMAIN)
-
-    if configuration is None:
-        return True
-
-    if any(
-        configuration.get(CONF_USERNAME) in entry.data.get(CONF_USERNAME)
-        for entry in hass.config_entries.async_entries(DOMAIN)
-    ):
-        return True
-
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={CONF_SOURCE: SOURCE_IMPORT},
-            data=configuration,
-        )
-    )
-
-    return True
-
-
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-    """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
-
-    if config_entry.version == 1:
-
-        MAPPING = {
-            "Cozytouch": "atlantic_cozytouch",
-            "eedomus": "nexity",
-            "Hi Kumo": "hi_kumo_europe",
-            "Rexel Energeasy Connect": "rexel",
-            "Somfy Connexoon IO": "somfy_europe",
-            "Somfy Connexoon RTS": "somfy_oceania",
-            "Somfy TaHoma": "somfy_europe",
-        }
-
-        entry_data = {**config_entry.data}
-        old_hub = entry_data.get(CONF_HUB, "Somfy TaHoma")
-        entry_data[CONF_HUB] = MAPPING[old_hub]
-
-        _LOGGER.debug("Migrated %s to %s", old_hub, entry_data[CONF_HUB])
-
-        config_entry.data = {**entry_data}
-        config_entry.version = 2
-
-    _LOGGER.debug("Migration to version %s successful", config_entry.version)
-
-    return True
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up TaHoma from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-
-    username = entry.data.get(CONF_USERNAME)
-    password = entry.data.get(CONF_PASSWORD)
-    server = SUPPORTED_SERVERS[entry.data.get(CONF_HUB, DEFAULT_HUB)]
+    """Set up Overkiz from a config entry."""
+    username = entry.data[CONF_USERNAME]
+    password = entry.data[CONF_PASSWORD]
+    server = SUPPORTED_SERVERS[entry.data[CONF_HUB]]
 
     # To allow users with multiple accounts/hubs, we create a new session so they have separate cookies
     session = async_create_clientsession(hass)
@@ -174,7 +99,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     platforms = defaultdict(list)
     platforms[SCENE] = scenarios
 
-    hass.data[DOMAIN][entry.entry_id] = {
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "platforms": platforms,
         "coordinator": coordinator,
     }

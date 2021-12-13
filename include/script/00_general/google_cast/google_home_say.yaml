@@ -67,6 +67,9 @@ google_home_say:
       - media_player.spotify_martijn
       - media_player.spotify_marleen
       - media_player.spotify_floris
+    primary_spotcast: "pepijn"
+    fixed_picture:
+      NPO Radio 2: "/local/pictures/radio/npo_radio_2.png"
     speaker_groups:
       media_player.huis_groep:
         - media_player.keuken_hub
@@ -93,7 +96,6 @@ google_home_say:
         - media_player.boven_groep
         - media_player.beneden_groep
         - media_player.zolder_groep
-    primary_spotcast: "pepijn"
     silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3"
     default_volume_restore: True
     delay_volume_restore: 3
@@ -410,7 +412,11 @@ google_home_say:
                                   {% else %}
                                     {{ players_to_resume[repeat.index -1].media_title }}
                                   {% endif %}
-                                thumb: "{{ players_to_resume[repeat.index -1].entity_picture }}"
+                                thumb: >
+                                  {{
+                                    fixed_picture[players_to_resume[repeat.index -1].media_artist]
+                                      | default(players_to_resume[repeat.index -1].entity_picture)
+                                  }}
     - alias: "TTS sent to non playing devices?"
       choose:
         - conditions: "{{ tts_target_not_playing | count > 0 }}"

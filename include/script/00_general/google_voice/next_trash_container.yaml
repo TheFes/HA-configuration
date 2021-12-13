@@ -4,13 +4,19 @@ next_trash_container_routine:
   sequence:
     - variables:
         next_container: >-
-          {% if state_attr('sensor.mijnafvalwijzer_duobak', 'Days-until') | int(0)< state_attr('sensor.mijnafvalwijzer_papier_pmd', 'Days-until') | int(0)%}  
+          {% 
+            if state_attr('sensor.mijnafvalwijzer_duobak', 'Days_until') | int(0)
+            < state_attr('sensor.mijnafvalwijzer_papier_pmd', 'Days_until') | int(0) 
+          %}  
             Rest- en GFT-bak
           {% else %}
             Papier- en PMD-bak
           {% endif %}
         when: >-
-          {% if state_attr('sensor.mijnafvalwijzer_duobak', 'Days-until') | float(0) < state_attr('sensor.mijnafvalwijzer_papier_pmd', 'Days-until') | float(0) %}  
+          {% 
+            if state_attr('sensor.mijnafvalwijzer_duobak', 'Days_until') | int(0) 
+            < state_attr('sensor.mijnafvalwijzer_papier_pmd', 'Days_until') | int(0) 
+          %}  
             {{ states('sensor.mijnafvalwijzer_duobak').split(',', 1)[0] }}
           {% else %}
             {{ states('sensor.mijnafvalwijzer_papier_pmd').split(',', 1)[0] }}
