@@ -1,0 +1,54 @@
+sensor:
+  # Energy High
+  - name: Energy high tariff
+    unique_id: 271b931a-9454-40f8-aa54-0af52b1077cb
+    state: >
+      {{
+        [
+          state_attr('sensor.energy_high_tariff', 'delivery'),
+          state_attr('sensor.energy_high_tariff', 'tax'),
+          state_attr('sensor.energy_high_tariff', 'storage')
+        ] | map('float', 0) | sum
+      }}
+    icon: mdi:cash
+    unit_of_measurement: "€/kWh"
+    attributes:
+      delivery: 0.09595
+      tax: 0.11408
+      storage: 0.03630
+
+  # Energy Low
+  - name: Energy low tariff
+    unique_id: a89ba420-ee99-40df-8031-41986897b169
+    state: >
+      {{
+        [
+          state_attr('sensor.energy_low_tariff', 'delivery'),
+          state_attr('sensor.energy_low_tariff', 'tax'),
+          state_attr('sensor.energy_low_tariff', 'storage')
+        ] | map('float', 0) | sum
+      }}
+    icon: mdi:cash
+    unit_of_measurement: "€/kWh"
+    attributes:
+      delivery: 0.08978
+      tax: 0.11408
+      storage: 0.03630
+
+  # Gas
+  - name: Gas tariff
+    unique_id: e8e5e0e0-652e-4cca-9cc4-20b491ec585b
+    state: >
+      {{
+        [
+          state_attr('sensor.gas_tariff', 'delivery'),
+          state_attr('sensor.gas_tariff', 'tax'),
+          state_attr('sensor.gas_tariff', 'storage')
+        ] | map('float', 0) | sum
+      }}
+    icon: mdi:cash
+    unit_of_measurement: "€/m³"
+    attributes:
+      delivery: 0.35396
+      tax: 0.42176
+      storage: 0.10297
