@@ -1,0 +1,19 @@
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Floris
+    id: "on"
+  - platform: state
+    entity_id: binary_sensor.shelly_floris_release
+    to: "on"
+    for: "00:00:01"
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: event_template_reloaded
+binary_sensor:
+  - name: Shelly Floris release
+    unique_id: 5f2a80e9-5e7a-4174-91ac-a1fb596512de
+    state: "{{ trigger.id == 'on' and trigger.event.data.click_type == 'release' }}"
+    icon: mdi:radiobox-blank

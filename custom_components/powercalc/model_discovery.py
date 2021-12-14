@@ -5,12 +5,12 @@ from __future__ import annotations
 import logging
 import os
 import re
-from collections import namedtuple
 from typing import NamedTuple, Optional
 
 import homeassistant.helpers.device_registry as dr
 import homeassistant.helpers.entity_registry as er
-from homeassistant.components.light import Light
+from awesomeversion.awesomeversion import AwesomeVersion
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.helpers.typing import HomeAssistantType
 
 from .const import (
@@ -26,11 +26,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def get_light_model(
-    hass: HomeAssistantType, entity_entry: er.RegistryEntry, config: dict
+    hass: HomeAssistantType,
+    config: dict,
+    entity_entry: Optional[er.RegistryEntry] = None,
 ) -> Optional[LightModel]:
     manufacturer = config.get(CONF_MANUFACTURER)
     model = config.get(CONF_MODEL)
-    if manufacturer is None or model is None:
+    if (manufacturer is None or model is None) and entity_entry:
         model_info = await autodiscover_model(hass, entity_entry)
         if model_info:
             manufacturer = config.get(CONF_MANUFACTURER) or model_info.manufacturer
@@ -49,10 +51,10 @@ async def get_light_model(
 
 
 async def is_supported_model(
-    hass: HomeAssistantType, entity_registry: er.RegistryEntry, sensor_config: dict = {}
+    hass: HomeAssistantType, entry: er.RegistryEntry, sensor_config: dict = {}
 ) -> bool:
     try:
-        await get_light_model(hass, entity_registry, sensor_config)
+        await get_light_model(hass, sensor_config, entry)
         return True
     except ModelNotSupported:
         return False
@@ -84,7 +86,11 @@ async def autodiscover_model(
     model_info = ModelInfo(manufacturer, model_id)
 
     # This check can be removed in future version
-    if match is None and entity_entry.platform == "hue":
+    if (
+        AwesomeVersion(HA_VERSION) <= AwesomeVersion("2021.11")
+        and match is None
+        and entity_entry.platform == "hue"
+    ):
         model_info = await autodiscover_from_hue_bridge(hass, entity_entry)
         if model_info is None:
             return None
@@ -134,12 +140,12 @@ async def autodiscover_from_hue_bridge(
 
 async def find_hue_light(
     hass: HomeAssistantType, entity_entry: er.RegistryEntry
-) -> Light | None:
+):
     """Find the light in the Hue bridge, we need to extract the model id."""
 
     if not hass.data.get("hue"):
         return None
-        
+
     bridge = hass.data["hue"][entity_entry.config_entry_id]
     lights = bridge.api.lights
     for light_id in lights:

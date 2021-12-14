@@ -7,12 +7,15 @@ DATA_CALCULATOR_FACTORY = "calculator_factory"
 DATA_CONFIGURED_ENTITIES = "configured_entities"
 DATA_DISCOVERED_ENTITIES = "discovered_entities"
 
+DUMMY_ENTITY_ID = "dummy"
+
 CONF_AREA = "area"
 CONF_CALIBRATE = "calibrate"
 CONF_CREATE_GROUP = "create_group"
 CONF_CREATE_ENERGY_SENSOR = "create_energy_sensor"
 CONF_CREATE_ENERGY_SENSORS = "create_energy_sensors"
 CONF_CREATE_UTILITY_METERS = "create_utility_meters"
+CONF_DAILY_FIXED_ENERGY = "daily_fixed_energy"
 CONF_ENABLE_AUTODISCOVERY = "enable_autodiscovery"
 CONF_ENERGY_SENSOR_NAMING = "energy_sensor_naming"
 CONF_FIXED = "fixed"
@@ -26,11 +29,17 @@ CONF_MULTIPLY_FACTOR = "multiply_factor"
 CONF_MULTIPLY_FACTOR_STANDBY = "multiply_factor_standby"
 CONF_MIN_WATT = "min_watt"
 CONF_MAX_WATT = "max_watt"
+CONF_POWER_FACTOR = "power_factor"
 CONF_POWER_SENSOR_NAMING = "power_sensor_naming"
 CONF_POWER = "power"
 CONF_MIN_POWER = "min_power"
 CONF_MAX_POWER = "max_power"
+CONF_ON_TIME = "on_time"
+CONF_UPDATE_FREQUENCY = "update_frequency"
+CONF_VALUE = "value"
+CONF_VOLTAGE = "voltage"
 CONF_WATT = "watt"
+CONF_WLED = "wled"
 CONF_STATES_POWER = "states_power"
 CONF_STANDBY_POWER = "standby_power"
 CONF_DISABLE_STANDBY_POWER = "disable_standby_power"
@@ -48,13 +57,17 @@ ATTR_INTEGRATION = "integration"
 ATTR_SOURCE_ENTITY = "source_entity"
 ATTR_SOURCE_DOMAIN = "source_domain"
 
+MODE_DAILY_FIXED_ENERGY = "daily_fixed_energy"
 MODE_LUT = "lut"
 MODE_LINEAR = "linear"
 MODE_FIXED = "fixed"
+MODE_WLED = "wled"
 CALCULATION_MODES = [
+    MODE_DAILY_FIXED_ENERGY,
     MODE_FIXED,
     MODE_LINEAR,
     MODE_LUT,
+    MODE_WLED,
 ]
 
 MANUFACTURER_DIRECTORY_MAPPING = {
@@ -89,5 +102,10 @@ MODEL_DIRECTORY_MAPPING = {
     "Signify Netherlands B.V.": {
         "440400982841": "LCT024",
         "8718696449691": "LWB010",
+        "3417711P6": "LTW017",
+        "3418931P6": "LTC012",
+        "3261030P6": "LTC001",
+        "3261031P6": "LTC001",
+        "3261048P6": "LTC001",
     },
 }
