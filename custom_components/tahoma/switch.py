@@ -73,7 +73,7 @@ class OverkizSwitch(OverkizEntity, SwitchEntity):
         """Get whether the switch is in on state."""
         return (
             self.executor.select_state(
-                OverkizState.CORE_ON_OFF, OverkizState.IO_FORCE_HEATING_STATE
+                OverkizState.CORE_ON_OFF, OverkizState.IO_FORCE_HEATING
             )
             == OverkizCommandParam.ON
         )

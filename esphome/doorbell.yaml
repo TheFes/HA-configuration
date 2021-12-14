@@ -17,12 +17,14 @@ globals:
     restore_value: true
     initial_value: 'true'
 
-# Exposed switches.
-switch:
-  # Switch to restart the doorbell.
+# Restart button.
+button:
+  # Button to restart the doorbell.
   - platform: restart
     name: ${device_name} Restart
 
+# expose switches
+switch:
   # Switch to turn on/off the chime.
   - platform: gpio
     id: relay
@@ -53,7 +55,7 @@ switch:
 # Doorbell button push.
 binary_sensor:
   - platform: gpio
-    id: button
+    id: doorbell_press
     name: ${device_name} Button
     pin:
       # Connected to GPIO on the ESP-01S.

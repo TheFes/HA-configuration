@@ -20,10 +20,6 @@ cards:
     title: Media control woonkamer
     entities:
       - entity: media_player.nvidia_shield
-      - entity: media_player.philips_tv
-      - entity: switch.samsung_soundbar
-      - entity: sensor.samsung_soundbar_media_playback_status
-      - entity: sensor.samsung_soundbar_volume
   - type: custom:browser-player
   - type: entities
     title: TTS Service
@@ -79,11 +75,9 @@ cards:
     chart_type: bar
     entities:
       - entity: sensor.vaatwasser_energy
-  - type: entities
-    title: Power
-    entities:
-      - entity: input_boolean.tv_kijken
-      - entity: input_boolean.film_kijken
-      - entity: input_boolean.netflix_kijken
-      - entity: input_boolean.media_kijken_uit
-      - entity: input_select.tv_modus
+  - type: area
+    area: woonkamer
+    navigation_path: /lovelace/0
+  - type: area
+    area: keuken
+    navigation_path: /lovelace/0

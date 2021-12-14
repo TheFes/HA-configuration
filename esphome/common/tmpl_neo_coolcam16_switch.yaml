@@ -1,4 +1,4 @@
-<<: !include tmpl_wifi_no_sensors.yaml 
+<<: !include tmpl_wifi_no_sensors.yaml
 
 binary_sensor:
   - platform: gpio
@@ -25,6 +25,8 @@ switch:
       - switch.turn_on: red_led
     on_turn_off:
       - switch.turn_off: red_led
+
+button:
   - platform: restart
     name: "${device_name} ${device_type} Restart"
 
@@ -53,8 +55,8 @@ sensor:
     name: "${device_name} ${device_type} Total Daily Energy"
     power_id: "wattage"
     filters:
-        # Multiplication factor from W to kW is 0.001
-        - multiply: 0.001
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
     unit_of_measurement: kWh
   - platform: wifi_signal
     name: ${device_name} ${device_type} Wifi Signal Strength

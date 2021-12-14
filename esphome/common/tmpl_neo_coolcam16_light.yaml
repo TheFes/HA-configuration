@@ -1,4 +1,4 @@
-<<: !include tmpl_wifi_no_sensors.yaml 
+<<: !include tmpl_wifi_no_sensors.yaml
 
 binary_sensor:
   - platform: gpio
@@ -18,7 +18,7 @@ output:
       inverted: true
   - platform: gpio
     pin: GPIO14
-    id: main_light_relay  
+    id: main_light_relay
 
 light:
   - platform: monochromatic
@@ -28,7 +28,7 @@ light:
     internal: true
   - platform: binary
     name: ${device_name}
-    output: main_light_relay  
+    output: main_light_relay
     id: light_id
     on_turn_on:
       - light.turn_on: status_led
@@ -60,8 +60,8 @@ sensor:
     name: "${device_name} ${device_type} Total Daily Energy"
     power_id: "wattage"
     filters:
-        # Multiplication factor from W to kW is 0.001
-        - multiply: 0.001
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
     unit_of_measurement: kWh
   - platform: wifi_signal
     name: ${device_name} ${device_type} Wifi Signal Strength
@@ -69,7 +69,7 @@ sensor:
   - platform: uptime
     name: ${device_name} ${device_type} Uptime
 
-switch:
+button:
   - platform: restart
     name: "${device_name} ${device_type} Restart"
 
@@ -78,4 +78,3 @@ text_sensor:
   - platform: wifi_info
     ip_address:
       name: ${device_name} ${device_type} IP
-

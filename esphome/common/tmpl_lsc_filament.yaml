@@ -1,4 +1,4 @@
-<<: !include tmpl_wifi_sensors.yaml 
+<<: !include tmpl_wifi_sensors.yaml
 
 output:
   - platform: esp8266_pwm
@@ -25,7 +25,7 @@ light:
       - pulse:
           name: "Slow Pulse"
 
-switch:
+button:
   - platform: restart
     name: "${device_name} ${device_type} Restart"
 

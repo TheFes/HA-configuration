@@ -1,4 +1,4 @@
-<<: !include tmpl_wifi_sensors.yaml 
+<<: !include tmpl_wifi_sensors.yaml
 
 binary_sensor:
   - platform: status
@@ -10,24 +10,24 @@ binary_sensor:
       inverted: true
     name: ${device_name} Button
     internal: true
-    id: button
+    id: button_press
     on_multi_click:
-    - timing:
-        - ON for at most 1s
-        - OFF for at most 1s
-        - ON for at most 1s
-        - OFF for at least 0.2s
-      then: 
-        - homeassistant.event:
-            event: esphome.button_pressed
-            data:
-              device: ${device_name}
-              click_type: double
-    - timing:
-        - ON for at most 1s
-        - OFF for at least 0.25s
-      then: 
-        - switch.toggle: relay_and_light
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${device_name}
+                click_type: double
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.25s
+        then:
+          - switch.toggle: relay_and_light
 #    on_press:
 #      - switch.toggle: relay_and_light
 
@@ -59,5 +59,7 @@ switch:
     turn_off_action:
       - switch.turn_off: relay
       - light.turn_off: status_led
+
+button:
   - platform: restart
     name: "${device_name} ${device_type} Restart"

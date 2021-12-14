@@ -1,5 +1,4 @@
-
-<<: !include tmpl_wifi_sensors.yaml 
+<<: !include tmpl_wifi_sensors.yaml
 
 binary_sensor:
   - platform: status
@@ -22,7 +21,7 @@ output:
       inverted: true
   - platform: gpio
     pin: GPIO12
-    id: main_light_relay  
+    id: main_light_relay
 
 light:
   - platform: monochromatic
@@ -32,13 +31,13 @@ light:
     internal: true
   - platform: binary
     name: ${device_name}
-    output: main_light_relay  
+    output: main_light_relay
     id: light_id
     on_turn_on:
       - light.turn_on: status_led
     on_turn_off:
       - light.turn_off: status_led
 
-switch:
+button:
   - platform: restart
     name: "${device_name} ${device_type} Restart"
