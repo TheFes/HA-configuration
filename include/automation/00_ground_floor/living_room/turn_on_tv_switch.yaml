@@ -33,7 +33,16 @@ action:
       - platform: state
         entity_id: media_player.nvidia_shield
         from: "unavailable"
-  - alias: "Turn Shield off"
-    service: media_player.turn_off
-    target:
-      entity_id: media_player.nvidia_shield
+  - alias: "Turn Shield off, and check if it worked, otherwise repeat"
+    repeat:
+      sequence:
+        - alias: "Turn Shield off"
+          service: media_player.turn_off
+          target:
+            entity_id: media_player.nvidia_shield
+        - delay: 5
+      until:
+        - alias: "Did it work?"
+          condition: state
+          entity_id: media_player.nvidia_shield
+          state: "off"
