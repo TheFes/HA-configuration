@@ -11,7 +11,6 @@ trigger:
 action:
   - variables:
       external_url: !secret ha_url
-  - delay: 10
   - alias: "Select action"
     choose:
       - conditions:
@@ -19,15 +18,16 @@ action:
             condition: state
             entity_id: binary_sensor.dishwasher_active
             state: "on"
-          - alias: "Timer not yet active"
-            condition: state
-            entity_id: timer.vaatwasser_timer
-            state: "idle"
+          - alias: "Timer not set yet"
+            condition: time
+            after: input_datetime.dishwasher_program
         sequence:
-          - alias: "Timer on"
-            service: timer.start
+          - alias: "Set timer (input_datetime)"
+            service: input_datetime.set_datetime
             target:
-              entity_id: timer.vaatwasser_timer
+              entity_id: input_datetime.dishwasher_program
+            data:
+              timestamp: "{{ (now() | as_timestamp + (3.5 * 3600)) | int }}"
       - conditions:
           - alias: "Vaatwasser off"
             condition: state
@@ -35,9 +35,11 @@ action:
             state: "off"
         sequence:
           - alias: "Timer off"
-            service: timer.finish
+            service: input_datetime.set_datetime
             target:
-              entity_id: timer.vaatwasser_timer
+              entity_id: input_datetime.dishwasher_program
+            data:
+              timestamp: "{{ (now() | as_timestamp) | int }}"
           - alias: "Notification"
             service: notify.join_pixel5
             data:
