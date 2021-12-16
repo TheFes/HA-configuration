@@ -4,7 +4,7 @@ dishwasher_remaining_time_routine:
   sequence:
     - variables:
         message: >
-          {% if is_state('timer.vaatwasser_timer', 'active') %}
+          {% if is_state('timer.vaatwasser_timer', 'active') and is_state('binary_sensor.dishwasher_active', 'on') %}
             {% set remaining = (state_attr('timer.vaatwasser_timer', 'finishes_at') | as_datetime - now()).seconds %}
             {% set hours = (remaining / 3600) | int %}
             {% set minutes = (((remaining / 3600) - hours) * 60) | int %}
