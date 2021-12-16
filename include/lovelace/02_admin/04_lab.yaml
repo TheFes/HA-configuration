@@ -81,3 +81,17 @@ cards:
   - type: area
     area: keuken
     navigation_path: /lovelace/0
+  - type: custom:vertical-stack-in-card
+    title: Vaatwasser
+    cards:
+      - type: markdown
+        content: >
+          {% if is_state('timer.vaatwasser_timer', 'active') %}
+            De vaatwasser zou rond {{ as_timestamp(state_attr('timer.vaatwasser_timer', 'finishes_at')) | timestamp_custom('%H:%M') }} klaar moeten zijn (gebaseerd op het ECO programma)
+          {% else %}
+            De vaatwasser zou eigenlijk al klaar moeten zijn, heel even geduld nog dus
+          {% endif %}
+      - type: entities
+        entities:
+          - entity: timer.vaatwasser_timer
+            name: Resterende tijd

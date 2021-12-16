@@ -1,0 +1,25 @@
+dishwasher_remaining_time_routine:
+  alias: "00 🔊 TTS for remaining time dishwasher (Google Home)"
+  icon: mdi:liquid-spot
+  sequence:
+    - variables:
+        message: >
+          {% if is_state('timer.vaatwasser_timer', 'active') %}
+            {% set remaining = (state_attr('timer.vaatwasser_timer', 'finishes_at') | as_datetime - now()).seconds %}
+            {% set hours = (remaining / 3600) | int %}
+            {% set minutes = (((remaining / 3600) - hours) * 60) | int %}
+            {% if hours == 0 %}
+              "De vaatwasser is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar." 
+            {% else %}
+              "De vaatwasser is klaar om {{state_attr('timer.vaatwasser_timer', 'finishes_at') | as_timestamp | timestamp_custom('%H:%M') }}."
+            {% endif %}
+          {% elif is_state('timer.vaatwasser_timer', 'active')  %}
+            "De vaatwasser is nu elk moment klaar"
+          {% else %}
+            "De vaatwasser is niet actief "
+          {% endif %}
+    - alias: "TTS for speaker voice command"
+      service: script.google_home_say_voice
+      data:
+        tts_message: "{{ message }}"
+        tts_volume: 35
