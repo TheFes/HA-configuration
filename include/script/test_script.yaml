@@ -7,3 +7,60 @@ test_script:
     - service: persistent_notification.create
       data:
         message: "value is {{extra_data}}"
+
+radio_keuze:
+  alias: Radio luisteren
+  sequence:
+    - variables:
+        entity:
+          Eettafel: media_player.woonkamer_mini
+          Woonkamer: media_player.lg_sl9yg_2117
+        stream:
+          Radio 538: https://18973.live.streamtheworld.com/RADIO538.mp3
+          Radio 538_2: http://vip-icecast.538.lw.triple-it.nl:80/RADIO538_MP3
+          Dinamo.FM Sleep: http://channels.dinamo.fm/sleep-aac
+    - service: media_player.volume_set
+      data:
+        entity_id: "{{ entity[states('input_select.google')] }}"
+        volume_level: "{{ states('input_select.volume') | float }}"
+    - service: media_player.play_media
+      data:
+        entity_id: "{{ entity[states('input_select.google')] }}"
+        media_content_id: "{{ stream[states('input_select.radio_station')] }}"
+        media_content_type: "audio/mp4"
+
+radio_keuze_2:
+  alias: Radio luisteren 2
+  sequence:
+    - service: media_player.volume_set
+      data:
+        entity_id: "{{ states('input_select.google') }}"
+        volume_level: "{{ states('input_select.volume') }}" #'0.20'#
+    - service: media_player.play_media
+      data:
+        #entity_id: "{{ states('input_select.google') }}"
+        entity_id: >
+          {% if is_state("input_select.google", "Eettafel") %} media_player.eettafel_5
+          {% elif is_state("input_select.google", "Woonkamer") %} media_player.lg_sl9yg_2117
+          {% endif %}
+        media_content_id: >
+          {% if is_state("input_select.radio_station", "Radio 538") %} https://18973.live.streamtheworld.com/RADIO538.mp3
+          {% elif is_state("input_select.radio_station", "Radio 538_2") %} http://vip-icecast.538.lw.triple-it.nl:80/RADIO538_MP3
+          {% elif is_state("input_select.radio_station", "Radio 538_3") %} https://20103.live.streamtheworld.com/RADIO538.mp3
+          {% elif is_state("input_select.radio_station", "Radio 538_4") %} http://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538
+          {% elif is_state("input_select.radio_station", "Radio 538_5") %} http://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538.mp3
+          {% elif is_state("input_select.radio_station", "Radio 538_6") %} http://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538AAC.aac
+          {% elif is_state("input_select.radio_station", "Radio 538_7") %} https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO538.mp3
+          # 1 5 en 7 doen het
+          {% elif is_state("input_select.radio_station", "Q-Music") %} http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3
+          {% elif is_state("input_select.radio_station", "Radio 538 Non Stop") %} https://playerservices.streamtheworld.com/api/livestream-redirect/TLPSTR09AAC.aac?dist=tunein
+          {% elif is_state("input_select.radio_station", "3FM") %} http://icecast.omroep.nl/3fm-bb-mp3
+          {% elif is_state("input_select.radio_station", "100% NL") %} http://stream.100p.nl/100pctnl.mp3
+          {% elif is_state("input_select.radio_station", "Veronica") %} http://8543.live.streamtheworld.com/VERONICACMP3
+          {% elif is_state("input_select.radio_station", "Sky Radio") %} http://8623.live.streamtheworld.com:80/SKYRADIOAAC_SC
+          {% elif is_state("input_select.radio_station", "Arrow Classic Rock") %} http://91.221.151.155/listen.mp3
+
+          {% elif is_state("input_select.radio_station", "SLAM! Hardstyle") %} http://vip-icecast.538.lw.triple-it.nl/WEB17_MP3
+
+          {% endif %}
+        media_content_type: "audio/mp4"

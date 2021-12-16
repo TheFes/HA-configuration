@@ -4,20 +4,25 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: binary_sensor.vaatwasser_actief
+    entity_id: binary_sensor.dishwasher_active
     from:
       - "on"
       - "off"
 action:
   - variables:
       external_url: !secret ha_url
+  - delay: 10
   - alias: "Select action"
     choose:
       - conditions:
           - alias: "Vaatwasser on"
             condition: state
-            entity_id: binary_sensor.vaatwasser_actief
+            entity_id: binary_sensor.dishwasher_active
             state: "on"
+          - alias: "Timer not yet active"
+            condition: state
+            entity_id: timer.vaatwasser_timer
+            state: "idle"
         sequence:
           - alias: "Timer on"
             service: timer.start
@@ -26,7 +31,7 @@ action:
       - conditions:
           - alias: "Vaatwasser off"
             condition: state
-            entity_id: binary_sensor.vaatwasser_actief
+            entity_id: binary_sensor.dishwasher_active
             state: "off"
         sequence:
           - alias: "Timer off"

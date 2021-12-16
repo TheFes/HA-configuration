@@ -17,12 +17,6 @@ globals:
     restore_value: true
     initial_value: 'true'
 
-# Restart button.
-button:
-  # Button to restart the doorbell.
-  - platform: restart
-    name: ${device_name} Restart
-
 # expose switches
 switch:
   # Switch to turn on/off the chime.
@@ -77,3 +71,10 @@ binary_sensor:
     on_release:
       # On release, turn of the chime.
       - switch.turn_off: relay
+
+# expose buttons
+button:
+  # Button to restart the doorbell.
+  - platform: restart
+    name: ${device_name} Restart
+  
