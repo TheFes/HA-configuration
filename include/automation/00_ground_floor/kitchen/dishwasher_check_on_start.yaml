@@ -1,22 +1,20 @@
-id: 341786d9-1a4e-4328-be86-1e3d68d5744c
-alias: "F0K 🍳 Dishwasher timer and notification"
+id: 50613510-6bc9-4c5a-8793-9a4a7df99090
+alias: "F0K 🍳 Dishwasher timer and notification check after restart"
 mode: single
 max_exceeded: silent
 trigger:
-  - platform: state
-    entity_id: binary_sensor.dishwasher_active
-    from:
-      - "on"
-      - "off"
+  - platform: homeassistant
+    event: start
+    id: "start"
 action:
-  - alias: "Select action"
+  - alias: "Check on dishwasher timer status"
     choose:
       - conditions:
-          - alias: "Vaatwasser on"
+          - alias: "Dishwasher active"
             condition: state
             entity_id: binary_sensor.dishwasher_active
             state: "on"
-          - alias: "Timer not set yet"
+          - alias: "Timer not set"
             condition: time
             after: input_datetime.dishwasher_program
         sequence:
@@ -27,17 +25,17 @@ action:
             data:
               timestamp: "{{ (now() | as_timestamp + (3.5 * 3600)) | int }}"
       - conditions:
-          - alias: "Vaatwasser off"
+          - alias: "Dishwasher active"
             condition: state
             entity_id: binary_sensor.dishwasher_active
             state: "off"
+          - alias: "Automation dishwasher not triggered in last 5 minutes"
+            condition: template
+            value_template: "{{ now() - timedelta(minutes=5) > state_attr('automation.f0k_dishwasher_timer_and_notification', 'last_triggered') }}"
+          - alias: "Timer finished in last 5 minutes"
+            condition: template
+            value_template: "{{ now() - timedelta(minutes=5) < states('input_datetime.dishwasher_program') | as_datetime | as_local }}"
         sequence:
-          - alias: "Timer off"
-            service: input_datetime.set_datetime
-            target:
-              entity_id: input_datetime.dishwasher_program
-            data:
-              timestamp: "{{ (now() | as_timestamp) | int }}"
           - alias: "Notification"
             service: notify.all_phones
             data:
