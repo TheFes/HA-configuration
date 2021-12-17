@@ -41,10 +41,7 @@ action:
             data:
               timestamp: "{{ (now() | as_timestamp) | int }}"
           - alias: "Notification"
-            service: notify.join_pixel5
+            service: notify.all_phones
             data:
-              title: "De vaatwasser is klaar"
+              title: "💦 De vaatwasser is klaar"
               message: "Doe hem snel open zodat hij kan uitwasemen"
-              data:
-                icon: "{{ external_url }}/local/pictures/dish.png"
-                smallicon: "{{ external_url }}/local/pictures/dish.png"
