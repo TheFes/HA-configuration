@@ -8,18 +8,11 @@ trigger:
     from: 0:01
     to: 0:00
 action:
-  - variables:
-      external_url: !secret ha_url
-  - alias: "Notification to phone Marleen"
-    service: notify.mobile_app_marleen_app
+  - alias: "Notification to phones"
+    service: notify.all_phones
     data:
       title: "💦 Wasmachine is klaar"
       message: "Haal snel de was er uit voordat het allemaal kreukt."
-  - alias: "Notification to phone Martijn"
-    service: notify.join_pixel5
-    data:
-      title: "Wasmachine is klaar"
-      message: "Haal snel de was er uit voordat het allemaal kreukt."
       data:
-        icon: "{{ external_url }}/local/pictures/laundry.png"
-        smallicon: "{{ external_url }}/local/pictures/laundry.png"
+        ttl: 0
+        priority: high
