@@ -91,11 +91,6 @@ google_home_say:
       media_player.zolder_groep:
         - media_player.zolder_mini_marleen
         - media_player.zolder_mini_martijn
-    sub_groups:
-      media_player.huis_groep:
-        - media_player.boven_groep
-        - media_player.beneden_groep
-        - media_player.zolder_groep
     silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3"
     default_volume_restore: True
     delay_volume_restore: 3
@@ -139,19 +134,23 @@ google_home_say:
                                               | map(attribute='entity_id') 
                                               | list  
                 %}
-              {# determine which Google Home speakers groups are playing #}
+          {# determine which Google Home speakers groups are playing #}
                 {% 
                   set all_speaker_groups_playing =  voice_groups | default(
                                                     all_players_playing 
                                                       | select('in', speaker_group_list) 
                                                       | list )
                 %}
-              {# determine which of the tts_targets are playing  #}
-                {% set tts_playing = tts_target_list | select('in', all_players_playing) | list %}
+              {# determine which of the tts_targets (including groups members) are playing  #}
+                {% set ns = namespace(tts_targets = []) %}
+                  {% for target in tts_target_list %}
+                    {% set ns.tts_targets = ns.tts_targets + speaker_groups[target] if target in speaker_group_list else [ target ] %}
+                  {% endfor %}
+                {% set tts_playing = ns.tts_targets | select('in', all_players_playing) | list %}
               {# determine which groups should be resumed becaue a single tts target is part of that group #}
                 {% set ns = namespace(groups = []) %}
                   {% for group in all_speaker_groups_playing %}
-                    {% for entity in speaker_groups[group] if entity in tts_target_list %}
+                    {% for entity in speaker_groups[group] if entity in tts_playing %}
                       {% set ns.groups = ns.groups + [group] %}
                     {% endfor %}
                   {% endfor %}
@@ -180,9 +179,8 @@ google_home_say:
                 {% set single_resume_list = ns.single_resume %}
               {# combine all the above to a list of players which should be resumed #}
                 {% set players_resume = (tts_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
-                {% set entities = expand(players_resume) %}
                 {% set ns = namespace(info=[]) %}
-                {% for entity in entities %}
+                {% for entity in expand(players_resume) %}
                   {% set ns.info = ns.info +  [ 
                                                 dict(
                                                   entity_id = entity.entity_id,
