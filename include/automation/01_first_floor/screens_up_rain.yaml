@@ -26,8 +26,6 @@ condition:
     entity_id: sensor.br_precipitation_forecast_total
     above: 0
 action:
-  - variables:
-      external_url: !secret ha_url
   - alias: "Screens up"
     service: cover.open_cover
     target:
@@ -40,32 +38,32 @@ action:
             value_template: "{{ screens_unavailalbe | count > 0 and screens_closed > 0}}"
         sequence:
           - alias: "Notificatie to phone Martijn"
-            service: notify.join_pixel5
+            service: notify.mobile_app_pixel_5
             data:
               title: "LET OP! Niet alle screens beschikbaar"
               message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
               data:
-                icon: "{{ external_url }}/local/pictures/rain.png"
-                smallicon: "{{ external_url }}/local/pictures/rain.png"
+                ttl: 0
+                priority: high
       - conditions:
           - alias: "All screens unavailable?"
             condition: template
             value_template: "{{ screens_unavailalbe | count > 0 }}"
         sequence:
           - alias: "Notificatie to phone Martijn"
-            service: notify.join_pixel5
+            service: notify.mobile_app_pixel_5
             data:
               title: "LET OP! Niet alle screens beschikbaar"
               message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open"
               data:
-                icon: "{{ external_url }}/local/pictures/rain.png"
-                smallicon: "{{ external_url }}/local/pictures/rain.png"
+                ttl: 0
+                priority: high
     default:
       - alias: "Notificatie to phone Martijn"
-        service: notify.join_pixel5
+        service: notify.mobile_app_pixel_5
         data:
           title: "Screens gaan open"
           message: "Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}"
           data:
-            icon: "{{ external_url }}/local/pictures/rain.png"
-            smallicon: "{{ external_url }}/local/pictures/rain.png"
+            ttl: 0
+            priority: high

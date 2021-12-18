@@ -12,8 +12,6 @@ condition:
     weekday:
       - "mon"
 action:
-  - variables:
-      external_url: !secret ha_url
   - alias: "Action?"
     choose:
       - conditions:
@@ -25,16 +23,11 @@ action:
             target:
               entity_id: vacuum.rockrobo_vacuum_v1
     default:
-      - alias: "Notification to phone Marleen"
-        service: notify.mobile_app_marleen_app
-        data:
-          message: "Is alles van de grond?"
-          title: "De stofzuiger begint om 09:00"
-      - alias: "Notification to phone Martijn"
-        service: notify.join_pixel5
+      - alias: "Notification to phones"
+        service: notify.all_phones
         data:
           message: "Is alles van de grond?"
           title: "De stofzuiger begint om 09:00"
           data:
-            icon: "{{ external_url }}/local/pictures/broom.png"
-            smallicon: "{{ external_url }}/local/pictures/broom.png"
+            ttl: 0
+            priority: high

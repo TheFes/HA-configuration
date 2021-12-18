@@ -21,16 +21,14 @@ condition:
     entity_id: person.martijn
     state: "home"
 action:
-  - variables:
-      external_url: !secret ha_url
   - alias: "Message to phone Martijn"
-    service: notify.join_pixel5
+    service: notify.mobile_app_pixel_5
     data:
       title: "Hoera!"
       message: "Marleen is bijna thuis"
       data:
-        icon: "{{ external_url }}/local/pictures/partypopper.png"
-        smallicon: "{{ external_url }}/local/pictures/partypopper.png"
+        ttl: 0
+        priority: high
   - alias: "TTS for Kitchen Hub"
     service: script.turn_on
     target:

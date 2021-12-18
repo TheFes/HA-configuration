@@ -3,8 +3,6 @@ eta_marleen_routine:
   icon: mdi:car
   sequence:
     - variables:
-        external_url: !secret ha_url
-    - variables:
         message: >
           {% set eta = (as_timestamp(now()) + 60 * states ('sensor.marleen_naar_huis') | float(0)) | timestamp_custom('%H:%M') %}
           {% if is_state('person.marleen', 'home') %}
@@ -17,13 +15,13 @@ eta_marleen_routine:
             Marleen is nog niet onderweg, maar als hij nu vertrekt is ze om {{ eta }} thuis.           
           {% endif %}
     - alias: "Notificatie telefoon Marleen"
-      service: notify.join_pixel5
+      service: notify.mobile_app_pixel_5
       data:
         title: "ETA Marleen"
         message: "{{ message }}"
         data:
-          icon: "{{ external_url }}/local/pictures/auto.png"
-          smallicon: "{{ external_url }}/local/pictures/auto.png"
+          ttl: 0
+          priority: high
     - condition: state
       entity_id: person.martijn
       state: "home"

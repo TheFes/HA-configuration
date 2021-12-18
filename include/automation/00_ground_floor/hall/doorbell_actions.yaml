@@ -17,24 +17,16 @@ variables:
     - light.pepijn
     - light.staande_lamp
 action:
-  - variables:
-      external_url: !secret ha_url
-  - alias: "Notification for phone Marleen"
-    service: notify.mobile_app_marleen_app
+  - alias: "Notification for phones"
+    service: notify.all_phones
     data:
       title: "🔔 Ding dong!"
       message: Er staat iemand aan de deur!
       data:
         channel: Deurbel
         importance: high
-  - alias: "Notification for phone Martijn"
-    service: notify.join_pixel5
-    data:
-      message: "Er staat iemand aan de deur!"
-      title: "Ding Dong!"
-      data:
-        icon: "{{ external_url }}/local/pictures/door.png"
-        smallicon: "{{ external_url }}/local/pictures/text-balloon.png"
+        priority: high
+        ttl: 0
   - alias: "Google Home attic active or someone there"
     choose:
       - conditions:

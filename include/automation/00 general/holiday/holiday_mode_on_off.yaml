@@ -42,13 +42,13 @@ action:
           - service: input_boolean.turn_on
             target:
               entity_id: input_boolean.vakantie
-          - service: notify.join_pixel5
+          - service: notify.mobile_app_pixel_5
             data:
               title: "☀️ Fijne vakantie! ☀️"
               message: "Vakantiemodus is nu actief"
               data:
-                icon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
-                smallicon: "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/298/sun_2600-fe0f.png"
+                ttl: 0
+                priority: high
       - conditions:
           condition: trigger
           id: no_holiday

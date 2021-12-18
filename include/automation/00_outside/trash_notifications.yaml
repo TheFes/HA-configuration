@@ -12,8 +12,6 @@ trigger:
     at:
       - "20:00:00"
 action:
-  - variables:
-      external_url: !secret ha_url
   - alias: "Evening before, of day of trash day?"
     choose:
       - conditions:
@@ -27,19 +25,14 @@ action:
             condition: trigger
             id: evening
         sequence:
-          - alias: "Notification phone Marleen"
-            service: notify.mobile_app_marleen_app
+          - alias: "Notification phones"
+            service: notify.all_phones
             data:
               title: "Denk aan de container"
               message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-          - alias: "Notification phone Martijn"
-            service: notify.join_pixel5
-            data:
-              message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-              title: "Denk aan de container"
               data:
-                icon: "{{ external_url }}/local/pictures/waste.png"
-                smallicon: "{{ external_url }}/local/pictures/waste.png"
+                ttl: 0
+                priority: high
       - conditions:
           - condition: not
             conditions:
@@ -52,15 +45,10 @@ action:
             id: morning
         sequence:
           - alias: "Notification phone Marleen"
-            service: notify.mobile_app_marleen_app
+            service: notify.all_phones
             data:
               title: "Denk aan de container"
               message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-          - alias: "Notification phone Martijn"
-            service: notify.join_pixel5
-            data:
-              message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-              title: "Denk aan de container"
               data:
-                icon: "{{ external_url }}/local/pictures/waste.png"
-                smallicon: "{{ external_url }}/local/pictures/waste.png"
+                ttl: 0
+                priority: high

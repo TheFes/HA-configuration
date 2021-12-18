@@ -13,7 +13,7 @@ trigger:
     to: "not_home"
 variables:
   name: "{{ trigger.to_state.entity_id | replace('person.', '') }}"
-  notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.join_pixel5' }}"
+  notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_5' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "{{ 'sensor.' + name + '_naar_huis' }}"
   eta: >

@@ -11,8 +11,6 @@ trigger:
     entity_id: vacuum.rockrobo_vacuum_v1
     to: error
 action:
-  - variables:
-      external_url: !secret ha_url
   - alias: "Stofzuiger in dock?"
     choose:
       - conditions:
@@ -21,35 +19,25 @@ action:
             entity_id: vacuum.rockrobo_vacuum_v1
             state: "docked"
         sequence:
-          - alias: "Notification to phone Marleen"
-            service: notify.mobile_app_marleen_app
-            data:
-              message: "De stofzuiger is klaar en staat weer op z'n plek"
-              title: "Stofzuiger is klaar"
-          - alias: "Notification to phone Martijn"
-            service: notify.join_pixel5
+          - alias: "Notification to phones"
+            service: notify.all_phones
             data:
               message: "De stofzuiger is klaar en staat weer op z'n plek"
               title: "Stofzuiger is klaar"
               data:
-                icon: "{{ external_url }}/local/pictures/broom.png"
-                smallicon: "{{ external_url }}/local/pictures/broom.png"
+                ttl: 0
+                priority: high
       - conditions:
           - alias: "Docked?"
             condition: state
             entity_id: vacuum.rockrobo_vacuum_v1
             state: "error"
         sequence:
-          - alias: "Notification to phone Marleen"
-            service: notify.mobile_app_marleen_app
-            data:
-              title: "Probleem met stofzuiger"
-              message: "Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}"
-          - alias: "Notification to phone Martijn"
-            service: notify.join_pixel5
+          - alias: "Notification to phones"
+            service: notify.all_phones
             data:
               title: "Probleem met stofzuiger"
               message: "Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}"
               data:
-                icon: "{{ external_url }}/local/pictures/broom.png"
-                smallicon: "{{ external_url }}/local/pictures/broom.png"
+                ttl: 0
+                priority: high
