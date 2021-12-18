@@ -16,7 +16,7 @@ action:
             condition: state
             entity_id: binary_sensor.dishwasher_active
             state: "on"
-          - alias: "Timer no set"
+          - alias: "Timer not set"
             condition: template
             value_template: "{{ now() > states('input_datetime.dishwasher_program') }}"
         sequence:
