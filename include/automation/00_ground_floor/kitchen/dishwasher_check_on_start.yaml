@@ -16,7 +16,7 @@ action:
             state: "on"
           - alias: "Timer not set"
             condition: template
-            value_template: "{{ now() > states('input_datetime.dishwasher_program') | as_datetime }}"
+            value_template: "{{ now() > states('input_datetime.dishwasher_program') | as_datetime | as_local }}"
         sequence:
           - alias: "Set timer (input_datetime)"
             service: input_datetime.set_datetime
