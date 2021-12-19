@@ -4,51 +4,42 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: time
-    id: morning
+    id: today
     at:
       - "07:00:00"
   - platform: time
-    id: evening
+    id: tomorrow
     at:
       - "20:00:00"
+conditons:
+  - alias: "Notification needed?"
+    condition: template
+    value_template: >
+      {{ 
+        (trigger.id == 'today' and not is_state('sensor.mijnafvalwijzer_vandaag', 'Geen'))
+        or
+        (trigger.id == 'tomorrow' and not is_state('sensor.mijnafvalwijzer_morgen', 'Geen'))
+      }}
 action:
-  - alias: "Evening before, of day of trash day?"
-    choose:
-      - conditions:
-          - condition: not
-            conditions:
-              - alias: "Trash day tomorrow?"
-                condition: state
-                entity_id: sensor.mijnafvalwijzer_morgen
-                state: "Geen"
-          - alias: "Evening?"
-            condition: trigger
-            id: evening
-        sequence:
-          - alias: "Notification phones"
-            service: notify.all_phones
-            data:
-              title: "Denk aan de container"
-              message: "Morgen moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_morgen', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-              data:
-                ttl: 0
-                priority: high
-      - conditions:
-          - condition: not
-            conditions:
-              - alias: "Trash day today?"
-                condition: state
-                entity_id: sensor.mijnafvalwijzer_vandaag
-                state: "Geen"
-          - alias: "Morning?"
-            condition: trigger
-            id: morning
-        sequence:
-          - alias: "Notification phone Marleen"
-            service: notify.all_phones
-            data:
-              title: "Denk aan de container"
-              message: "Vandaag moet de {{ 'Rest- en GFT-bak' if is_state('sensor.mijnafvalwijzer_vandaag', 'duobak') else 'Papier- en PMD-bak' }} buiten"
-              data:
-                ttl: 0
-                priority: high
+  - variables:
+      trash_type: >
+        {% set type = 
+          states('sensor.mijnafvalwijzer_vandaag') if trigger.id == 'today' 
+          else states('sensor.mijnafvalwijzer_morgen') 
+        %}
+        {{
+          'Rest- en GFT-bak' if type == 'duobak'
+          else 'Papier- en PMD-bak'
+        }}
+      notification_moment: >
+        {{ 'Vandaag' if trigger.id == 'today' else 'Morgen' }}
+  - alias: "Notification phones"
+    service: notify.all_phones
+    data:
+      title: "Denk aan de container"
+      message: "{{ notification_moment }} moet de {{ trash_type }} buiten"
+      data:
+        channel: Trash
+        ttl: 0
+        priority: high
+        notification_icon: mdi:trash-can-outline

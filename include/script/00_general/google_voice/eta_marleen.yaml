@@ -20,8 +20,10 @@ eta_marleen_routine:
         title: "ETA Marleen"
         message: "{{ message }}"
         data:
+          channel: ETA
           ttl: 0
           priority: high
+          notification_icon: mdi:car
     - condition: state
       entity_id: person.martijn
       state: "home"

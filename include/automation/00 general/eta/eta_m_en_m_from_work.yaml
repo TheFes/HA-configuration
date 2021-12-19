@@ -23,8 +23,13 @@ variables:
       {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
     {% endif %}
 action:
-  - alias: "Berichtje sturen"
+  - alias: "Send notification to phone"
     service: "{{ notify }}"
     data:
       title: "{{ name | capitalize }} is onderweg"
       message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
+      data:
+        channel: ETA
+        ttl: 0
+        priority: high
+        notification_icon: mdi:car

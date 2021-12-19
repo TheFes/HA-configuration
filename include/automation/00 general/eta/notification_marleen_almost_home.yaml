@@ -27,8 +27,10 @@ action:
       title: "Hoera!"
       message: "Marleen is bijna thuis"
       data:
+        channel: ETA
         ttl: 0
         priority: high
+        notification_icon: mdi:party-popper
   - alias: "TTS for Kitchen Hub"
     service: script.turn_on
     target:

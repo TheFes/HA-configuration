@@ -30,6 +30,9 @@ action:
         Er is een nieuwe Home Assistant versie!
         Versie {{ states('sensor.latest_version') }} is nu beschikbaar.
       data:
+        channel: Home Assistant
+        ttl: 0
+        priority: high
         actions:
           - action: "URI"
             title: "Changelog"

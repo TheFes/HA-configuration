@@ -20,7 +20,7 @@ condition:
         value_template: "{{ screens_closed | count > 0 }}"
       - alias: "Screens unavailable?"
         condition: template
-        value_template: "{{ screens_unavailalbe | count > 0 }}"
+        value_template: "{{ screens_unavailable | count > 0 }}"
   - alias: "Rain?"
     condition: numeric_state
     entity_id: sensor.br_precipitation_forecast_total
@@ -30,40 +30,28 @@ action:
     service: cover.open_cover
     target:
       entity_id: "{{ screens_entityid }}"
-  - alias: "All screens available?"
-    choose:
-      - conditions:
-          - alias: "Some screens unavailable?"
-            condition: template
-            value_template: "{{ screens_unavailalbe | count > 0 and screens_closed > 0}}"
-        sequence:
-          - alias: "Notificatie to phone Martijn"
-            service: notify.mobile_app_pixel_5
-            data:
-              title: "LET OP! Niet alle screens beschikbaar"
-              message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
-              data:
-                ttl: 0
-                priority: high
-      - conditions:
-          - alias: "All screens unavailable?"
-            condition: template
-            value_template: "{{ screens_unavailalbe | count > 0 }}"
-        sequence:
-          - alias: "Notificatie to phone Martijn"
-            service: notify.mobile_app_pixel_5
-            data:
-              title: "LET OP! Niet alle screens beschikbaar"
-              message: "{{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open"
-              data:
-                ttl: 0
-                priority: high
-    default:
-      - alias: "Notificatie to phone Martijn"
-        service: notify.mobile_app_pixel_5
-        data:
-          title: "Screens gaan open"
-          message: "Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}"
-          data:
-            ttl: 0
-            priority: high
+  - variables:
+      title: >
+        {% if screens_unavailable | count > 0 %}
+          "LET OP! Niet alle screens beschikbaar"
+        {% else %}
+          "Screens gaan open"
+        {% endif %}
+      message: >
+        {% if screens_unavailable | count > 0 and screens_closed > 0 %}
+          {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
+        {% elif screens_unavailable | count > 0 %}
+          {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open
+        {% else %}
+          Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}
+        {% endif %}
+  - alias: "Notificatie to phone Martijn"
+    service: notify.mobile_app_pixel_5
+    data:
+      title: "{{ title }}"
+      message: "{{ message }}"
+      data:
+        channel: Screens
+        ttl: 0
+        priority: high
+        notification_icon: mdi:weather-rainy

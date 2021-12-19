@@ -1,9 +1,4 @@
 test_script:
   alias: "ZZ 🧪 Script for quick tests"
   icon: mdi:test-tube
-  sequence:
-    - service: input_datetime.set_datetime
-      target:
-        entity_id: input_datetime.dishwasher_program
-      data:
-        timestamp: "{{ (utcnow() | as_timestamp + (3.5 * 3600)) | int }}"
+  sequence: []

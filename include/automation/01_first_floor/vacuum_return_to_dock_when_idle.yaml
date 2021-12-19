@@ -15,6 +15,11 @@ action:
     data:
       title: "Stofzuiger terug naar dock"
       message: "De stofzuiger staat al een kwartier te nietsnutten, en gaat over 10 minuten terug naar z'n plekje"
+      data:
+        channel: Vacuum
+        ttl: 0
+        priority: high
+        notification_icon: mdi:robot-vacuum
   - delay: 10
   - alias: "Still doing nothing?"
     condition: state
