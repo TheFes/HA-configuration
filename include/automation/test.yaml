@@ -9,7 +9,4 @@ trigger:
   - platform: numeric_state
     entity_id: input_number.test
     above: 30
-action:
-  - service: persistent_notification.create
-    data:
-      message: "Set to above {{ (states('input_number.test') | float(0) / 10) | int(0) * 10 }}"
+action: []
