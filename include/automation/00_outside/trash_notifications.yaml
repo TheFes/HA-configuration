@@ -4,13 +4,13 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: time
-    id: Morgen
     at:
       - "07:00:00"
+    id: "Morgen"
   - platform: time
-    id: Vandaag
     at:
       - "20:00:00"
+    id: "Vandaag"
 variables:
   sensor: "sensor.mijnafvalwijzer_{{ trigger.id | lower }}"
   trash_descr:
@@ -21,13 +21,11 @@ condition:
     condition: template
     value_template: "{{ states(sensor) != 'Geen' }}"
 action:
-  - variables:
-      trash_type: "{{ trash_descr[states(sensor)] }}"
   - alias: "Notification phones"
     service: notify.all_phones
     data:
       title: "Denk aan de container"
-      message: "{{ trigger.id }} moet de {{ trash_type }} buiten"
+      message: "{{ trigger.id }} moet de {{ trash_descr[states(sensor)]}} buiten"
       data:
         channel: Trash
         ttl: 0
