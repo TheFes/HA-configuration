@@ -25,7 +25,7 @@ action:
     service: notify.all_phones
     data:
       title: "Denk aan de container"
-      message: "{{ trigger.id }} moet de {{ trash_descr[states(sensor)]}} buiten"
+      message: "{{ trigger.id }} moet de {{ trash_descr[states(sensor)] }} buiten"
       data:
         channel: Trash
         ttl: 0
