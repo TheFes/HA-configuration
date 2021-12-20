@@ -6,11 +6,11 @@ trigger:
   - platform: time
     at:
       - "07:00:00"
-    id: "Morgen"
+    id: "Vandaag"
   - platform: time
     at:
       - "20:00:00"
-    id: "Vandaag"
+    id: "Morgen"
 variables:
   sensor: "sensor.mijnafvalwijzer_{{ trigger.id | lower }}"
   trash_descr:
