@@ -24,7 +24,7 @@ action:
   - alias: "Notification phones"
     service: notify.all_phones
     data:
-      title: "Denk aan de container"
+      title: "Denk aan de {{ trash_descr[states(sensor)] }}"
       message: "{{ trigger.id }} moet de {{ trash_descr[states(sensor)] }} buiten"
       data:
         channel: Trash
