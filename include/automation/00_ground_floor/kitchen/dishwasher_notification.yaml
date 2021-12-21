@@ -5,13 +5,13 @@ max_exceeded: silent
 trigger:
   - platform: state
     entity_id: binary_sensor.dishwasher_active
-    from:
-      - "on"
+    from: "off"
+    to: "on"
     id: "started"
   - platform: state
     entity_id: binary_sensor.dishwasher_active
-    from:
-      - "off"
+    from: "on"
+    to: "off"
     id: "finished"
   - platform: state
     entity_id:
