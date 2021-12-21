@@ -28,6 +28,21 @@ action:
         priority: high
         ttl: 0
         notificaton_icon: mdi:bell
+  - alias: "Nvidia Shield active?"
+    choose:
+      - conditions:
+          - alias: "Shield Playing"
+            condition: state
+            entity_id: media_player.nvidia_shield
+            state: "playing"
+        sequence:
+          - alias: "Pause Shield"
+            service: media_player.media_pause
+            target:
+              entity_id: media_player.nvidia_shield
+      - conditions: condition
+        sequence: action
+    default: action
   - alias: "Google Home attic active or someone there"
     choose:
       - conditions:
