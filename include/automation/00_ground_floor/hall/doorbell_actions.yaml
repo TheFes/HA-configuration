@@ -31,10 +31,12 @@ action:
   - alias: "Nvidia Shield active?"
     choose:
       - conditions:
-          - alias: "Shield Playing"
-            condition: state
-            entity_id: media_player.nvidia_shield
-            state: "playing"
+          - alias: "Shield active"
+            condition: not
+            conditions:
+              - condition: state
+                entity_id: media_player.nvidia_shield
+                state: "off"
         sequence:
           - alias: "Pause Shield"
             service: media_player.media_pause
