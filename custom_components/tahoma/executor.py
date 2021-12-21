@@ -1,6 +1,8 @@
 """Class for helpers and community with the OverKiz API."""
+from __future__ import annotations
+
 import logging
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlparse
 
 from pyhoma.models import Command, Device
@@ -24,7 +26,7 @@ class OverkizExecutor:
         """Return Overkiz device linked to this entity."""
         return self.coordinator.data[self.device_url]
 
-    def select_command(self, *commands: str) -> Optional[str]:
+    def select_command(self, *commands: str) -> str | None:
         """Select first existing command in a list of commands."""
         existing_commands = self.device.definition.commands
         return next((c for c in commands if c in existing_commands), None)
@@ -33,7 +35,7 @@ class OverkizExecutor:
         """Return True if a command exists in a list of commands."""
         return self.select_command(*commands) is not None
 
-    def select_state(self, *states) -> Optional[str]:
+    def select_state(self, *states) -> str | None:
         """Select first existing active state in a list of states."""
         if self.device.states:
             return next(
@@ -50,7 +52,7 @@ class OverkizExecutor:
         """Return True if a state exists in self."""
         return self.select_state(*states) is not None
 
-    def select_attribute(self, *attributes) -> Optional[str]:
+    def select_attribute(self, *attributes) -> str | None:
         """Select first existing active state in a list of states."""
         if self.device.attributes:
             return next(

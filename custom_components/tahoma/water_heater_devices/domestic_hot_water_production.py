@@ -18,6 +18,7 @@ OVERKIZ_TO_OPERATION_MODE = {
     OverkizCommandParam.MANUAL_ECO_ACTIVE: STATE_ECO,
     OverkizCommandParam.MANUAL_ECO_INACTIVE: STATE_MANUAL,
     OverkizCommandParam.AUTO: STATE_AUTO,
+    OverkizCommandParam.AUTO_MODE: STATE_AUTO,
 }
 
 OPERATION_MODE_TO_OVERKIZ = {v: k for k, v in OVERKIZ_TO_OPERATION_MODE.items()}
