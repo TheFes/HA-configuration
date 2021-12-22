@@ -1,0 +1,17 @@
+id: b8f7c143-ca0d-4fbc-b98e-fec9870fd284
+alias: "00 🏠 Alert for Too Good To Go"
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.tgtg_bakker_ochtend_box
+    above: 0
+action:
+  - alias: "Send notification"
+    service: notify.mobile_app_pixel_5
+    data:
+      title: "TGTG Box beschikbaar"
+      message: "Grijp nu je kans"
+      data:
+        channel: TGTG
+        ttl: 0
+        priority: high
+        notification_icon: mdi:baguette
