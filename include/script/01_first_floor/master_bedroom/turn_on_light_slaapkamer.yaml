@@ -66,6 +66,9 @@ slaapkamer_turn_on:
                               service: light.turn_on
                               target:
                                 entity_id: light.slaapkamer
+                              data:
+                                brightness: 128
+                                color_temp: 454
                             - delay: 0.5
                             - alias: "Dim light"
                               service: light.turn_on
