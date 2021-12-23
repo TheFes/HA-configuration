@@ -13,6 +13,10 @@ trigger:
     id: "Morgen_tomorrow"
 variables:
   sensor: "sensor.afvalwijzer_{{ trigger.id.split('_')[1] }}"
+  trash_descr:
+    restgft: "rest- en GFT-bak"
+    dhm: "papier- en PMD-bak"
+    kerstbomen: "kerstboom"
 condition:
   - alias: "Notification needed?"
     condition: template
@@ -21,8 +25,8 @@ action:
   - alias: "Notification phones"
     service: notify.all_phones
     data:
-      title: "TEST - Denk aan {{ states(sensor) }}"
-      message: "{{ trigger.id.split('_')[0] }} moet {{ states(sensor) }} buiten"
+      title: "TEST - Denk aan de {{ trash_descr[states(sensor)] }}"
+      message: "{{ trigger.id.split('_')[0] }} moet de {{ trash_descr[states(sensor)] }} buiten"
       data:
         channel: Trash
         ttl: 0
