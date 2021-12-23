@@ -1,0 +1,30 @@
+id: 690cc2c9-f014-4b38-90e8-51217659d49e
+alias: "Test Notificaties for trash containers afvalinfo"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at:
+      - "07:30:00"
+    id: "Vandaag_today"
+  - platform: time
+    at:
+      - "20:30:00"
+    id: "Morgen_tomorrow"
+variables:
+  sensor: "sensor.afvalwijzer_{{ trigger.id.split('_')[1] }}"
+condition:
+  - alias: "Notification needed?"
+    condition: template
+    value_template: "{{ states(sensor) != 'Geen' }}"
+action:
+  - alias: "Notification phones"
+    service: notify.all_phones
+    data:
+      title: "TEST - Denk aan {{ states(sensor) }}"
+      message: "{{ trigger.id.split('_')[0] }} moet {{ states(sensor) }} buiten"
+      data:
+        channel: Trash
+        ttl: 0
+        priority: high
+        notification_icon: mdi:trash-can
