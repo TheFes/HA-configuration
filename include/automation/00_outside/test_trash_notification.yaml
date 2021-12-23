@@ -22,8 +22,8 @@ condition:
     condition: template
     value_template: "{{ states(sensor) != 'Geen' }}"
 action:
-  - alias: "Notification phones"
-    service: notify.all_phones
+  - alias: "Notification phone Martijn (for testing)"
+    service: notify.mobile_app_pixel_5
     data:
       title: "TEST - Denk aan de {{ trash_descr[states(sensor)] }}"
       message: "{{ trigger.id.split('_')[0] }} moet de {{ trash_descr[states(sensor)] }} buiten"
