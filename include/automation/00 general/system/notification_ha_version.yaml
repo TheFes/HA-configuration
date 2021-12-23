@@ -20,15 +20,17 @@ action:
       title: "Update HA"
       notification_id: ha_update
       message: >
+        {% set b = states('sensor.potential_breaking_changes') %}
         Versie _{{ states('sensor.latest_version') }}_ is nu beschikbaar.
+        Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
         [Changelog](https://github.com/home-assistant/core/releases/tag/{{states('sensor.latest_version')}})
   - alias: "Send notification to phone"
     service: notify.mobile_app_pixel_5
     data:
       title: "Home Assistant upgrade"
       message: >
-        Er is een nieuwe Home Assistant versie!
         Versie {{ states('sensor.latest_version') }} is nu beschikbaar.
+        Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
       data:
         channel: Home Assistant
         ttl: 0
