@@ -1,5 +1,6 @@
 icon: "mdi:cast"
 cards:
+  # Status media players
   - type: entities
     title: Google Cast
     entities:
@@ -53,6 +54,7 @@ cards:
         entities:
           - entity: input_select.dropdown_google_say
             name: "Kies waar het bericht naar verstuurd moet worden"
+      # Card to send TTS message
       - type: conditional
         conditions:
           - entity: input_select.dropdown_google_say

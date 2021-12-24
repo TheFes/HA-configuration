@@ -1,48 +1,10 @@
 icon: "mdi:home-floor-0"
 cards:
-  # overzichtje
+  # Status overview
   - type: glance
     show_name: false
-    entities:
-      - entity: sensor.location_phone_marleen
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Marleen
-            card:
-              type: custom:more-info-card
-              entity: person.marleen
-      - entity: sensor.location_phone_martijn
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Martijn
-            card:
-              type: custom:more-info-card
-              entity: person.martijn
-      - entity: weather.climacell_daily
-        name: Weer
-      - entity: sun.sun
-        name: Zon
-        show_state: false
-      - entity: sensor.house_mode
-        show_state: false
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Huis Modus
-            card:
-              type: entities
-              entities:
-                - entity: sensor.house_mode
-                - entity: input_boolean.vakantie
-                  name: Vakantie
-                - entity: input_boolean.gast
-                  name: Gast
-  # woonkamer
+    entities: !include /config/include/lovelace/cards/glance_heading.yaml
+  # Living Room
   - type: entities
     title: Woonkamer & Speelhoek
     show_header_toggle: false
@@ -139,7 +101,7 @@ cards:
             show_line: false
             show_points: false
             y_axis: secondary
-  # eettafel en keuken
+  # Dining table and kitchen
   - type: vertical-stack
     cards:
       - type: entities
@@ -208,7 +170,7 @@ cards:
               entities:
                 - entity: input_select.dishwasher_program
                 - entity: input_select.dishwasher_program_extra
-  # WC, Hal & Trapkast
+  # Toilet, Hallway and Stairs closet
   - type: entities
     title: WC, Hal & Trapkast
     show_header_toggle: false
@@ -228,7 +190,7 @@ cards:
         toggle: true
         hide_when_off: true
       - entity: binary_sensor.deur_trapkast
-  # Buiten
+  # Outside
   - type: entities
     title: Buiten
     show_header_toggle: false
@@ -259,7 +221,7 @@ cards:
       attribute: "Sort-date"
       reverse: false
       numeric: true
-  # Alle lampen
+  # Alle downsairs lights
   - type: entities
     title: Alle lampen
     entities:

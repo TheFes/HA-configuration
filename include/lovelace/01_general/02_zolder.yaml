@@ -1,47 +1,10 @@
 icon: "mdi:home-floor-2"
 cards:
-  # overzichtje
+  # Status overview
   - type: glance
     show_name: false
-    entities:
-      - entity: sensor.location_phone_marleen
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Marleen
-            card:
-              type: custom:more-info-card
-              entity: person.marleen
-      - entity: sensor.location_phone_martijn
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Martijn
-            card:
-              type: custom:more-info-card
-              entity: person.martijn
-      - entity: weather.climacell_daily
-        name: Weer
-      - entity: sun.sun
-        name: Zon
-        show_state: false
-      - entity: sensor.house_mode
-        show_state: false
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            command: popup
-            title: Huis Modus
-            card:
-              type: entities
-              entities:
-                - entity: sensor.house_mode
-                - entity: input_boolean.vakantie
-                  name: Vakantie
-                - entity: input_boolean.gast
-                  name: Gast
+    entities: !include /config/include/lovelace/cards/glance_heading.yaml
+  # Attic
   - type: entities
     title: Zolder
     show_header_toggle: false
@@ -90,6 +53,7 @@ cards:
             show_line: false
             show_points: false
             y_axis: secondary
+  # Switches
   - type: entities
     name: Schakelaars
     entities:
@@ -157,11 +121,13 @@ cards:
                 - switch.server
                 - sensor.server_power
                 - sensor.server_energy
+  # Washing Machine
   - type: entities
     title: Wasmachine
     entities:
       - entity: sensor.wasmachine
       - entity: sensor.wasmachine_remain_time
+  # All attic lights
   - type: entities
     title: Alle lampen
     entities:
