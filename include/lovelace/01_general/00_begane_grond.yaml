@@ -46,6 +46,7 @@ cards:
   - type: entities
     title: Woonkamer & Speelhoek
     show_header_toggle: false
+    state_color: true
     entities:
       - type: conditional
         conditions:
@@ -69,12 +70,10 @@ cards:
         row:
           entity: switch.backup_02
           name: Kerstvaas
-          state_color: true
       - entity: light.woonkamer_plafond
         type: "custom:slider-entity-row"
         toggle: true
         hide_when_off: true
-        state_color: true
       - type: conditional
         conditions:
           - entity: switch.tv_meubel
@@ -146,6 +145,7 @@ cards:
       - type: entities
         title: Eettafel & Keuken
         show_header_toggle: false
+        state_color: true
         entities:
           - entity: light.eettafel
             type: "custom:slider-entity-row"
@@ -162,15 +162,11 @@ cards:
           - entity: switch.espresso
             icon: "mdi:coffee-maker"
             name: Espressomachine
-            state_color: true
           - entity: switch.waterkoker
             icon: "mdi:tea-outline"
             name: Waterkoker
-            state_color: true
           - entity: switch.bw_plug_20 # KERST
-            state_color: true
           - entity: switch.backup_01 # KERST
-            state_color: true
           - entity: sensor.extractor_hood_status
             name: Afzuigkap
             tap_action:
@@ -216,6 +212,7 @@ cards:
   - type: entities
     title: WC, Hal & Trapkast
     show_header_toggle: false
+    state_color: true
     entities:
       - entity: light.wc
         type: "custom:slider-entity-row"
@@ -238,7 +235,6 @@ cards:
     entities:
       - entity: light.tuinlampjes
       - entity: switch.bw_plug_19 # KERST
-        state_color: true
       - entity: light.voordeur
         name: Voordeur
       - entity: light.veranda
