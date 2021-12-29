@@ -333,8 +333,8 @@ google_home_say:
                           {% elif spotify_players_info | count == 1 %}
                             {{ spotify_players_info[0].entity_id.split('_')[2] }}
                           {% elif players_to_resume[repeat.index -1].entity_id in speaker_group_list %}
-                            {% set ha_group = players_to_resume[repeat.index -1].entity_id | replace('media_player', 'group') %}
-                            {% set members = state_attr(ha_group, 'entity_id') %}
+                            {% set group_id = players_to_resume[repeat.index -1].entity_id %}
+                            {% set members = speaker_groups[group_id] %}
                             {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + [] if members == None else members | list %}
                             {% set names_check = expand(list_check) | map(attribute='name') | list %}
                             {{ spotify_players_info
