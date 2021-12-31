@@ -62,11 +62,6 @@ google_home_say:
     players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
-    spotify_media_players:
-      - media_player.spotify_pepijn
-      - media_player.spotify_martijn
-      - media_player.spotify_marleen
-      - media_player.spotify_floris
     primary_spotcast: "pepijn"
     fixed_picture:
       NPO Radio 2: "/local/pictures/radio/npo_radio_2.png"
@@ -184,6 +179,7 @@ google_home_say:
                   {% set ns.info = ns.info +  [ 
                                                 dict(
                                                   entity_id = entity.entity_id,
+                                                  friendly_name = entity.attributes.friendly_name, 
                                                   media_content_id = entity.attributes.media_content_id | default('no media_content'),
                                                   media_title = entity.attributes.media_title | default('no title'),
                                                   media_artist = entity.attributes.media_artist | default('No artist'),
@@ -324,37 +320,25 @@ google_home_say:
                           (players_to_resume[repeat.index-1].media_content_id).startswith('http')
                         }}
                       spotcast_account: >
-                        {% if voice_spotcast is defined %}
+                        {% if voice_spotcast %}
                           {{ voice_spotcast }}
                         {% else %}
-                          {% set mp_names = players_to_resume | map(attribute='friendly_name') | list %}
                           {% if players_to_resume[repeat.index - 1].app_name != 'Spotify' %}
-                            Not Spotify
-                          {% elif spotify_players_info | count == 1 %}
-                            {{ spotify_players_info[0].entity_id.split('_')[2] }}
-                          {% elif players_to_resume[repeat.index -1].entity_id in speaker_group_list %}
-                            {% set group_id = players_to_resume[repeat.index -1].entity_id %}
-                            {% set members = speaker_groups[group_id] %}
-                            {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + [] if members == None else members | list %}
-                            {% set names_check = expand(list_check) | map(attribute='name') | list %}
-                            {{ spotify_players_info
-                                | selectattr('source', 'in', names_check) 
-                                | map(attribute='entity_id') 
-                                | join 
-                                | replace('media_player.spotify_', '')
-                            }}
+                            {% set spotcast = 'Not Spotify' %}
                           {% else %}
-                            {{ 
-                              (
-                                spotify_players_info 
-                                  | selectattr('source', 'eq', players_to_resume[repeat.index -1].friendly_name) 
-                                  | map(attribute='entity_id') 
-                                  | join
-                              ).split('_')[2]
-                              if players_to_resume[repeat.index - 1].friendly_name in (spotify_players_info | map(attribute='source') | list)
-                              else primary_spotcast 
-                            }}
+                            {% set entity = players_to_resume[repeat.index -1].entity_id %}
+                            {% set members = speaker_groups[entity] if speaker_groups[entity] else [] %}
+                            {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + members %}
+                            {% set names_check = expand(list_check) | map(attribute='name') | list %}
+                              {% set spotcast =  spotify_players_info
+                                                  | selectattr('source', 'in', names_check) 
+                                                  | map(attribute='entity_id') 
+                                                  | join 
+                                                  | replace('media_player.spotify_', '')
+                                  
+                              %}
                           {% endif %}
+                            {{ spotcast if spotcast else primary_spotcast }}
                         {% endif %}
                   - alias: "Wait until TTS message is complete"
                     wait_template: "{{ states(players_to_resume[repeat.index -1].entity_id) in ['idle', 'off'] }}"
