@@ -269,7 +269,7 @@ google_home_say:
         - conditions:
             - alias: "TTS Volume set?"
               condition: template
-              value_template: "{{ tts_volume is defined }}"
+              value_template: "{{ True if tts_volume else False }}"
           sequence:
             - alias: "Apply TTS volume"
               service: media_player.volume_set
