@@ -225,11 +225,11 @@ google_home_say:
             True if
               (
                 default_volume_restore is not boolean
-                and silent_mp3 is defined
+                and (True if silent_mp3 else False)
               )
             else False
             and tts_target_not_playing | count > 0
-            and tts_volume is defined
+            and (True if tts_volume else False)
           }}
     - alias: "Play silent MP3 if volume of non playing targets should be restored"
       choose:
@@ -282,7 +282,7 @@ google_home_say:
       target:
         entity_id: "{{ tts_target_list }}"
       data: >
-        {% if service_data is defined and service_data != None %}
+        {% if service_data %}
           {{ dict( message = tts_message, **service_data ) }}
         {% else %}
           {{ dict( message = tts_message ) }}
