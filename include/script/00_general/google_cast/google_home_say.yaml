@@ -222,13 +222,10 @@ google_home_say:
     - variables:
         volume_restore_required: >
           {{
-            True if
-              (
-                default_volume_restore is not boolean
-                and (True if silent_mp3 else False)
-              )
-            else False
-            and tts_target_not_playing | count > 0
+            (restore_volume_all if restore_volume_all is boolean
+              else (default_volume_restore if default_volume_restore else False))
+            and (True if silent_mp3 else False)
+            and (tts_target_not_playing | count > 0)
             and (True if tts_volume else False)
           }}
     - alias: "Play silent MP3 if volume of non playing targets should be restored"
@@ -264,19 +261,6 @@ google_home_say:
           {{ ns.info }}
         screen_not_playing: >
           {{ tts_target_not_playing | select('in', players_screen) | list }}
-    - alias: "Set volume to TTS volume if set"
-      choose:
-        - conditions:
-            - alias: "TTS Volume set?"
-              condition: template
-              value_template: "{{ True if tts_volume else False }}"
-          sequence:
-            - alias: "Apply TTS volume"
-              service: media_player.volume_set
-              target:
-                entity_id: "{{ tts_target_list }}"
-              data:
-                volume_level: "{{ tts_volume if tts_volume < 1 else tts_volume / 100 }}"
     - alias: "Send TTS message"
       service: "{{ tts_service }}"
       target:
@@ -287,6 +271,21 @@ google_home_say:
         {% else %}
           {{ dict( message = tts_message ) }}
         {% endif %}
+    - alias: "Set volume to TTS volume if set"
+      choose:
+        - conditions:
+            - alias: "TTS Volume set?"
+              condition: template
+              value_template: "{{ True if tts_volume else False }}"
+          sequence:
+            - alias: "Wait first tts_target is idle or off (will prevent volume change of stream in case there is only one target)"
+              wait_template: "{{ states(tts_target_list[0]) in ['idle', 'off'] }}"
+            - alias: "Apply TTS volume"
+              service: media_player.volume_set
+              target:
+                entity_id: "{{ tts_target_list }}"
+              data:
+                volume_level: "{{ tts_volume if tts_volume < 1 else tts_volume / 100 }}"
     - alias: "Short delay if required"
       choose:
         - conditions:
