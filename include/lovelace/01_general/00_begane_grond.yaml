@@ -212,13 +212,11 @@ cards:
       title: Containers
     filter:
       include:
-        - entity_id: "*mijnafvalwijzer*"
-      exclude:
-        - entity_id: "*vandaag*"
-        - entity_id: "*morgen*"
+        - entity_id: "sensor.afvalwijzer_dhm"
+        - entity_id: "sensor.afvalwijzer_restgft"
     sort:
       method: attribute
-      attribute: "Sort-date"
+      attribute: "days_until_collection_date"
       reverse: false
       numeric: true
   # Alle downsairs lights
