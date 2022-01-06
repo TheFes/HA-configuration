@@ -23,32 +23,15 @@ cards:
         entities:
           - entity: input_text.tts_message
             name: Bericht
-          - entity: input_number.tts_volume
-            name: Volume voor bericht
-          - entity: input_boolean.tts_advanced_volume
-            name: Uitgebreide instellingen volume
-      - type: conditional
-        conditions:
-          - entity: input_boolean.tts_advanced_volume
-            state_not: "off"
-        card:
-          type: entities
-          entities:
-            - entity: input_boolean.tts_volume
-              name: Volume wijzigen?
-            - entity: input_boolean.restore_volume_all
-              name: Volume herstellen voor apparaten die niets speelden
-      - type: conditional
-        conditions:
-          - entity: input_boolean.restore_volume_all
-            state: "off"
           - entity: input_boolean.tts_volume
-            state_not: "off"
-        card:
-          type: entities
-          entities:
-            - entity: input_number.volume_non_playing
-              name: Volume voor Google Homes die niets speelden
+            name: Volume wijzigen?
+          - type: conditional
+            conditions:
+              - entity: input_boolean.tts_volume
+                state: "on"
+            row:
+              entity: input_number.tts_volume
+              name: Volume voor bericht
       - type: entities
         title: "Versturen aan:"
         entities:

@@ -49,8 +49,6 @@ google_say_dashboard:
                     {% else %}
                       {{ 'media_player.' ~ ( states('input_select.dropdown_google_say') | lower | replace(' ', '_') ) }}
                     {% endif %}
-                  restore_volume_all: "{{ is_state('input_boolean.restore_volume_all', 'on') }}"
-                  volume_non_playing: "{{ states('input_number.volume_non_playing') | float(25) / 100 | round(2) }}"
       default:
         - service: script.turn_on
           target:

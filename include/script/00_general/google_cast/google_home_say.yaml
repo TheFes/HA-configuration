@@ -33,23 +33,6 @@ google_home_say:
           step: 5
           mode: slider
           unit_of_measurement: "%"
-    restore_volume_all:
-      description: "Restore volume of all TTS targets, will cause a short delay in sending the TTS"
-      example: true
-      required: false
-      selector:
-        boolean:
-    volume_non_playing:
-      description: "Default volume to restore non playing devces to (in %). Only used in case tts_volume is set, and restore_volume_all is not set to True"
-      example: 25
-      required: false
-      selector:
-        number:
-          min: 0
-          max: 100
-          step: 5
-          mode: slider
-          unit_of_measurement: "%"
     speaker_group_split:
       description: "Set to True to split Google Home speaker groups in separate entities when sending the TTS"
       example: true
@@ -86,13 +69,10 @@ google_home_say:
       media_player.zolder_groep:
         - media_player.zolder_mini_marleen
         - media_player.zolder_mini_martijn
-    silent_mp3: "media-source://media_source/local/misc/10-seconds-of-silence.mp3"
-    default_volume_restore: True
-    delay_volume_restore: 3
     default_volume_level: 0.25
     default_group_split: False
   sequence:
-    - alias: "Convert input to lists if not provided as such"
+    - alias: "Set variables to be used in the script"
       variables:
         tts_target_list: >
           {% if voice_tts_target is defined %}
@@ -115,8 +95,8 @@ google_home_say:
             {% endif %}
           {% endif %}
         speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
-    - alias: "Deterimine which entities are playing and should be resumed"
-      variables:
+        #    - alias: "Deterimine which entities are playing and should be resumed"
+        #      variables:
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {% if voice_media_player_data is defined %}
@@ -193,8 +173,8 @@ google_home_say:
                 {% endfor %}
                 {{ ns.info }}
             {% endif %}
-    - alias: "Create lists with attributes of players to resume"
-      variables:
+        #    - alias: "Create lists with attributes of players to resume"
+        #      variables:
         tts_target_not_playing: >
           {% set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
           {% set ns = namespace(members = []) %}
@@ -219,28 +199,22 @@ google_home_say:
             {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {% endfor %}
           {{ ns.info }}
-    - variables:
+        #    - alias: "Determine if volume restore is needed"
+        #      variables:
         volume_restore_required: >
           {{
-            (restore_volume_all if restore_volume_all is boolean
-              else (default_volume_restore if default_volume_restore else False))
-            and (True if silent_mp3 else False)
-            and (tts_target_not_playing | count > 0)
+            tts_target_not_playing | count > 0
             and (True if tts_volume else False)
           }}
-    - alias: "Play silent MP3 if volume of non playing targets should be restored"
+    - alias: "Turn non playing entities on if needed"
       choose:
         - conditions: "{{ volume_restore_required }}"
           sequence:
-            - alias: "Play silent MP3"
-              service: media_player.play_media
+            - alias: "Turn non playing entities on"
+              service: media_player.turn_on
               target:
                 entity_id: "{{ tts_target_not_playing }}"
-              data:
-                media_content_id: "{{ silent_mp3 }}"
-                media_content_type: "audio/mp3"
-            - delay: >
-                {{ delay_volume_restore | int(3) }}
+            - delay: 0.25
     - variables:
         volume_old_not_playing: >
           {% set entities = expand(tts_target_not_playing) %}

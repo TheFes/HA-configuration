@@ -79,9 +79,7 @@ google_home_say_voice:
         voice_tts_target: "{{ tts_target }}"
         tts_message: "{{ tts_message }}"
         tts_volume: "{{ tts_volume if tts_volume is defined else undefined }}"
-        restore_volume_all: "{{ restore_volume_all if restore_volume_all is defined else undefined }}"
         speaker_group_split: "{{ speaker_group_split if speaker_group_split is defined else undefined }}"
-        volume_non_playing: "{{ volume_non_playing if volume_non_playing is defined else undefined }}"
         voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', tts_target) | list }}"
         voice_groups: "{{ entity_playing | select('in', speaker_groups) }}"
         voice_spotcast: >
