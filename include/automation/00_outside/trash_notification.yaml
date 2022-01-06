@@ -1,0 +1,42 @@
+id: 690cc2c9-f014-4b38-90e8-51217659d49e
+alias: "F0Z 🌳 Notifications for trash containers"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at:
+      - "07:00:00"
+    id: "Vandaag, today"
+  - platform: time
+    at:
+      - "20:00:00"
+    id: "Morgen, tomorrow"
+variables:
+  sensor: "sensor.afvalwijzer_{{ trigger.id.split(', ')[1] }}"
+  trash_descr:
+    restgft: "rest- en GFT-bak"
+    dhm: "papier- en PMD-bak"
+    kerstbomen: "kerstboom"
+condition:
+  - alias: "Notification needed?"
+    condition: template
+    value_template: "{{ states(sensor) != 'Geen' }}"
+action:
+  - alias: "Notification phones"
+    service: notify.all_phones
+    data:
+      title: "Denk aan de {{ trash_descr[states(sensor)] }}"
+      message: >
+        {% set trash_pickup = states(sensor).split(', ') %}
+        {% set trash_pickup = trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list %}
+        {{ trash_pickup }}
+        {% if trash_pickup | length > 1 %}
+          {{ trigger.id.split(', ')[0] }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
+        {% else %}
+          {{ trigger.id.split(', ')[0] }} moet de {{ open[0] }} buiten.
+        {% endif %}
+      data:
+        channel: Trash
+        ttl: 0
+        priority: high
+        notification_icon: mdi:trash-can-outline
