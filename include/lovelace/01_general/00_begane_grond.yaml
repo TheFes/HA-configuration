@@ -209,16 +209,28 @@ cards:
   - type: custom:auto-entities
     card:
       type: entities
-      title: Containers
+      title: Afval
     filter:
-      include:
-        - entity_id: "sensor.afvalwijzer_dhm"
-        - entity_id: "sensor.afvalwijzer_restgft"
+      template: >
+        {% set today = states('sensor.afvalwijzer_today').split(', ') %}
+        {% set dmh_next = state_attr('sensor.afvalwijzer_dhm', 'year_month_day_date') %}
+        {% set dhm_next = now() if 'dhm' in today else dmh_next| as_datetime | as_local if dhm_next else 'unavailable' %}
+        {% set restgft_next = state_attr('sensor.afvalwijzer_restgft', 'year_month_day_date') %}
+        {% set restgft_next = now() if 'restgft' in today else restgft_next | as_datetime | as_local if restgft_next else 'unavailable' %}
+        {% set kerstboom_next = state_attr('sensor.afvalwijzer_kerstbomen', 'year_month_day_date') %}
+        {% set kerstboom_next = now() if 'kerstbomen' in today else kerstboom_next | as_datetime | as_local if kerstboom_next else 'unavailable' %}
+        {% set trash_entities = {
+                                  'sensor.papier_en_pmd': dhm_next,
+                                  'sensor.rest_en_gft': restgft_next,
+                                  'sensor.kerstboom': kerstboom_next
+                                } 
+        %}
+        {{ trash_entities.items() | list | rejectattr('1', 'eq', 'unavailable') |selectattr('1', '<=', now() + timedelta(days=14)) | map(attribute='0') | list }}
     sort:
       method: attribute
-      attribute: "days_until_collection_date"
+      attribute: "collection_date"
       reverse: false
-      numeric: true
+      numeric: false
   # Alle downsairs lights
   - type: entities
     title: Alle lampen
