@@ -95,8 +95,6 @@ google_home_say:
             {% endif %}
           {% endif %}
         speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
-        #    - alias: "Deterimine which entities are playing and should be resumed"
-        #      variables:
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {% if voice_media_player_data is defined %}
@@ -173,8 +171,6 @@ google_home_say:
                 {% endfor %}
                 {{ ns.info }}
             {% endif %}
-        #    - alias: "Create lists with attributes of players to resume"
-        #      variables:
         tts_target_not_playing: >
           {% set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
           {% set ns = namespace(members = []) %}
@@ -199,8 +195,6 @@ google_home_say:
             {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {% endfor %}
           {{ ns.info }}
-        #    - alias: "Determine if volume restore is needed"
-        #      variables:
         volume_restore_required: >
           {{
             tts_target_not_playing | count > 0
@@ -300,7 +294,11 @@ google_home_say:
                             {% set spotcast = 'Not Spotify' %}
                           {% else %}
                             {% set entity = players_to_resume[repeat.index -1].entity_id %}
-                            {% set members = speaker_groups[entity] if speaker_groups[entity] else [] %}
+                            {% if speaker_groups and speaker_groups[entity] %}
+                              {% set members = speaker_groups[entity] %}
+                            {% else %}
+                              {% set members = [] %}
+                            {% endif %}
                             {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + members %}
                             {% set names_check = expand(list_check) | map(attribute='name') | list %}
                               {% set spotcast =  spotify_players_info
