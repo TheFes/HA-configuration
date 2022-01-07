@@ -16,6 +16,7 @@ cards:
       - entity: media_player.tv_zolder
       - entity: media_player.boven_groep
       - entity: media_player.huis_groep
+  # Card to send TTS message
   - type: vertical-stack
     cards:
       - type: entities
@@ -37,7 +38,6 @@ cards:
         entities:
           - entity: input_select.dropdown_google_say
             name: "Kies waar het bericht naar verstuurd moet worden"
-      # Card to send TTS message
       - type: conditional
         conditions:
           - entity: input_select.dropdown_google_say
