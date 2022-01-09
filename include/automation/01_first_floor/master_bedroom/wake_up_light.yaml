@@ -33,14 +33,14 @@ action:
       entity_id: light.slaapkamer
     data:
       brightness: 1
-      color_temp: "{{ state_attr('light.slaapkerm', 'max_mireds') | int(650) }}"
+      # color_temp: "{{ state_attr('light.slaapkerm', 'max_mireds') | int(650) }}"
   - alias: "Turn on light using transition"
     service: light.turn_on
     target:
       entity_id: light.slaapkamer
     data:
       brightness: 190
-      color_temp: 375
+      # color_temp: 375
       transition: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"
   - alias: "Delay for last step during transtion"
     delay: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"

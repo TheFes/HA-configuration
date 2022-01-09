@@ -5,9 +5,9 @@ lights:
     friendly_name: "Slaapkamer Template"
     level_template: "{{ state_attr('light.slaapkamer', 'brightness') | int(0) }}"
     value_template: "{{ states('light.slaapkamer') }}"
-    temperature_template: "{{ state_attr('light.slaapkamer', 'color_temp') | int(325) }}"
-    min_mireds_template: "{{ state_attr('light.slaapkamer', 'min_mireds') | int(140) }}"
-    max_mireds_template: "{{ state_attr('light.slaapkamer', 'max_mireds') | int(650) }}"
+    #    temperature_template: "{{ state_attr('light.slaapkamer', 'color_temp') | int(325) }}"
+    #    min_mireds_template: "{{ state_attr('light.slaapkamer', 'min_mireds') | int(140) }}"
+    #    max_mireds_template: "{{ state_attr('light.slaapkamer', 'max_mireds') | int(650) }}"
     availability_template: "{{ not is_state('light.slaapkamer', 'unavailable') }}"
     turn_on:
       service: script.slaapkamer_turn_on
@@ -22,8 +22,8 @@ lights:
       data:
         entity_id: light.slaapkamer
         brightness: "{{ brightness }}"
-    set_temperature:
-      service: light.turn_on
-      data:
-        entity_id: light.slaapkamer
-        color_temp: "{{ color_temp }}"
+#    set_temperature:
+#      service: light.turn_on
+#      data:
+#        entity_id: light.slaapkamer
+#        color_temp: "{{ color_temp }}"
