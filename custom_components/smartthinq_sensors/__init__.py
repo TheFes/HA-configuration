@@ -13,7 +13,7 @@ from .wideq.core import Client
 from .wideq.core_v2 import ClientV2, CoreV2HttpAdapter
 from .wideq.device import UNIT_TEMP_CELSIUS, UNIT_TEMP_FAHRENHEIT, DeviceType
 from .wideq.factory import get_lge_device
-from .wideq.core_exceptions import(
+from .wideq.core_exceptions import (
     InvalidCredentialError,
     MonitorError,
     NotConnectedError,
@@ -69,6 +69,8 @@ CONFIG_SCHEMA = vol.Schema(
     vol.All(cv.deprecated(DOMAIN), {DOMAIN: SMARTTHINQ_SCHEMA},), extra=vol.ALLOW_EXTRA,
 )
 
+MAX_DISC_COUNT = 4
+
 SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,11 +89,11 @@ class LGEAuthentication:
 
         return client
 
-    def initHttpAdapter(self, use_tls_v1, exclude_dh):
+    def init_http_adapter(self, use_tls_v1, exclude_dh):
         if self._use_api_v2:
             CoreV2HttpAdapter.init_http_adapter(use_tls_v1, exclude_dh)
 
-    def getLoginUrl(self) -> str:
+    def get_login_url(self) -> str:
 
         login_url = None
         client = self._create_client()
@@ -103,7 +105,7 @@ class LGEAuthentication:
 
         return login_url
 
-    def getOAuthInfoFromUrl(self, callback_url) -> Dict[str, str]:
+    def get_auth_info_from_url(self, callback_url) -> Dict[str, str]:
 
         oauth_info = None
         try:
@@ -116,11 +118,17 @@ class LGEAuthentication:
 
         return oauth_info
 
-    def createClientFromToken(self, token, oauth_url=None, oauth_user_num=None):
+    def create_client_from_login(self, username, password):
+        """Create a new client using username and password."""
+        if not self._use_api_v2:
+            return None
+        return ClientV2.from_login(username, password, self._region, self._language)
 
+    def create_client_from_token(self, token, oauth_url=None, oauth_user_num=None):
+        """Create a new client using refresh token."""
         if self._use_api_v2:
             client = ClientV2.from_token(
-                oauth_url, token, oauth_user_num, self._region, self._language
+                token, oauth_url, oauth_user_num, self._region, self._language
             )
         else:
             client = Client.from_token(token, self._region, self._language)
@@ -164,7 +172,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     language = config_entry.data.get(CONF_LANGUAGE)
     use_api_v2 = config_entry.data.get(CONF_USE_API_V2, False)
     oauth_url = config_entry.data.get(CONF_OAUTH_URL)
-    oauth_user_num = config_entry.data.get(CONF_OAUTH_USER_NUM)
+    # oauth_user_num = config_entry.data.get(CONF_OAUTH_USER_NUM)
     use_tls_v1 = config_entry.data.get(CONF_USE_TLS_V1, False)
     exclude_dh = config_entry.data.get(CONF_EXCLUDE_DH, False)
 
@@ -177,11 +185,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     # if network is not connected we can have some error
     # raising ConfigEntryNotReady platform setup will be retried
-    lgeauth = LGEAuthentication(region, language, use_api_v2)
-    lgeauth.initHttpAdapter(use_tls_v1, exclude_dh)
+    lge_auth = LGEAuthentication(region, language, use_api_v2)
+    lge_auth.init_http_adapter(use_tls_v1, exclude_dh)
     try:
         client = await hass.async_add_executor_job(
-            lgeauth.createClientFromToken, refresh_token, oauth_url, oauth_user_num
+            lge_auth.create_client_from_token, refresh_token, oauth_url
         )
     except InvalidCredentialError:
         msg = "Invalid ThinQ credential error, integration setup aborted." \
@@ -257,7 +265,7 @@ class LGEDevice:
 
         self._state = None
         self._coordinator = None
-        self._disconnected = True
+        self._disc_count = 0
         self._available = True
 
     @property
@@ -267,7 +275,7 @@ class LGEDevice:
     @property
     def assumed_state(self) -> bool:
         """Return True if unable to access real state of the entity."""
-        return self._available and self._disconnected
+        return self._available and self._disc_count >= MAX_DISC_COUNT
 
     @property
     def device(self):
@@ -331,7 +339,7 @@ class LGEDevice:
         await self._create_coordinator()
 
         # Initialize device features
-        features = self._state.device_features
+        _ = self._state.device_features
 
         return True
 
@@ -356,7 +364,8 @@ class LGEDevice:
     def _device_update(self):
         """Update device state"""
         _LOGGER.debug("Updating ThinQ device %s", self._name)
-        self._disconnected = True
+        if self._disc_count < MAX_DISC_COUNT:
+            self._disc_count += 1
 
         try:
             # method poll should return None if status is not yet available
@@ -368,7 +377,7 @@ class LGEDevice:
             # If device status is "on" we reset the status, otherwise we just
             # ignore and use previous known state
             state = None
-            if self._state.is_on:
+            if self._state.is_on and self._disc_count >= MAX_DISC_COUNT:
                 _LOGGER.warning(
                     "Status for device %s was reset because disconnected",
                     self._name,
@@ -394,7 +403,7 @@ class LGEDevice:
             _LOGGER.debug("ThinQ status updated")
             # l = dir(state)
             # _LOGGER.debug('Status attributes: %s', l)
-            self._disconnected = False
+            self._disc_count = 0
             self._state = state
 
 
