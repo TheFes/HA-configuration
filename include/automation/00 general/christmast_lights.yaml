@@ -1,5 +1,5 @@
 id: c9be7372-de6f-4763-b0d0-23665b7f1e9b
-alias: "00 🏠 Christmass lights"
+alias: "00 🧑‍🎄 Christmass lights"
 mode: parallel
 trigger:
   - platform: state
@@ -20,6 +20,11 @@ trigger:
       device: Eettafel
       click_type: long
     id: to_bed
+condition:
+  - alias: "It's Chirstmas time"
+    condition: state
+    entity_id: input_boolean.christmas_time
+    state: "on"
 action:
   - alias: "Which action?"
     choose:

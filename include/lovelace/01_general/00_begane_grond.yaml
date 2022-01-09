@@ -20,15 +20,32 @@ cards:
           content: >
             De TV-Meubel schakelaar staat uit, zet hem aan om alles te zien.
       - entity: light.booglamp
-      - entity: light.tv_lamp_template
-        name: Kerststal # KERST
-        type: "custom:slider-entity-row"
-        toggle: true
-        hide_when_off: true
-      - type: conditional # KERST
+      - type: conditional # CHRISTMAS
+        conditions:
+          - entity: input_boolean.christmas_time
+            state: "on"
+        row:
+          entity: light.tv_lamp_template
+          name: Kerststal
+          type: "custom:slider-entity-row"
+          toggle: true
+          hide_when_off: true
+          icon: mdi:greenhouse
+      - type: conditional # CHRISTMAS
+        conditions:
+          - entity: input_boolean.christmas_time
+            state: "off"
+        row:
+          entity: light.tv_lamp_template
+          type: "custom:slider-entity-row"
+          toggle: true
+          hide_when_off: true
+      - type: conditional # CHRISTMAS
         conditions:
           - entity: switch.tv_meubel
             state_not: "off"
+          - entity: input_boolean.christmas_time
+            state: "on"
         row:
           entity: switch.backup_02
           name: Kerstvaas
@@ -127,8 +144,22 @@ cards:
           - entity: switch.waterkoker
             icon: "mdi:tea-outline"
             name: Waterkoker
-          - entity: switch.bw_plug_20 # KERST
-          - entity: switch.backup_01 # KERST
+          - type: conditional # CHRISTMAS
+            conditions:
+              - entity: input_boolean.christmas_time
+                state: "on"
+            row:
+              entity: switch.bw_plug_20
+              name: Kerstboom
+              icon: mdi:pine-tree
+          - type: conditional # CHRISTMAS
+            conditions:
+              - entity: input_boolean.christmas_time
+                state: "on"
+            row:
+              entity: switch.backup_01
+              name: Kerstster
+              icon: mdi:star
           - entity: sensor.extractor_hood_status
             name: Afzuigkap
             tap_action:
@@ -196,7 +227,14 @@ cards:
     show_header_toggle: false
     entities:
       - entity: light.tuinlampjes
-      - entity: switch.bw_plug_19 # KERST
+      - type: conditional # CHRISTMAS
+        conditions:
+          - entity: input_boolean.christmas_time
+            state: "on"
+        row:
+          entity: switch.bw_plug_19
+          name: IJspegels
+          icon: mdi:snowflake
       - entity: light.voordeur
         name: Voordeur
       - entity: light.veranda
