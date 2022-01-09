@@ -117,7 +117,12 @@ google_home_say:
               {# determine which of the tts_targets (including groups members) are playing  #}
                 {% set ns = namespace(tts_targets = []) %}
                   {% for target in tts_target_list %}
-                    {% set ns.tts_targets = ns.tts_targets + speaker_groups[target] if target in speaker_group_list else [ target ] %}
+                    {% set ns.tts_targets = ns.tts_targets +  (
+                                                                speaker_groups[target] 
+                                                                if target in speaker_group_list 
+                                                                else [ target ] 
+                                                              ) 
+                    %}
                   {% endfor %}
                 {% set tts_playing = ns.tts_targets | select('in', all_players_playing) | list %}
               {# determine which groups should be resumed becaue a single tts target is part of that group #}
