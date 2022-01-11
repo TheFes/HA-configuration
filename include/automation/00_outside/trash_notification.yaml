@@ -19,6 +19,12 @@ variables:
     {% set trash = states(sensor).split(', ') %}
     {{ trash_descr.items() | list | selectattr('0', 'in', trash) | map(attribute='1') | list }}
 condition:
+  - condition: not
+    conditions:
+      - alias: "Temp automation on"
+        condition: state
+        entity_id: automation.f0z_temp_notifications_for_trash_containers
+        state: "on"
   - alias: "Notification needed?"
     condition: template
     value_template: "{{ states(sensor) != 'Geen' }}"

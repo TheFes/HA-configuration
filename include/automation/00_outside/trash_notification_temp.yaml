@@ -1,0 +1,43 @@
+id: 38cf109b-2055-4234-a0f2-f7bc3130efd6
+alias: "F0Z 🌳 TEMP - Notifications for trash containers"
+description: "Temporary automation until mijnafvalwijzer has correct data"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: time
+    at: "07:00:00"
+    id: "Vandaag, today"
+  - platform: time
+    at: "20:00:00"
+    id: "Morgen, tomorrow"
+variables:
+  tomorrow:
+    restgft: "{{( as_local(as_datetime(state_attr('sensor.rest_en_gft', 'collection_date'))).date() - now().date()).days == 1 }}"
+    dhm: "{{( as_local(as_datetime(state_attr('sensor.papier_en_pmd', 'collection_date'))).date() - now().date()).days == 1 }}"
+  today:
+    restgft: "{{( as_local(as_datetime(state_attr('sensor.rest_en_gft', 'collection_date'))).date() - now().date()).days == 0 }}"
+    dhm: "{{( as_local(as_datetime(state_attr('sensor.papier_en_pmd', 'collection_date'))).date() - now().date()).days == 0 }}"
+  trash_descr:
+    restgft: "rest- en GFT-bak"
+    dhm: "papier- en PMD-bak"
+  trash_pickup: >
+    {% if trigger.id.split(', ')[1] == 'today' %}
+      {{ trash_descr[today.items() | selectattr('1', 'eq', true) | map(attribute='0') | join] }}
+    {% else %}
+      {{ trash_descr[tomorrow.items() | selectattr('1', 'eq', true) | map(attribute='0') | join] }}
+    {% endif %}
+condition:
+  - alias: "Notification needed?"
+    condition: template
+    value_template: "{{ true if trash_pickup else false }}"
+action:
+  - alias: "Notification phones"
+    service: notify.all_phones
+    data:
+      title: "Denk aan de {{ trash_pickup }}!"
+      message: "{{ trigger.id.split(', ')[0] }} moet de {{ trash_pickup }} buiten."
+      data:
+        channel: Trash
+        ttl: 0
+        priority: high
+        notification_icon: mdi:trash-can-outline

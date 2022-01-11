@@ -250,13 +250,12 @@ cards:
       title: Afval
     filter:
       template: >
-        {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-        {% set dmh_next = state_attr('sensor.afvalwijzer_dhm', 'year_month_day_date') %}
-        {% set dhm_next = now() if 'dhm' in today else dmh_next| as_datetime | as_local if dhm_next else 'unavailable' %}
-        {% set restgft_next = state_attr('sensor.afvalwijzer_restgft', 'year_month_day_date') %}
-        {% set restgft_next = now() if 'restgft' in today else restgft_next | as_datetime | as_local if restgft_next else 'unavailable' %}
-        {% set kerstboom_next = state_attr('sensor.afvalwijzer_kerstbomen', 'year_month_day_date') %}
-        {% set kerstboom_next = now() if 'kerstbomen' in today else kerstboom_next | as_datetime | as_local if kerstboom_next else 'unavailable' %}
+        {% set dhm_next = state_attr('sensor.rest_en_gft', 'collection_date') %}
+        {% set dhm_next = dhm_next if dhm_next == 'unavailable' else dhm_next| as_datetime | as_local %}
+        {% set restgft_next = state_attr('sensor.papier_en_pmd', 'collection_date') %}
+        {% set restgft_next = restgft_next if restgft_next == 'unavailable' else restgft_next| as_datetime | as_local %}
+        {% set kerstboom_next = state_attr('sensor.kerstboom', 'collection_date') %}
+        {% set kerstboom_next = kerstboom_next if kerstboom_next == 'unavailable' else kerstboom_next| as_datetime | as_local %}
         {% set trash_entities = {
                                   'sensor.papier_en_pmd': dhm_next,
                                   'sensor.rest_en_gft': restgft_next,

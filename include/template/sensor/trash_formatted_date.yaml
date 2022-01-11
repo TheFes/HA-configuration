@@ -3,85 +3,76 @@ sensor:
     name: Rest en GFT
     state: >-
       {% set sensor = 'sensor.afvalwijzer_restgft' %}
-      {% set type = sensor.split('_')[1] %}
-      {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-      {% set tomorrow = states('sensor.afvalwijzer_tomorrow').split(', ') %}
+      {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+      {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {% if type in today %}
+      {% if collection_date == 'unavailable' %}
+        unavailable
+      {% elif (collection_date - now().date()).days == 0 %}
         Vandaag
-      {% elif type in tomorrow %}
+      {% elif (collection_date - now().date()).days == 1 %}
         Morgen
       {% else %}
-        {{ days[as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).weekday()] ~ ' ' ~ states(sensor) }}
+        {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {% endif %}
     icon: mdi:trash-can
     attributes:
       collection_date: >
         {% set sensor = 'sensor.afvalwijzer_restgft' %}
-        {% set type = sensor.split('_')[1] %}
-        {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-        {% if type in today %}
-          {{ now().date() }}
-        {% else  %}
-          {{ as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() }}
-        {% endif %}
+        {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+        {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
+        {{ collection_date }}
 
   - unique_id: 821b207c-5c06-4da4-9e8c-a5790e6e4c8c
     name: Papier en PMD
     state: >-
       {% set sensor = 'sensor.afvalwijzer_dhm' %}
-      {% set type = sensor.split('_')[1] %}
-      {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-      {% set tomorrow = states('sensor.afvalwijzer_tomorrow').split(', ') %}
+      {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+      {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {% if type in today %}
+      {% if collection_date == 'unavailable' %}
+        unavailable
+      {% elif (collection_date - now().date()).days == 0 %}
         Vandaag
-      {% elif type in tomorrow %}
+      {% elif (collection_date - now().date()).days == 1 %}
         Morgen
       {% else %}
-        {{ days[as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).weekday()] ~ ' ' ~ states(sensor) }}
+        {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {% endif %}
     icon: mdi:trash-can-outline
     attributes:
       collection_date: >
         {% set sensor = 'sensor.afvalwijzer_dhm' %}
-        {% set type = sensor.split('_')[1] %}
-        {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-        {% if type in today %}
-          {{ now().date() }}
-        {% else  %}
-          {% set date = state_attr(sensor, 'year_month_day_date') %}
-          {% set date = as_local(as_datetime(date)).date() if date else 'unavailable' %}
-          {{ date }}
-        {% endif %}
+        {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+        {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
+        {{ collection_date }}
 
   - unique_id: ff7c02aa-aea3-42a7-91f5-f1a8f88a8986
     name: Kerstboom
     state: >-
       {% set sensor = 'sensor.afvalwijzer_kerstbomen' %}
-      {% set type = sensor.split('_')[1] %}
-      {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-      {% set tomorrow = states('sensor.afvalwijzer_tomorrow').split(', ') %}
+      {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+      {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {% if type in today %}
+      {% if collection_date == 'unavailable' %}
+        unavailable
+      {% elif (collection_date - now().date()).days == 0 %}
         Vandaag
-      {% elif type in tomorrow %}
+      {% elif (collection_date - now().date()).days == 1 %}
         Morgen
       {% else %}
-          {% set date = state_attr(sensor, 'year_month_day_date') %}
-          {% set date = as_local(as_datetime(date)).date() if date else 'unavailable' %}
-          {{ date }}
+        {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {% endif %}
     icon: mdi:pine-tree
     attributes:
       collection_date: >
         {% set sensor = 'sensor.afvalwijzer_kerstbomen' %}
-        {% set type = sensor.split('_')[1] %}
-        {% set today = states('sensor.afvalwijzer_today').split(', ') %}
-        {% if type in today %}
-          {{ now().date() }}
-        {% else  %}
-          {% set date = state_attr(sensor, 'year_month_day_date') %}
-          {% set date = as_local(as_datetime(date)).date() if date else 'unavailable' %}
-          {{ date }}
-        {% endif %}
+        {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
+        {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
+        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
+        {{ collection_date }}
