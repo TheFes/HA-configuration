@@ -4,7 +4,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyhoma.enums import OverkizCommand, OverkizCommandParam, OverkizState
+from pyoverkiz.enums import OverkizCommand, OverkizCommandParam, OverkizState
 
 from .const import DOMAIN
 from .entity import OverkizEntity

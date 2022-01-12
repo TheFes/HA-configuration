@@ -19,7 +19,7 @@ variables:
   light: "{{ trigger.entity_id }}"
   max_ct: "{{ state_attr(light, 'max_mireds') }}"
   min_ct: >
-    {{ 325 if light in hue else state_attr(light, 'min_mireds') }}
+    {{ 380 if light in hue else state_attr(light, 'min_mireds') }}
   bright: "{{ state_attr(light, 'brightness') }}"
 condition:
   - alias: "Light on?"

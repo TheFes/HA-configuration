@@ -6,18 +6,17 @@ from typing import Any, Dict, List, Optional, Union
 
 from aiohttp import ServerDisconnectedError
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from pyhoma.client import TahomaClient
-from pyhoma.enums import EventName, ExecutionState
-from pyhoma.exceptions import (
+from pyoverkiz.client import OverkizClient
+from pyoverkiz.enums import EventName, ExecutionState
+from pyoverkiz.exceptions import (
     BadCredentialsException,
     MaintenanceException,
     NotAuthenticatedException,
     TooManyRequestsException,
 )
-from pyhoma.models import DataType, Device, Place, State
+from pyoverkiz.models import DataType, Device, Place, State
 
 from .const import DOMAIN, UPDATE_INTERVAL
 
@@ -44,7 +43,7 @@ class OverkizDataUpdateCoordinator(DataUpdateCoordinator):
         logger: logging.Logger,
         *,
         name: str,
-        client: TahomaClient,
+        client: OverkizClient,
         devices: List[Device],
         places: Place,
         update_interval: Optional[timedelta] = None,
@@ -75,7 +74,9 @@ class OverkizDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             events = await self.client.fetch_events()
         except BadCredentialsException as exception:
-            raise ConfigEntryAuthFailed() from exception
+            # Keep retrying until Somfy fixes their servers (https://github.com/iMicknl/ha-tahoma/issues/599)
+            raise UpdateFailed("Invalid authentication.") from exception
+            # raise ConfigEntryAuthFailed() from exception
         except TooManyRequestsException as exception:
             raise UpdateFailed("Too many requests, try again later.") from exception
         except MaintenanceException as exception:
@@ -90,7 +91,9 @@ class OverkizDataUpdateCoordinator(DataUpdateCoordinator):
                 await self.client.login()
                 self.devices = await self._get_devices()
             except BadCredentialsException as exception:
-                raise ConfigEntryAuthFailed() from exception
+                # Keep retrying until Somfy fixes their servers (https://github.com/iMicknl/ha-tahoma/issues/599)
+                raise UpdateFailed("Invalid authentication.") from exception
+                # raise ConfigEntryAuthFailed() from exception
             except TooManyRequestsException as exception:
                 raise UpdateFailed("Too many requests, try again later.") from exception
 

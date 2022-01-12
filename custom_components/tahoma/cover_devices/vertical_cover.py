@@ -13,7 +13,7 @@ from homeassistant.components.cover import (
     SUPPORT_SET_POSITION,
     SUPPORT_STOP,
 )
-from pyhoma.enums import (
+from pyoverkiz.enums import (
     OverkizCommand,
     OverkizCommandParam,
     OverkizState,

@@ -13,7 +13,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 import homeassistant.util.color as color_util
-from pyhoma.enums import OverkizCommand, OverkizCommandParam, OverkizState
+from pyoverkiz.enums import OverkizCommand, OverkizCommandParam, OverkizState
 
 from .const import DOMAIN
 from .coordinator import OverkizDataUpdateCoordinator

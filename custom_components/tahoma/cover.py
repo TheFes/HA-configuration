@@ -5,7 +5,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyhoma.enums import UIClass
+from pyoverkiz.enums import UIClass
 import voluptuous as vol
 
 from .const import DOMAIN

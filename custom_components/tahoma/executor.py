@@ -5,7 +5,7 @@ import logging
 from typing import Any
 from urllib.parse import urlparse
 
-from pyhoma.models import Command, Device
+from pyoverkiz.models import Command, Device
 
 from .coordinator import OverkizDataUpdateCoordinator
 

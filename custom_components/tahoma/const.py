@@ -3,7 +3,7 @@ from datetime import timedelta
 from typing import Final
 
 from homeassistant.const import Platform
-from pyhoma.enums import UIClass, UIWidget
+from pyoverkiz.enums import UIClass, UIWidget
 
 DOMAIN: Final = "tahoma"
 

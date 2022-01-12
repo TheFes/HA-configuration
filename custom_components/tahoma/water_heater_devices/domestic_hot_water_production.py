@@ -7,7 +7,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntity,
 )
 from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
-from pyhoma.enums import OverkizCommand, OverkizCommandParam, OverkizState
+from pyoverkiz.enums import OverkizCommand, OverkizCommandParam, OverkizState
 
 from ..entity import OverkizEntity
 

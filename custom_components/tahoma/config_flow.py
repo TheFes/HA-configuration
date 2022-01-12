@@ -10,14 +10,14 @@ from homeassistant.components import dhcp
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.data_entry_flow import AbortFlow, FlowResult
 from homeassistant.helpers import device_registry as dr
-from pyhoma.client import TahomaClient
-from pyhoma.const import SUPPORTED_SERVERS
-from pyhoma.exceptions import (
+from pyoverkiz.client import OverkizClient
+from pyoverkiz.const import SUPPORTED_SERVERS
+from pyoverkiz.exceptions import (
     BadCredentialsException,
     MaintenanceException,
     TooManyRequestsException,
 )
-from pyhoma.models import obfuscate_id
+from pyoverkiz.models import obfuscate_id
 import voluptuous as vol
 
 from .const import CONF_HUB, DEFAULT_HUB
@@ -44,7 +44,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         server = SUPPORTED_SERVERS[user_input.get(CONF_HUB, DEFAULT_HUB)]
 
-        async with TahomaClient(
+        async with OverkizClient(
             username=username, password=password, server=server
         ) as client:
             await client.login()

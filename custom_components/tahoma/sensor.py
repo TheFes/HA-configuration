@@ -24,7 +24,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyhoma.enums import OverkizAttribute, OverkizState, UIWidget
+from pyoverkiz.enums import OverkizAttribute, OverkizState, UIWidget
 
 from .const import DOMAIN, IGNORED_OVERKIZ_DEVICES
 from .coordinator import OverkizDataUpdateCoordinator
