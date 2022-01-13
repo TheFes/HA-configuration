@@ -2,10 +2,18 @@ sensor:
   - unique_id: 9d6b50c5-6059-4d91-ae4e-43dcd095987c
     name: Rest en GFT
     state: >-
-      {% set sensor = 'sensor.afvalwijzer_restgft' %}
-      {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
-      {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
+      {% set sensor1 = 'sensor.afvalwijzer_restgft' %}
+      {% set sensor2 = 'sensor.afvalwijzer_dhm' %}
+      {% set collection_date1 = state_attr(sensor1, 'year_month_day_date') %}
+      {% set collection_date1 = as_local(as_datetime(collection_date1)).date() if collection_date1 else 'unavailable' %}
+      {% set collection_date2 = state_attr(sensor2, 'year_month_day_date') %}
+      {% set collection_date2 = as_local(as_datetime(collection_date2)).date() if collection_date2 else 'unavailable' %}
+      {% if collection_date1 == collection_date2 %}
+        {% set days_until = (collection_date1 - now().date()).days %}
+        {% set collection_date = collection_date1 - timedelta(days=7) if days_until >= 7 else collection_date1 + timedelta(days=7) %}
+      {% else %}
+        {% set collection_date =  collection_date1 %}
+      {% endif %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
       {% if collection_date == 'unavailable' %}
         unavailable
@@ -19,11 +27,18 @@ sensor:
     icon: mdi:trash-can
     attributes:
       collection_date: >
-        {% set sensor = 'sensor.afvalwijzer_restgft' %}
-        {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
-        {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
-        {{ collection_date }}
+        {% set sensor1 = 'sensor.afvalwijzer_restgft' %}
+        {% set sensor2 = 'sensor.afvalwijzer_dhm' %}
+        {% set collection_date1 = state_attr(sensor1, 'year_month_day_date') %}
+        {% set collection_date1 = as_local(as_datetime(collection_date1)).date() if collection_date1 else 'unavailable' %}
+        {% set collection_date2 = state_attr(sensor2, 'year_month_day_date') %}
+        {% set collection_date2 = as_local(as_datetime(collection_date2)).date() if collection_date2 else 'unavailable' %}
+        {% if collection_date1 == collection_date2 %}
+          {% set days_until = (collection_date1 - now().date()).days %}
+          {{ collection_date1 - timedelta(days=7) if days_until >= 7 else collection_date1 + timedelta(days=7) }}
+        {% else %}
+          {{ collection_date1 }}
+        {% endif %}
 
   - unique_id: 821b207c-5c06-4da4-9e8c-a5790e6e4c8c
     name: Papier en PMD
@@ -31,7 +46,6 @@ sensor:
       {% set sensor = 'sensor.afvalwijzer_dhm' %}
       {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
       {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
       {% if collection_date == 'unavailable' %}
         unavailable
@@ -48,16 +62,15 @@ sensor:
         {% set sensor = 'sensor.afvalwijzer_dhm' %}
         {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
         {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
         {{ collection_date }}
 
   - unique_id: ff7c02aa-aea3-42a7-91f5-f1a8f88a8986
     name: Kerstboom
     state: >-
       {% set sensor = 'sensor.afvalwijzer_kerstbomen' %}
+      {% set sensor = 'sensor.afvalwijzer_kerstbomen' %}
       {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
       {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-      {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
       {% set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
       {% if collection_date == 'unavailable' %}
         unavailable
@@ -74,5 +87,4 @@ sensor:
         {% set sensor = 'sensor.afvalwijzer_kerstbomen' %}
         {% set collection_date = state_attr(sensor, 'year_month_day_date') %}
         {% set collection_date = as_local(as_datetime(collection_date)).date() if collection_date else 'unavailable' %}
-        {% set collection_date = collection_date - timedelta(days=3) if (collection_date != 'unavailable' and collection_date.weekday() == 0) else collection_date %}
         {{ collection_date }}
