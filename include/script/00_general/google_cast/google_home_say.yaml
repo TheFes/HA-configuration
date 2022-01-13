@@ -233,7 +233,7 @@ google_home_say:
           {% endfor %}
           {{ ns.info }}
         screen_not_playing: >
-          {{ tts_target_not_playing | select('in', players_screen) | list }}
+          {{ [] if not players_screen else tts_target_not_playing | select('in', players_screen) | list }}
     - alias: "Send TTS message"
       service: "{{ tts_service }}"
       target:
