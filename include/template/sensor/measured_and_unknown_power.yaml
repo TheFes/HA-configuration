@@ -9,19 +9,24 @@ sensor:
         set reject_entities = 
               [
                 'sensor.samsung_soundbar_power_meter', 
-                'sensor.zolder_bol_power'
+                'sensor.zolder_bol_power',
+                'sensor.wasmachinelamp_power'
               ] 
       %}
+      {% set power_sensors = states.sensor
+                                | selectattr('entity_id', 'search', '_power') 
+                                | rejectattr('entity_id', 'search', 'estimated_power')
+                                | rejectattr('entity_id', 'in', reject_entities)
+                                | selectattr('attributes.state_class', 'eq', 'measurement')
+                                | rejectattr('state', 'in', ['unavailable', 'unknown'])
+                                | map(attribute='entity_id')
+      %}
       {{ 
-        states.sensor
-          | selectattr('entity_id', 'search', '_power') 
-          | rejectattr('entity_id', 'search', 'estimated_power')   
-          | rejectattr('entity_id', 'in', reject_entities)
-          | selectattr('attributes.state_class', 'eq', 'measurement')
-          | rejectattr('state', 'in', ['unavailable', 'unknown'])
+        expand(power_sensors)
           | map(attribute='state')
-          | map('int')
+          | map('float', default=0)
           | sum
+          | round(1)
       }}
     attributes:
       entities_included: >
@@ -29,18 +34,26 @@ sensor:
           set reject_entities = 
               [
                 'sensor.samsung_soundbar_power_meter', 
-                'sensor.zolder_bol_power'
+                'sensor.zolder_bol_power',
+                'sensor.wasmachinelamp_power'
               ] 
         %}
-        {{ 
-          expand(states.sensor) 
-            | selectattr('entity_id', 'search', '_power') 
-            | rejectattr('entity_id', 'search', 'estimated_power')   
-            | rejectattr('entity_id', 'in', reject_entities)
-            | selectattr('attributes.state_class', 'eq', 'measurement')
-            | rejectattr('state', 'in', ['unavailable', 'unknown'])
-            | map(attribute='name') 
-            | list 
+        {% set power_sensors = states.sensor
+                                  | selectattr('entity_id', 'search', '_power') 
+                                  | rejectattr('entity_id', 'search', 'estimated_power')
+                                  | rejectattr('entity_id', 'in', reject_entities)
+                                  | selectattr('attributes.state_class', 'eq', 'measurement')
+                                  | rejectattr('state', 'in', ['unavailable', 'unknown'])
+                                  | map(attribute='entity_id')
+        %}
+        {{
+          (
+            expand(power_sensors) 
+              | map(attribute='name') 
+              | join(', ')
+              | replace(' Power', '')
+              | replace(' power', '')
+          ).split(', ') | sort
         }}
     icon: mdi:flash
 
