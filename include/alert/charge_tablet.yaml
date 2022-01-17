@@ -1,0 +1,16 @@
+charge_tablet:
+  name: "Charge Tablet"
+  title: "Laad de tablet op"
+  message: "De batterij is nog voor {{ states('sensor.tablet_battery_level') }}% vol"
+  entity_id: binary_sensor.charge_tablet
+  state: "on"
+  repeat: 120
+  can_acknowledge: true
+  skip_first: false
+  notifiers:
+    - mobile_app_pixel_5
+  data:
+    channel: Tablet
+    ttl: 0
+    priority: high
+    notification_icon: mdi:tablet-android

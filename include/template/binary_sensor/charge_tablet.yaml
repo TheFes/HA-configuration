@@ -1,0 +1,10 @@
+binary_sensor:
+  - unique_id: af67c44d-9d32-428d-8115-accf34b5b5d7
+    name: "Charge Tablet"
+    device_class: problem
+    state: >-
+      {{ 
+        states('sensor.tablet_battery_level') | float(0) < 20  
+        and is_state('binary_sensor.tablet_is_charging', 'off')
+        and is_state('person.martijn', 'home')
+      }}
