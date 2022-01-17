@@ -6,11 +6,11 @@ trigger:
   - platform: numeric_state
     entity_id: sensor.licht_woonkamer
     id: light
-    above: 300
+    above: 50
   - platform: numeric_state
     entity_id: sensor.licht_woonkamer
     id: very_light
-    above: 600
+    above: 400
 condition:
   - condition: sun
     after: sunrise
