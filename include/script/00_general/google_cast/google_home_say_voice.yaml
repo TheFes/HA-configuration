@@ -25,7 +25,8 @@ google_home_say_voice:
           {% for entity in entities %}
             {% set ns.info = ns.info +  [ 
                                           dict(
-                                            entity_id = entity.entity_id, 
+                                            entity_id = entity.entity_id,
+                                            friendly_name = entity.attributes.friendly_name,
                                             media_content_id = entity.attributes.media_content_id | default('no media_content'),
                                             media_title = entity.attributes.media_title | default('no title'),
                                             media_artist = entity.attributes.media_artist | default('no artist'),
