@@ -105,6 +105,19 @@ slaapkamer_turn_on:
           service: input_boolean.turn_on
           target:
             entity_id: input_boolean.dimmed_slaapkamer
+        - alias: "Dim light first in evening"
+          choose:
+            - conditions:
+                - condition: time
+                  after: "22:00:00"
+                  before: "06:00:00"
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: light.slaapkamer
+                  data:
+                    brightness: 1
+                    transition: 2
         - alias: "Light off"
           service: light.turn_off
           target:
