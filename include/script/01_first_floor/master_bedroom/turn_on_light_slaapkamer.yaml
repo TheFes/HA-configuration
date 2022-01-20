@@ -29,7 +29,7 @@ slaapkamer_turn_on:
                                 entity_id: light.slaapkamer
                               data:
                                 brightness: 1
-                                # color_temp: 650
+                                transition: 5
                             - delay: 0.5
                             - alias: "Increase brightness"
                               service: light.turn_on
@@ -37,7 +37,6 @@ slaapkamer_turn_on:
                                 entity_id: light.slaapkamer
                               data:
                                 brightness_pct: 25
-                                # color_temp: 570
                                 transition: 30
                             - delay: 30
                             - alias: "Increase brightness"
@@ -46,7 +45,6 @@ slaapkamer_turn_on:
                                 entity_id: light.slaapkamer
                               data:
                                 brightness_pct: 50
-                                # color_temp: 487
                                 transition: 270
                             - delay: 270
                             - alias: "Turn on input_boolean"
@@ -68,7 +66,6 @@ slaapkamer_turn_on:
                                 entity_id: light.slaapkamer
                               data:
                                 brightness: 128
-                                # color_temp: 454
                             - delay: 0.5
                             - alias: "Dim light"
                               service: light.turn_on
@@ -76,7 +73,6 @@ slaapkamer_turn_on:
                                 entity_id: light.slaapkamer
                               data:
                                 brightness_pct: 15
-                                # color_temp: 600
                                 transition: 60
                             - delay: 60
                             - alias: "Turn on input_boolean"
@@ -90,7 +86,6 @@ slaapkamer_turn_on:
                             entity_id: light.slaapkamer
                           data:
                             brightness: 255
-                            # color_temp: 325
                         - alias: "Turn on input_boolean"
                           service: input_boolean.turn_on
                           target:
@@ -117,7 +112,7 @@ slaapkamer_turn_on:
                     entity_id: light.slaapkamer
                   data:
                     brightness: 1
-                    transition: 2
+                    transition: 5
         - alias: "Light off"
           service: light.turn_off
           target:
