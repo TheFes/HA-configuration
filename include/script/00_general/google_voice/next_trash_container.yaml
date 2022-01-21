@@ -12,7 +12,7 @@ next_trash_container_routine:
       data:
         tts_message: >
           {# select the right descriptions form the variable #}
-            {% set trash_pickup = states('sensor.afvalwijzer_next_item').split(', ') %}
+            {% set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
             {% set trash_pickup = trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list %}
           {# deterimine when the next pickup is (today, tomorrow, or day-name) #}
             {% set days_until = ((state_attr('sensor.afvalwijzer_next_date', 'year_month_day_date') | as_datetime).date() - now().date()).days %}
@@ -28,6 +28,6 @@ next_trash_container_routine:
             {% if trash_pickup | length > 1 %}
               {{ when }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
             {% else %}
-              {{ when }} moet de {{ open[0] }} buiten.
+              {{ when }} moet de {{ trash_pickup[0] }} buiten.
             {% endif %}
         tts_volume: 35
