@@ -1,0 +1,29 @@
+alias: "00 🏃‍♀️ Motion alerts when nobody is home"
+id: c4c36e8c-eac7-4014-a0e9-adec9fcaa554
+trigger:
+  - platform: state
+    entity_id: binary_sensor.pepijn_person_motion
+    from: "off"
+    to: "on"
+    id: pepijn
+  - platform: state
+    entity_id: binary_sensor.floris_person_motion
+    from: "off"
+    to: "on"
+    id: floris
+condition:
+  - condition: not
+    conditions:
+      - alias: "Nobody home"
+        condition: state
+        entity_id: group.m_en_m
+        state: "home"
+action:
+  - variables:
+      ip: !secret ha_ip
+  - service: notify.mobile_app_pixel_5
+    data:
+      title: Beweging
+      message: "Er is beweging bij {{ trigger.id[0] | upper ~ trigger.id[1:] }}"
+      data:
+        image: "http://{{ ha_ip }}:5000/api/{{ trigger.id }}/latest.jpg"

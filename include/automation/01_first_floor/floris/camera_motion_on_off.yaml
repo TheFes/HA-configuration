@@ -10,28 +10,30 @@ trigger:
   - platform: time
     at:
       - "07:00"
-      - "18:30"
+      - "19:00"
+condition:
+  - alias: "Someone home?"
+    condition: state
+    entity_id: group.m_en_m
+    state: "home"
 action:
   - alias: "Time?"
     choose:
       - conditions:
           - condition: time
-            before: " 06:59:59"
-        sequence:
-          - alias: "Motion detection Floriscam on"
-            service: switch.turn_on
-            target:
-              entity_id: switch.floriscam_state
-      - conditions:
-          - condition: time
-            before: "18:29:59"
+            after: "07:00:00"
+            before: "19:00:00"
         sequence:
           - alias: "Motion detection Floriscam off"
             service: switch.turn_off
             target:
-              entity_id: switch.floriscam_state
-    default:
-      - alias: "Motion detection Floriscam on"
-        service: switch.turn_on
-        target:
-          entity_id: switch.floriscam_state
+              entity_id: switch.floris_recordings
+      - conditions:
+          - condition: time
+            after: "19:00:00"
+            before: "07:00:00"
+        sequence:
+          - alias: "Motion detection Floriscam off"
+            service: switch.turn_off
+            target:
+              entity_id: switch.floris_recordings

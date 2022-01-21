@@ -9,10 +9,8 @@ trigger:
     event_type: automation_reloaded
   - platform: time
     at:
-      - "07:30"
-      - "12:30"
-      - "16:30"
-      - "19:30"
+      - "07:00"
+      - "19:00"
 condition:
   - alias: "Someone home?"
     condition: state
@@ -23,55 +21,19 @@ action:
     choose:
       - conditions:
           - condition: time
-            before: " 07:29:59"
+            after: "19:00:00"
+            before: "19:00:00"
         sequence:
           - alias: "Motion detection Pepijncam on"
-            service: switch.turn_on
-            target:
-              entity_id: switch.pepijncam_state
-      - conditions:
-          - condition: time
-            before: " 12:29:59"
-        sequence:
-          - alias: "Motion detection Pepijncam off"
             service: switch.turn_off
             target:
-              entity_id: switch.pepijncam_state
+              entity_id: switch.pepijn_recordings
       - conditions:
           - condition: time
-            before: " 16:29:59"
-          - alias: "No daycare or grandma?"
-            condition: time
-            weekday:
-              - "wed"
-              - "fri"
-              - "sat"
-              - "sun"
+            after: "19:00:00"
+            before: "19:00:00"
         sequence:
           - alias: "Motion detection Pepijncam on"
             service: switch.turn_on
             target:
-              entity_id: switch.pepijncam_state
-      - conditions:
-          - condition: time
-            before: "19:29:59"
-          - alias: "No daycare or grandma?"
-            condition: time
-            weekday:
-              - "wed"
-              - "fri"
-              - "sat"
-              - "sun"
-        sequence:
-          - alias: "Motion detection Pepijncam off"
-            service: switch.turn_off
-            target:
-              entity_id: switch.pepijncam_state
-      - conditions:
-          - condition: time
-            after: "19:30:00"
-        sequence:
-          - alias: "Motion detection Pepijncam on"
-            service: switch.turn_on
-            target:
-              entity_id: switch.pepijncam_state
+              entity_id: switch.pepijn_recordings_recordings
