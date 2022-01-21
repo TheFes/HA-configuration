@@ -3,6 +3,9 @@ alias: "F1F 👶 Motion detection FlorisCam on and off"
 mode: single
 max_exceeded: silent
 trigger:
+  - platform: state
+    entity_id: group.m_en_m
+    to: "home"
   - platform: homeassistant
     event: start
   - platform: event

@@ -16,6 +16,12 @@ condition:
     entity_id: sensor.house_mode
     state: "Afwezig"
 action:
+  - alias: "Turn on recording for cameras"
+    service: switch.turn_on
+    target:
+      entity_id:
+        - switch.floris_recordings
+        - switch.pepijn_recordings
   - alias: "TV on"
     choose:
       - conditions:
