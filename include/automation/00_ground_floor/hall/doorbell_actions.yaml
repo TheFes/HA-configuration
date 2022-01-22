@@ -83,8 +83,8 @@ action:
             state: "off"
           - alias: "Someone home?"
             condition: state
-            entity_id: group.m_en_m
-            state: "home"
+            entity_id: sensor.house_mode
+            state: "Thuis"
         sequence:
           - alias: "Determine which lights are one and should blink"
             variables:
@@ -136,8 +136,8 @@ action:
             state: "off"
           - alias: "Nobobdy home?"
             condition: state
-            entity_id: group.m_en_m
-            state: "not_home"
+            entity_id: sensor.house_mode
+            state: "Afwezig"
         sequence:
           - alias: "Create scene with current state"
             service: scene.create

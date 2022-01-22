@@ -12,12 +12,10 @@ trigger:
     to: "on"
     id: floris
 condition:
-  - condition: not
-    conditions:
-      - alias: "Nobody home"
-        condition: state
-        entity_id: group.m_en_m
-        state: "home"
+  - alias: "Input boolean on"
+    condition: state
+    entity_id: input_boolean.motion_snapshots
+    state: "on"
 action:
   - variables:
       ip: !secret ha_ip

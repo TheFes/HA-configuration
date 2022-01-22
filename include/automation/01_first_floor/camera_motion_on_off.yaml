@@ -4,8 +4,8 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: group.m_en_m
-    to: "home"
+    entity_id: sensor.house_mode
+    to: "Thuis"
   - platform: state
     entity_id:
       - binary_sensor.pepijn_person_motion
@@ -22,8 +22,8 @@ trigger:
 condition:
   - alias: "Someone home?"
     condition: state
-    entity_id: group.m_en_m
-    state: "home"
+    entity_id: sensor.house_mode
+    state: "Thuis"
 action:
   - alias: "Time?"
     choose:

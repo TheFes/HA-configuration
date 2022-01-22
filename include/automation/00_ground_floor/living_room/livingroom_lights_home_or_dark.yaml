@@ -8,24 +8,20 @@ trigger:
     from: "on"
     to: "off"
   - platform: state
-    entity_id: group.m_en_m
-    to: home
+    entity_id: sensor.house_mode
+    to: "Thuis"
     id: "home"
   - platform: state
     entity_id: media_player.nvidia_shield
     from: "off"
     id: "shield"
 condition:
-  - condition: or
-    conditions:
-      - alias: "Holiday mode on?"
-        condition: state
-        entity_id: sensor.house_mode
-        state: "Vakantie"
-      - alias: "Someone home?"
-        condition: state
-        entity_id: group.m_en_m
-        state: "home"
+  - alias: "Holiday or at home?"
+    condition: state
+    entity_id: sensor.house_mode
+    state:
+      - "Vakantie"
+      - "Thuis"
   - alias: "Triggered by Shield which turned unavailable"
     condition: template
     value_template: "{{ not (trigger.id == 'shield' and trigger.to_state.state == 'unavailable') }}"
@@ -36,6 +32,10 @@ action:
     choose:
       - conditions: "{{ trigger.id == 'home' }}"
         sequence:
+          - alias: "Disable sending of snapshots on motion"
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.motion_snapshots
           - alias: "Turn on exractor hood plug when arriving home"
             service: switch.turn_on
             target:
