@@ -1,0 +1,63 @@
+id: c4a98059-5bc4-4335-9cc3-07ebe673dabd
+alias: "F1 ⏺ Enable or disable recording of cameras"
+mode: single
+max_exceeded: silent
+trigger:
+  - platform: state
+    entity_id: group.m_en_m
+    to: "home"
+  - platform: state
+    entity_id:
+      - binary_sensor.pepijn_person_motion
+      - binary_sensor.floris_person_motion
+    from: "unavailable"
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation_reloaded
+  - platform: time
+    at:
+      - "07:00"
+      - "19:00"
+condition:
+  - alias: "Someone home?"
+    condition: state
+    entity_id: group.m_en_m
+    state: "home"
+action:
+  - alias: "Time?"
+    choose:
+      - conditions:
+          - condition: time
+            after: "07:00:00"
+            before: "19:00:00"
+        sequence:
+          - alias: "Recording off"
+            service: switch.turn_off
+            target:
+              entity_id:
+                - switch.floris_recordings
+                - switch.pepijn_recordings
+          - alias: "Other switches on"
+            service: switch.turn_on
+            target:
+              entity_id:
+                - switch.floris_snapshots
+                - switch.pepijn_snapshots
+                - switch.floris_detect
+                - switch.pepijn_detect
+      - conditions:
+          - condition: time
+            after: "19:00:00"
+            before: "07:00:00"
+        sequence:
+          - alias: "All switches on"
+            service: switch.turn_on
+            target:
+              entity_id:
+                - switch.floris_recordings
+                - switch.pepijn_recordings
+                - switch.floris_snapshots
+                - switch.pepijn_snapshots
+                - switch.floris_detect
+                - switch.pepijn_detect
