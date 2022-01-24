@@ -218,7 +218,7 @@ google_home_say:
         volume_old_not_playing: >
           {% set entities = expand(tts_target_not_playing) %}
           {% set ns = namespace(info=[]) %}
-          {% set volume = default_volume_level | float(0.25) %}
+          {% set volume = default_volume_level | default(0.25) %}
           {% set volume_restore = volume if volume < 1 else [1, volume / 100] | min %}
           {% for entity in entities %}
             {% set ns.info = ns.info +  [
@@ -335,7 +335,7 @@ google_home_say:
                             target:
                               entity_id: "{{ player.entity_id }}"
                             data:
-                              volume_level: "{{ player.volume_level | float(default=default_volume_level) | round(2) }}"
+                              volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
                   - alias: "Resume playing"
                     choose:
                       - alias: "Spotify?"
@@ -416,7 +416,7 @@ google_home_say:
                               entity_id: "{{ player.entity_id }}"
                             data:
                               volume_level: >
-                                {{ player.volume_level | float(default=default_volume_level) | round(2) }}
+                                {{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}
     - alias: "Google Home with screen back to idle screen"
       choose:
         - conditions: "{{ screen_not_playing | count > 0 }}"
