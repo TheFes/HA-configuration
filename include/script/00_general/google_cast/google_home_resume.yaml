@@ -277,7 +277,7 @@ google_home_resume:
                         {{ player.app_name == 'Spotify' }}
                       stream: >
                         {{ 
-                          (players.media_content_id).startswith('http')
+                          (player.media_content_id).startswith('http')
                         }}
                       spotcast_account: >
                         {% if voice_spotcast %}
