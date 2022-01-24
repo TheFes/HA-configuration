@@ -403,17 +403,17 @@ google_home_say:
                         {% else %}
                           {{ volume_non_playing if volume_non_playing < 1 else volume_non_playing / 100 }}
                         {% endif %}
-            - alias: "Google Home with screen back to idle screen"
-              choose:
-                - conditions: "{{ screen_not_playing | count > 0 }}"
-                  sequence:
-                    - alias: "Resume players"
-                      repeat:
-                        count: "{{ screen_not_playing | count }}"
-                        sequence:
-                          - alias: "Wait until TTS message is complete"
-                            wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
-                          - alias: "Turn Google Home on to return to idle mode (photo display)"
-                            service: media_player.turn_on
-                            target:
-                              entity_id: "{{ screen_not_playing | select('in', players_screen) | list }}"
+    - alias: "Google Home with screen back to idle screen"
+      choose:
+        - conditions: "{{ screen_not_playing | count > 0 }}"
+          sequence:
+            - alias: "Resume players"
+              repeat:
+                count: "{{ screen_not_playing | count }}"
+                sequence:
+                  - alias: "Wait until TTS message is complete"
+                    wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
+                  - alias: "Turn Google Home on to return to idle mode (photo display)"
+                    service: media_player.turn_on
+                    target:
+                      entity_id: "{{ screen_not_playing[repeat.index -1] }}"
