@@ -421,12 +421,12 @@ google_home_say:
       choose:
         - conditions: "{{ screen_not_playing | count > 0 }}"
           sequence:
-            - variables:
-                player: "{{ screen_not_playing[repeat.index -1] }}"
-            - alias: "Resume players"
+            - alias: "Restore default screen"
               repeat:
                 count: "{{ screen_not_playing | count }}"
                 sequence:
+                  - variables:
+                      player: "{{ screen_not_playing[repeat.index -1] }}"
                   - alias: "Wait until player is idle or off"
                     wait_template: "{{ states(player) in ['idle', 'off'] }}"
                   - alias: "Turn Google Home on to return to idle mode (photo display)"
