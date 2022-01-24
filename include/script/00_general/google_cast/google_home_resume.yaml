@@ -210,6 +210,16 @@ google_home_resume:
             {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {% endfor %}
           {{ ns.info }}
+        service_calls: >
+          {% set ns = namespace(service = []) %}
+          {% for item in action %}
+            {% if item.get('service', 'uhoh') != 'uhoh' %}
+              {% set ns.service = ns.service + [ item ] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.service }}
+        no_service_count: >
+          {{ action | reject('in', service_calls) | list | count }}
     - alias: "Turn non playing entities on if needed"
       choose:
         - conditions: "{{ target_not_playing | count > 0 }}"
@@ -241,11 +251,27 @@ google_home_resume:
           {{ [] if not players_screen else target_not_playing | select('in', players_screen) | list }}
     - alias: "Perform service calls defined in action"
       repeat:
-        count: "{{ action | count }}"
+        count: "{{ service_calls | count }}"
         sequence:
-          - service: "{{ action[repeat.index -1].service }}"
-            target: "{{ action[repeat.index -1].get('target', {}) }}"
-            data: "{{ action[repeat.index -1].get('data', {}) }}"
+          - service: "{{ service_calls[repeat.index -1].service }}"
+            target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
+            data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
+    - alias: "Send warning about incorrect actions"
+      choose:
+        - conditions: "{{ no_service_count > 0 }}"
+          sequence:
+            - alias: "Create persistant notification"
+              service: persistent_notification.create
+              data:
+                title: "Uhoh"
+                message: >
+                  {% if no_service_count == 1 %}
+                    You added an action which is not a service call to the Google
+                    Cast Resume script. This action was ignored.
+                  {% else %}
+                    You added {{ no_service_count }} actions which are not service calls 
+                    to the Google Cast Resume script. These were ignored.
+                  {% endif %}
     - alias: "Short delay if required"
       choose:
         - conditions:
