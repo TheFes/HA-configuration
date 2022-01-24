@@ -1,0 +1,413 @@
+blueprint:
+  name: Google Cast resume
+  description: >-
+    A script that will resume Google Cast enabled devices after the audio stream 
+    has been intrerrupted, e.g. by receiving a TTS or playing another mp3
+  domain: script
+  source_url: https://github.com/home-assistant/core/blob/master/homeassistant/components/script/blueprints/confirmable_notification.yaml
+  input:
+    target_entities:
+      description: "Enter the targets in case they are not clear from the service calls"
+      selector:
+        target:
+          entity:
+            integration: cast
+            domain: media_player
+          device:
+            integration: cast
+    actions_to_perform:
+      description: "Actions to be performed (only service calls will work)"
+      selector:
+        action:
+    primary_spotcast:
+      name: "Primary Spotcast account"
+      description: "Used to match the spotify media player with the primary spotcast account"
+      selector:
+        text:
+    default_volume_level:
+      name: "Default volume level"
+      description: "Used in case the volume level could not be retreived"
+      default: 0.25
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+
+mode: restart
+
+sequence:
+  - alias: "Convert variables from blueprint input"
+    variables:
+      speaker_groups: !include /config/include/google_resume/speaker_groups.yaml
+      players_screen: !include /config/include/google_resume/players_screen.yaml
+      primary_spotcast: !input primary_spotcast
+      fixed_picture: !include /config/include/google_resume/fixed_picture.yaml
+      target: !input target_entities
+      default_volume_level: !input default_volume_level
+  - alias: "Set variables to be used in the script"
+    variables:
+      target_list: >
+        {% if voice_tts_target is defined %}
+          {{ [ voice_tts_target ] }}
+        {% else %}
+          {# determine entities of cast integraton #}
+            {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
+            {%- set ns = namespace(entities = []) %}
+            {%- for device in devices %}
+              {%- set ids = device_attr(device, 'identifiers') | list | first %}
+              {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
+                {%- set ns.entities = ns.entities + device_entities(device) %}
+              {%- endif %}
+            {%- endfor %}
+            {% set cast_entities = ns.entities %}
+          {# create target lists #}
+          {% if target is defined %}
+            {# create lists based on target input #}
+              {% set area_list = target.area_id.replace(' ' , '').split(',') if target.area_id is string else target.area_id %}
+              {% set device_list = target.device_id.replace(' ' , '').split(',') if target.device_id is string else target.device_id %}
+              {% set entity_list = target.entity_id.replace(' ' , '').split(',') if target.entity_id is string else target.entity_id %}
+          {% else %}
+            {# determine targets based on actions if target not specified #}
+              {% set ns = namespace(entity = [], device = [], area = [] ) %}
+              {% for item in action %}
+                {% set entity = item.target.get('entity_id', []) %}
+                {% set device = item.target.get('device_id', []) %}
+                {% set area = item.target.get('area_id', []) %}
+                {% set ns.entity = ns.entity + [ entity ] if entity is string else entity %}
+                {% set ns.device = ns.device + [ device ] if device is string else device %}
+                {% set ns.area = ns.area + [ area ] if area is string else area %}
+              {% endfor %}
+              {% set area_list = ns.area %}
+              {% set device_list = ns.device %}
+              {% set entity_list = ns.entity %}
+          {% endif %}
+          {# create entity list based on device/area input #}
+            {# determine cast entities of areas #}
+              {% set ns = namespace(area_cast = []) %}
+              {% for area in area_list %}
+                {% set ns.area_cast = ns.area_cast + area_entities(area) | select('in', cast_entities) | list %}
+              {% endfor %}
+              {% set area_cast = ns.area_cast %}
+            {# determine cast entities of devices #}
+              {% set ns = namespace(device_cast = []) %}
+              {% for device in device_list %}
+                {% set ns.device_cast = ns.device_cast + device_entities(device) | select('in', cast_entities) | list %}
+              {% endfor %}
+              {% set device_cast = ns.device_cast %}
+          {# create list with all entities #}
+            {{ (area_cast + device_cast + entity_list) | unique | list }}
+        {% endif %}
+      speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
+      players_to_resume: >
+        {# use data from google_home_say_voice script in case it was used #}
+          {% if voice_media_player_data is defined %}
+            {{ voice_media_player_data }}
+          {% else %}
+            {# determine which media_players are playing and store attributes#}
+              {% 
+                set all_players_playing = states.media_player 
+                                            | selectattr('state', 'eq', 'playing') 
+                                            | map(attribute='entity_id') 
+                                            | list  
+              %}
+        {# determine which Google Home speakers groups are playing #}
+              {% 
+                set all_speaker_groups_playing =  voice_groups | default(
+                                                  all_players_playing 
+                                                    | select('in', speaker_group_list) 
+                                                    | list )
+              %}
+            {# determine which of the targets (including groups members) are playing  #}
+              {% set ns = namespace(targets = []) %}
+                {% for target in target_list %}
+                  {% set ns.targets = ns.targets +  (
+                                                              speaker_groups[target] 
+                                                              if target in speaker_group_list 
+                                                              else [ target ] 
+                                                            ) 
+                  %}
+                {% endfor %}
+              {% set target_playing = ns.targets | select('in', all_players_playing) | list %}
+            {# determine which groups should be resumed becaue a single target is part of that group #}
+              {% set ns = namespace(groups = []) %}
+                {% for group in all_speaker_groups_playing %}
+                  {% for entity in speaker_groups[group] if entity in target_playing %}
+                    {% set ns.groups = ns.groups + [group] %}
+                  {% endfor %}
+                {% endfor %}
+              {% set speaker_groups_resume = ns.groups | unique | list %}
+            {# determine if target has subgroups which are playing and add to speaker_groups_resume #}
+              {% set ns = namespace(groups = []) %}
+                {% for target in target_list %}
+                  {% set ns.groups = ns.groups + 
+                      (sub_groups[target] | select('in', all_speaker_groups_playing) | list)
+                      if sub_groups is defined else []     
+                %}
+                {% endfor %}
+              {% set speaker_groups_resume = speaker_groups_resume + ns.groups | unique | list %}
+            {# determine which single entities are in a group which is going to be resumed #}
+              {% set ns = namespace(reject = []) %}
+              {% for group in speaker_groups_resume %}
+                {% set ns.reject = ns.reject + speaker_groups[group] %}
+              {% endfor %}
+              {% set reject_list = ns.reject %}
+            {# determine which single playing entities are in a group which is a target #}
+              {% set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
+              {% set ns = namespace(single_resume = []) %}
+              {% for group in target_group %}
+                {% set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
+              {% endfor %}
+              {% set single_resume_list = ns.single_resume %}
+            {# combine all the above to a list of players which should be resumed #}
+              {% set players_resume = (target_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
+              {% set ns = namespace(info=[]) %}
+              {% for entity in expand(players_resume) %}
+                {% set ns.info = ns.info +  [ 
+                                              dict(
+                                                entity_id = entity.entity_id,
+                                                friendly_name = entity.attributes.friendly_name, 
+                                                media_content_id = entity.attributes.media_content_id | default('no media_content'),
+                                                media_title = entity.attributes.media_title | default('no title'),
+                                                media_artist = entity.attributes.media_artist | default('No artist'),
+                                                media_content_type = entity.attributes.media_content_type | default('no type'),
+                                                app_name = entity.attributes.app_name | default('no app'),
+                                                entity_picture = entity.attributes.entity_picture | default('no pic'),
+                                                volume_level = entity.attributes.volume_level | round(2) 
+                                                )
+                                            ] 
+                %}
+              {% endfor %}
+              {{ ns.info }}
+          {% endif %}
+      target_not_playing: >
+        {% set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
+        {% set ns = namespace(members = []) %}
+        {% for entity in players_resume_entity %}
+          {% if entity in speaker_group_list %}
+            {% set ns.members = ns.members + speaker_groups[entity] | list %}
+          {% endif %}
+        {% endfor %}
+        {% set players_resume_all = players_resume_entity + ns.members %}
+        {{ target_list | reject('in', players_resume_all) | list }}
+      spotify_players_info: >
+        {% 
+          set spotify_player_list = states.media_player 
+                                      | selectattr('state', 'eq', 'playing')
+                                      | selectattr('entity_id', 'search', 'media_player.spotify') 
+                                      | map(attribute='entity_id') 
+                                      | list
+        %}
+        {% set entities = expand(spotify_player_list) %}
+        {% set ns = namespace(info=[]) %}
+        {% for entity in entities %}
+          {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
+        {% endfor %}
+        {{ ns.info }}
+  - alias: "Turn non playing entities on if needed"
+    choose:
+      - conditions: "{{ target_not_playing | count > 0 }}"
+        sequence:
+          - alias: "Turn non playing entities on"
+            service: media_player.turn_on
+            target:
+              entity_id: "{{ target_not_playing }}"
+          - delay: 0.25
+  - variables:
+      volume_old_not_playing: >
+        {% set entities = expand(target_not_playing) %}
+        {% set ns = namespace(info=[]) %}
+        {% set volume = default_volume_level | default(0.25) %}
+        {% set volume_restore = volume if volume < 1 else [1, volume / 100] | min %}
+        {% for entity in entities %}
+          {% set ns.info = ns.info +  [
+                                      dict(
+                                        entity_id = entity.entity_id, 
+                                        volume_level = entity.attributes.volume_level | default(
+                                                                                                  volume_restore
+                                                                                                ) | round(2)
+                                        ) 
+                                      ] 
+          %}
+        {% endfor %}
+        {{ ns.info }}
+      screen_not_playing: >
+        {{ [] if not players_screen else target_not_playing | select('in', players_screen) | list }}
+  - alias: "Perform service calls defined in action"
+    repeat:
+      count: 1
+      sequence: !input actions_to_perform
+  - alias: "Short delay if required"
+    choose:
+      - conditions:
+          - alias: "Delay required"
+            condition: template
+            value_template: >
+              {{
+                players_to_resume | count > 0
+                or target_not_playing | count > 0
+                or screen_not_playing | count > 0
+              }}
+        sequence:
+          - delay: 4
+  - alias: "Anything to resume?"
+    choose:
+      - conditions:
+          - alias: "Anything playing"
+            condition: template
+            value_template: "{{ players_to_resume | count > 0 }}"
+        sequence:
+          - alias: "Resume players"
+            repeat:
+              count: "{{ players_to_resume | count }}"
+              sequence:
+                - alias: "Variables for specific media_player"
+                  variables:
+                    player: "{{ players_to_resume[repeat.index - 1] }}"
+                    spotify: >
+                      {{ player.app_name == 'Spotify' }}
+                    stream: >
+                      {{ 
+                        (player.media_content_id).startswith('http')
+                      }}
+                    spotcast_account: >
+                      {% if voice_spotcast %}
+                        {{ voice_spotcast }}
+                      {% else %}
+                        {% if player.app_name != 'Spotify' %}
+                          {% set spotcast = 'Not Spotify' %}
+                        {% else %}
+                          {% set entity = player.entity_id %}
+                          {% if speaker_groups and speaker_groups[entity] %}
+                            {% set members = speaker_groups[entity] %}
+                          {% else %}
+                            {% set members = [] %}
+                          {% endif %}
+                          {% set list_check = [ player.entity_id ] + members %}
+                          {% set names_check = expand(list_check) | map(attribute='name') | list %}
+                            {% set spotcast =  spotify_players_info
+                                                | selectattr('source', 'in', names_check) 
+                                                | map(attribute='entity_id') 
+                                                | join 
+                                                | replace('media_player.spotify_', '')
+                                
+                            %}
+                        {% endif %}
+                          {{ spotcast if spotcast else primary_spotcast }}
+                      {% endif %}
+                - alias: "Wait until player is idle again"
+                  wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                - alias: "Set volume to old volume if needed"
+                  choose:
+                    - conditions:
+                        - alias: "Volume restore needed"
+                          condition: template
+                          value_template: >
+                            {{
+                              player.volume_level | round(2, default=0) 
+                              != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                            }}
+                      sequence:
+                        - alias: "Set volume back to old state"
+                          service: media_player.volume_set
+                          target:
+                            entity_id: "{{ player.entity_id }}"
+                          data:
+                            volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
+                - alias: "Resume playing"
+                  choose:
+                    - alias: "Spotify?"
+                      conditions: "{{ spotify }}"
+                      sequence:
+                        - alias: "Primary spotcast account?"
+                          choose:
+                            - conditions: "{{ spotcast_account == primary_spotcast }}"
+                              sequence:
+                                - alias: "Resume spotify with primary spotcast account"
+                                  service: spotcast.start
+                                  data:
+                                    entity_id: "{{ player.entity_id }}"
+                                    force_playback: true
+                          default:
+                            - alias: "Resume spotify with specific account"
+                              service: spotcast.start
+                              data:
+                                entity_id: "{{ player.entity_id }}"
+                                account: "{{ spotcast_account }}"
+                                force_playback: true
+                    - alias: "Stream?"
+                      conditions: "{{ stream }}"
+                      sequence:
+                        - alias: "Resume stream"
+                          service: media_player.play_media
+                          target:
+                            entity_id: "{{ player.entity_id }}"
+                          data:
+                            media_content_id: >
+                              {{ player.media_content_id }}
+                            media_content_type: "music"
+                            extra:
+                              title: >
+                                {% if player.app_name.startswith('TuneIn') %}
+                                  {{ player.media_artist }}
+                                {% else %}
+                                  {{ player.media_title }}
+                                {% endif %}
+                              thumb: >
+                                {{
+                                  fixed_picture[player.media_artist]
+                                    | default(player.entity_picture)
+                                }}
+  - alias: "Restore volume of non playing entities"
+    choose:
+      - conditions:
+          - alias: "Restore required?"
+            condition: template
+            value_template: >
+              {{ 
+                target_not_playing | count > 0 
+              }}
+        sequence:
+          - alias: "Adjust volume"
+            repeat:
+              count: "{{ volume_old_not_playing | count }}"
+              sequence:
+                - alias: "Variables for specific media_player"
+                  variables:
+                    player: "{{ volume_old_not_playing[repeat.index -1] }}"
+                - alias: "Wait until entity is idle or off"
+                  wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                - alias: "Set volume to old volume if needed"
+                  choose:
+                    - conditions:
+                        - alias: "Volume restore needed"
+                          condition: template
+                          value_template: >
+                            {{
+                              player.volume_level | round(2, default=0) 
+                              != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                            }}
+                      sequence:
+                        - alias: "Set volume back to old state"
+                          service: media_player.volume_set
+                          target:
+                            entity_id: "{{ player.entity_id }}"
+                          data:
+                            volume_level: >
+                              {{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}
+  - alias: "Google Home with screen back to idle screen"
+    choose:
+      - conditions: "{{ screen_not_playing | count > 0 }}"
+        sequence:
+          - alias: "Restore default screen"
+            repeat:
+              count: "{{ screen_not_playing | count }}"
+              sequence:
+                - variables:
+                    player: "{{ screen_not_playing[repeat.index -1] }}"
+                - alias: "Wait until player is idle or off"
+                  wait_template: "{{ states(player) in ['idle', 'off'] }}"
+                - alias: "Turn Google Home on to return to idle mode (photo display)"
+                  service: media_player.turn_on
+                  target:
+                    entity_id: "{{ player }}"
