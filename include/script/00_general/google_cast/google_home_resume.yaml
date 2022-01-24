@@ -408,13 +408,15 @@ google_home_resume:
       choose:
         - conditions: "{{ screen_not_playing | count > 0 }}"
           sequence:
+            - variables:
+                player: "{{ screen_not_playing[repeat.index -1] }}"
             - alias: "Resume players"
               repeat:
                 count: "{{ screen_not_playing | count }}"
                 sequence:
                   - alias: "Wait until player is idle or off"
-                    wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
+                    wait_template: "{{ states(player) in ['idle', 'off'] }}"
                   - alias: "Turn Google Home on to return to idle mode (photo display)"
                     service: media_player.turn_on
                     target:
-                      entity_id: "{{ screen_not_playing[repeat.index -1] }}"
+                      entity_id: "{{ player }}"

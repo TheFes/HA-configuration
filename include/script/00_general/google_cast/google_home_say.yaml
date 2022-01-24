@@ -285,26 +285,27 @@ google_home_say:
                 sequence:
                   - alias: "Variables for specific media_player"
                     variables:
+                      player: "{{ players_to_resume[repeat.index - 1] }}"
                       spotify: >
-                        {{ players_to_resume[repeat.index-1].app_name == 'Spotify' }}
+                        {{ player.app_name == 'Spotify' }}
                       stream: >
                         {{ 
-                          (players_to_resume[repeat.index-1].media_content_id).startswith('http')
+                          (player.media_content_id).startswith('http')
                         }}
                       spotcast_account: >
                         {% if voice_spotcast %}
                           {{ voice_spotcast }}
                         {% else %}
-                          {% if players_to_resume[repeat.index - 1].app_name != 'Spotify' %}
+                          {% if player.app_name != 'Spotify' %}
                             {% set spotcast = 'Not Spotify' %}
                           {% else %}
-                            {% set entity = players_to_resume[repeat.index -1].entity_id %}
+                            {% set entity = player.entity_id %}
                             {% if speaker_groups and speaker_groups[entity] %}
                               {% set members = speaker_groups[entity] %}
                             {% else %}
                               {% set members = [] %}
                             {% endif %}
-                            {% set list_check = [ players_to_resume[repeat.index -1].entity_id ] + members %}
+                            {% set list_check = [ player.entity_id ] + members %}
                             {% set names_check = expand(list_check) | map(attribute='name') | list %}
                               {% set spotcast =  spotify_players_info
                                                   | selectattr('source', 'in', names_check) 
@@ -316,21 +317,25 @@ google_home_say:
                           {% endif %}
                             {{ spotcast if spotcast else primary_spotcast }}
                         {% endif %}
-                  - alias: "Wait until TTS message is complete"
-                    wait_template: "{{ states(players_to_resume[repeat.index -1].entity_id) in ['idle', 'off'] }}"
-                  - alias: "Set volume to old volume in case TTS volume was set"
+                  - alias: "Wait until player is idle again"
+                    wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                  - alias: "Set volume to old volume if needed"
                     choose:
                       - conditions:
-                          - alias: "TTS Volume set?"
+                          - alias: "Volume restore needed"
                             condition: template
-                            value_template: "{{ tts_volume is defined }}"
+                            value_template: >
+                              {{
+                                player.volume_level | round(2, default=0) 
+                                != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                              }}
                         sequence:
                           - alias: "Set volume back to old state"
                             service: media_player.volume_set
                             target:
-                              entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                              entity_id: "{{ player.entity_id }}"
                             data:
-                              volume_level: "{{ players_to_resume[repeat.index -1].volume_level | float(default=0.25) | round(2) }}"
+                              volume_level: "{{ player.volume_level | float(default=default_volume_level) | round(2) }}"
                   - alias: "Resume playing"
                     choose:
                       - alias: "Spotify?"
@@ -343,13 +348,13 @@ google_home_say:
                                   - alias: "Resume spotify with primary spotcast account"
                                     service: spotcast.start
                                     data:
-                                      entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                                      entity_id: "{{ player.entity_id }}"
                                       force_playback: true
                             default:
                               - alias: "Resume spotify with specific account"
                                 service: spotcast.start
                                 data:
-                                  entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                                  entity_id: "{{ player.entity_id }}"
                                   account: "{{ spotcast_account }}"
                                   force_playback: true
                       - alias: "Stream?"
@@ -358,22 +363,22 @@ google_home_say:
                           - alias: "Resume stream"
                             service: media_player.play_media
                             target:
-                              entity_id: "{{ players_to_resume[repeat.index -1].entity_id }}"
+                              entity_id: "{{ player.entity_id }}"
                             data:
                               media_content_id: >
-                                {{ players_to_resume[repeat.index -1].media_content_id }}
+                                {{ player.media_content_id }}
                               media_content_type: "music"
                               extra:
                                 title: >
-                                  {% if (players_to_resume[repeat.index -1].app_name).startswith('TuneIn') %}
-                                    {{ players_to_resume[repeat.index -1].media_artist }}
+                                  {% if player.app_name.startswith('TuneIn') %}
+                                    {{ player.media_artist }}
                                   {% else %}
-                                    {{ players_to_resume[repeat.index -1].media_title }}
+                                    {{ player.media_title }}
                                   {% endif %}
                                 thumb: >
                                   {{
-                                    fixed_picture[players_to_resume[repeat.index -1].media_artist]
-                                      | default(players_to_resume[repeat.index -1].entity_picture)
+                                    fixed_picture[player.media_artist]
+                                      | default(player.entity_picture)
                                   }}
     - alias: "Restore volume of non playing entities"
       choose:
@@ -382,38 +387,49 @@ google_home_say:
               condition: template
               value_template: >
                 {{ 
-                  tts_target_not_playing | count > 0 
-                  and (volume_non_playing is defined or volume_restore_required)
+                  target_not_playing | count > 0 
                 }}
           sequence:
             - alias: "Adjust volume"
               repeat:
                 count: "{{ volume_old_not_playing | count }}"
                 sequence:
-                  - alias: "Wait until TTS message is complete"
-                    wait_template: "{{ states(volume_old_not_playing[repeat.index -1].entity_id) in ['idle', 'off'] }}"
-                  - alias: "Set volume back to old state"
-                    service: media_player.volume_set
-                    target:
-                      entity_id: "{{ volume_old_not_playing[repeat.index -1].entity_id }}"
-                    data:
-                      volume_level: >
-                        {% if volume_restore_required %}
-                          {{ volume_old_not_playing[repeat.index -1].volume_level | float(default=0.25) | round(2) }}
-                        {% else %}
-                          {{ volume_non_playing if volume_non_playing < 1 else volume_non_playing / 100 }}
-                        {% endif %}
+                  - alias: "Variables for specific media_player"
+                    variables:
+                      player: "{{ volume_old_not_playing[repeat.index -1] }}"
+                  - alias: "Wait until entity is idle or off"
+                    wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                  - alias: "Set volume to old volume if needed"
+                    choose:
+                      - conditions:
+                          - alias: "Volume restore needed"
+                            condition: template
+                            value_template: >
+                              {{
+                                player.volume_level | round(2, default=0) 
+                                != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                              }}
+                        sequence:
+                          - alias: "Set volume back to old state"
+                            service: media_player.volume_set
+                            target:
+                              entity_id: "{{ player.entity_id }}"
+                            data:
+                              volume_level: >
+                                {{ player.volume_level | float(default=default_volume_level) | round(2) }}
     - alias: "Google Home with screen back to idle screen"
       choose:
         - conditions: "{{ screen_not_playing | count > 0 }}"
           sequence:
+            - variables:
+                player: "{{ screen_not_playing[repeat.index -1] }}"
             - alias: "Resume players"
               repeat:
                 count: "{{ screen_not_playing | count }}"
                 sequence:
-                  - alias: "Wait until TTS message is complete"
-                    wait_template: "{{ states(screen_not_playing[repeat.index -1]) in ['idle', 'off'] }}"
+                  - alias: "Wait until player is idle or off"
+                    wait_template: "{{ states(player) in ['idle', 'off'] }}"
                   - alias: "Turn Google Home on to return to idle mode (photo display)"
                     service: media_player.turn_on
                     target:
-                      entity_id: "{{ screen_not_playing[repeat.index -1] }}"
+                      entity_id: "{{ player }}"
