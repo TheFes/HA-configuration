@@ -50,7 +50,6 @@ google_home_resume:
         - media_player.zolder_mini_marleen
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
-    default_group_split: False # REMOVE!
   sequence:
     - alias: "Set variables to be used in the script"
       variables:
@@ -312,14 +311,18 @@ google_home_resume:
                       - conditions:
                           - alias: "Volume restore needed"
                             condition: template
-                            value_template: "{{ player.volume_level != state_attr(player.entity_id, 'volume_level') }}"
+                            value_template: >
+                              {{
+                                player.volume_level | round(2, default=0) 
+                                != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                              }}
                         sequence:
                           - alias: "Set volume back to old state"
                             service: media_player.volume_set
                             target:
                               entity_id: "{{ player.entity_id }}"
                             data:
-                              volume_level: "{{ player.volume_level | float(default=0.25) | round(2) }}"
+                              volume_level: "{{ player.volume_level | float(default=default_volume_level) | round(2) }}"
                   - alias: "Resume playing"
                     choose:
                       - alias: "Spotify?"
@@ -388,7 +391,11 @@ google_home_resume:
                       - conditions:
                           - alias: "Volume restore needed"
                             condition: template
-                            value_template: "{{ player.volume_level != state_attr(player.entity_id, 'volume_level') }}"
+                            value_template: >
+                              {{
+                                player.volume_level | round(2, default=0) 
+                                != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                              }}
                         sequence:
                           - alias: "Set volume back to old state"
                             service: media_player.volume_set
@@ -396,7 +403,7 @@ google_home_resume:
                               entity_id: "{{ player.entity_id }}"
                             data:
                               volume_level: >
-                                {{ player.volume_level | float(default=0.25) | round(2) }}
+                                {{ player.volume_level | float(default=default_volume_level) | round(2) }}
     - alias: "Google Home with screen back to idle screen"
       choose:
         - conditions: "{{ screen_not_playing | count > 0 }}"
