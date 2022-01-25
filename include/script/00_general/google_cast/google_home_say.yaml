@@ -74,12 +74,12 @@ google_home_say:
   sequence:
     - alias: "Set variables to be used in the script"
       variables:
+        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         tts_target_list: >
           {% if voice_tts_target is defined %}
             {{ [ voice_tts_target ] }}
           {% else %}
             {% set tts_list = tts_target.replace(' ' , '').split(',') if tts_target is string else tts_target %}
-            {% set speaker_group_list = speaker_groups.keys() | list if speaker_groups is defined else [] %}
             {% set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
             {% set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
             {% set ns = namespace(single = []) %}
@@ -94,7 +94,6 @@ google_home_say:
               {{ tts_target_group + single_not_in_group }}
             {% endif %}
           {% endif %}
-        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {% if voice_media_player_data is defined %}
