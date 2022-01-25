@@ -4,60 +4,56 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: sensor.house_mode
-    to: "Thuis"
-  - platform: state
     entity_id:
       - binary_sensor.pepijn_person_motion
       - binary_sensor.floris_person_motion
     from: "unavailable"
+    id: "unavailable"
+  - platform: state
+    entity_id:
+      - binary_sensor.pepijn_person_motion
+      - binary_sensor.floris_person_motion
+    to: "off"
+    id: "off"
   - platform: homeassistant
     event: start
+    id: "reload"
   - platform: event
     event_type: automation_reloaded
+    id: "reload"
   - platform: time
     at:
-      - "07:00"
-      - "19:00"
+      - "08:30"
+      - "11:30"
+    id: "thursday"
+variables:
+  switches:
+    - switch.floris_recordings
+    - switch.pepijn_recordings
+    - switch.floris_snapshots
+    - switch.pepijn_snapshots
+    - switch.floris_detect
+    - switch.pepijn_detect
+  count_on: >
+    {{ expand(switches) | selectattr('state', 'eq', 'on') | list | count }}
+  cleaning: >
+    {{
+      (
+        now().weekday() == 3
+        and today_at('08:30') < now() < today_at('11:30') 
+      )
+    }}
 condition:
-  - alias: "Someone home?"
-    condition: state
-    entity_id: sensor.house_mode
-    state: "Thuis"
+  - alias: "Action needed"
+    condition: template
+    value_template: >
+      {% if cleaning %}
+        {{ count_on > 0 }}
+      {% else %}
+        {{ count_on != 6 }}
+      {% endif %}
 action:
-  - alias: "Time?"
-    choose:
-      - conditions:
-          - condition: time
-            after: "07:00:00"
-            before: "19:00:00"
-        sequence:
-          - alias: "Recording off"
-            service: switch.turn_off
-            target:
-              entity_id:
-                - switch.floris_recordings
-                - switch.pepijn_recordings
-          - alias: "Other switches on"
-            service: switch.turn_on
-            target:
-              entity_id:
-                - switch.floris_snapshots
-                - switch.pepijn_snapshots
-                - switch.floris_detect
-                - switch.pepijn_detect
-      - conditions:
-          - condition: time
-            after: "19:00:00"
-            before: "07:00:00"
-        sequence:
-          - alias: "All switches on"
-            service: switch.turn_on
-            target:
-              entity_id:
-                - switch.floris_recordings
-                - switch.pepijn_recordings
-                - switch.floris_snapshots
-                - switch.pepijn_snapshots
-                - switch.floris_detect
-                - switch.pepijn_detect
+  - alias: "Perform action"
+    service: "switch.turn_{{ 'off' if cleaning else 'on' }}"
+    target:
+      entity_id: "{{ switches }}"
