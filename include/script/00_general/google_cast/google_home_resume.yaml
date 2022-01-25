@@ -55,6 +55,7 @@ google_home_resume:
   sequence:
     - alias: "Set variables to be used in the script"
       variables:
+        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         target_list: >
           {% if voice_tts_target is defined %}
             {{ [ voice_tts_target ] }}
@@ -104,9 +105,21 @@ google_home_resume:
                 {% endfor %}
                 {% set device_cast = ns.device_cast %}
             {# create list with all entities #}
-              {{ (area_cast + device_cast + entity_list) | unique | list }}
+              {% set tts_list = (area_cast + device_cast + entity_list) | unique | list %}
+            {# avoid to resume both complete speaker groups and single members #}
+              {% set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
+              {% set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
+              {% set ns = namespace(groupmembers = []) %}
+              {% for group in tts_target_group %}
+                {% set ns.groupmembers = ns.groupmembers + speaker_groups[group] %}
+              {% endfor %}
+              {% 
+                set single_not_in_group = tts_target_single 
+                  | reject('in', ns.groupmembers | unique | list)
+                  | list
+              %}
+              {{ tts_target_group + single_not_in_group }}
           {% endif %}
-        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {% if voice_media_player_data is defined %}
