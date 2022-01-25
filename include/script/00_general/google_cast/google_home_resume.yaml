@@ -392,8 +392,9 @@ google_home_resume:
                                   {% endif %}
                                 thumb: >
                                   {{
-                                    fixed_picture[player.media_artist]
-                                      | default(player.entity_picture)
+                                    fixed_picture[player.media_artist] | default(player.entity_picture)
+                                    if  fixed_picture
+                                    else player.entity_picture
                                   }}
     - alias: "Restore volume of non playing entities"
       choose:
