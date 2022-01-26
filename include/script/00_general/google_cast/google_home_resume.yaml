@@ -56,6 +56,16 @@ google_home_resume:
     - alias: "Set variables to be used in the script"
       variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
+        service_calls: >
+          {% set ns = namespace(service = []) %}
+          {% for item in action %}
+            {% if item.get('service', 'uhoh') != 'uhoh' %}
+              {% set ns.service = ns.service + [ item ] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.service }}
+        no_service_count: >
+          {{ action | reject('in', service_calls) | list | count }}
         target_list: >
           {% if voice_tts_target is defined %}
             {{ [ voice_tts_target ] }}
@@ -76,21 +86,41 @@ google_home_resume:
                 {% set area_list = target.area_id.replace(' ' , '').split(',') if target.area_id is string else target.area_id %}
                 {% set device_list = target.device_id.replace(' ' , '').split(',') if target.device_id is string else target.device_id %}
                 {% set entity_list = target.entity_id.replace(' ' , '').split(',') if target.entity_id is string else target.entity_id %}
-            {% else %}
-              {# determine targets based on actions if target not specified #}
-                {% set ns = namespace(entity = [], device = [], area = [] ) %}
-                {% for item in action %}
-                  {% set entity = item.target.get('entity_id', []) %}
-                  {% set device = item.target.get('device_id', []) %}
-                  {% set area = item.target.get('area_id', []) %}
-                  {% set ns.entity = ns.entity + [ entity ] if entity is string else entity %}
-                  {% set ns.device = ns.device + [ device ] if device is string else device %}
-                  {% set ns.area = ns.area + [ area ] if area is string else area %}
-                {% endfor %}
-                {% set area_list = ns.area %}
-                {% set device_list = ns.device %}
-                {% set entity_list = ns.entity %}
             {% endif %}
+            {# determine targets based on actions #}
+              {% set ns = namespace(entity = [], device = [], area = [] ) %}
+              {% for item in service_calls %}
+                {% set entity_s = item.get('entity_id', []) %}
+                {% set device_s = item.get('device_id', []) %}
+                {% set area_s = item.get('area_id', []) %}
+                {% set entity_d = item.data.get('entity_id', []) if item.data else [] %}
+                {% set device_d = item.data.get('device_id', []) if item.data else [] %}
+                {% set area_d = item.data.get('area_id', []) if item.data else [] %}
+                {% set entity_t = item.target.get('entity_id', []) if item.target else [] %}
+                {% set device_t = item.target.get('device_id', []) if item.target else [] %}
+                {% set area_t = item.target.get('area_id', []) if item.target else [] %}
+                {% 
+                  set entity = ( [ entity_s ]  if entity_s is string else entity_s)
+                                + ( [ entity_d ]  if entity_d is string else entity_d)
+                                + ( [ entity_t ]  if entity_t is string else entity_t)
+                %}
+                {% 
+                  set device = ( [ device_s ]  if device_s is string else device_s)
+                                + ( [ device_d ]  if device_d is string else device_d)
+                                + ( [ device_t ]  if device_t is string else device_t)
+                %}
+                {% 
+                  set area = ( [ area_s ]  if area_s is string else area_s)
+                                + ( [ area_d ]  if area_d is string else area_d)
+                                + ( [ area_t ]  if area_t is string else area_t)
+                %}
+                  {% set ns.entity = entity + ns.entity %}
+                  {% set ns.device = device + ns.device%}
+                  {% set ns.area = area + ns.area %}
+              {% endfor %}
+              {% set area_list = ns.area + (area_list if area_list else []) %}
+              {% set device_list = ns.device + (device_list if device_list else []) %}
+              {% set entity_list = ns.entity + (entity_list if entity_list else []) %}
             {# create entity list based on device/area input #}
               {# determine cast entities of areas #}
                 {% set ns = namespace(area_cast = []) %}
@@ -104,21 +134,23 @@ google_home_resume:
                   {% set ns.device_cast = ns.device_cast + device_entities(device) | select('in', cast_entities) | list %}
                 {% endfor %}
                 {% set device_cast = ns.device_cast %}
+              {# determine cast entities of all entities #}
+                {% set entity_cast = entity_list | select('in', cast_entities) | list %}
             {# create list with all entities #}
-              {% set tts_list = (area_cast + device_cast + entity_list) | unique | list %}
+              {% set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
             {# avoid to resume both complete speaker groups and single members #}
-              {% set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
-              {% set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
+              {% set target_group =  total_list | select('in', speaker_group_list) | list %}
+              {% set target_single = total_list | reject('in', speaker_group_list) | list %}
               {% set ns = namespace(groupmembers = []) %}
-              {% for group in tts_target_group %}
+              {% for group in target_group %}
                 {% set ns.groupmembers = ns.groupmembers + speaker_groups[group] %}
               {% endfor %}
               {% 
-                set single_not_in_group = tts_target_single 
+                set single_not_in_group = target_single 
                   | reject('in', ns.groupmembers | unique | list)
                   | list
               %}
-              {{ tts_target_group + single_not_in_group }}
+              {{ target_group + single_not_in_group }}
           {% endif %}
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
@@ -225,16 +257,6 @@ google_home_resume:
             {% set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {% endfor %}
           {{ ns.info }}
-        service_calls: >
-          {% set ns = namespace(service = []) %}
-          {% for item in action %}
-            {% if item.get('service', 'uhoh') != 'uhoh' %}
-              {% set ns.service = ns.service + [ item ] %}
-            {% endif %}
-          {% endfor %}
-          {{ ns.service }}
-        no_service_count: >
-          {{ action | reject('in', service_calls) | list | count }}
     - alias: "Turn non playing entities on if needed"
       choose:
         - conditions: "{{ target_not_playing | count > 0 }}"
