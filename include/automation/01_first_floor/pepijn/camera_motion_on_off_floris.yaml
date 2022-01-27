@@ -1,5 +1,5 @@
 id: f343ab16-005f-4a46-bea0-450b060c07a4
-alias: "F1F ⏺ Enable or disable recording of cameras Pepijn"
+alias: "F1P ⏺ Enable or disable recording of cameras Pepijn"
 mode: single
 max_exceeded: silent
 trigger:
@@ -51,7 +51,8 @@ action:
                     state: "Thuis"
         sequence:
           - service: switch.turn_on
-            target: "{{ switches }}"
+            target:
+              entity_id: "{{ switches }}"
     default:
       - service: switch.turn_on
         target:
