@@ -1,12 +1,13 @@
 platform: template
 covers:
   pepijn:
+    unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
     device_class: blind
-    availability_template: "{{ not is_state('cover.pepijn_tahoma', 'unavailable') }}"
+    availability_template: "{{ not states('cover.pepijn_tahoma') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Pepijn"
     position_template: >
       {% if is_state('input_boolean.cover_pepijn_invert', 'on') %}
-        {{ 100 - state_attr('cover.pepijn_tahoma', 'current_position') | float(100) }}
+        {{ 100 - state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
       {% else %}
         {{ state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
       {% endif %}

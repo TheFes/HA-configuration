@@ -1,58 +1,43 @@
 platform: template
 covers:
   slaapkamer:
+    unique_id: d9194724-fece-44c8-9ec7-0b737d662f39
     availability_template: >
       {{ 
-        (not is_state('cover.slaapkamer_links', 'unavailable')) 
-        and (not is_state('cover.slaapkamer_midden', 'unavailable')) 
-        and (not is_state('cover.slaapkamer_rechts', 'unavailable')) 
+        (not states('cover.slaapkamer_links') in ['unknown', 'unavailable']) 
+        and (not states('cover.slaapkamer_midden') in ['unknown', 'unavailable']) 
+        and (not states('cover.slaapkamer_rechts') in ['unknown', 'unavailable']) 
       }}
     device_class: blind
     friendly_name: "Screens Slaapkamer"
     position_template: >
-      {% if is_state('input_boolean.cover_slaapkamer_temp_fix', 'on') %}
-        {{ 0 if is_state('cover.slaapkamer_groep', 'closed') else 100 }}
-      {% elif is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
-        {{ 100 - state_attr('cover.slaapkamer_groep', 'current_position') | float(100) }}
+      {% 
+        set cover_positions = 
+                      [
+                        state_attr('cover.slaapkamer_links', 'current_position') | float(0),
+                        state_attr('cover.slaapkamer_midden', 'current_position') | float(0),
+                        state_attr('cover.slaapkamer_rechts', 'current_position') | float(0)
+                      ]
+      %}
+      {% if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+        {{ 100 - cover_positions | average }}
       {% else %}
-        {{ state_attr('cover.slaapkamer_groep', 'current_position') | float(0) }}
+        {{ cover_positions | average }}
       {% endif %}
     open_cover:
-      service: cover.set_cover_position
-      #        {% if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
-      #          cover.close_cover
-      #        {% else %}
-      #          cover.open_cover
-      #        {% endif %}
-      entity_id: cover.slaapkamer_groep
-      data:
-        position: >
-          {% 
-            if is_state('input_boolean.cover_slaapkamer_invert', 'on') 
-            or is_state('input_boolean.cover_slaapkamer_temp_fix', 'on')
-          %}
-            0
-          {% else %}
-            100
-          {% endif %}
+      service: >
+        {% if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          cover.close_cover
+        {% else %}
+          cover.open_cover
+        {% endif %}
     close_cover:
-      service: cover.set_cover_position
-      #        {% if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
-      #          cover.open_cover
-      #        {% else %}
-      #          cover.close_cover
-      #        {% endif %}
-      entity_id: cover.slaapkamer_groep
-      data:
-        position: >
-          {% 
-            if is_state('input_boolean.cover_slaapkamer_invert', 'on') 
-            or is_state('input_boolean.cover_slaapkamer_temp_fix', 'on')
-          %}
-            100
-          {% else %}
-            0
-          {% endif %}
+      service: >
+        {% if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          cover.open_cover
+        {% else %}
+          cover.close_cover
+        {% endif %}
     stop_cover:
       service: cover.stop_cover
       entity_id: cover.slaapkamer_groep
@@ -61,11 +46,8 @@ covers:
       entity_id: cover.slaapkamer_groep
       data:
         position: >
-          {% 
+          {{ 
+            100 - position 
             if is_state('input_boolean.cover_slaapkamer_invert', 'on') 
-            or is_state('input_boolean.cover_slaapkamer_temp_fix', 'on')
-          %}
-            {{ 100 - position }}
-          {% else %}
-            {{ position }}
-          {% endif %}
+            else position 
+          }}
