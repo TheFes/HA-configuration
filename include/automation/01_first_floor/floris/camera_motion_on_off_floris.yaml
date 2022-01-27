@@ -64,7 +64,8 @@ action:
                     state: "Thuis"
         sequence:
           - service: switch.turn_on
-            target: "{{ switches }}"
+            target:
+              entity_id: "{{ switches }}"
     default:
       - service: switch.turn_on
         target:
