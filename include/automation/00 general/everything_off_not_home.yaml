@@ -16,12 +16,6 @@ condition:
     entity_id: sensor.house_mode
     state: "Afwezig"
 action:
-  #  - alias: "Turn on recording for cameras"
-  #    service: switch.turn_on
-  #    target:
-  #      entity_id:
-  #        - switch.floris_recordings
-  #        - switch.pepijn_recordings
   - alias: "Enable sending of snapshots on motion"
     service: input_boolean.turn_on
     target:
