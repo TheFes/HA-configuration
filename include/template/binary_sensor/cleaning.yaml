@@ -1,0 +1,11 @@
+binary_sensor:
+  - unique_id: a30d3f62-20c5-4606-8aba-71a6b3d403cd
+    name: "Cleaning time"
+    state: >-
+      {{
+        (
+          now().weekday() == 3
+          and today_at('08:30') < now() < today_at('11:30') 
+          and is_state('sensor.house_mode', 'Thuis')
+        )
+      }}
