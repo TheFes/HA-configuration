@@ -8,7 +8,7 @@ lights:
     temperature_template: "{{ state_attr('light.zolder_bol', 'color_temp') | default(140, True) }}"
     min_mireds_template: "{{ state_attr('light.zolder_bol', 'min_mireds') | int(140) }}"
     max_mireds_template: "{{ state_attr('light.zolder_bol', 'max_mireds') | int(650) }}"
-    availability_template: "{{ not (is_state('light.eettafel', 'unavailable') and is_state('switch.bureau_marleen', 'unavailable')) }}"
+    availability_template: "{{ not (is_state('light.zolder_bol', 'unavailable') and is_state('switch.bureau_marleen', 'unavailable')) }}"
     turn_on:
       service: script.attic_desk_light_actions
       data:
@@ -21,7 +21,7 @@ lights:
       service: light.turn_on
       data:
         entity_id: light.zolder_bol
-        brightness: "{{ brightness }}"
+        brightness: "{{ brightness }}"
     set_temperature:
       service: light.turn_on
       data:
