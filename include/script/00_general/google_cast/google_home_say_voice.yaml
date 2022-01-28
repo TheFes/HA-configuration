@@ -20,10 +20,10 @@ google_home_say_voice:
         entity_playing: "{{ states.media_player | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
     - variables:
         media_player_data: >
-          {%-set entities = expand(entity_playing) %}
-          {%-set ns = namespace(info=[]) %}
-          {%-for entity in entities %}
-            {%-set ns.info = ns.info +  [ 
+          {%- set entities = expand(entity_playing) %}
+          {%- set ns = namespace(info=[]) %}
+          {%- for entity in entities %}
+            {%- set ns.info = ns.info +  [ 
                                           dict(
                                             entity_id = entity.entity_id,
                                             friendly_name = entity.attributes.friendly_name,
@@ -37,25 +37,25 @@ google_home_say_voice:
                                             )
                                         ] 
             %}
-          {%-endfor %}
+          {%- endfor %}
           {{ ns.info }}
         spotify_data: >
-          {%-set spotify_entities = states.media_player 
+          {%- set spotify_entities = states.media_player 
                                         | selectattr('entity_id', 'search', 'spotify') 
                                         | map(attribute='entity_id') 
                                         | list  
           %}
-          {%-set data = expand(spotify_entities) %}
-          {%-set ns = namespace(spotcast=[]) %}
-          {%-for entity in data %}
-            {%-set ns.spotcast = ns.spotcast +  [ 
+          {%- set data = expand(spotify_entities) %}
+          {%- set ns = namespace(spotcast=[]) %}
+          {%- for entity in data %}
+            {%- set ns.spotcast = ns.spotcast +  [ 
                                                   dict(
                                                     entity_id = entity.entity_id,
                                                     source = entity.attributes.source
                                                     )
                                                 ] 
             %}
-          {%-endfor %}
+          {%- endfor %}
           {{ ns.spotcast }}
     - alias: "Wait until white noise started"
       wait_template: >
@@ -84,6 +84,6 @@ google_home_say_voice:
         voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', tts_target) | list }}"
         voice_groups: "{{ entity_playing | select('in', speaker_groups) }}"
         voice_spotcast: >
-          {%-set friendly_name = expand(tts_target) | map(attribute='attributes.friendly_name') | join %}
-          {%-set spotify_entity =  spotify_data | selectattr('source', 'eq', friendly_name) | map(attribute='entity_id') | join %}
+          {%- set friendly_name = expand(tts_target) | map(attribute='attributes.friendly_name') | join %}
+          {%- set spotify_entity =  spotify_data | selectattr('source', 'eq', friendly_name) | map(attribute='entity_id') | join %}
           {{ spotify_entity | replace('media_player.spotify_', '') if spotify_entity | count > 0 else primary_spotcast }}

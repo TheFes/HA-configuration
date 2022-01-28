@@ -2,24 +2,24 @@ sensor:
   - unique_id: c7a36aee-99af-446b-bef9-6491f07d3956
     name: Extractor hood status
     state: >-
-      {%-if is_state('switch.afzuigkap', 'on') 
+      {%- if is_state('switch.afzuigkap', 'on') 
           and states('sensor.afzuigkap_power') | float(0) > 5 %}
         Afzuigen
-      {%-elif is_state('switch.afzuigkap', 'on') 
+      {%- elif is_state('switch.afzuigkap', 'on') 
           and states('sensor.afzuigkap_power') | float(0) > 0.5 %}
         Licht aan
-      {%-elif is_state('switch.afzuigkap', 'on') %}
+      {%- elif is_state('switch.afzuigkap', 'on') %}
         Inactief
-      {%-else %}
+      {%- else %}
         Plug uit
-      {%-endif %}
+      {%- endif %}
     icon: >-
-      {%-if is_state('sensor.extractor_hood_status', 'Licht aan') %}
+      {%- if is_state('sensor.extractor_hood_status', 'Licht aan') %}
         mdi:lightbulb
-      {%-elif is_state('sensor.extractor_hood_status', 'Afzuigen') %}
+      {%- elif is_state('sensor.extractor_hood_status', 'Afzuigen') %}
         mdi:weather-windy
-      {%-elif is_state('sensor.extractor_hood_status', 'Inactief') %}
+      {%- elif is_state('sensor.extractor_hood_status', 'Inactief') %}
         mdi:lightning-bolt
-      {%-elif is_state('sensor.extractor_hood_status', 'Plug uit') %}
+      {%- elif is_state('sensor.extractor_hood_status', 'Plug uit') %}
         mdi:power-plug-off-outline
-      {%-endif %}
+      {%- endif %}

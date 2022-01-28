@@ -76,89 +76,89 @@ google_home_say:
       variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         tts_target_list: >
-          {%-if voice_tts_target is defined %}
+          {%- if voice_tts_target is defined %}
             {{ [ voice_tts_target ] }}
-          {%-else %}
-            {%-set tts_list = tts_target.replace(' ' , '').split(',') if tts_target is string else tts_target %}
-            {%-set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
-            {%-set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
-            {%-set ns = namespace(single = []) %}
-            {%-for group in tts_target_group %}
-              {%-set ns.single = ns.single + speaker_groups[group] %}
-            {%-endfor %}
-            {%-set tts_group_entities = ns.single | unique | list %}
-            {%-set single_not_in_group = tts_target_single | reject('in', tts_group_entities) | list %}
-            {%-if speaker_group_split | default(default_group_split | default(False)) %}
+          {%- else %}
+            {%- set tts_list = tts_target.replace(' ' , '').split(',') if tts_target is string else tts_target %}
+            {%- set tts_target_group =  tts_list | select('in', speaker_group_list) | list %}
+            {%- set tts_target_single = tts_list | reject('in', speaker_group_list) | list %}
+            {%- set ns = namespace(single = []) %}
+            {%- for group in tts_target_group %}
+              {%- set ns.single = ns.single + speaker_groups[group] %}
+            {%- endfor %}
+            {%- set tts_group_entities = ns.single | unique | list %}
+            {%- set single_not_in_group = tts_target_single | reject('in', tts_group_entities) | list %}
+            {%- if speaker_group_split | default(default_group_split | default(False)) %}
               {{ tts_group_entities + single_not_in_group }}
-            {%-else %}
+            {%- else %}
               {{ tts_target_group + single_not_in_group }}
-            {%-endif %}
-          {%-endif %}
+            {%- endif %}
+          {%- endif %}
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
-            {%-if voice_media_player_data is defined %}
+            {%- if voice_media_player_data is defined %}
               {{ voice_media_player_data }}
-            {%-else %}
+            {%- else %}
               {# determine which media_players are playing and store attributes#}
-                {%-
+                {%- 
                   set all_players_playing = states.media_player 
                                               | selectattr('state', 'eq', 'playing') 
                                               | map(attribute='entity_id') 
                                               | list  
                 %}
           {# determine which Google Home speakers groups are playing #}
-                {%-
+                {%- 
                   set all_speaker_groups_playing =  voice_groups | default(
                                                     all_players_playing 
                                                       | select('in', speaker_group_list) 
                                                       | list )
                 %}
               {# determine which of the tts_targets (including groups members) are playing  #}
-                {%-set ns = namespace(tts_targets = []) %}
-                  {%-for target in tts_target_list %}
-                    {%-set ns.tts_targets = ns.tts_targets +  (
+                {%- set ns = namespace(tts_targets = []) %}
+                  {%- for target in tts_target_list %}
+                    {%- set ns.tts_targets = ns.tts_targets +  (
                                                                 speaker_groups[target] 
                                                                 if target in speaker_group_list 
                                                                 else [ target ] 
                                                               ) 
                     %}
-                  {%-endfor %}
-                {%-set tts_playing = ns.tts_targets | select('in', all_players_playing) | list %}
+                  {%- endfor %}
+                {%- set tts_playing = ns.tts_targets | select('in', all_players_playing) | list %}
               {# determine which groups should be resumed becaue a single tts target is part of that group #}
-                {%-set ns = namespace(groups = []) %}
-                  {%-for group in all_speaker_groups_playing %}
-                    {%-for entity in speaker_groups[group] if entity in tts_playing %}
-                      {%-set ns.groups = ns.groups + [group] %}
-                    {%-endfor %}
-                  {%-endfor %}
-                {%-set speaker_groups_resume = ns.groups | unique | list %}
+                {%- set ns = namespace(groups = []) %}
+                  {%- for group in all_speaker_groups_playing %}
+                    {%- for entity in speaker_groups[group] if entity in tts_playing %}
+                      {%- set ns.groups = ns.groups + [group] %}
+                    {%- endfor %}
+                  {%- endfor %}
+                {%- set speaker_groups_resume = ns.groups | unique | list %}
               {# determine if tts target has subgroups which are playing and add to speaker_groups_resume #}
-                {%-set ns = namespace(groups = []) %}
-                  {%-for target in tts_target_list %}
-                    {%-set ns.groups = ns.groups + 
+                {%- set ns = namespace(groups = []) %}
+                  {%- for target in tts_target_list %}
+                    {%- set ns.groups = ns.groups + 
                         (sub_groups[target] | select('in', all_speaker_groups_playing) | list)
                         if sub_groups is defined else []     
                   %}
-                  {%-endfor %}
-                {%-set speaker_groups_resume = speaker_groups_resume + ns.groups | unique | list %}
+                  {%- endfor %}
+                {%- set speaker_groups_resume = speaker_groups_resume + ns.groups | unique | list %}
               {# determine which single entities are in a group which is going to be resumed #}
-                {%-set ns = namespace(reject = []) %}
-                {%-for group in speaker_groups_resume %}
-                  {%-set ns.reject = ns.reject + speaker_groups[group] %}
-                {%-endfor %}
-                {%-set reject_list = ns.reject %}
+                {%- set ns = namespace(reject = []) %}
+                {%- for group in speaker_groups_resume %}
+                  {%- set ns.reject = ns.reject + speaker_groups[group] %}
+                {%- endfor %}
+                {%- set reject_list = ns.reject %}
               {# determine which single playing entities are in a group which is a tts_target #}
-                {%-set tts_target_group = tts_target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
-                {%-set ns = namespace(single_resume = []) %}
-                {%-for group in tts_target_group %}
-                  {%-set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
-                {%-endfor %}
-                {%-set single_resume_list = ns.single_resume %}
+                {%- set tts_target_group = tts_target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
+                {%- set ns = namespace(single_resume = []) %}
+                {%- for group in tts_target_group %}
+                  {%- set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
+                {%- endfor %}
+                {%- set single_resume_list = ns.single_resume %}
               {# combine all the above to a list of players which should be resumed #}
-                {%-set players_resume = (tts_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
-                {%-set ns = namespace(info=[]) %}
-                {%-for entity in expand(players_resume) %}
-                  {%-set ns.info = ns.info +  [ 
+                {%- set players_resume = (tts_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
+                {%- set ns = namespace(info=[]) %}
+                {%- for entity in expand(players_resume) %}
+                  {%- set ns.info = ns.info +  [ 
                                                 dict(
                                                   entity_id = entity.entity_id,
                                                   friendly_name = entity.attributes.friendly_name, 
@@ -172,32 +172,32 @@ google_home_say:
                                                   )
                                               ] 
                   %}
-                {%-endfor %}
+                {%- endfor %}
                 {{ ns.info }}
-            {%-endif %}
+            {%- endif %}
         tts_target_not_playing: >
-          {%-set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
-          {%-set ns = namespace(members = []) %}
-          {%-for entity in players_resume_entity %}
-            {%-if entity in speaker_group_list %}
-              {%-set ns.members = ns.members + speaker_groups[entity] | list %}
-            {%-endif %}
-          {%-endfor %}
-          {%-set players_resume_all = players_resume_entity + ns.members %}
+          {%- set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
+          {%- set ns = namespace(members = []) %}
+          {%- for entity in players_resume_entity %}
+            {%- if entity in speaker_group_list %}
+              {%- set ns.members = ns.members + speaker_groups[entity] | list %}
+            {%- endif %}
+          {%- endfor %}
+          {%- set players_resume_all = players_resume_entity + ns.members %}
           {{ tts_target_list | reject('in', players_resume_all) | list }}
         spotify_players_info: >
-          {%-
+          {%- 
             set spotify_player_list = states.media_player 
                                         | selectattr('state', 'eq', 'playing')
                                         | selectattr('entity_id', 'search', 'media_player.spotify') 
                                         | map(attribute='entity_id') 
                                         | list
           %}
-          {%-set entities = expand(spotify_player_list) %}
-          {%-set ns = namespace(info=[]) %}
-          {%-for entity in entities %}
-            {%-set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
-          {%-endfor %}
+          {%- set entities = expand(spotify_player_list) %}
+          {%- set ns = namespace(info=[]) %}
+          {%- for entity in entities %}
+            {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
+          {%- endfor %}
           {{ ns.info }}
         volume_restore_required: >
           {{
@@ -215,12 +215,12 @@ google_home_say:
             - delay: 0.25
     - variables:
         volume_old_not_playing: >
-          {%-set entities = expand(tts_target_not_playing) %}
-          {%-set ns = namespace(info=[]) %}
-          {%-set volume = default_volume_level | default(0.25) %}
-          {%-set volume_restore = volume if volume < 1 else [1, volume / 100] | min %}
-          {%-for entity in entities %}
-            {%-set ns.info = ns.info +  [
+          {%- set entities = expand(tts_target_not_playing) %}
+          {%- set ns = namespace(info=[]) %}
+          {%- set volume = default_volume_level | default(0.25) %}
+          {%- set volume_restore = volume if volume < 1 else [1, volume / 100] | min %}
+          {%- for entity in entities %}
+            {%- set ns.info = ns.info +  [
                                         dict(
                                           entity_id = entity.entity_id, 
                                           volume_level = entity.attributes.volume_level | default(
@@ -229,7 +229,7 @@ google_home_say:
                                           ) 
                                         ] 
             %}
-          {%-endfor %}
+          {%- endfor %}
           {{ ns.info }}
         screen_not_playing: >
           {{ [] if not players_screen else tts_target_not_playing | select('in', players_screen) | list }}
@@ -238,11 +238,11 @@ google_home_say:
       target:
         entity_id: "{{ tts_target_list }}"
       data: >
-        {%-if service_data %}
+        {%- if service_data %}
           {{ dict( message = tts_message, **service_data ) }}
-        {%-else %}
+        {%- else %}
           {{ dict( message = tts_message ) }}
-        {%-endif %}
+        {%- endif %}
     - alias: "Set volume to TTS volume if set"
       choose:
         - conditions:
@@ -292,30 +292,30 @@ google_home_say:
                           (player.media_content_id).startswith('http')
                         }}
                       spotcast_account: >
-                        {%-if voice_spotcast %}
+                        {%- if voice_spotcast %}
                           {{ voice_spotcast }}
-                        {%-else %}
-                          {%-if player.app_name != 'Spotify' %}
-                            {%-set spotcast = 'Not Spotify' %}
-                          {%-else %}
-                            {%-set entity = player.entity_id %}
-                            {%-if speaker_groups and speaker_groups[entity] %}
-                              {%-set members = speaker_groups[entity] %}
-                            {%-else %}
-                              {%-set members = [] %}
-                            {%-endif %}
-                            {%-set list_check = [ player.entity_id ] + members %}
-                            {%-set names_check = expand(list_check) | map(attribute='name') | list %}
-                              {%-set spotcast =  spotify_players_info
+                        {%- else %}
+                          {%- if player.app_name != 'Spotify' %}
+                            {%- set spotcast = 'Not Spotify' %}
+                          {%- else %}
+                            {%- set entity = player.entity_id %}
+                            {%- if speaker_groups and speaker_groups[entity] %}
+                              {%- set members = speaker_groups[entity] %}
+                            {%- else %}
+                              {%- set members = [] %}
+                            {%- endif %}
+                            {%- set list_check = [ player.entity_id ] + members %}
+                            {%- set names_check = expand(list_check) | map(attribute='name') | list %}
+                              {%- set spotcast =  spotify_players_info
                                                   | selectattr('source', 'in', names_check) 
                                                   | map(attribute='entity_id') 
                                                   | join 
                                                   | replace('media_player.spotify_', '')
                                   
                               %}
-                          {%-endif %}
+                          {%- endif %}
                             {{ spotcast if spotcast else primary_spotcast }}
-                        {%-endif %}
+                        {%- endif %}
                   - alias: "Wait until player is idle again"
                     wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
                   - alias: "Set volume to old volume if needed"
@@ -369,11 +369,11 @@ google_home_say:
                               media_content_type: "music"
                               extra:
                                 title: >
-                                  {%-if player.app_name.startswith('TuneIn') %}
+                                  {%- if player.app_name.startswith('TuneIn') %}
                                     {{ player.media_artist }}
-                                  {%-else %}
+                                  {%- else %}
                                     {{ player.media_title }}
-                                  {%-endif %}
+                                  {%- endif %}
                                 thumb: >
                                   {{
                                     fixed_picture[player.media_artist] | default(player.entity_picture)

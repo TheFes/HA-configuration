@@ -2,17 +2,17 @@ binary_sensor:
   - unique_id: b42aac64-7a0d-4409-b26c-44c803b7e033
     name: "Rain until afternoon"
     state: >-
-      {%-set hour = now().hour | int(0)%}
-      {%-set number_of_hours = (13 - hour) if hour < 13 else (13 + (24 - hour)) %}
-      {%-set rain = state_attr('weather.climacell_hourly', 'forecast')[1:number_of_hours] | map(attribute='precipitation') | sum | float(0) %}
-      {%-set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
+      {%- set hour = now().hour | int(0)%}
+      {%- set number_of_hours = (13 - hour) if hour < 13 else (13 + (24 - hour)) %}
+      {%- set rain = state_attr('weather.climacell_hourly', 'forecast')[1:number_of_hours] | map(attribute='precipitation') | sum | float(0) %}
+      {%- set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
       {{ (rain_expectation_next_hour + rain) > 0 }}
 
   - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
     name: "Rain until morning"
     state: >-
-      {%-set hour = now().hour | int(0)%}
-      {%-set number_of_hours = (7 - hour) if hour < 7 else  (7 + (24 - hour)) %}
-      {%-set rain = state_attr('weather.climacell_hourly', 'forecast')[1:number_of_hours] | map(attribute='precipitation') | sum | float(0) %}
-      {%-set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
+      {%- set hour = now().hour | int(0)%}
+      {%- set number_of_hours = (7 - hour) if hour < 7 else  (7 + (24 - hour)) %}
+      {%- set rain = state_attr('weather.climacell_hourly', 'forecast')[1:number_of_hours] | map(attribute='precipitation') | sum | float(0) %}
+      {%- set rain_expectation_next_hour = state_attr('weather.climacell_hourly', 'forecast')[0].precipitation_probability | float(0) %}
       {{ (rain_expectation_next_hour + rain) > 0 }}

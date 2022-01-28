@@ -2,16 +2,16 @@ sensor:
   - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
     name: House Mode
     state: >-
-      {%-if is_state('group.m_en_m', 'not_home') 
+      {%- if is_state('group.m_en_m', 'not_home') 
           and is_state('input_boolean.gast', 'off') 
           and is_state('input_boolean.vakantie', 'on') %}
         Vakantie
-      {%-elif is_state('group.m_en_m', 'not_home') 
+      {%- elif is_state('group.m_en_m', 'not_home') 
           and is_state('input_boolean.gast', 'on') %}
         Gast
-      {%-elif is_state('group.m_en_m', 'not_home') %}
+      {%- elif is_state('group.m_en_m', 'not_home') %}
         Afwezig
-      {%-
+      {%- 
         elif 
           is_state('group.m_en_m', 'home') 
           and 
@@ -32,18 +32,18 @@ sensor:
           and is_state('light.groep_beneden', 'off')
         %}
         Slapen
-      {%-else %}
+      {%- else %}
         Thuis
-      {%-endif %}
+      {%- endif %}
     icon: >-
-      {%-if is_state('sensor.huis_modus', 'Gast') %}
+      {%- if is_state('sensor.huis_modus', 'Gast') %}
         mdi:account
-      {%-elif is_state('sensor.huis_modus', 'Afwezig') %}
+      {%- elif is_state('sensor.huis_modus', 'Afwezig') %}
         mdi:home-outline
-      {%-elif is_state('sensor.huis_modus', 'Vakantie') %}
+      {%- elif is_state('sensor.huis_modus', 'Vakantie') %}
         mdi:bag-suitcase
-      {%-elif is_state('sensor.huis_modus', 'Slapen') %}
+      {%- elif is_state('sensor.huis_modus', 'Slapen') %}
         mdi:bed
-      {%-else %}
+      {%- else %}
         mdi:home
-      {%-endif %}
+      {%- endif %}

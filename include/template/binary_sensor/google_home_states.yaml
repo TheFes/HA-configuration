@@ -71,11 +71,11 @@ binary_sensor:
     delay_on: "00:00:05"
     attributes:
       volume: >
-        {%-if now() > today_at("19:00") %}
+        {%- if now() > today_at("19:00") %}
           0.0
-        {%-else %}
+        {%- else %}
           0.25
-        {%-endif %}
+        {%- endif %}
 
   - unique_id: 71f2f295-401a-4364-8c93-715a2b0f67a6
     name: "Pepijn Mini"
@@ -86,11 +86,11 @@ binary_sensor:
     delay_on: "00:00:05"
     attributes:
       volume: >
-        {%-if now() > today_at("19:00") %}
+        {%- if now() > today_at("19:00") %}
           0.0
-        {%-else %}
+        {%- else %}
           0.25
-        {%-endif %}
+        {%- endif %}
 
   - unique_id: 2b4278b7-2dbb-403a-9f03-4a2d14973245
     name: "Slaapkamer Hub"

@@ -17,11 +17,11 @@ variables:
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "{{ 'sensor.' + name + '_naar_huis' }}"
   eta: >
-    {%-if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' %}
+    {%- if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' %}
       {{ (as_timestamp(now()) + 60 * 40 | float) | timestamp_custom('%H:%M') }}
-    {%-else %}
+    {%- else %}
       {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
-    {%-endif %}
+    {%- endif %}
 action:
   - alias: "Send notification to phone"
     service: "{{ notify }}"

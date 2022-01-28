@@ -16,7 +16,7 @@ variables:
     dhm: "papier- en PMD-bak"
     kerstbomen: "kerstboom"
   trash_pickup: >
-    {%-set trash = states(sensor).split(', ') %}
+    {%- set trash = states(sensor).split(', ') %}
     {{ trash_descr.items() | list | selectattr('0', 'in', trash) | map(attribute='1') | list }}
 condition:
   - alias: "Notification needed?"
@@ -27,17 +27,17 @@ action:
     service: notify.all_phones
     data:
       title: >
-        {%-if trash_pickup | length > 1 %}
+        {%- if trash_pickup | length > 1 %}
           Denk aan de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }}!
-        {%-else %}
+        {%- else %}
           Denk aan de {{ trash_pickup[0] }}!
-        {%-endif %}
+        {%- endif %}
       message: >
-        {%-if trash_pickup | length > 1 %}
+        {%- if trash_pickup | length > 1 %}
           {{ trigger.id.split(', ')[0] }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
-        {%-else %}
+        {%- else %}
           {{ trigger.id.split(', ')[0] }} moet de {{ trash_pickup[0] }} buiten.
-        {%-endif %}
+        {%- endif %}
       data:
         channel: Trash
         ttl: 0

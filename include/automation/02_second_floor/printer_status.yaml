@@ -24,11 +24,11 @@ condition:
 action:
   - variables:
       message: >
-        {%-if trigger.id == 'toner' %}
+        {%- if trigger.id == 'toner' %}
           "De toner is nog maar voor {{ states('sensor.dcp_l2530dw_black_toner_remaining') }}% vol"
-        {%-else %}
+        {%- else %}
           "De levensduur van de drum is nog maar {{ states('sensor.dcp_l2530dw_drum_remaining_life') }}"
-        {%-endif %}
+        {%- endif %}
   - alias: "Notificatie naar telefoon Martijn"
     service: notify.mobile_app_pixel_5
     data:

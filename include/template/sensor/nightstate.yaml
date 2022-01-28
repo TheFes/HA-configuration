@@ -2,8 +2,8 @@ sensor:
   unique_id: 0292d413-b0a5-40b9-941a-902bde3d61cd
   name: Nightstate
   state: >-
-    {%-if is_state('sun.sun', 'below_horizon') %}
+    {%- if is_state('sun.sun', 'below_horizon') %}
       1
-    {%-else %}
+    {%- else %}
       0
-    {%-endif %}
+    {%- endif %}

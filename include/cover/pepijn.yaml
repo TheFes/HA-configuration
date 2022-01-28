@@ -6,26 +6,26 @@ covers:
     availability_template: "{{ not states('cover.pepijn_tahoma') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Pepijn"
     position_template: >
-      {%-if is_state('input_boolean.cover_pepijn_invert', 'on') %}
+      {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
         {{ 100 - state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
-      {%-else %}
+      {%- else %}
         {{ state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
-      {%-endif %}
+      {%- endif %}
     open_cover:
       service: >
-        {%-if is_state('input_boolean.cover_pepijn_invert', 'on') %}
+        {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
           cover.close_cover
-        {%-else %}
+        {%- else %}
           cover.open_cover
-        {%-endif %}
+        {%- endif %}
       entity_id: cover.pepijn_tahoma
     close_cover:
       service: >
-        {%-if is_state('input_boolean.cover_pepijn_invert', 'on') %}
+        {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
           cover.open_cover
-        {%-else %}
+        {%- else %}
           cover.close_cover
-        {%-endif %}
+        {%- endif %}
       entity_id: cover.pepijn_tahoma
     stop_cover:
       service: cover.stop_cover
@@ -35,8 +35,8 @@ covers:
       entity_id: cover.pepijn_tahoma
       data:
         position: >
-          {%-if is_state('input_boolean.cover_pepijn_invert', 'on') %}
+          {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
             {{ 100 - position }}
-          {%-else %}
+          {%- else %}
             {{ position }}
-          {%-endif %}
+          {%- endif %}

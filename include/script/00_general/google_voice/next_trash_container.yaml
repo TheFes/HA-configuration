@@ -12,22 +12,22 @@ next_trash_container_routine:
       data:
         tts_message: >
           {# select the right descriptions form the variable #}
-            {%-set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
-            {%-set trash_pickup = trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list %}
+            {%- set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
+            {%- set trash_pickup = trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list %}
           {# deterimine when the next pickup is (today, tomorrow, or day-name) #}
-            {%-set days_until = ((state_attr('sensor.afvalwijzer_next_date', 'year_month_day_date') | as_datetime).date() - now().date()).days %}
-            {%-if days_until == 0 %}
-              {%-set when = 'Vandaag' %}
-            {%-elif days_until == 1 %}
-              {%-set when = 'Morgen' %}
-            {%-else %}
-              {%-set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-              {%-set when = days[now().weekday() + days_until] %}
-            {%-endif %}
+            {%- set days_until = ((state_attr('sensor.afvalwijzer_next_date', 'year_month_day_date') | as_datetime).date() - now().date()).days %}
+            {%- if days_until == 0 %}
+              {%- set when = 'Vandaag' %}
+            {%- elif days_until == 1 %}
+              {%- set when = 'Morgen' %}
+            {%- else %}
+              {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
+              {%- set when = days[now().weekday() + days_until] %}
+            {%- endif %}
           {# set the correct message (based on number of pickup types) #}
-            {%-if trash_pickup | length > 1 %}
+            {%- if trash_pickup | length > 1 %}
               {{ when }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
-            {%-else %}
+            {%- else %}
               {{ when }} moet de {{ trash_pickup[0] }} buiten.
-            {%-endif %}
+            {%- endif %}
         tts_volume: 35
