@@ -5,37 +5,37 @@ max_exceeded: silent
 trigger:
   - platform: template
     value_template: >
-      {%-  
+      {%- 
         if not states('sensor.latest_stable') in ['unavailable', 'unknown' ] 
         and not states('sensor.current version') in ['unavailable', 'unknown' ]
       %}
-        {%-  set c = states('sensor.current_version').split('.') %}
-        {%-  set yc = c[0] | int %}
-        {%-  set mc = c[1] | int %}
-        {%-  set vc = c[2]  %}
-        {%-  set l = states('sensor.latest_stable').split('.') %}
-        {%-  set y = l[0] | int %}
-        {%-  set m = l[1] | int %}
-        {%-  set v = l[2] %}
+        {%- set c = states('sensor.current_version').split('.') %}
+        {%- set yc = c[0] | int %}
+        {%- set mc = c[1] | int %}
+        {%- set vc = c[2]  %}
+        {%- set l = states('sensor.latest_stable').split('.') %}
+        {%- set y = l[0] | int %}
+        {%- set m = l[1] | int %}
+        {%- set v = l[2] %}
         {{ (yc < y) | iif(true, (mc < m if yc == y else false) | iif(true, vc < v if mc == m else false) ) }}
-      {%-  endif %}
+      {%- endif %}
     id: "stable"
   - platform: template
     value_template: >
-      {%-  
+      {%- 
         if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] 
         and not states('sensor.current version') in ['unavailable', 'unknown' ]
       %}
-        {%-  set c = states('sensor.current_version').split('.') %}
-        {%-  set yc = c[0] | int %}
-        {%-  set mc = c[1] | int %}
-        {%-  set vc = c[2]  %}
-        {%-  set l = states('sensor.latest_beta').split('.') %}
-        {%-  set y = l[0] | int %}
-        {%-  set m = l[1] | int %}
-        {%-  set v = l[2] %}
+        {%- set c = states('sensor.current_version').split('.') %}
+        {%- set yc = c[0] | int %}
+        {%- set mc = c[1] | int %}
+        {%- set vc = c[2]  %}
+        {%- set l = states('sensor.latest_beta').split('.') %}
+        {%- set y = l[0] | int %}
+        {%- set m = l[1] | int %}
+        {%- set v = l[2] %}
         {{ (yc < y) | iif(true, (mc < m if yc == y else false) | iif(true, vc < v if mc == m else false)) }}
-      {%-  endif %}
+      {%- endif %}
     id: "beta"
 variables:
   current: "{{ states('sensor.current_version') }}"
