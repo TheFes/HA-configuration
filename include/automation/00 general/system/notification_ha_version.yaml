@@ -5,17 +5,31 @@ max_exceeded: silent
 trigger:
   - platform: template
     value_template: >
-      {{ 
-        states('sensor.current_version') < states('sensor.latest_stable') 
-        if not states('sensor.latest_stable') in ['unavailable', 'unknown' ]
-      }}
+      {%- if not states('sensor.latest_stable') in ['unavailable', 'unknown' ] %}
+        {%- set c = states('sensor.current_version').split('.') %}
+        {%- set yc = c[0] | int %}
+        {%- set mc = c[1] | int %}
+        {%- set vc = c[2]  %}
+        {%- set l = states('sensor.latest_stable').split('.') %}
+        {%- set y = l[0] | int %}
+        {%- set m = l[1] | int %}
+        {%- set v = l[2] %}
+        {{ (yc < y) | iif(true, (mc < m if yc == y else false) | iif(true, vc < v if mc == m else false) ) }}
+      {%- endif %}
     id: "stable"
   - platform: template
     value_template: >
-      {{ 
-        states('sensor.current_version') < states('latest_beta') 
-        if not states('sensor.latest_beta') in ['unavailable', 'unknown' ]
-      }}
+      {%- if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] %}
+        {%- set c = states('sensor.current_version').split('.') %}
+        {%- set yc = c[0] | int %}
+        {%- set mc = c[1] | int %}
+        {%- set vc = c[2]  %}
+        {%- set l = states('sensor.latest_beta').split('.') %}
+        {%- set y = l[0] | int %}
+        {%- set m = l[1] | int %}
+        {%- set v = l[2] %}
+        {{ (yc < y) | iif(true, (mc < m if yc == y else false) | iif(true, vc < v if mc == m else false)) }}
+      {%- endif %}
     id: "beta"
 variables:
   current: "{{ states('sensor.current_version') }}"
@@ -26,56 +40,36 @@ action:
     service: persistent_notification.dismiss
     data:
       notification_id: ha_update
-  - alias: "Stable or beta"
-    choose:
-      - conditions: "{{ trigger.id == 'stable' }}"
-        sequence:
-          - alias: "Create persistant notification"
-            service: persistent_notification.create
-            data:
-              title: "Beta update HA"
-              notification_id: ha_update
-              message: >
-                {% set b = states('sensor.potential_breaking_changes') %}
-                Versie _{{ stable }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
-                Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
-                [Changelog](https://github.com/home-assistant/core/releases/tag/{{ stable }})
-          - alias: "Send notification to phone"
-            service: notify.mobile_app_pixel_5
-            data:
-              title: "Beta update HA"
-              message: >
-                Versie {{ stable }} is nu beschikbaar. Je zit nu op {{ current }}.
-                Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
-              data:
-                channel: Home Assistant
-                ttl: 0
-                priority: high
-                actions:
-                  - action: "URI"
-                    title: "Changelog"
-                    uri: "https://github.com/home-assistant/core/releases/tag/{{ stable }}"
-      - conditions: "{{ trigger.id == 'beta' }}"
-        sequence:
-          - alias: "Create persistant notification"
-            service: persistent_notification.create
-            data:
-              title: "Beta update HA"
-              notification_id: ha_update
-              message: >
-                Versie _{{ beta }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
-                [Changelog](https://github.com/home-assistant/core/releases/tag/{{ beta }})
-          - alias: "Send notification to phone"
-            service: notify.mobile_app_pixel_5
-            data:
-              title: "Beta update HA"
-              message: >
-                Versie {{ beta }} is nu beschikbaar. Je zit nu op {{ current }}.
-              data:
-                channel: Home Assistant
-                ttl: 0
-                priority: high
-                actions:
-                  - action: "URI"
-                    title: "Changelog"
-                    uri: "https://github.com/home-assistant/core/releases/tag/{{ beta }}"
+  - alias: "Create persistant notification"
+    service: persistent_notification.create
+    data:
+      title: >
+        {{ 'Beta update HA' if trigger.id == 'beta' else 'Stable update HA' }}
+      notification_id: ha_update
+      message: >-
+        Versie _{{ stable if trigger.id == 'stable' else beta }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
+        [Changelog](https://github.com/home-assistant/core/releases/tag/{{ stable if trigger.id == 'stable' else beta }})
+        {% set b = states('sensor.potential_breaking_changes') | int %}
+        {{ 
+          ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
+          if trigger.id == 'stable'
+        }}
+  - alias: "Send notification to phone"
+    service: notify.mobile_app_pixel_5
+    data:
+      title: "Beta update HA"
+      message: >-
+        Versie {{ stable if trigger.id == 'stable' else beta }} is nu beschikbaar. Je zit nu op {{ current }}.
+        {% set b = states('sensor.potential_breaking_changes') | int %}
+        {{ 
+          ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
+          if trigger.id == 'stable'
+        }}
+      data:
+        channel: Home Assistant
+        ttl: 0
+        priority: high
+        actions:
+          - action: "URI"
+            title: "Changelog"
+            uri: "https://github.com/home-assistant/core/releases/tag/{{ stable if trigger.id == 'stable' else beta }}"
