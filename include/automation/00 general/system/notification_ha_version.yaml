@@ -5,7 +5,10 @@ max_exceeded: silent
 trigger:
   - platform: template
     value_template: >
-      {%- if not states('sensor.latest_stable') in ['unavailable', 'unknown' ] %}
+      {%- 
+        if not states('sensor.latest_stable') in ['unavailable', 'unknown' ] 
+        and not states('sensor.current version') in ['unavailable', 'unknown' ]
+      %}
         {%- set c = states('sensor.current_version').split('.') %}
         {%- set yc = c[0] | int %}
         {%- set mc = c[1] | int %}
@@ -19,7 +22,10 @@ trigger:
     id: "stable"
   - platform: template
     value_template: >
-      {%- if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] %}
+      {%- 
+        if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] 
+        and not states('sensor.current version') in ['unavailable', 'unknown' ]
+      %}
         {%- set c = states('sensor.current_version').split('.') %}
         {%- set yc = c[0] | int %}
         {%- set mc = c[1] | int %}
@@ -44,11 +50,11 @@ action:
     service: persistent_notification.create
     data:
       title: >
-        {{ 'Beta update HA' if trigger.id == 'beta' else 'Stable update HA' }}
+        {{ (trigger.id == 'beta') | iif('Beta update HA', 'Stable update HA') }}
       notification_id: ha_update
       message: >-
-        Versie _{{ stable if trigger.id == 'stable' else beta }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
-        [Changelog](https://github.com/home-assistant/core/releases/tag/{{ stable if trigger.id == 'stable' else beta }})
+        Versie _{{ (trigger.id == 'beta') | iif(beta, stable) }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
+        [Changelog](https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }})
         {% set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
           ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
@@ -57,9 +63,10 @@ action:
   - alias: "Send notification to phone"
     service: notify.mobile_app_pixel_5
     data:
-      title: "Beta update HA"
+      title: >
+        {{ (trigger.id == 'beta') | iif('Beta update HA', 'Stable update HA') }}
       message: >-
-        Versie {{ stable if trigger.id == 'stable' else beta }} is nu beschikbaar. Je zit nu op {{ current }}.
+        Versie {{ (trigger.id == 'beta') | iif(beta, stable) }} is nu beschikbaar. Je zit nu op {{ current }}.
         {% set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
           ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
@@ -72,4 +79,4 @@ action:
         actions:
           - action: "URI"
             title: "Changelog"
-            uri: "https://github.com/home-assistant/core/releases/tag/{{ stable if trigger.id == 'stable' else beta }}"
+            uri: "https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }}"
