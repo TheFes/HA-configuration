@@ -3,39 +3,79 @@ alias: "00 🔧 Notifactions for new HA version"
 mode: single
 max_exceeded: silent
 trigger:
-  - platform: state
-    entity_id: sensor.latest_version
-condition:
-  - alias: "Other version?"
-    condition: template
-    value_template: "{{ states('sensor.latest_version') != states('sensor.current_version') }}"
+  - platform: template
+    value_template: >
+      {{ 
+        states('sensor.current_version') < states('sensor.latest_stable') 
+        if not states('sensor.latest_stable') in ['unavailable', 'unknown' ]
+      }}
+    id: "stable"
+  - platform: template
+    value_template: >
+      {{ 
+        states('sensor.current_version') < states('latest_beta') 
+        if not states('sensor.latest_beta') in ['unavailable', 'unknown' ]
+      }}
+    id: "beta"
+variables:
+  current: "{{ states('sensor.current_version') }}"
+  stable: "{{ states('sensor.latest_stable') }}"
+  beta: "{{ states('sensor.latest_beta') }}"
 action:
   - alias: "Dismiss old notification"
     service: persistent_notification.dismiss
     data:
       notification_id: ha_update
-  - alias: "Create persistant notification"
-    service: persistent_notification.create
-    data:
-      title: "Update HA"
-      notification_id: ha_update
-      message: >
-        {% set b = states('sensor.potential_breaking_changes') %}
-        Versie _{{ states('sensor.latest_version') }}_ is nu beschikbaar.
-        Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
-        [Changelog](https://github.com/home-assistant/core/releases/tag/{{states('sensor.latest_version')}})
-  - alias: "Send notification to phone"
-    service: notify.mobile_app_pixel_5
-    data:
-      title: "Home Assistant upgrade"
-      message: >
-        Versie {{ states('sensor.latest_version') }} is nu beschikbaar.
-        Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
-      data:
-        channel: Home Assistant
-        ttl: 0
-        priority: high
-        actions:
-          - action: "URI"
-            title: "Changelog"
-            uri: "https://github.com/home-assistant/core/releases/tag/{{states('sensor.latest_version')}}"
+  - alias: "Stable or beta"
+    choose:
+      - conditions: "{{ trigger.id == 'stable' }}"
+        sequence:
+          - alias: "Create persistant notification"
+            service: persistent_notification.create
+            data:
+              title: "Beta update HA"
+              notification_id: ha_update
+              message: >
+                {% set b = states('sensor.potential_breaking_changes') %}
+                Versie _{{ stable }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
+                Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
+                [Changelog](https://github.com/home-assistant/core/releases/tag/{{ stable }})
+          - alias: "Send notification to phone"
+            service: notify.mobile_app_pixel_5
+            data:
+              title: "Beta update HA"
+              message: >
+                Versie {{ stable }} is nu beschikbaar. Je zit nu op {{ current }}.
+                Er zijn {{ 'geen' if b == 0 else b }} breaking change{{ '' if b == 1 else 's' }}.
+              data:
+                channel: Home Assistant
+                ttl: 0
+                priority: high
+                actions:
+                  - action: "URI"
+                    title: "Changelog"
+                    uri: "https://github.com/home-assistant/core/releases/tag/{{ stable }}"
+      - conditions: "{{ trigger.id == 'beta' }}"
+        sequence:
+          - alias: "Create persistant notification"
+            service: persistent_notification.create
+            data:
+              title: "Beta update HA"
+              notification_id: ha_update
+              message: >
+                Versie _{{ beta }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
+                [Changelog](https://github.com/home-assistant/core/releases/tag/{{ beta }})
+          - alias: "Send notification to phone"
+            service: notify.mobile_app_pixel_5
+            data:
+              title: "Beta update HA"
+              message: >
+                Versie {{ beta }} is nu beschikbaar. Je zit nu op {{ current }}.
+              data:
+                channel: Home Assistant
+                ttl: 0
+                priority: high
+                actions:
+                  - action: "URI"
+                    title: "Changelog"
+                    uri: "https://github.com/home-assistant/core/releases/tag/{{ beta }}"
