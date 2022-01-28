@@ -32,19 +32,19 @@ action:
       entity_id: "{{ screens_entityid }}"
   - variables:
       title: >
-        {% if screens_unavailable | count > 0 %}
+        {%-if screens_unavailable | count > 0 %}
           "LET OP! Niet alle screens beschikbaar"
-        {% else %}
+        {%-else %}
           "Screens gaan open"
-        {% endif %}
+        {%-endif %}
       message: >
-        {% if screens_unavailable | count > 0 and screens_closed > 0 %}
+        {%-if screens_unavailable | count > 0 and screens_closed > 0 %}
           {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
-        {% elif screens_unavailable | count > 0 %}
+        {%-elif screens_unavailable | count > 0 %}
           {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open
-        {% else %}
+        {%-else %}
           Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}
-        {% endif %}
+        {%-endif %}
   - alias: "Notificatie to phone Martijn"
     service: notify.mobile_app_pixel_5
     data:

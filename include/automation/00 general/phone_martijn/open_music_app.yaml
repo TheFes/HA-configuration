@@ -7,13 +7,13 @@ trigger:
     attribute: connected_paired_devices
 variables:
   bt_added: >
-    {% set bt_old_list = 
+    {%-set bt_old_list = 
       (
         trigger.from_state.attributes.connected_paired_devices 
           | replace('[', '') 
           | replace(']', '')
       ).split(',') %}
-    {% set bt_new_list =
+    {%-set bt_new_list =
       (
         trigger.to_state.attributes.connected_paired_devices 
           | replace('[', '') 

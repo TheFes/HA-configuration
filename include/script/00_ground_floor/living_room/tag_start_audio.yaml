@@ -36,17 +36,17 @@ start_audio_tag:
         media_content: >-
           {{ state_attr(player, 'media_content_id') | default('geen', true) }}
         player_resume: >
-          {% if is_state('media_player.huis_groep', 'playing') %}
+          {%-if is_state('media_player.huis_groep', 'playing') %}
             media_player.huis_groep
-          {% elif ((player in speaker_groups['media_player.zolder_groep']) and is_state('media_player.zolder_groep', 'playing')) %}
+          {%-elif ((player in speaker_groups['media_player.zolder_groep']) and is_state('media_player.zolder_groep', 'playing')) %}
             media_player.zolder_groep
-          {% elif ((player in speaker_groups['media_player.boven_groep']) and is_state('media_player.boven_groep', 'playing')) %}
+          {%-elif ((player in speaker_groups['media_player.boven_groep']) and is_state('media_player.boven_groep', 'playing')) %}
             media_player.boven_groep
-          {% elif ((player in speaker_groups['media_player.beneden_groep']) and is_state('media_player.beneden_groep', 'playing')) %}
+          {%-elif ((player in speaker_groups['media_player.beneden_groep']) and is_state('media_player.beneden_groep', 'playing')) %}
             media_player.beneden_groep
-          {% else %}
+          {%-else %}
             {{ player }}
-          {% endif %}
+          {%-endif %}
     - alias: "Set volume"
       service: media_player.volume_set
       target:

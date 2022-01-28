@@ -5,7 +5,7 @@ sensor:
     state_class: measurement
     device_class: power
     state: >-
-      {% 
+      {%-
         set reject_entities = 
               [
                 'sensor.samsung_soundbar_power_meter', 
@@ -13,7 +13,7 @@ sensor:
                 'sensor.wasmachinelamp_power'
               ] 
       %}
-      {% set power_sensors = states.sensor
+      {%-set power_sensors = states.sensor
                                 | selectattr('entity_id', 'search', '_power') 
                                 | rejectattr('entity_id', 'search', 'estimated_power')
                                 | rejectattr('entity_id', 'in', reject_entities)
@@ -30,7 +30,7 @@ sensor:
       }}
     attributes:
       entities_included: >
-        {% 
+        {%-
           set reject_entities = 
               [
                 'sensor.samsung_soundbar_power_meter', 
@@ -38,7 +38,7 @@ sensor:
                 'sensor.wasmachinelamp_power'
               ] 
         %}
-        {% set power_sensors = states.sensor
+        {%-set power_sensors = states.sensor
                                   | selectattr('entity_id', 'search', '_power') 
                                   | rejectattr('entity_id', 'search', 'estimated_power')
                                   | rejectattr('entity_id', 'in', reject_entities)

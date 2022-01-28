@@ -15,17 +15,17 @@ trigger:
 action:
   - variables:
       title: >
-        {% if trigger.id == 'docked' %}
+        {%-if trigger.id == 'docked' %}
           Stofzuiger is klaar
-        {% else %}
+        {%-else %}
           Probleem met stofzuiger
-        {% endif %}
+        {%-endif %}
       message: >
-        {% if trigger.id == 'docked' %}
+        {%-if trigger.id == 'docked' %}
           De stofzuiger is klaar en staat weer op z'n plek
-        {% else %}
+        {%-else %}
           Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}
-        {% endif %}
+        {%-endif %}
   - alias: "Notification to phones"
     service: notify.all_phones
     data:

@@ -55,7 +55,7 @@ action:
       message: >-
         Versie _{{ (trigger.id == 'beta') | iif(beta, stable) }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
         [Changelog](https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }})
-        {% set b = states('sensor.potential_breaking_changes') | int %}
+        {%-set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
           ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
           if trigger.id == 'stable'
@@ -67,7 +67,7 @@ action:
         {{ (trigger.id == 'beta') | iif('Beta update HA', 'Stable update HA') }}
       message: >-
         Versie {{ (trigger.id == 'beta') | iif(beta, stable) }} is nu beschikbaar. Je zit nu op {{ current }}.
-        {% set b = states('sensor.potential_breaking_changes') | int %}
+        {%-set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
           ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
           if trigger.id == 'stable'

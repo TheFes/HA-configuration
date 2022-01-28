@@ -4,21 +4,21 @@ dishwasher_remaining_time_routine:
   sequence:
     - variables:
         message: >
-          {% set time_set = states('input_datetime.dishwasher_program') | as_datetime %}
-          {% if now() < time_set | as_local and is_state('binary_sensor.dishwasher_active', 'on') %}
-            {% set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
-            {% set hours = (seconds / 3600) | int %}
-            {% set minutes = (((seconds / 3600) - hours) * 60) | int %}    
-            {% if hours == 0 %}
+          {%-set time_set = states('input_datetime.dishwasher_program') | as_datetime %}
+          {%-if now() < time_set | as_local and is_state('binary_sensor.dishwasher_active', 'on') %}
+            {%-set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
+            {%-set hours = (seconds / 3600) | int %}
+            {%-set minutes = (((seconds / 3600) - hours) * 60) | int %}    
+            {%-if hours == 0 %}
               "De vaatwasser is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar." 
-            {% else %}
+            {%-else %}
               "De vaatwasser is klaar rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }}."
-            {% endif %}
-          {% elif now() < time_set | as_local  %}
+            {%-endif %}
+          {%-elif now() < time_set | as_local  %}
             "De vaatwasser is nu elk moment klaar"
-          {% else %}
+          {%-else %}
             "De vaatwasser is niet actief "
-          {% endif %}
+          {%-endif %}
     - alias: "TTS for speaker voice command"
       service: script.google_home_say_voice
       data:

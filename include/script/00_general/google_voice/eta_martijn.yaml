@@ -4,16 +4,16 @@ eta_martijn_routine:
   sequence:
     - variables:
         message: >
-          {% set eta = (as_timestamp(now()) + 60 * states ('sensor.martijn_naar_huis') | float(0)) | timestamp_custom('%H:%M') %}
-          {% if is_state('person.martijn', 'home') %}
+          {%-set eta = (as_timestamp(now()) + 60 * states ('sensor.martijn_naar_huis') | float(0)) | timestamp_custom('%H:%M') %}
+          {%-if is_state('person.martijn', 'home') %}
             Martijn is al thuis
-          {% elif is_state_attr('proximity.martijn', 'dir_of_travel', 'towards') %}
+          {%-elif is_state_attr('proximity.martijn', 'dir_of_travel', 'towards') %}
             Martijn is om {{ eta }} thuis.
-          {% elif is_state_attr('proximity.martijn', 'dir_of_travel', 'away_from') %}
+          {%-elif is_state_attr('proximity.martijn', 'dir_of_travel', 'away_from') %}
             Martijn gaat de verkeerde kant op, maar als hij nu omdraait is ze om {{ eta }} thuis.
-          {% else %}
+          {%-else %}
             Martijn is nog niet onderweg, maar als hij nu vertrekt is ze om {{ eta }} thuis.           
-          {% endif %}
+          {%-endif %}
     - alias: "Notification phone Marleen"
       service: notify.mobile_app_marleen_app
       data:

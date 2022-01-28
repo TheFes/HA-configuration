@@ -31,6 +31,6 @@ action:
               title: "Updates HACS"
               notification_id: hacs_update
               message: >
-                {% for repo in state_attr(trigger.entity_id, 'repositories') %}
+                {%-for repo in state_attr(trigger.entity_id, 'repositories') %}
                   **{{ repo.display_name }}** _{{ repo["installed_version"] }}_ -> _{{ repo["available_version"] }}_
-                {% endfor %}
+                {%-endfor %}

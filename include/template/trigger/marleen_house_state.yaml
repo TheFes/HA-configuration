@@ -16,22 +16,22 @@ sensor:
   - name: House state Marleen
     unique_id: 7e2f3be0-a6f9-49eb-87aa-686915cb2eb5
     state: >
-      {% set last_change_min = (as_timestamp(now()) - as_timestamp(states.person.marleen.last_changed)) / 60 %}
-      {% set person = 'person.marleen' %}
-      {% if last_change_min > (60*12) and is_state(person, 'not_home') %}
+      {%-set last_change_min = (as_timestamp(now()) - as_timestamp(states.person.marleen.last_changed)) / 60 %}
+      {%-set person = 'person.marleen' %}
+      {%-if last_change_min > (60*12) and is_state(person, 'not_home') %}
         Al lang niet thuis
-      {% elif last_change_min > 10 and is_state(person, 'not_home') %}
+      {%-elif last_change_min > 10 and is_state(person, 'not_home') %}
         Niet thuis
-      {% 
+      {%-
         elif (last_change_min > 10 and is_state(person, 'home')) 
         or (is_state(person, 'home') and is_state('sensor.huis_status_marleen', 'Just Left'))
       %}
         Thuis
-      {% elif is_state(person, 'home') %}
+      {%-elif is_state(person, 'home') %}
         Net thuis
-      {% elif is_state(person, 'not_home') %}
+      {%-elif is_state(person, 'not_home') %}
         Net weg
-      {% else %}
+      {%-else %}
         {{ states(person) }}
-      {% endif %}
+      {%-endif %}
     icon: mdi:human-female
