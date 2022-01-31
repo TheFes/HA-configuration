@@ -1,0 +1,62 @@
+id: a1db4d50-ac02-435d-b413-00b7b21024b2
+alias: "F2 📻 Turn on Radio Veronica for Stenders"
+trigger:
+  - platform: time
+    at: "14:00:00"
+    id: veronica
+  - platform: time
+    at: "16:00:00"
+    id: radio_2
+condition:
+  - alias: "Weekday"
+    condition: template
+    value_template: "{{ now().weekday() <= 4 }}"
+action:
+  - alias: "Switch channel"
+    choose:
+      - conditions:
+          - alias: "Time for Radio Veronica"
+            condition: template
+            value_template: "{{ trigger.id == 'veronica' }}"
+          - alias: "Radio 2 playing"
+            condition: template
+            value_template: >
+              {{ 
+                state_attr('media_player.zolder_mini_martijn', 'media_artist') == 'NPO Radio 2'
+                or state_attr('media_player.zolder_mini_martijn', 'media_title') == 'NPO Radio 2'
+              }}
+        sequence:
+          - alias: "Turn on Radio Veronica"
+            service: media_player.play_media
+            target:
+              entity_id: >
+                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_mini_martijn') }}
+            data:
+              media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+              media_content_type: music
+              extra:
+                title: "Radio Veronica"
+                thumb: "https://cdn-profiles.tunein.com/s6717/images/logoq.jpg?t=2"
+      - conditions:
+          - alias: "And switch back"
+            condition: template
+            value_template: "{{ trigger.id == 'radio_2' }}"
+          - alias: "Veronica playing"
+            condition: template
+            value_template: >
+              {{ 
+                state_attr('media_player.zolder_mini_martijn', 'media_artist') == 'Radio Veronica'
+                or state_attr('media_player.zolder_mini_martijn', 'media_title') == 'Radio Veronica'
+              }}
+        sequence:
+          - alias: "Turn on Radio 2"
+            service: media_player.play_media
+            target:
+              entity_id: >
+                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_mini_martijn') }}
+            data:
+              media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+              media_content_type: music
+              extra:
+                title: "NPO Radio 2"
+                thumb: "/local/pictures/radio/npo_radio_2.png"
