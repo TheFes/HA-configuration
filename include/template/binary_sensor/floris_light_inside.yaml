@@ -4,5 +4,3 @@ binary_sensor:
     device_class: light
     state: >-
       {{ states('sensor.floris_lux') | float(0) > 10 }}
-    delay_off: "00:03:00"
-    delay_on: "00:03:00"
