@@ -9,14 +9,6 @@ action:
   - alias: "Which click type"
     choose:
       - conditions:
-          - alias: "Short"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1002 }}"
-        sequence:
-          - service: light.toggle
-            target:
-              entity_id: light.keukenspotjes
-      - conditions:
           - alias: "Long"
             condition: template
             value_template: "{{ trigger.event.data.event == 1001 }}"
