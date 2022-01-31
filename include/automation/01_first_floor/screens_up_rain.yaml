@@ -9,15 +9,21 @@ trigger:
   - platform: event
     event_type: automation_reloaded
 variables:
-  screens_closed: "{{ expand('group.screens') | rejectattr('attributes.current_position', 'eq', 100.0) | map(attribute='name') | list }}"
-  screens_entityid: "{{ expand('group.screens') | rejectattr('attributes.current_position', 'eq', 100.0) | map(attribute='entity_id') | list }}"
+  down_entity_id: >
+    {{ 
+      expand('group.screens') | rejectattr('state', 'in', ['unavailable', 'unknown', none]) 
+                              | rejectattr('attributes.current_position', 'eq', 100.0)  
+                              | map(attribute='entity_id') 
+                              | list 
+    }}
+  screens_down: "{{ expand(down_entity_id) | map(attribute='name') | list }}"
   screens_unavailable: "{{ expand('group.screens') | selectattr('state', 'eq', 'unavailable') | map(attribute='name') | list }}"
 condition:
   - condition: or
     conditions:
       - alias: "Screens open?"
         condition: template
-        value_template: "{{ screens_closed | count > 0 }}"
+        value_template: "{{ screens_down | count > 0 }}"
       - alias: "Screens unavailable?"
         condition: template
         value_template: "{{ screens_unavailable | count > 0 }}"
@@ -26,11 +32,17 @@ condition:
     entity_id: sensor.br_precipitation_forecast_total
     above: 0
 action:
-  - alias: "Screens up"
-    service: cover.open_cover
-    target:
-      entity_id: "{{ screens_entityid }}"
-  - variables:
+  - alias: "Open screens"
+    choose:
+      - conditions: "{{ screens_down | count > 0 }}"
+        sequence:
+          - alias: "Screens up"
+            service: cover.open_cover
+            target:
+              entity_id: "{{ down_entity_id }}"
+  - alias: "Notificatie to phone Martijn"
+    service: notify.mobile_app_pixel_5
+    data:
       title: >
         {%- if screens_unavailable | count > 0 %}
           "LET OP! Niet alle screens beschikbaar"
@@ -38,18 +50,13 @@ action:
           "Screens gaan open"
         {%- endif %}
       message: >
-        {%- if screens_unavailable | count > 0 and screens_closed > 0 %}
-          {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, deze {{ 'gaan' if (screens_closed | count > 1) else 'gaat' }} open: {{ screens_closed | join(', ') }}"
+        {%- if screens_unavailable | count > 0 and screens_down | count > 0 %}
+          {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, deze {{ iff(screens_down | count > 1, 'gaan', 'gaat') }} open: {{ screens_down | join(', ') }}"
         {%- elif screens_unavailable | count > 0 %}
-          {{ screens_unavailable | join(', ') }} {{ 'zijn' if (screens_unavailable | count > 1) else 'is' }} niet beschikbaar, er gaan geen screens open
+          {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, er gaan geen screens open
         {%- else %}
-          Er komt regen aan, deze screens gaan nu open: {{ screens_closed | join(', ') }}
+          Er komt regen aan, deze screens gaan nu open: {{ screens_down | join(', ') }}
         {%- endif %}
-  - alias: "Notificatie to phone Martijn"
-    service: notify.mobile_app_pixel_5
-    data:
-      title: "{{ title }}"
-      message: "{{ message }}"
       data:
         channel: Screens
         ttl: 0
