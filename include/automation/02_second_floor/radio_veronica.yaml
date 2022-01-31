@@ -2,7 +2,7 @@ id: a1db4d50-ac02-435d-b413-00b7b21024b2
 alias: "F2 📻 Turn on Radio Veronica for Stenders"
 trigger:
   - platform: time
-    at: "14:00:00"
+    at: "14:03:00"
     id: veronica
   - platform: time
     at: "16:00:00"
@@ -32,7 +32,7 @@ action:
               entity_id: >
                 {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_mini_martijn') }}
             data:
-              media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+              media_content_id: "https://playerservices.streamtheworld.com/api/livestream-redirect/VERONICAAAC.aac?dist=tunein&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY0MzYzMjYxNywiaXNzIjoidGlzcnYifQ.OlnnADm_zLoI56zh6I0ITMdOEvwLcWs1X-T8HRhiccg"
               media_content_type: music
               extra:
                 title: "Radio Veronica"
