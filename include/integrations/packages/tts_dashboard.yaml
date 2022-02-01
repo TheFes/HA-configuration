@@ -94,33 +94,39 @@ script:
       default_selection: "Huis groep"
       reset_booleans: True
     sequence:
-      - service: script.turn_on
-        target:
-          entity_id: script.google_home_say
+      - alias: "Send TTS using Google Home Resume script"
+        service: script.google_home_resume
         data:
-          variables: >
-            {%- set volume_set = is_state('input_boolean.tts_volume', 'on') %}
-            {%- set volume = states('input_number.tts_volume') | float(25) / 100 | round(2) %}
-            {%- set message = states('input_text.tts_message') %}
-            {%- if is_state('input_select.dropdown_google_say', 'Geavanceerd kiezen') %}
-              {%- set target = (expand(boolean) 
-                                | selectattr('state', 'eq', 'on') 
-                                | map(attribute='entity_id') 
-                                | join(', ')
-                                | replace('input_boolean', 'media_player')).split(', ')
-              %}
-            {%- else %}
-              {%- set target = states.media_player 
-                                | selectattr('attributes.friendly_name', 'eq', states('input_select.dropdown_google_say')) 
-                                | map(attribute='entity_id') 
-                                | join
-              %}
-            {%- endif %}
-            {%- if volume_set %}
-              {{ dict( tts_message = message, tts_target = target, tts_volume = volume ) }}
-            {%- else %}
-              {{ dict( tts_message = message, tts_target = target ) }}
-            {%- endif %}
+          target:
+            entity_id: "{{ (player | replace(' ', '')).split(',') if player is string else player }}"
+          action:
+            - alias: "Send TTS"
+              service: script.send_tts
+              data: >
+                {%- set volume_set = is_state('input_boolean.tts_volume', 'on') %}
+                {%- set volume = states('input_number.tts_volume') | float(25) / 100 | round(2) %}
+                {%- set message = states('input_text.tts_message') %}
+                {%- if is_state('input_select.dropdown_google_say', 'Geavanceerd kiezen') %}
+                  {%- set target = (expand(boolean) 
+                                    | selectattr('state', 'eq', 'on') 
+                                    | map(attribute='entity_id') 
+                                    | join(', ')
+                                    | replace('input_boolean', 'media_player')).split(', ')
+                  %}
+                {%- else %}
+                  {%- set target = [
+                                      states.media_player 
+                                        | selectattr('attributes.friendly_name', 'eq', states('input_select.dropdown_google_say')) 
+                                        | map(attribute='entity_id') 
+                                        | join 
+                                    ]
+                  %}
+                {%- endif %}
+                {%- if volume_set %}
+                  {{ dict( tts_message = message, tts_target_list = target, tts_volume = volume ) }}
+                {%- else %}
+                  {{ dict( tts_message = message, tts_target_list = target ) }}
+                {%- endif %}
       - alias: "Reset volume"
         choose:
           - conditions: "{{ True if default_volume else False }}"
