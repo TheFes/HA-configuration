@@ -31,37 +31,31 @@ action:
         ttl: 0
         priority: high
         notification_icon: mdi:party-popper
-  - alias: "TTS for Kitchen Hub"
-    service: script.turn_on
-    target:
-      entity_id: script.google_home_say
+  - alias: "Send TTS using Google Home Resume script"
+    service: script.google_home_resume
     data:
-      variables:
-        tts_message: "Hoera! Marleen is bijna thuis!"
-        tts_target: media_player.keuken_hub
-        tts_volume: 35
-  - condition: or
-    conditions:
-      - alias: "Music playing on attic?"
-        condition: state
-        entity_id:
-          - media_player.zolder_mini_martijn
-          - media_player.zolder_mini_marleen
-        state: "playing"
-      - alias: "Martijn op zolder"
-        condition: state
-        entity_id: sensor.location_phone_martijn
-        state: "Zolder"
-      - alias: "Marleen op zolder"
-        condition: state
-        entity_id: sensor.location_phone_marleen
-        state: "Zolder"
-  - alias: "TTS voor Zolder Martijn"
-    service: script.turn_on
-    target:
-      entity_id: script.google_home_say
-    data:
-      variables:
-        tts_message: "Hoera! Marleen is bijna thuis!"
-        tts_target: media_player.zolder_mini_martijn
-        tts_volume: 35
+      target:
+        entity_id: >
+          {% 
+            if is_state('media_player.zolder_mini_martijn', 'playing')
+            or is_state('sensor.location_phone_martijn', 'Zolder') 
+          %}
+            [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
+          {% else %}
+            [ 'media_player.keuken_hub' ]
+          {% endif %}
+      action:
+        - alias: "Send TTS message"
+          service: script.send_tts
+          data:
+            tts_message: "Hoera! Marleen is bijna thuis!"
+            tts_target_list: >
+              {% 
+                if is_state('media_player.zolder_mini_martijn', 'playing')
+                or is_state('sensor.location_phone_martijn', 'Zolder') 
+              %}
+                [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
+              {% else %}
+                [ 'media_player.keuken_hub' ]
+              {% endif %}
+            tts_volume: 35

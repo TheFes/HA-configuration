@@ -3,50 +3,7 @@ start_audio_tag:
   icon: mdi:music
   mode: restart
   max_exceeded: silent
-  variables:
-    speaker_groups:
-      media_player.huis_groep:
-        - media_player.keuken_hub
-        - media_player.slaapkamer_hub
-        - media_player.pepijn_mini
-        - media_player.woonkamer_mini
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
-        - media_player.floris_mini
-      media_player.boven_groep:
-        - media_player.pepijn_mini
-        - media_player.woonkamer_mini
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
-        - media_player.floris_mini
-      media_player.beneden_groep:
-        - media_player.keuken_hub
-        - media_player.slaapkamer_hub
-      media_player.zolder_groep:
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
   sequence:
-    - variables:
-        input_boolean: "{{ player | replace('media_player.', 'input_boolean.') }}"
-        volume_old: "{{ state_attr(player, 'volume_level') | default(0.25, true) }}"
-        spotify: >-
-          {{ is_state_attr(player, 'app_name', 'Spotify') }}
-        radio: >-
-          {{ is_state_attr(player, 'app_name', 'TuneIn Free') or is_state_attr(player, 'media_content_id', 'http://icecast.omroep.nl/radio2-bb-aac') }}
-        media_content: >-
-          {{ state_attr(player, 'media_content_id') | default('geen', true) }}
-        player_resume: >
-          {%- if is_state('media_player.huis_groep', 'playing') %}
-            media_player.huis_groep
-          {%- elif ((player in speaker_groups['media_player.zolder_groep']) and is_state('media_player.zolder_groep', 'playing')) %}
-            media_player.zolder_groep
-          {%- elif ((player in speaker_groups['media_player.boven_groep']) and is_state('media_player.boven_groep', 'playing')) %}
-            media_player.boven_groep
-          {%- elif ((player in speaker_groups['media_player.beneden_groep']) and is_state('media_player.beneden_groep', 'playing')) %}
-            media_player.beneden_groep
-          {%- else %}
-            {{ player }}
-          {%- endif %}
     - alias: "Set volume"
       service: media_player.volume_set
       target:
@@ -87,32 +44,3 @@ start_audio_tag:
                 )
                 and is_state('binary_senser.script_google_home_say_active', 'off')
               }}
-    - alias: "Short delay"
-      delay: 1
-    - alias: "Set volume to old volume"
-      service: media_player.volume_set
-      target:
-        entity_id: "{{ player }}"
-      data:
-        volume_level: "{{ volume_old | float(0.25) }}"
-    - alias: "Turn off media player"
-      service: media_player.turn_off
-      target:
-        entity_id: "{{ player }}"
-    - alias: "Resume old stream?"
-      choose:
-        - conditions: "{{ spotify }}"
-          sequence:
-            - alias: "Spotify hervatten"
-              service: spotcast.start
-              data:
-                entity_id: "{{ player_resume }}"
-        - conditions: "{{ radio }}"
-          sequence:
-            - alias: "Radio hervatten"
-              service: media_player.play_media
-              target:
-                entity_id: "{{ player_resume }}"
-              data:
-                media_content_id: "{{ media_content }}"
-                media_content_type: "music"

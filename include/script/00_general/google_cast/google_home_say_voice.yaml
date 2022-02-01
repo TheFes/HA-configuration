@@ -27,13 +27,13 @@ google_home_say_voice:
                                           dict(
                                             entity_id = entity.entity_id,
                                             friendly_name = entity.attributes.friendly_name,
-                                            media_content_id = entity.attributes.media_content_id | default('no media_content'),
-                                            media_title = entity.attributes.media_title | default('no title'),
-                                            media_artist = entity.attributes.media_artist | default('no artist'),
-                                            media_content_type = entity.attributes.media_content_type | default('no type'),
-                                            app_name = entity.attributes.app_name | default('no app'),
-                                            entity_picture = entity.attributes.entity_picture | default('no pic'),
-                                            volume_level = entity.attributes.volume_level | round(2) 
+                                            media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                            media_title = entity.attributes.get('media_title', 'no title'),
+                                            media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                            media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                            app_name = entity.attributes.get('app_name', 'no app'),
+                                            entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                            volume_level = entity.attributes.get('volume_level', 0.25) | round(2)
                                             )
                                         ] 
             %}
@@ -67,23 +67,30 @@ google_home_say_voice:
             | count > 0 
         }}
     - variables:
-        tts_target: >
+        target: >
           {{ 
             expand(states.media_player)
               | selectattr('attributes.media_title', 'eq', check_for_title)
               | map(attribute='entity_id') 
-              | join
+              | list
           }}
     - alias: "TTS"
-      service: script.google_home_say
+      service: script.google_home_resume
       data:
-        voice_tts_target: "{{ tts_target }}"
-        tts_message: "{{ tts_message }}"
+        voice_target: "{{ target }}"
         tts_volume: "{{ tts_volume if tts_volume is defined else undefined }}"
-        speaker_group_split: "{{ speaker_group_split if speaker_group_split is defined else undefined }}"
-        voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', tts_target) | list }}"
+        voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', tts_target[0] ) | list }}"
         voice_groups: "{{ entity_playing | select('in', speaker_groups) }}"
         voice_spotcast: >
           {%- set friendly_name = expand(tts_target) | map(attribute='attributes.friendly_name') | join %}
           {%- set spotify_entity =  spotify_data | selectattr('source', 'eq', friendly_name) | map(attribute='entity_id') | join %}
           {{ spotify_entity | replace('media_player.spotify_', '') if spotify_entity | count > 0 else primary_spotcast }}
+        target:
+          entity_id: "{{ target }}"
+        action:
+          - alias: "Send TTS message"
+            service: script.send_tts
+            data:
+              tts_message: "{{ tts_message }}"
+              tts_target_list: "{{ target }}"
+              tts_volume: "{{ tts_volume if tts_volume is defined else undefined }}"
