@@ -1,0 +1,27 @@
+send_tts:
+  alias: "00 📢 Send TTS"
+  description: Script for TTS messages to Google Home speakers
+  icon: mdi:bullhorn
+  mode: parallel
+  sequence:
+    - alias: "Send TTS message"
+      service: tts.google_cloud_say
+      target:
+        entity_id: "{{ tts_target_list }}"
+      data:
+        message: "{{ tts_message }}"
+    - alias: "Set volume to TTS volume if set"
+      choose:
+        - conditions:
+            - alias: "TTS Volume set?"
+              condition: template
+              value_template: "{{ True if tts_volume else False }}"
+          sequence:
+            - alias: "Wait first tts_target is idle or off (will prevent volume change of stream in case there is only one target)"
+              wait_template: "{{ states(tts_target_list[0]) in ['idle', 'off'] }}"
+            - alias: "Apply TTS volume"
+              service: media_player.volume_set
+              target:
+                entity_id: "{{ tts_target_list }}"
+              data:
+                volume_level: "{{ tts_volume if tts_volume < 1 else tts_volume / 100 }}"
