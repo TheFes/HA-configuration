@@ -2,8 +2,8 @@
 # Supports resuming of Spotify and online streams (like TuneIn)
 # for more details: https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896
 #
-google_home_resume:
-  alias: "00 🔊 Google Home Resume"
+google_home_resume_wip:
+  alias: "00 🔊 Google Home Resume WIP"
   description: Script for resuming Google Home speakers
   icon: mdi:cast-audio
   mode: parallel
@@ -55,6 +55,7 @@ google_home_resume:
   sequence:
     - alias: "Set variables to be used in the script"
       variables:
+        start_time: "{{ now() }}"
         speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
         service_calls: >
           {%- set ns = namespace(service = []) %}
@@ -71,7 +72,8 @@ google_home_resume:
             {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
             {%- set ns = namespace(entities = []) %}
             {%- for device in devices %}
-              {%- set ids = device_attr(device, 'identifiers') | list | first %}
+              {%- set ids = device_attr(device, 'identifiers') %}
+              {% set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
               {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
                 {%- set ns.entities = ns.entities + device_entities(device) %}
               {%- endif %}
@@ -115,9 +117,9 @@ google_home_resume:
                 {%- set ns.device = device + ns.device%}
                 {%- set ns.area = area + ns.area %}
             {%- endfor %}
-            {%- set area_list = ns.area + (area_list if area_list else []) %}
-            {%- set device_list = ns.device + (device_list if device_list else []) %}
-            {%- set entity_list = ns.entity + (entity_list if entity_list else []) %}
+            {%- set area_list = ns.area + (area_list if area_list is defined else []) %}
+            {%- set device_list = ns.device + (device_list if device_list is defined else []) %}
+            {%- set entity_list = ns.entity + (entity_list if entity_list is defined else []) %}
           {# create entity list based on device/area input #}
             {# determine cast entities of areas #}
               {%- set ns = namespace(area_cast = []) %}
@@ -135,7 +137,7 @@ google_home_resume:
               {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
           {# create list with all entities #}
             {%- set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
-          {# avoid to resume both complete speaker groups and single members #}
+          {# avoid to target both complete speaker groups and single members #}
             {%- set target_group =  total_list | select('in', speaker_group_list) | list %}
             {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
             {%- set ns = namespace(groupmembers = []) %}
@@ -151,7 +153,7 @@ google_home_resume:
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {%- if voice_media_player_data is defined %}
-              {{ voice_media_player_data }}
+              {{ voice_media_player_data | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_active', 'entities')) }}
             {%- else %}
               {# determine which media_players are playing and store attributes#}
                 {%- 
@@ -160,7 +162,7 @@ google_home_resume:
                                               | map(attribute='entity_id') 
                                               | list  
                 %}
-          {# determine which Google Home speakers groups are playing #}
+              {# determine which Google Home speakers groups are playing #}
                 {%- 
                   set all_speaker_groups_playing =  voice_groups | default(
                                                     all_players_playing 
@@ -253,6 +255,41 @@ google_home_resume:
             {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {%- endfor %}
           {{ ns.info }}
+    - alias: "Send log message about wrong actions"
+      choose:
+        - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
+          sequence:
+            service: system_log.write
+            data:
+              level: "{{ iif(service_calls | count == 0, 'error', 'warning') }}"
+              logger: "{{ this.entity_id }}"
+              message: >
+                {%- if service_calls | count == 0 %}
+                  There were no service calls defined, no actions are performed.
+                  The script has been aborted
+                {%- elif no_service_count == 1 %}
+                  You added an action which is not a service call to the Google
+                  Cast Resume script. This action was ignored.
+                {%- else %}
+                  You added {{ no_service_count }} actions which are not service calls 
+                  to the Google Cast Resume script. These were ignored.
+                {%- endif %}
+    - alias: "Are there any service calls to perform"
+      condition: template
+      value_template: "{{ service_calls | count != 0 }}"
+    - alias: "Create group with targeted entities"
+      service: group.set
+      data:
+        object_id: resume_active
+        name: "Entities currently active with Google Home Resume script"
+        icon: mdi:autorenew
+        entities: >
+          {% set current = state_attr('group.resume_active', 'entity_id') %}
+          {{ 
+            (
+              ([] if current == none else current | list) + players_to_resume | map(attribute='entity_id') | list
+            ) | unique | list 
+          }}
     - alias: "Turn non playing entities on if needed"
       choose:
         - conditions: "{{ target_not_playing | count > 0 }}"
@@ -289,22 +326,6 @@ google_home_resume:
           - service: "{{ service_calls[repeat.index -1].service }}"
             target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
             data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
-    - alias: "Send warning about incorrect actions"
-      choose:
-        - conditions: "{{ no_service_count > 0 }}"
-          sequence:
-            - alias: "Create persistant notification"
-              service: persistent_notification.create
-              data:
-                title: "Uhoh"
-                message: >
-                  {%- if no_service_count == 1 %}
-                    You added an action which is not a service call to the Google
-                    Cast Resume script. This action was ignored.
-                  {%- else %}
-                    You added {{ no_service_count }} actions which are not service calls 
-                    to the Google Cast Resume script. These were ignored.
-                  {%- endif %}
     - alias: "Short delay if required"
       choose:
         - conditions:
@@ -339,7 +360,7 @@ google_home_resume:
                           (player.media_content_id).startswith('http')
                         }}
                       spotcast_account: >
-                        {%- if voice_spotcast %}
+                        {%- if voice_spotcast is defined %}
                           {{ voice_spotcast }}
                         {%- else %}
                           {%- if player.app_name != 'Spotify' %}
@@ -363,70 +384,86 @@ google_home_resume:
                           {%- endif %}
                             {{ spotcast if spotcast else primary_spotcast }}
                         {%- endif %}
-                  - alias: "Wait until player is idle again"
-                    wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
-                  - alias: "Set volume to old volume if needed"
+                  - alias: "Resume needed?"
                     choose:
                       - conditions:
-                          - alias: "Volume restore needed"
+                          - alias: "State changed since script started?"
                             condition: template
-                            value_template: >
-                              {{
-                                player.volume_level | round(2, default=0) 
-                                != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
-                              }}
+                            value_template: "{{ states[player.entity_id].last_changed > as_datetime(start_time) }}"
                         sequence:
-                          - alias: "Set volume back to old state"
-                            service: media_player.volume_set
-                            target:
-                              entity_id: "{{ player.entity_id }}"
-                            data:
-                              volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
-                  - alias: "Resume playing"
-                    choose:
-                      - alias: "Spotify?"
-                        conditions: "{{ spotify }}"
-                        sequence:
-                          - alias: "Primary spotcast account?"
+                          - alias: "Wait until player is idle again"
+                            wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                          - alias: "Set volume to old volume if needed"
                             choose:
-                              - conditions: "{{ spotcast_account == primary_spotcast }}"
+                              - conditions:
+                                  - alias: "Volume restore needed"
+                                    condition: template
+                                    value_template: >
+                                      {{
+                                        player.volume_level | round(2, default=0) 
+                                        != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+                                      }}
                                 sequence:
-                                  - alias: "Resume spotify with primary spotcast account"
-                                    service: spotcast.start
-                                    data:
+                                  - alias: "Set volume back to old state"
+                                    service: media_player.volume_set
+                                    target:
                                       entity_id: "{{ player.entity_id }}"
-                                      force_playback: true
-                            default:
-                              - alias: "Resume spotify with specific account"
-                                service: spotcast.start
-                                data:
-                                  entity_id: "{{ player.entity_id }}"
-                                  account: "{{ spotcast_account }}"
-                                  force_playback: true
-                      - alias: "Stream?"
-                        conditions: "{{ stream }}"
-                        sequence:
-                          - alias: "Resume stream"
-                            service: media_player.play_media
-                            target:
-                              entity_id: "{{ player.entity_id }}"
-                            data:
-                              media_content_id: >
-                                {{ player.media_content_id }}
-                              media_content_type: "music"
-                              extra:
-                                title: >
-                                  {%- if player.app_name.startswith('TuneIn') %}
-                                    {{ player.media_artist }}
-                                  {%- else %}
-                                    {{ player.media_title }}
-                                  {%- endif %}
-                                thumb: >
-                                  {{
-                                    fixed_picture[player.media_artist] | default(player.entity_picture)
-                                    if  fixed_picture
-                                    else player.entity_picture
-                                  }}
+                                    data:
+                                      volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
+                          - alias: "Resume playing"
+                            choose:
+                              - alias: "Spotify?"
+                                conditions: "{{ spotify }}"
+                                sequence:
+                                  - alias: "Primary spotcast account?"
+                                    choose:
+                                      - conditions: "{{ spotcast_account == primary_spotcast }}"
+                                        sequence:
+                                          - alias: "Resume spotify with primary spotcast account"
+                                            service: spotcast.start
+                                            data:
+                                              entity_id: "{{ player.entity_id }}"
+                                              force_playback: true
+                                    default:
+                                      - alias: "Resume spotify with specific account"
+                                        service: spotcast.start
+                                        data:
+                                          entity_id: "{{ player.entity_id }}"
+                                          account: "{{ spotcast_account }}"
+                                          force_playback: true
+                              - alias: "Stream?"
+                                conditions: "{{ stream }}"
+                                sequence:
+                                  - alias: "Resume stream"
+                                    service: media_player.play_media
+                                    target:
+                                      entity_id: "{{ player.entity_id }}"
+                                    data:
+                                      media_content_id: >
+                                        {{ player.media_content_id }}
+                                      media_content_type: "music"
+                                      extra:
+                                        title: >
+                                          {%- if player.app_name.startswith('TuneIn') %}
+                                            {{ player.media_artist }}
+                                          {%- else %}
+                                            {{ player.media_title }}
+                                          {%- endif %}
+                                        thumb: >
+                                          {{
+                                            fixed_picture[player.media_artist] | default(player.entity_picture)
+                                            if  fixed_picture
+                                            else player.entity_picture
+                                          }}
+                  - alias: "Remove entity from group"
+                    service: group.set
+                    data:
+                      object_id: resume_active
+                      name: "Entities currently active with Google Home Resume script"
+                      icon: mdi:autorenew
+                      entities: >
+                        {% set current = state_attr('group.resume_active', 'entity_id') %}
+                        {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
     - alias: "Restore volume of non playing entities"
       choose:
         - conditions:
