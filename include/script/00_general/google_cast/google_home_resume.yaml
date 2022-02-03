@@ -78,7 +78,7 @@ google_home_resume:
                 {%- set ns.entities = ns.entities + device_entities(device) %}
               {%- endif %}
             {%- endfor %}
-            {%- set cast_entities = ns.entities %}
+            {%- set cast_entities = ns.entities + speaker_group_list %}
           {# create target lists #}
           {%- if target is defined %}
             {# create lists based on target input #}
@@ -218,13 +218,14 @@ google_home_resume:
                                                 dict(
                                                   entity_id = entity.entity_id,
                                                   friendly_name = entity.attributes.friendly_name, 
-                                                  media_content_id = entity.attributes.media_content_id | default('no media_content'),
-                                                  media_title = entity.attributes.media_title | default('no title'),
-                                                  media_artist = entity.attributes.media_artist | default('No artist'),
-                                                  media_content_type = entity.attributes.media_content_type | default('no type'),
-                                                  app_name = entity.attributes.app_name | default('no app'),
-                                                  entity_picture = entity.attributes.entity_picture | default('no pic'),
-                                                  volume_level = entity.attributes.volume_level | round(2) 
+                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                  media_title = entity.attributes.get('media_title', 'no title'),
+                                                  media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                                  media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                                  app_name = entity.attributes.get('app_name', 'no app'),
+                                                  entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                                  volume_level = entity.attributes.get('volume_level', 0.25) | round(2),
+                                                  media_position = (now() - entity.attributes.get('media_position_updated_at', now()) + entity.attributes.get('media_position', 0)).seconds
                                                   )
                                               ] 
                   %}
@@ -355,6 +356,8 @@ google_home_resume:
                       player: "{{ players_to_resume[repeat.index - 1] }}"
                       spotify: >
                         {{ player.app_name == 'Spotify' }}
+                      youtube: >
+                        {{ player.app_name in ['YouTube', 'YouTube Music'] }}
                       stream: >
                         {{ 
                           (player.media_content_id).startswith('http')
@@ -412,6 +415,30 @@ google_home_resume:
                                       volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
                           - alias: "Resume playing"
                             choose:
+                              - alias: "YouTube?"
+                                conditions: "{{ youtube }}"
+                                sequence:
+                                  - alias: "Play video"
+                                    service: media_player.play_media
+                                    target:
+                                      entity_id: "{{ player.entity_id }}"
+                                    data:
+                                      media_content_type: cast
+                                      media_content_id: '
+                                        {
+                                        "app_name": "youtube",
+                                        "media_id": "{{ player.media_content_id }}"
+                                        }'
+                                  - alias: "Wait until video is playing"
+                                    wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
+                                  - delay: 3
+                                  - alias: "Seek"
+                                    service: media_player.media_seek
+                                    target:
+                                      entity_id: "{{ player.entity_id }}"
+                                    data:
+                                      seek_position: >
+                                        {{ [0, media_position - 2] | max }}
                               - alias: "Spotify?"
                                 conditions: "{{ spotify }}"
                                 sequence:
