@@ -177,10 +177,10 @@ class Monitor(object):
             raise core_exc.MonitorUnavailableError(self._device_id, msg) from exc
         raise core_exc.MonitorRefreshError(self._device_id, msg) from exc
 
-    def _refresh_token(self):
+    def _refresh_auth(self):
         """Refresh the devices shared client auth token"""
         with Monitor._client_lock:
-            self._client.session.refresh_auth()
+            self._client.refresh_auth()
 
     def _refresh_client(self):
         """Refresh the devices shared client"""
@@ -288,7 +288,7 @@ class Monitor(object):
 
         if Monitor._client_connected:
             # try to refresh auth token before it expires
-            self._refresh_token()
+            self._refresh_auth()
         else:
             self._disconnected = True
             if not self._refresh_client():
@@ -388,6 +388,12 @@ class DeviceInfo(object):
         self._device_type = None
         self._platform_type = None
         self._network_type = None
+
+    def as_dict(self):
+        """Return the data dictionary"""
+        if not self._data:
+            return {}
+        return self._data.copy()
 
     def _get_data_key(self, keys):
         for key in keys:
@@ -528,6 +534,12 @@ class ModelInfo(object):
     @property
     def is_info_v2(self):
         return False
+
+    def as_dict(self):
+        """Return the data dictionary"""
+        if not self._data:
+            return {}
+        return self._data.copy()
 
     @property
     def model_type(self):
@@ -842,6 +854,12 @@ class ModelInfoV2(object):
     @property
     def is_info_v2(self):
         return True
+
+    def as_dict(self):
+        """Return the data dictionary"""
+        if not self._data:
+            return {}
+        return self._data.copy()
 
     @property
     def model_type(self):
