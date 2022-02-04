@@ -7,7 +7,9 @@ trigger:
       - binary_sensor.laptop_werk_martijn_lan
       - binary_sensor.laptop_werk_martijn_wifi
       - media_player.zolder_mini_martijn
-    to: "off"
+    to:
+      - "idle"
+      - "off"
     for: "00:30:00"
 condition:
   - alias: "Everyting off?"
@@ -17,7 +19,9 @@ condition:
       - binary_sensor.laptop_werk_martijn_lan
       - binary_sensor.laptop_werk_martijn_wifi
       - media_player.zolder_mini_martijn
-    state: "off"
+    state:
+      - "idle"
+      - "off"
 action:
   - alias: "Turn off plug"
     service: switch.turn_off
