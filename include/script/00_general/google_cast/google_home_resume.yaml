@@ -225,7 +225,7 @@ google_home_resume:
                                                   app_name = entity.attributes.get('app_name', 'no app'),
                                                   entity_picture = entity.attributes.get('entity_picture', 'no pic'),
                                                   volume_level = entity.attributes.get('volume_level', 0.25) | round(2),
-                                                  media_position = (now() - entity.attributes.get('media_position_updated_at', now()) + entity.attributes.get('media_position', 0)).seconds
+                                                  media_position = (now() - entity.attributes.get('media_position_updated_at', now()) + timedelta(seconds=entity.attributes.get('media_position', 0))).seconds
                                                   )
                                               ] 
                   %}
