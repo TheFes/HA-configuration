@@ -473,19 +473,20 @@ google_home_resume:
                                       media_content_id: >
                                         {{ player.media_content_id }}
                                       media_content_type: "music"
-                                      extra:
-                                        title: >
-                                          {%- if player.app_name.startswith('TuneIn') %}
-                                            {{ player.media_artist }}
+                                      extra: >
+                                        {%- if fixed_picture %}
+                                          {%- if player.media_artist in fixed_picture %}
+                                            {%- set p = fixed_picture[player.media_artist] %}
+                                          {%- elif player.media_title in fixed_picture %}
+                                            {%- set p = fixed_picture[player.media_title] %}
                                           {%- else %}
-                                            {{ player.media_title }}
+                                            {% set p = player.entity_picture %}
                                           {%- endif %}
-                                        thumb: >
-                                          {{
-                                            fixed_picture[player.media_artist] | default(player.entity_picture)
-                                            if  fixed_picture
-                                            else player.entity_picture
-                                          }}
+                                        {%- else %}
+                                          {% set p = player.entity_picture %}
+                                        {%- endif %}
+                                        {%- set t = iif(player.app_name.startswith('TuneIn'), player.media_artist, player.media_title) %}
+                                        {{ iif(p == 'no pic', dict(title = t), dict(title = t, thumb = p)) }}
                   - alias: "Remove entity from group"
                     service: group.set
                     data:
