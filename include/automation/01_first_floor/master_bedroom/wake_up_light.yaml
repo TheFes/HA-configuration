@@ -5,13 +5,11 @@ max_exceeded: silent
 trigger:
   - platform: template
     value_template: >
-      {%- if states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
-        False
-      {%- else %}
+      {%- if not states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
         {{ 
               now() >= 
-              (states('sensor.slaapkamer_hub_alarms') | as_datetime)
-                - timedelta(minutes = states('input_number.wakeup_start')|int)
+              (as_datetime(states('sensor.slaapkamer_hub_alarms'))
+                - timedelta(minutes = states('input_number.wakeup_start')|int))
         }}
       {%- endif %}
 condition:
@@ -23,9 +21,9 @@ condition:
     condition: state
     entity_id: input_boolean.wakeup_enabled
     state: "on"
-  - alias: "Home Assistant utime > 5 minutes"
+  - alias: "Home Assistant uptime > 5 minutes"
     condition: template
-    value_template: "{{ (now() | as_timestamp - states('sensor.home_assistant_uptime') | as_timestamp) / 60 > 5 }}"
+    value_template: "{{ (now() - as_datetime(states('sensor.home_assistant_uptime'))).seconds / 60 > 5 }}"
 action:
   - alias: "Light on dimmed"
     service: light.turn_on
@@ -33,14 +31,12 @@ action:
       entity_id: light.slaapkamer
     data:
       brightness: 1
-      # color_temp: "{{ state_attr('light.slaapkerm', 'max_mireds') | int(650) }}"
   - alias: "Turn on light using transition"
     service: light.turn_on
     target:
       entity_id: light.slaapkamer
     data:
       brightness: 190
-      # color_temp: 375
       transition: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"
   - alias: "Delay for last step during transtion"
     delay: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"

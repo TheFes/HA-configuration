@@ -30,6 +30,7 @@ google_home_resume:
     primary_spotcast: "pepijn"
     fixed_picture:
       NPO Radio 2: "/local/pictures/radio/npo_radio_2.png"
+      Radio Veronica: "/local/pictures/radio/radio_veronica.png"
     speaker_groups:
       media_player.huis_groep:
         - media_player.keuken_hub
@@ -430,15 +431,18 @@ google_home_resume:
                                         "media_id": "{{ player.media_content_id }}"
                                         }'
                                   - alias: "Wait until video is playing"
-                                    wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
-                                  - delay: 3
+                                    wait_template: >
+                                      {{ 
+                                        is_state_attr(player.entity_id, 'media_content_id', player.media_content_id)
+                                        and iif(state_attr(player.entity_id, 'media_position')) 
+                                      }}
                                   - alias: "Seek"
                                     service: media_player.media_seek
                                     target:
                                       entity_id: "{{ player.entity_id }}"
                                     data:
                                       seek_position: >
-                                        {{ [0, media_position - 2] | max }}
+                                        {{ [0, player.media_position - 3] | max }}
                               - alias: "Spotify?"
                                 conditions: "{{ spotify }}"
                                 sequence:
