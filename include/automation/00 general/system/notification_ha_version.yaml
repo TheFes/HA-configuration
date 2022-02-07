@@ -19,6 +19,7 @@ trigger:
       {%- 
         if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] 
         and not states('sensor.current_version') in ['unavailable', 'unknown' ]
+        and 'b' in states('sensor.latest_beta')
       %}
         {%- set yc, mc, vc = states('sensor.current_version').split('.')  %}
         {%- set y, m, v  = states('sensor.latest_beta').split('.') %}
@@ -38,10 +39,10 @@ action:
     service: persistent_notification.create
     data:
       title: >
-        {{ (trigger.id == 'beta') | iif('Beta update HA', 'Stable update HA') }}
+        {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
       notification_id: ha_update
       message: >-
-        Versie _{{ (trigger.id == 'beta') | iif(beta, stable) }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
+        Versie _{{ iif(trigger.id == 'beta', beta, stable) }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
         [Changelog](https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }})
         {%- set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
@@ -52,12 +53,12 @@ action:
     service: notify.mobile_app_pixel_5
     data:
       title: >
-        {{ (trigger.id == 'beta') | iif('Beta update HA', 'Stable update HA') }}
+        {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
       message: >-
-        Versie {{ (trigger.id == 'beta') | iif(beta, stable) }} is nu beschikbaar. Je zit nu op {{ current }}.
+        Versie {{ iif(trigger.id == 'beta', beta, stable) }} is nu beschikbaar. Je zit nu op {{ current }}.
         {%- set b = states('sensor.potential_breaking_changes') | int %}
         {{ 
-          ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
+          (iif(b != 1, 'Er zijn ', 'Er is ') ~ iif(b == 0, 'geen', b) ~ ' breaking change' ~ iif(b != 1, 's.', '. '))
           if trigger.id == 'stable'
         }}
       data:
@@ -67,4 +68,4 @@ action:
         actions:
           - action: "URI"
             title: "Changelog"
-            uri: "https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }}"
+            uri: "https://github.com/home-assistant/core/releases/tag/{{ iif(trigger.id == 'beta', beta, stable) }}"
