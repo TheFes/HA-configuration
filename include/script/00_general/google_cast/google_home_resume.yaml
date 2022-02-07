@@ -406,7 +406,7 @@ google_home_resume:
                             {%- set spotcast = 'Not Spotify' %}
                           {%- else %}
                             {%- set entity = player.entity_id %}
-                            {%- if speaker_groups and speaker_groups[entity] %}
+                            {%- if speaker_group_list != [] and speaker_groups[entity] %}
                               {%- set members = speaker_groups[entity] %}
                             {%- else %}
                               {%- set members = [] %}
