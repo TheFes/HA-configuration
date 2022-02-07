@@ -9,15 +9,24 @@ trigger:
   - platform: event
     event_type: automation_reloaded
 variables:
+  screens:
+    - cover.floris
+    - cover.pepijn
+    - cover.slaapkamer
   down_entity_id: >
     {{ 
-      expand('group.screens') | rejectattr('state', 'in', ['unavailable', 'unknown', none]) 
-                              | rejectattr('attributes.current_position', 'eq', 100.0)  
-                              | map(attribute='entity_id') 
-                              | list 
+      expand(screens) | rejectattr('state', 'in', ['unavailable', 'unknown', none]) 
+                      | rejectattr('attributes.current_position', 'eq', 100.0)  
+                      | map(attribute='entity_id') 
+                      | list 
     }}
   screens_down: "{{ expand(down_entity_id) | map(attribute='name') | list }}"
-  screens_unavailable: "{{ expand('group.screens') | selectattr('state', 'eq', 'unavailable') | map(attribute='name') | list }}"
+  screens_unavailable: >
+    {{ 
+      expand(screens) | selectattr('state', 'eq', 'unavailable') 
+                      | map(attribute='name') 
+                      | list 
+    }}
 condition:
   - condition: or
     conditions:
