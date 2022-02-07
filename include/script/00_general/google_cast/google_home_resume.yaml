@@ -27,6 +27,7 @@ google_home_resume:
     players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
+      - media_player.shield
     primary_spotcast: "pepijn"
     fixed_picture:
       NPO Radio 2: "/local/pictures/radio/npo_radio_2.png"
@@ -57,7 +58,7 @@ google_home_resume:
     - alias: "Set variables to be used in the script"
       variables:
         start_time: "{{ now() }}"
-        speaker_group_list: "{{ speaker_groups.keys() | list if speaker_groups is defined else [] }}"
+        speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         service_calls: >
           {%- set ns = namespace(service = []) %}
           {%- for item in action %}
@@ -93,27 +94,33 @@ google_home_resume:
               {%- set entity_s = item.get('entity_id', []) %}
               {%- set device_s = item.get('device_id', []) %}
               {%- set area_s = item.get('area_id', []) %}
-              {%- set entity_d = item.data.get('entity_id', []) if item.data else [] %}
-              {%- set device_d = item.data.get('device_id', []) if item.data else [] %}
-              {%- set area_d = item.data.get('area_id', []) if item.data else [] %}
-              {%- set entity_t = item.target.get('entity_id', []) if item.target else [] %}
-              {%- set device_t = item.target.get('device_id', []) if item.target else [] %}
-              {%- set area_t = item.target.get('area_id', []) if item.target else [] %}
-              {%- 
-                set entity = ( [ entity_s ]  if entity_s is string else entity_s)
-                              + ( [ entity_d ]  if entity_d is string else entity_d)
-                              + ( [ entity_t ]  if entity_t is string else entity_t)
-              %}
-              {%- 
-                set device = ( [ device_s ]  if device_s is string else device_s)
-                              + ( [ device_d ]  if device_d is string else device_d)
-                              + ( [ device_t ]  if device_t is string else device_t)
-              %}
-              {%- 
-                set area = ( [ area_s ]  if area_s is string else area_s)
-                              + ( [ area_d ]  if area_d is string else area_d)
-                              + ( [ area_t ]  if area_t is string else area_t)
-              %}
+
+              {%- if item.target is defined %}
+                {%- set entity = item.target.get('entity_id', []) %}
+                {%- set entity = entity.replace(' ','').split(',') if entity is string else entity %}
+                {%- set device = item.target.get('device_id', []) %}
+                {%- set device = device.replace(' ','').split(',') if device is string else device %}
+                {%- set area = item.target.get('area_id', []) %}
+                {%- set area = area.replace(' ','').split(',') if area is string else area %}
+              {%- else %}
+                {%- if item.data is defined %}
+                  {%- set entity_d = item.data.get('entity_id', []) %}
+                  {%- set entity_d = entity_d.replace(' ','').split(',') if entity_d is string else entity_d %}
+                  {%- set device_d = item.data.get('device_id', []) %}
+                  {%- set device_d = device_d.replace(' ','').split(',') if device_d is string else device_d %}
+                  {%- set area_d = item.data.get('area_id', []) %}
+                  {%- set area_d = area_d.replace(' ','').split(',') if area_d is string else area_d %}
+                {%- endif %}
+                {%- set entity = item.get('entity_id', []) %}
+                {%- set entity = entity.replace(' ','').split(',') if entity is string else entity %}
+                {%- set entity = entity + (entity_d if entity_d is defined else []) %}
+                {%- set device = item.get('device_id', []) %}
+                {%- set device = device.replace(' ','').split(',') if device is string else device %}
+                {%- set device = device + (device_d if device_d is defined else []) %}
+                {%- set area = item.get('area_id', []) %}
+                {%- set area = area.replace(' ','').split(',') if area is string else area %}
+                {%- set area = area + (area_d if area_d is defined else []) %}
+              {%- endif %}
                 {%- set ns.entity = entity + ns.entity %}
                 {%- set ns.device = device + ns.device%}
                 {%- set ns.area = area + ns.area %}
@@ -189,15 +196,6 @@ google_home_resume:
                     {%- endfor %}
                   {%- endfor %}
                 {%- set speaker_groups_resume = ns.groups | unique | list %}
-              {# determine if target has subgroups which are playing and add to speaker_groups_resume #}
-                {%- set ns = namespace(groups = []) %}
-                  {%- for target in target_list %}
-                    {%- set ns.groups = ns.groups + 
-                        (sub_groups[target] | select('in', all_speaker_groups_playing) | list)
-                        if sub_groups is defined else []     
-                  %}
-                  {%- endfor %}
-                {%- set speaker_groups_resume = speaker_groups_resume + ns.groups | unique | list %}
               {# determine which single entities are in a group which is going to be resumed #}
                 {%- set ns = namespace(reject = []) %}
                 {%- for group in speaker_groups_resume %}
@@ -257,6 +255,22 @@ google_home_resume:
             {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {%- endfor %}
           {{ ns.info }}
+        ytube_music_players: >
+          {{ 
+            states.media_player 
+              | selectattr('entity_id', 'search', 'ytube_music')
+              | selectattr('state', 'eq', 'playing')
+              | map(attribute='entity_id')
+              | list 
+          }}
+        ytube_music_targets: >
+          {{ 
+            states.media_player 
+              | selectattr('entity_id', 'search', 'ytube_music')
+              | selectattr('state', 'eq', 'playing')
+              | map(attribute='attributes.remote_player_id')
+              | list 
+          }}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -287,10 +301,10 @@ google_home_resume:
         icon: mdi:autorenew
         entities: >
           {% set current = state_attr('group.resume_active', 'entity_id') %}
+          {% set current = [] if current == none else current | list %}
+          {% set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
           {{ 
-            (
-              ([] if current == none else current | list) + players_to_resume | map(attribute='entity_id') | list
-            ) | unique | list 
+              ( current + resume_entities + ytube_music_players ) | unique | list 
           }}
     - alias: "Turn non playing entities on if needed"
       choose:
@@ -320,7 +334,18 @@ google_home_resume:
           {%- endfor %}
           {{ ns.info }}
         screen_not_playing: >
-          {{ [] if not players_screen else target_not_playing | select('in', players_screen) | list }}
+          {{ target_not_playing | select('in', players_screen) | list if (players_scren is defined and players_screen) else [] }}
+    - alias: "Interrupt YouTube music if needed"
+      choose:
+        - conditions:
+            - alias: "Anything playing"
+              condition: template
+              value_template: "{{ ytube_music_players | count > 0 }}"
+          sequence:
+            - service: ytube_music_player.call_method
+              data:
+                entity_id: "{{ ytube_music_players }}"
+                command: interrupt_start
     - alias: "Perform service calls defined in action"
       repeat:
         count: "{{ service_calls | count }}"
@@ -417,7 +442,7 @@ google_home_resume:
                           - alias: "Resume playing"
                             choose:
                               - alias: "YouTube?"
-                                conditions: "{{ youtube }}"
+                                conditions: "{{ youtube and player.entity_in in players_screen }}"
                                 sequence:
                                   - alias: "Play video"
                                     service: media_player.play_media
@@ -463,7 +488,7 @@ google_home_resume:
                                           account: "{{ spotcast_account }}"
                                           force_playback: true
                               - alias: "Stream?"
-                                conditions: "{{ stream }}"
+                                conditions: "{{ stream and not player.entity_id in ytube_music_targets }}"
                                 sequence:
                                   - alias: "Resume stream"
                                     service: media_player.play_media
@@ -474,7 +499,7 @@ google_home_resume:
                                         {{ player.media_content_id }}
                                       media_content_type: "music"
                                       extra: >
-                                        {%- if fixed_picture %}
+                                        {%- if fixed_picture is defined and fixed_picture %}
                                           {%- if player.media_artist in fixed_picture %}
                                             {%- set p = fixed_picture[player.media_artist] %}
                                           {%- elif player.media_title in fixed_picture %}
@@ -496,6 +521,26 @@ google_home_resume:
                       entities: >
                         {% set current = state_attr('group.resume_active', 'entity_id') %}
                         {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
+    - alias: "Resume YouTube music if needed"
+      choose:
+        - conditions:
+            - alias: "Anything playing"
+              condition: template
+              value_template: "{{ ytube_music_players | count > 0 }}"
+          sequence:
+            - service: ytube_music_player.call_method
+              data:
+                entity_id: "{{ ytube_music_players }}"
+                command: interrupt_resume
+            - alias: "Remove entity from group"
+              service: group.set
+              data:
+                object_id: resume_active
+                name: "Entities currently active with Google Home Resume script"
+                icon: mdi:autorenew
+                entities: >
+                  {% set current = state_attr('group.resume_active', 'entity_id') %}
+                  {{ iif(current == none, [], current) | reject('in', ytube_music_players) | list }}
     - alias: "Restore volume of non playing entities"
       choose:
         - conditions:
