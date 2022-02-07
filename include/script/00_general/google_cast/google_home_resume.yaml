@@ -256,18 +256,28 @@ google_home_resume:
           {%- endfor %}
           {{ ns.info }}
         ytube_music_players: >
-          {{ 
+          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
+          {%- set current = state_attr('group.resume_active', 'entity_id') %}
+          {%- set current = [] if current == none else current | list %}
+          {{
             states.media_player 
               | selectattr('entity_id', 'search', 'ytube_music')
               | selectattr('state', 'eq', 'playing')
+              | selectattr('attributes.remote_player_id', 'in', resume_entities)
+              | selectattr('attributes.remote_player_id', 'in', current)
               | map(attribute='entity_id')
               | list 
           }}
         ytube_music_targets: >
-          {{ 
+          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
+          {%- set current = state_attr('group.resume_active', 'entity_id') %}
+          {%- set current = [] if current == none else current | list %}
+          {{
             states.media_player 
               | selectattr('entity_id', 'search', 'ytube_music')
               | selectattr('state', 'eq', 'playing')
+              | selectattr('attributes.remote_player_id', 'in', resume_entities)
+              | selectattr('attributes.remote_player_id', 'in', current)
               | map(attribute='attributes.remote_player_id')
               | list 
           }}
