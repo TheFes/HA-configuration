@@ -1,0 +1,32 @@
+binary_sensor:
+  - unique_id: c804a045-66df-478d-b3ae-5386c5da32fa
+    name: "Cover unavailable"
+    device_class: problem
+    state: >-
+      {% 
+        set covers =  [
+                        'cover.pepijn',
+                        'cover.floris',
+                        'cover.slaapkamer'
+                      ]
+      %}
+      {{
+        expand(covers)  | selectattr('state', 'in', ['unavailable', 'unknown', none])
+                        | list
+                        | count != 0
+      }}
+    delay_on: "00:00:30"
+    attributes:
+      names: >
+        {% 
+          set covers =  [
+                          'cover.pepijn',
+                          'cover.floris',
+                          'cover.slaapkamer'
+                        ]
+        %}
+        {{
+          expand(covers)  | selectattr('state', 'in', ['unavailable', 'unknown', none])
+                          | map(attribute='name')
+                          | list
+        }}
