@@ -65,22 +65,26 @@ action:
                 state: "Zolder"
         sequence:
           - alias: "Send TTS using Google Home Resume script"
-            service: script.google_home_resume
+            service: script.turn_on
+            target:
+              entity_id: script.google_home_resume
             data:
-              target:
-                entity_id:
-                  - media_player.zolder_mini_martijn
-              action:
-                - alias: "TTS Ding Dong for Google Home"
-                  service: script.turn_on
-                  target:
-                    entity_id: script.send_tts
-                  data:
-                    variables:
-                      tts_message: "Ding Dong! Er staat iemand aan de deur!"
-                      tts_target_list:
-                        - media_player.zolder_mini_martijn
-                      tts_volume: 35
+              variables:
+                action:
+                  - alias: "Send TTS message"
+                    service: tts.google_cloud_say
+                    target:
+                      entity_id: media_player.zolder_mini_martijn
+                    data:
+                      message: "Ding Dong! Er staat iemand aan de deur!"
+          - alias: "Wait until the target is idle or off before applying the volume for the TTS message"
+            wait_template: "{{ states('media_player.zolder_mini_martijn') in ['idle', 'off'] }}"
+          - alias: "Apply TTS volume"
+            service: media_player.volume_set
+            target:
+              entity_id: media_player.zolder_mini_martijn
+            data:
+              volume_level: 0.35
   - alias: "Chime off and someone home?"
     choose:
       # Blink lights when chime is off and someone is home

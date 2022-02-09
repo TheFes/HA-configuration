@@ -31,31 +31,34 @@ action:
         ttl: 0
         priority: high
         notification_icon: mdi:party-popper
+  - variables:
+      target: >
+        {% 
+          if is_state('media_player.zolder_mini_martijn', 'playing')
+          or is_state('sensor.location_phone_martijn', 'Zolder') 
+        %}
+          [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
+        {% else %}
+          [ 'media_player.keuken_hub' ]
+        {% endif %}
   - alias: "Send TTS using Google Home Resume script"
-    service: script.google_home_resume
+    service: script.turn_on
+    target:
+      entity_id: script.google_home_resume
     data:
-      target:
-        entity_id: >
-          {% 
-            if is_state('media_player.zolder_mini_martijn', 'playing')
-            or is_state('sensor.location_phone_martijn', 'Zolder') 
-          %}
-            [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
-          {% else %}
-            [ 'media_player.keuken_hub' ]
-          {% endif %}
-      action:
-        - alias: "Send TTS message"
-          service: script.send_tts
-          data:
-            tts_message: "Hoera! Marleen is bijna thuis!"
-            tts_target_list: >
-              {% 
-                if is_state('media_player.zolder_mini_martijn', 'playing')
-                or is_state('sensor.location_phone_martijn', 'Zolder') 
-              %}
-                [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
-              {% else %}
-                [ 'media_player.keuken_hub' ]
-              {% endif %}
-            tts_volume: 35
+      variables:
+        action:
+          - alias: "Send TTS message"
+            service: tts.google_cloud_say
+            target:
+              entity_id: "{{ target }}"
+            data:
+              message: "Hoera! Marleen is bijna thuis!"
+  - alias: "Wait first target is idle or off (will prevent volume change of stream in case there is only one target)"
+    wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
+  - alias: "Apply TTS volume"
+    service: media_player.volume_set
+    target:
+      entity_id: "{{ target }}"
+    data:
+      volume_level: 0.35

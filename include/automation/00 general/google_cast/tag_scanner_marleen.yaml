@@ -18,6 +18,7 @@ action:
       exclude_list: "{{ states('input_text.played_mama').split('|') | map('int') | list }}"
       to_play: "{{ playlist | reject('in', exclude_list) | list | random }}"
       message: "{{ message_list[to_play] }}"
+      target: "{{ player.replace(' ', '').split(',') if player is string else player }}"
   - alias: "Remove oldest message from input_text, and add the latest one"
     service: input_text.set_value
     target:
@@ -30,17 +31,23 @@ action:
       title: "💖 Mama is.."
       message: "{{ message }}"
   - alias: "Send TTS using Google Home Resume script"
-    service: script.google_home_resume
+    service: script.turn_on
+    target:
+      entity_id: script.google_home_resume
     data:
-      target:
-        entity_id: "{{ (player | replace(' ', '')).split(',') if player is string else player }}"
-      action:
-        - alias: "Send TTS"
-          service: script.turn_on
-          target:
-            entity_id: script.send_tts
-          data:
-            variables:
-              tts_message: "{{ message }}"
-              tts_target_list: "{{ (player | replace(' ', '')).split(',') if player is string else player }}"
-              tts_volume: " {{ volume_tts }}"
+      variables:
+        action:
+          - alias: "Send TTS message"
+            service: tts.google_cloud_say
+            target:
+              entity_id: "{{ target }}"
+            data:
+              message: "{{ message }}"
+  - alias: "Wait first target is idle or off (will prevent volume change of stream in case there is only one target)"
+    wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
+  - alias: "Apply TTS volume"
+    service: media_player.volume_set
+    target:
+      entity_id: "{{ target }}"
+    data:
+      volume_level: "{{ volume_tts }}"
