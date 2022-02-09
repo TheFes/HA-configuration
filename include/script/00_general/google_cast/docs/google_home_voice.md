@@ -1,6 +1,3 @@
-## 9 FEBRUARY 2022 - POST REWRITTEN
-This post has been completely rewritten to work with my new Google Home Resume script, instead of the TTS Scripts which is no longer maintaned by me.
-
 # Background
 In another post I have share a [script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) to send actions to a Google Home and resume the stream (TuneIn / Spotify) which was playing afterwards. It also restores the volume, and you can work with Google Home speakers groups.
 
@@ -38,6 +35,7 @@ The last action in your routine should be to start the ambient sound (`Play and 
 # How to use start script
 To use the script you will need to provide the `action` to be performed. Like the Google Home Resume script only service calls are working. In case no service calls are entered the script will stop (it will only stop the ambient sound, but not resume the previous stream).
 There is no need to provide the `target`, it will be added by the Google Home Voice script, based on the ambient sound playing.
+In case you need to change the volume (eg for TTS) you can use the `volume` variable.
 
 *Example*
 Let's say you have the Waze and proximity integrations set up, and want to send out a TTS message with the ETA.
