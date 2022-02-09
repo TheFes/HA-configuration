@@ -130,7 +130,6 @@ google_home_resume:
               {%- set entity_s = item.get('entity_id', []) %}
               {%- set device_s = item.get('device_id', []) %}
               {%- set area_s = item.get('area_id', []) %}
-
               {%- if item.target is defined %}
                 {%- set entity = item.target.get('entity_id', []) %}
                 {%- set entity = entity.replace(' ','').split(',') if entity is string else entity %}
@@ -195,12 +194,18 @@ google_home_resume:
             %}
             {{ target_group + single_not_in_group }}
         players_to_resume: >
+          {# set variables based on dynamic groups created by script #}
+            {% set resume_active = state_attr('group.resume_active', 'entity_id') %}
+            {% set resume_active = iif(resume_active, resume_active, []) %}
+            {% set resume_action_false = state_attr('group.resume_action_false', 'entity_id') %}
+            {% set resume_action_false = iif(resume_action_false, resume_action_false, []) %}
           {# use data from google_home_say_voice script in case it was used #}
             {%- if voice_media_player_data is defined %}
               {{ 
                 voice_media_player_data 
-                  | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_active', 'entity_id'))
-                  | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_action_false', 'entity_id'))
+                  | rejectattr('entity_id', 'in', resume_active)
+                  | rejectattr('entity_id', 'in', resume_action_false)
+                  | list
               }}
             {%- else %}
               {# determine which media_players are playing and store attributes#}
@@ -253,16 +258,8 @@ google_home_resume:
                 {%- 
                   set players_resume = (target_playing + speaker_groups_resume + single_resume_list)
                                         | reject('in', reject_list)
-                                        | reject('in', iif(
-                                                            state_attr('group.resume_active', 'entity_id'),
-                                                            state_attr('group.resume_active', 'entity_id'),
-                                                            [])
-                                                )
-                                        | reject('in', iif(
-                                                            state_attr('group.resume_action_false', 'entity_id'),
-                                                            state_attr('group.resume_action_false', 'entity_id'),
-                                                            [])
-                                                )
+                                        | reject('in', resume_active)
+                                        | reject('in', resume_action_false)
                                         | unique
                                         | list
                 %}
