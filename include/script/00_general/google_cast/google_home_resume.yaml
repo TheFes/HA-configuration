@@ -60,6 +60,34 @@ google_home_resume:
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
   sequence:
+    - alias: "Failsafe to remove all groups if the script was not running"
+      choose:
+        - conditions: "{{ state_attr(this.entity_id, 'current') == 1 }}"
+          sequence:
+            - alias: "Remove group if it exists"
+              choose:
+                - conditions: "{{ iif(states('group.resume_script_active')) }}"
+                  sequence:
+                    - alias: "Remove resume_script_active"
+                      service: group.remove
+                      data:
+                        object_id: resume_script_active
+            - alias: "Remove group if it exists"
+              choose:
+                - conditions: "{{ iif(states('group.resume_active')) }}"
+                  sequence:
+                    - alias: "REmove resume_active"
+                      service: group.remove
+                      data:
+                        object_id: resume_active
+            - alias: "Remove group if it exists"
+              choose:
+                - conditions: "{{ iif(states('group.resume_action_false')) }}"
+                  sequence:
+                    - alias: "Remove resume_action_false"
+                      service: group.remove
+                      data:
+                        object_id: resume_action_false
     - alias: "Set variables to be used in the script"
       variables:
         start_time: "{{ now() }}"
@@ -406,7 +434,7 @@ google_home_resume:
                 entities: >
                   {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
                   {%- set current = [] if current == none else current | list %}
-                  {%- set to_add = target_list | select('in', players_to_resume) | map(attribute='entity_id') | list %}
+                  {%- set to_add = target_list | list %}
                   {{ 
                       ( current + to_add) | unique | list 
                   }}
@@ -589,18 +617,14 @@ google_home_resume:
                                         {%- set t = iif(player.app_name.startswith('TuneIn'), player.media_artist, player.media_title) %}
                                         {{ iif(p == 'no pic', dict(title = t), dict(title = t, thumb = p)) }}
                   - alias: "Remove entity from group"
-                    choose:
-                      - conditions: "{{ iif(state_attr('group.resume_action_false', 'entity_id')) }}"
-                        sequence:
-                          - alias: "Remove entity from group"
-                            service: group.set
-                            data:
-                              object_id: resume_action_false
-                              name: "Entities with actions which should not be resumed"
-                              icon: mdi:alert-octagon
-                              entities: >
-                                {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
-                                {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
+                    service: group.set
+                    data:
+                      object_id: resume_action_false
+                      name: "Entities with actions which should not be resumed"
+                      icon: mdi:alert-octagon
+                      entities: >
+                        {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
+                        {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
                   - alias: "Remove entity from group"
                     service: group.set
                     data:
@@ -683,6 +707,43 @@ google_home_resume:
                     service: media_player.turn_on
                     target:
                       entity_id: "{{ player }}"
+    - alias: "Google Home with screen back to idle screen"
+      choose:
+        - conditions: "{{ screen_not_playing | count > 0 }}"
+          sequence:
+            - alias: "Restore default screen"
+              repeat:
+                count: "{{ screen_not_playing | count }}"
+                sequence:
+                  - variables:
+                      player: "{{ screen_not_playing[repeat.index -1] }}"
+                  - alias: "Wait until player is idle or off"
+                    wait_template: "{{ states(player) in ['idle', 'off'] }}"
+                  - alias: "Turn Google Home on to return to idle mode (photo display)"
+                    service: media_player.turn_on
+                    target:
+                      entity_id: "{{ player }}"
+    - alias: "Remove all targets from group"
+      choose:
+        - conditions: "{{ iif(resume_this_action is defined and resume_this_action,false,true) }}"
+          sequence:
+            - alias: "Remove from group"
+              repeat:
+                count: "{{ target_list | count }}"
+                sequence:
+                  - variables:
+                      player: "{{ target_list[repeat.index -1] }}"
+                  - alias: "Wait until player is idle or off"
+                    wait_template: "{{ states(player) in ['idle', 'off'] }}"
+                  - alias: "Remove entity from group"
+                    service: group.set
+                    data:
+                      object_id: resume_action_false
+                      name: "Entities with actions which should not be resumed"
+                      icon: mdi:alert-octagon
+                      entities: >
+                        {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
+                        {{ iif(current == none, [], current) | reject('eq', target_list[repeat.index-1]) | list }}
     - alias: "Remove entities from group"
       repeat:
         count: "{{ target_list | count }}"
