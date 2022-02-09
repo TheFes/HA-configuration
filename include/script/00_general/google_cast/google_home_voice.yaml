@@ -16,6 +16,17 @@ google_home_voice:
     primary_spotcast: pepijn
   sequence:
     - variables:
+        version: 1.0.0
+        service_calls: >
+          {%- set ns = namespace(service = []) %}
+          {%- for item in action %}
+            {%- if item.get('service', 'uhoh') != 'uhoh' %}
+              {%- set ns.service = ns.service + [ item ] %}
+            {%- endif %}
+          {%- endfor %}
+          {{ ns.service }}
+        no_service_count: >
+          {{ action | reject('in', service_calls) | list | count }}
         entity_list: >
           {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
           {%- set ns = namespace(entities = []) %}
@@ -37,7 +48,6 @@ google_home_voice:
                                 | map(attribute='entity_id') 
                                 | list 
           }}
-    - variables:
         media_player_data: >
           {%- set entities = expand(entity_playing) %}
           {%- set ns = namespace(info=[]) %}
@@ -74,6 +84,25 @@ google_home_voice:
             %}
           {%- endfor %}
           {{ ns.spotify }}
+    - alias: "Send log message about wrong actions"
+      choose:
+        - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
+          sequence:
+            service: system_log.write
+            data:
+              level: "{{ iif(service_calls | count == 0, 'error', 'warning') }}"
+              logger: "{{ this.entity_id }}"
+              message: >
+                {%- if service_calls | count == 0 %}
+                  There were no service calls defined, no actions are performed.
+                  The script has been aborted
+                {%- elif no_service_count == 1 %}
+                  You added an action which is not a service call to the Google
+                  Cast Resume script. This action was ignored.
+                {%- else %}
+                  You added {{ no_service_count }} actions which are not service calls 
+                  to the Google Cast Resume script. These were ignored.
+                {%- endif %}
     - alias: "Wait until white noise started"
       wait_template: >
         {{ 
@@ -91,7 +120,18 @@ google_home_voice:
               | map(attribute='entity_id') 
               | list
           }}
-    - alias: "Send TTS using Google Home Resume script"
+    - alias: "No service actions"
+      choose:
+        - conditions: "{{ service_calls | count != 0 }}"
+          sequence:
+            - alias: "Stop ambient sound"
+              service: media_player.media_stop
+              target:
+                entity_id: "{{ target }}"
+    - alias: "Are there any service calls to perform"
+      condition: template
+      value_template: "{{ service_calls | count != 0 }}"
+    - alias: "Send actions using Google Home Resume script"
       service: script.turn_on
       target:
         entity_id: script.google_home_resume
@@ -113,16 +153,22 @@ google_home_voice:
               if spotify_entity
               else (primary_spotcast if primary_spotcast is defined and primary_spotcast else '')
             }}
-          action:
-            - alias: "Send TTS message"
-              service: tts.google_cloud_say
-              target:
-                entity_id: "{{ target }}"
-              data:
-                message: "{{ tts_message }}"
+          action: >
+            {%- set ns = namespace(action=[]) %}
+            {%- for item in service_calls %}
+              {%- set ns.action = ns.action + [
+                                                dict(
+                                                  service = item.service,
+                                                  target = { 'entity_id' : target},
+                                                  data = item.get('data', {})
+                                                  )
+                                              ] 
+              %}
+            {%- endfor %}
+            {{ ns.action }}
     - alias: "TTS volume defined"
       choose:
-        - conditions: "{{ iif(tts_volume) }}"
+        - conditions: "{{ iif(volume) }}"
           sequence:
             - alias: "Wait first target is idle or off (will prevent volume change of stream in case there is only one target)"
               wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
@@ -132,4 +178,4 @@ google_home_voice:
                 entity_id: "{{ target }}"
               data:
                 volume_level: >
-                  {{ [1, tts_volume if tts_volume <= 1 else tts_volume / 100] | min }}
+                  {{ [1, volume if volume <= 1 else volume / 100] | min }}
