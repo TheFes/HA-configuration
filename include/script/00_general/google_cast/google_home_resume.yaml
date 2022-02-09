@@ -23,6 +23,11 @@ google_home_resume:
       required: true
       selector:
         action:
+    resume_this_action:
+      description: "Set to false if you don't want to resume the actions started with this script (default is true)"
+      required: false
+      selector:
+        boolean:
   variables:
     players_screen:
       - media_player.keuken_hub
@@ -75,7 +80,7 @@ google_home_resume:
             {%- set ns = namespace(entities = []) %}
             {%- for device in devices %}
               {%- set ids = device_attr(device, 'identifiers') %}
-              {% set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
+              {%- set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
               {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
                 {%- set ns.entities = ns.entities + device_entities(device) %}
               {%- endif %}
@@ -161,7 +166,11 @@ google_home_resume:
         players_to_resume: >
           {# use data from google_home_say_voice script in case it was used #}
             {%- if voice_media_player_data is defined %}
-              {{ voice_media_player_data | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_active', 'entities')) }}
+              {{ 
+                voice_media_player_data 
+                  | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_active', 'entity_id'))
+                  | reject_attr('attributes.entity_id', 'in', state_attr('group.resume_action_false', 'entity_id'))
+              }}
             {%- else %}
               {# determine which media_players are playing and store attributes#}
                 {%- 
@@ -210,7 +219,22 @@ google_home_resume:
                 {%- endfor %}
                 {%- set single_resume_list = ns.single_resume %}
               {# combine all the above to a list of players which should be resumed #}
-                {%- set players_resume = (target_playing + speaker_groups_resume + single_resume_list) | reject('in', reject_list) | unique | list %}
+                {%- 
+                  set players_resume = (target_playing + speaker_groups_resume + single_resume_list)
+                                        | reject('in', reject_list)
+                                        | reject('in', iif(
+                                                            state_attr('group.resume_active', 'entity_id'),
+                                                            state_attr('group.resume_active', 'entity_id'),
+                                                            [])
+                                                )
+                                        | reject('in', iif(
+                                                            state_attr('group.resume_action_false', 'entity_id'),
+                                                            state_attr('group.resume_action_false', 'entity_id'),
+                                                            [])
+                                                )
+                                        | unique
+                                        | list
+                %}
                 {%- set ns = namespace(info=[]) %}
                 {%- for entity in expand(players_resume) %}
                   {%- set ns.info = ns.info +  [ 
@@ -224,7 +248,10 @@ google_home_resume:
                                                   app_name = entity.attributes.get('app_name', 'no app'),
                                                   entity_picture = entity.attributes.get('entity_picture', 'no pic'),
                                                   volume_level = entity.attributes.get('volume_level', 0.25) | round(2),
-                                                  media_position = (now() - entity.attributes.get('media_position_updated_at', now()) + timedelta(seconds=entity.attributes.get('media_position', 0))).seconds
+                                                  media_position = (
+                                                                      now() - entity.attributes.get('media_position_updated_at', now())
+                                                                      + timedelta(seconds=entity.attributes.get('media_position', 0))
+                                                                    ).seconds
                                                   )
                                               ] 
                   %}
@@ -263,8 +290,7 @@ google_home_resume:
             states.media_player 
               | selectattr('entity_id', 'search', 'ytube_music')
               | selectattr('state', 'eq', 'playing')
-              | selectattr('attributes.remote_player_id', 'in', resume_entities)
-              | selectattr('attributes.remote_player_id', 'in', current)
+              | selectattr('attributes.remote_player_id', 'in', resume_entities + current)
               | map(attribute='entity_id')
               | list 
           }}
@@ -276,8 +302,7 @@ google_home_resume:
             states.media_player 
               | selectattr('entity_id', 'search', 'ytube_music')
               | selectattr('state', 'eq', 'playing')
-              | selectattr('attributes.remote_player_id', 'in', resume_entities)
-              | selectattr('attributes.remote_player_id', 'in', current)
+              | selectattr('attributes.remote_player_id', 'in', resume_entities + current)
               | map(attribute='attributes.remote_player_id')
               | list 
           }}
@@ -303,18 +328,30 @@ google_home_resume:
     - alias: "Are there any service calls to perform"
       condition: template
       value_template: "{{ service_calls | count != 0 }}"
-    - alias: "Create group with targeted entities"
+    - alias: "Create group with entities which will resume"
       service: group.set
       data:
-        object_id: resume_active
+        object_id: resume_script_active
         name: "Entities currently active with Google Home Resume script"
         icon: mdi:autorenew
         entities: >
-          {% set current = state_attr('group.resume_active', 'entity_id') %}
-          {% set current = [] if current == none else current | list %}
-          {% set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
+          {%- set current = state_attr('group.resume_script_active', 'entity_id') %}
+          {%- set current = [] if current == none else current | list %}
           {{ 
-              ( current + resume_entities + ytube_music_players ) | unique | list 
+              ( current + target_list) | list
+          }}
+    - alias: "Create group with entities which will resume"
+      service: group.set
+      data:
+        object_id: resume_active
+        name: "Entities which will be resumed by the Google Home Resume script"
+        icon: mdi:autorenew
+        entities: >
+          {%- set current = state_attr('group.resume_active', 'entity_id') %}
+          {%- set current = [] if current == none else current | list %}
+          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
+          {{ 
+              ( current + resume_entities + ytube_music_players ) | unique | list
           }}
     - alias: "Turn non playing entities on if needed"
       choose:
@@ -356,6 +393,23 @@ google_home_resume:
               data:
                 entity_id: "{{ ytube_music_players }}"
                 command: interrupt_start
+    - alias: "Create group for resume_this_action setting"
+      choose:
+        - conditions: "{{ iif(resume_this_action is defined and resume_this_action,false,true) }}"
+          sequence:
+            - alias: "Create group entities with resume_this_action to false"
+              service: group.set
+              data:
+                object_id: resume_action_false
+                name: "Entities with actions which should not be resumed"
+                icon: mdi:alert-octagon
+                entities: >
+                  {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
+                  {%- set current = [] if current == none else current | list %}
+                  {%- set to_add = target_list | select('in', players_to_resume) | map(attribute='entity_id') | list %}
+                  {{ 
+                      ( current + to_add) | unique | list 
+                  }}
     - alias: "Perform service calls defined in action"
       repeat:
         count: "{{ service_calls | count }}"
@@ -363,19 +417,24 @@ google_home_resume:
           - service: "{{ service_calls[repeat.index -1].service }}"
             target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
             data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
-    - alias: "Short delay if required"
+    - alias: "Short delay"
+      delay: 4
+    - alias: "Add entities to resume_action_false group"
       choose:
-        - conditions:
-            - alias: "Delay required"
-              condition: template
-              value_template: >
-                {{
-                  players_to_resume | count > 0
-                  or target_not_playing | count > 0
-                  or screen_not_playing | count > 0
-                }}
+        - conditions: "{{ iif(resume_this_action is defined and resume_this_action,false,true) }}"
           sequence:
-            - delay: 4
+            - alias: "Create group entities with resume_this_action to false"
+              service: group.set
+              data:
+                object_id: resume_action_false
+                name: "Entities with actions which should not be resumed"
+                icon: mdi:alert-octagon
+                entities: >
+                  {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
+                  {%- set current = [] if current == none else current | list %}
+                  {{ 
+                      ( current + target_list ) | unique | list 
+                  }}
     - alias: "Anything to resume?"
       choose:
         - conditions:
@@ -397,6 +456,7 @@ google_home_resume:
                       stream: >
                         {{ 
                           (player.media_content_id).startswith('http')
+                          and not player.entity_id in ytube_music_targets
                         }}
                       spotcast_account: >
                         {%- if voice_spotcast is defined %}
@@ -430,8 +490,14 @@ google_home_resume:
                             condition: template
                             value_template: "{{ states[player.entity_id].last_changed > as_datetime(start_time) }}"
                         sequence:
-                          - alias: "Wait until player is idle again"
-                            wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+                          - alias: "Wait until player is idle again, and all other scripts are finished"
+                            wait_template: >
+                              {%- set current = state_attr('group.resume_script_active', 'entity_id') %}
+                              {%- set current = [] if current == none else current | list %}
+                              {{ 
+                                states(player.entity_id) in ['idle', 'off']
+                                and current | select('eq', player.entity_id) | list | count <= 1
+                              }}
                           - alias: "Set volume to old volume if needed"
                             choose:
                               - conditions:
@@ -515,13 +581,26 @@ google_home_resume:
                                           {%- elif player.media_title in fixed_picture %}
                                             {%- set p = fixed_picture[player.media_title] %}
                                           {%- else %}
-                                            {% set p = player.entity_picture %}
+                                            {%- set p = player.entity_picture %}
                                           {%- endif %}
                                         {%- else %}
-                                          {% set p = player.entity_picture %}
+                                          {%- set p = player.entity_picture %}
                                         {%- endif %}
                                         {%- set t = iif(player.app_name.startswith('TuneIn'), player.media_artist, player.media_title) %}
                                         {{ iif(p == 'no pic', dict(title = t), dict(title = t, thumb = p)) }}
+                  - alias: "Remove entity from group"
+                    choose:
+                      - conditions: "{{ iif(state_attr('group.resume_action_false', 'entity_id')) }}"
+                        sequence:
+                          - alias: "Remove entity from group"
+                            service: group.set
+                            data:
+                              object_id: resume_action_false
+                              name: "Entities with actions which should not be resumed"
+                              icon: mdi:alert-octagon
+                              entities: >
+                                {%- set current = state_attr('group.resume_action_false', 'entity_id') %}
+                                {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
                   - alias: "Remove entity from group"
                     service: group.set
                     data:
@@ -529,7 +608,7 @@ google_home_resume:
                       name: "Entities currently active with Google Home Resume script"
                       icon: mdi:autorenew
                       entities: >
-                        {% set current = state_attr('group.resume_active', 'entity_id') %}
+                        {%- set current = state_attr('group.resume_active', 'entity_id') %}
                         {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
     - alias: "Resume YouTube music if needed"
       choose:
@@ -549,7 +628,7 @@ google_home_resume:
                 name: "Entities currently active with Google Home Resume script"
                 icon: mdi:autorenew
                 entities: >
-                  {% set current = state_attr('group.resume_active', 'entity_id') %}
+                  {%- set current = state_attr('group.resume_active', 'entity_id') %}
                   {{ iif(current == none, [], current) | reject('in', ytube_music_players) | list }}
     - alias: "Restore volume of non playing entities"
       choose:
@@ -604,3 +683,39 @@ google_home_resume:
                     service: media_player.turn_on
                     target:
                       entity_id: "{{ player }}"
+    - alias: "Remove entities from group"
+      repeat:
+        count: "{{ target_list | count }}"
+        sequence:
+          - variables:
+              current: >
+                {%- set current = state_attr('group.resume_script_active', 'entity_id') %}
+                {{ [] if current == none else current | list }}
+              other: >
+                {{ current | reject('eq', target_list[repeat.index -1]) | list  }}
+              target_count: >
+                {{ current | select('eq', target_list[repeat.index -1]) | list | count }}
+          - alias: "Remove entity from group"
+            service: group.set
+            data:
+              object_id: resume_script_active
+              name: "Entities currently active with Google Home Resume script"
+              icon: mdi:autorenew
+              entities: >
+                {{ other }}
+          - alias: "Add the right number of entities back to the group"
+            choose:
+              - conditions: "{{ target_count > 1 }}"
+                sequence:
+                  - alias: "Re-add entity"
+                    repeat:
+                      count: "{{ target_count - 1 }}"
+                      sequence:
+                        - alias: "Re-add entity from group"
+                          service: group.set
+                          data:
+                            object_id: resume_script_active
+                            name: "Entities currently active with Google Home Resume script"
+                            icon: mdi:autorenew
+                            entities: >
+                              {{ other + [ target_list[repeat.index -1] ] }}
