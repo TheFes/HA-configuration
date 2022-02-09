@@ -13,7 +13,6 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 
 # To Do
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
-* Add some information on how do the TTS actions like I did in the [Google Home Say script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634) which is no longer maintained. (basically it is calling [this script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/helper/send_tts.yaml) as an action in the Google Home Resume script and provide the target ([example](https://github.com/TheFes/HA-configuration/blob/main/include/automation/00_ground_floor/hall/doorbell_actions.yaml#L67-L83))).
 
 # Most recent change
 ### Version 1.1.0 - 9 February 2022
@@ -23,6 +22,7 @@ I've set up a tag scanner on which my kids can scan a card, and then some song w
 * To let the `resume_this_action: false` setting work, I've added two dynamically created groups. Because this can get messy when you do a script reload while the scripts are running, the script will remove these groups if it is started for the first time.
 #### 🌟 Improvements
 * Added version number as a variable to the `sequence`. This will make it more easy to see which changes there are since you last updated the script
+* Added example how to start the script and apply volume for TTS messages
 #### 🐛 Bug fixes
 * Resuming of the ytube_mucis_player entities actually works like I intended it now.
 
@@ -101,6 +101,34 @@ data:
 ```
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
+
+# Send TTS and apply volume for the TTS message
+Below you will find an example on how to use this script to send a TTS message and apply the right volume for this message. Only the TTS service call is in the script, the volume is applied in the actions below, as a `wait_template` is used, which is not allowed in the script `action` section.
+This wait template will make sure the volume for the TTS message is not applied too soon, so when e.g. the Spotify stream is still playing. Note that I'm using `script.turn_on` here, otherwise the `wait_template` will start after the resume script is completed, which will actually apply the volume on the resumed stream.
+
+```yaml
+- alias: "Send TTS using Google Home Resume script"
+  service: script.turn_on
+  target:
+    entity_id: script.google_home_resume
+  data:
+    variables:
+      action:
+        - alias: "Send TTS message"
+          service: tts.google_cloud_say
+          target:
+            entity_id: media_player.zolder_mini_martijn
+          data:
+            message: "Ding Dong! Er staat iemand aan de deur!"
+- alias: "Wait until the target is idle or off before applying the volume for the TTS message"
+  wait_template: "{{ states('media_player.zolder_mini_martijn') in ['idle', 'off'] }}"
+- alias: "Apply TTS volume"
+  service: media_player.volume_set
+  target:
+    entity_id: media_player.zolder_mini_martijn
+  data:
+    volume_level: 0.35
+```
 
 # And finally the script itself
 
