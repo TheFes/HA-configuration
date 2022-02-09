@@ -199,7 +199,7 @@ google_home_resume:
             {% set resume_active = iif(resume_active, resume_active, []) %}
             {% set resume_action_false = state_attr('group.resume_action_false', 'entity_id') %}
             {% set resume_action_false = iif(resume_action_false, resume_action_false, []) %}
-          {# use data from google_home_say_voice script in case it was used #}
+          {# use data from google_home_voice script in case it was used #}
             {%- if voice_media_player_data is defined %}
               {{ 
                 voice_media_player_data 

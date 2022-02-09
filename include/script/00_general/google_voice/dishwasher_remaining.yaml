@@ -20,7 +20,7 @@ dishwasher_remaining_time_routine:
             "De vaatwasser is niet actief "
           {%- endif %}
     - alias: "TTS for speaker voice command"
-      service: script.google_home_say_voice
+      service: script.google_home_voice
       data:
         tts_message: "{{ message }}"
         tts_volume: 35

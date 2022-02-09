@@ -23,7 +23,7 @@ eta_martijn_routine:
       entity_id: person.marleen
       state: "home"
     - alias: "TTS for speaker voice command"
-      service: script.google_home_say_voice
+      service: script.google_home_voice
       data:
         tts_message: "{{ message }}"
         tts_volume: 35
