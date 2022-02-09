@@ -50,7 +50,7 @@ eta_thefes:
   sequence:
     - variables:
         message: >
-		      {% set eta = (as_timestamp(now()) + 60 * states ('sensor.thefes_home') | float(0) | timestamp_custom('%H:%M') %}
+          {% set eta = (as_timestamp(now()) + 60 * states ('sensor.thefes_home') | float(0) | timestamp_custom('%H:%M') %}
           If TheFes leaves now, he will be home at {{ eta }}.
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice
@@ -65,6 +65,10 @@ eta_thefes:
 
 # And finally the script itself
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml) on my Github config, so I don have to maintain it in two places
+
+# Explanation of variables in the script
+
+Only `check_for_title` is mandatory. Resuming Spotify won't work properly without `default_spotcast`.
 
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
