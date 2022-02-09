@@ -30,5 +30,9 @@ eta_marleen_routine:
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice
       data:
-        tts_message: "{{ message }}"
-        tts_volume: 35
+        action:
+          - alias: "Send TTS message"
+            service: tts.google_cloud_say
+            data:
+              message: "{{ message }}"
+        volume: 35

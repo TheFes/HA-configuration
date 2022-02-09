@@ -17,10 +17,14 @@ dishwasher_remaining_time_routine:
           {%- elif now() < time_set | as_local  %}
             "De vaatwasser is nu elk moment klaar"
           {%- else %}
-            "De vaatwasser is niet actief "
+            "De vaatwasser is niet actief"
           {%- endif %}
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice
       data:
-        tts_message: "{{ message }}"
-        tts_volume: 35
+        action:
+          - alias: "Send TTS message"
+            service: tts.google_cloud_say
+            data:
+              message: "{{ message }}"
+        volume: 35
