@@ -16,25 +16,27 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Add some information on how do the TTS actions like I did in the [Google Home Say script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634) which is no longer maintained. (basically it is calling [this script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/helper/send_tts.yaml) as an action in the Google Home Resume script and provide the target ([example](https://github.com/TheFes/HA-configuration/blob/main/include/automation/00_ground_floor/hall/doorbell_actions.yaml#L67-L83))).
 
 # Most recent change
-### 9 February 2022
+### Version 1.1.0 - 9 February 2022
 #### ✨ New feature
 * I added a new field `resume_this_action`. This is a boolean (`true` or `false`). The default is `true`. If set to `false` the actions which you use in the script will not be resumed if the script is called again. I can best explain this using a real life example. 
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With `resume_this_action: false` this will not be the case.
 * To let the `resume_this_action: false` setting work, I've added two dynamically created groups. Because this can get messy when you do a script reload while the scripts are running, the script will remove these groups if it is started for the first time.
+#### 🌟 Improvements
+* Added version number as a variable to the `sequence`. This will make it more easy to see which changes there are since you last updated the script
 #### 🐛 Bug fixes
 * Resuming of the ytube_mucis_player entities actually works like I intended it now.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
 # Prerequisites
-1. The entity_id’s for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
+1. The entity_id's for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
 1. The primary Spotcast user needs to be specified under `primary_spotcast` (see comment above).
-1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id’s)
+1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's)
 1. Google Nest Hub speakers can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing.
-1. If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you’ll need to complete this variable, and add the group members in there as well (see the script for an example).
+1. If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
 
 # Known limitations
-* It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won’t recognize these groups created on the fly. The cast integration won’t recognize these devices as playing anymore, so they won’t be resumed.
+* It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
 * When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards.
 * YouTube and YouTube music will only resume the video/song which was playing at the time of the interruption, and only on players with a screen if not started using the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration.
 
@@ -48,7 +50,7 @@ There are examples below for both use cases.
 
 
 The boolean 'resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
-I’ve set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don’t like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
+I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
 
 *Description of fields:*
 |Field|Required|Description|
