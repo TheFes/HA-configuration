@@ -25,6 +25,7 @@ I've set up a tag scanner on which my kids can scan a card, and then some song w
 * Added example how to start the script and apply volume for TTS messages
 #### 🐛 Bug fixes
 * Resuming of the ytube_mucis_player entities actually works like I intended it now.
+* Fixes to work with Google Home Voice script
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
