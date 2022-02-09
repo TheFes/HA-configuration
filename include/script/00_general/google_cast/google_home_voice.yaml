@@ -179,3 +179,11 @@ google_home_voice:
               data:
                 volume_level: >
                   {{ [1, volume if volume <= 1 else volume / 100] | min }}
+    - alias: "No service actions"
+      choose:
+        - conditions: "{{ is_state_attr(target, 'media_title', check_for_title) }}"
+          sequence:
+            - alias: "Stop ambient sound"
+              service: media_player.media_stop
+              target:
+                entity_id: "{{ target }}"
