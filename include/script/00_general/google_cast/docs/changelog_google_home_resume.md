@@ -2,6 +2,22 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.1.1 - 10 February 2022
+#### 🌟 Improvements
+* Changed some templates to a more efficient version
+
+### Version 1.1.0 - 9 February 2022
+#### ✨ New feature
+* I added a new field `resume_this_action`. This is a boolean (`true` or `false`). The default is `true`. If set to `false` the actions which you use in the script will not be resumed if the script is called again. I can best explain this using a real life example. 
+I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With `resume_this_action: false` this will not be the case.
+* To let the `resume_this_action: false` setting work, I've added two dynamically created groups. Because this can get messy when you do a script reload while the scripts are running, the script will remove these groups if it is started for the first time.
+#### 🌟 Improvements
+* Added version number as a variable to the `sequence`. This will make it more easy to see which changes there are since you last updated the script
+* Added example how to start the script and apply volume for TTS messages
+#### 🐛 Bug fixes
+* Resuming of the ytube_mucis_player entities actually works like I intended it now.
+* Fixes to work with Google Home Voice script
+
 ### 7 February 2022
 #### ✨ New feature
 * Due to limitations of the cast implementation, the previous way of resuming YouTube Music only worked on players with a screen. To avoid errors, Youtube will only be resumed on the entities listed in `players_screen`. I did implement support for YouTube music via the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration, however that will only work if YouTube music is started using that integration.
