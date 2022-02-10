@@ -107,16 +107,7 @@ google_home_resume:
           {{ action | reject('in', service_calls) | list | count }}
         target_list: >
           {# determine entities of cast integraton #}
-            {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
-            {%- set ns = namespace(entities = []) %}
-            {%- for device in devices %}
-              {%- set ids = device_attr(device, 'identifiers') %}
-              {%- set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
-              {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
-                {%- set ns.entities = ns.entities + device_entities(device) %}
-              {%- endif %}
-            {%- endfor %}
-            {%- set cast_entities = ns.entities + speaker_group_list %}
+            {%- set cast_entities = integration_entities('cast') %}
           {# create target lists #}
           {%- if target is defined %}
             {# create lists based on target input #}

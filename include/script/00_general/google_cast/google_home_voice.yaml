@@ -8,15 +8,21 @@ google_home_voice:
   max_exceeded: silent
   variables:
     check_for_title: "Witte ruis"
-    speaker_groups:
-      - media_player.huis_groep
-      - media_player.boven_groep
-      - media_player.beneden_groep
-      - media_player.zolder_groep
     primary_spotcast: pepijn
   sequence:
     - variables:
-        version: 1.0.0
+        version: 1.1.0
+        speaker_groups: >
+          {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
+          {%- set ns = namespace(entities = []) %}
+          {%- for device in devices %}
+            {%- set ids = device_attr(device, 'identifiers') %}
+            {%- set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
+            {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
+              {%- set ns.entities = ns.entities + device_entities(device) %}
+            {%- endif %}
+          {%- endfor %}
+          {{ integration_entities('cast') | reject('in', ns.entities) | list }}
         service_calls: >
           {%- set ns = namespace(service = []) %}
           {%- for item in action %}
