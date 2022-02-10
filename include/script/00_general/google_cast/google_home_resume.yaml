@@ -72,7 +72,7 @@ google_home_resume:
                 - conditions: >
                     {{
                       'group.resume_script_active'
-                       in integration_enities('group')
+                      in integration_enities('group')
                     }}
                   sequence:
                     - alias: "Remove resume_script_active"
@@ -84,7 +84,7 @@ google_home_resume:
                 - conditions: >
                     {{
                       'group.resume_active'
-                       in integration_enities('group')
+                      in integration_enities('group')
                     }}
                   sequence:
                     - alias: "Remove resume_active"
@@ -96,7 +96,7 @@ google_home_resume:
                 - conditions: >
                     {{
                       'group.resume_action_false'
-                       in integration_enities('group')
+                      in integration_enities('group')
                     }}
                   sequence:
                     - alias: "Remove resume_action_false"
@@ -788,4 +788,3 @@ google_home_resume:
               service: group.remove
               data:
                 object_id: resume_action_false
-
