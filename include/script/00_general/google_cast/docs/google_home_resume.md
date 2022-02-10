@@ -10,6 +10,7 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 # Requirements
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
 * For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
+* The script creates groups while running, so if you don't have any groups set up already, add `group:` to your configuration.yaml.
 
 # To Do
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
@@ -18,6 +19,7 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 ### Version 1.1.1 - 10 February 2022
 #### 🌟 Improvements
 * Changed some templates to a more efficient version
+* Added requirement for `group` integration to requirements section.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
