@@ -62,14 +62,18 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.1.1
+        version: 1.1.2
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: "{{ state_attr(this.entity_id, 'current') == 1 }}"
           sequence:
             - alias: "Remove group if it exists"
               choose:
-                - conditions: "{{ iif(states('group.resume_script_active')) }}"
+                - conditions: >
+                    {{
+                      'group.resume_script_active'
+                       in integration_enities('group')
+                    }}
                   sequence:
                     - alias: "Remove resume_script_active"
                       service: group.remove
@@ -77,15 +81,23 @@ google_home_resume:
                         object_id: resume_script_active
             - alias: "Remove group if it exists"
               choose:
-                - conditions: "{{ iif(states('group.resume_active')) }}"
+                - conditions: >
+                    {{
+                      'group.resume_active'
+                       in integration_enities('group')
+                    }}
                   sequence:
-                    - alias: "REmove resume_active"
+                    - alias: "Remove resume_active"
                       service: group.remove
                       data:
                         object_id: resume_active
             - alias: "Remove group if it exists"
               choose:
-                - conditions: "{{ iif(states('group.resume_action_false')) }}"
+                - conditions: >
+                    {{
+                      'group.resume_action_false'
+                       in integration_enities('group')
+                    }}
                   sequence:
                     - alias: "Remove resume_action_false"
                       service: group.remove
@@ -760,3 +772,20 @@ google_home_resume:
                             icon: mdi:autorenew
                             entities: >
                               {{ other + [ target_list[repeat.index -1] ] }}
+    - alias: "Remove all groups if this is the last script running"
+      choose:
+        - conditions: "{{ state_attr(this.entity_id, 'current') == 1 }}"
+          sequence:
+            - alias: "Remove resume_script_active"
+              service: group.remove
+              data:
+                object_id: resume_script_active
+            - alias: "Remove resume_active"
+              service: group.remove
+              data:
+                object_id: resume_active
+            - alias: "Remove resume_action_false"
+              service: group.remove
+              data:
+                object_id: resume_action_false
+
