@@ -288,14 +288,7 @@ google_home_resume:
           {%- set players_resume_all = players_resume_entity + ns.members %}
           {{ target_list | reject('in', players_resume_all) | list }}
         spotify_players_info: >
-          {%- 
-            set spotify_player_list = states.media_player 
-                                        | selectattr('state', 'eq', 'playing')
-                                        | selectattr('entity_id', 'search', 'media_player.spotify') 
-                                        | map(attribute='entity_id') 
-                                        | list
-          %}
-          {%- set entities = expand(spotify_player_list) %}
+          {%- set entities = expand(integration_entities('spotify')) %}
           {%- set ns = namespace(info=[]) %}
           {%- for entity in entities %}
             {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
@@ -306,8 +299,7 @@ google_home_resume:
           {%- set current = state_attr('group.resume_active', 'entity_id') %}
           {%- set current = [] if current == none else current | list %}
           {{
-            states.media_player 
-              | selectattr('entity_id', 'search', 'ytube_music')
+            expand(integration_entities('ytube_music_player'))
               | selectattr('state', 'eq', 'playing')
               | selectattr('attributes.remote_player_id', 'in', resume_entities + current)
               | map(attribute='entity_id')
@@ -318,10 +310,7 @@ google_home_resume:
           {%- set current = state_attr('group.resume_active', 'entity_id') %}
           {%- set current = [] if current == none else current | list %}
           {{
-            states.media_player 
-              | selectattr('entity_id', 'search', 'ytube_music')
-              | selectattr('state', 'eq', 'playing')
-              | selectattr('attributes.remote_player_id', 'in', resume_entities + current)
+            expand(ytube_music_players)
               | map(attribute='attributes.remote_player_id')
               | list 
           }}
