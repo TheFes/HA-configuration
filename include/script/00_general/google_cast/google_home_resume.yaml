@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.1.2
+        version: 1.1.3
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: "{{ state_attr(this.entity_id, 'current') == 1 }}"
