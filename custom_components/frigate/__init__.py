@@ -14,7 +14,9 @@ from typing import Any, Callable, Final
 from awesomeversion import AwesomeVersion
 
 from custom_components.frigate.config_flow import get_config_entry_title
+from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.components.mqtt.subscription import (
+    EntitySubscription,
     async_subscribe_topics,
     async_unsubscribe_topics,
 )
@@ -30,15 +32,35 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.loader import async_get_integration
 from homeassistant.util import slugify
 
-# TODO(@dermotduffy): To be removed some safe distance from the official release of 2021.8.
+# TODO(@dermotduffy): This section can be removed some safe distance from the
+# official release of 2022.3 (and the contents of the first version of
+# `subscribe_topics` can be moved into async_added_to_hass below).
 try:
-    from homeassistant.components.mqtt.models import (  # pylint: disable=no-name-in-module  # pragma: no cover
-        ReceiveMessage,
+    from homeassistant.components.mqtt.subscription import (
+        async_prepare_subscribe_topics,
     )
-except ImportError:  # pragma: no cover
-    from homeassistant.components.mqtt.models import (  # pylint: disable=no-name-in-module  # pragma: no cover
-        Message as ReceiveMessage,
-    )
+
+    async def subscribe_topics(
+        hass: HomeAssistant,
+        state: dict[str, EntitySubscription] | None,
+        topics: dict[str, Any],
+    ) -> Any:  # pragma: no cover
+        """Subscribe to MQTT topic."""
+        state = async_prepare_subscribe_topics(hass, state, topics)
+        # pylint: disable=no-value-for-parameter
+        return await async_subscribe_topics(hass, state)
+
+
+except ImportError:
+
+    async def subscribe_topics(
+        hass: HomeAssistant,
+        state: dict[str, EntitySubscription] | None,
+        topics: dict[str, Any],
+    ) -> Any:  # pragma: no cover
+        """Subscribe to MQTT topic."""
+        return await async_subscribe_topics(hass, state, topics)
+
 
 from .api import FrigateApiClient, FrigateApiClientError
 from .const import (
@@ -64,6 +86,7 @@ from .views import (
 SCAN_INTERVAL = timedelta(seconds=5)
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
+
 
 # Typing notes:
 # - The HomeAssistant library does not provide usable type hints for custom
@@ -111,7 +134,11 @@ def get_cameras_zones_and_objects(config: dict[str, Any]) -> set[tuple[str, str]
     zone_objects = set()
     for cam_name, obj in camera_objects:
         for zone_name in config["cameras"][cam_name]["zones"]:
-            zone_objects.add((zone_name, obj))
+            zone_name_objects = config["cameras"][cam_name]["zones"][zone_name].get(
+                "objects"
+            )
+            if not zone_name_objects or obj in zone_name_objects:
+                zone_objects.add((zone_name, obj))
     return camera_objects.union(zone_objects)
 
 
@@ -361,7 +388,7 @@ class FrigateMQTTEntity(FrigateEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe mqtt events."""
-        self._sub_state = await async_subscribe_topics(
+        self._sub_state = await subscribe_topics(
             self.hass,
             self._sub_state,
             {
