@@ -2,9 +2,24 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.1.4 - 11 February 2022
+#### 🌟 Improvements
+* Better way of removing groups at start and end of script
+
+### Version 1.1.3 - 11 February 2022
+#### 🐛 Bug fixes
+* Fixed typo in templates. Mental note: do not edit on mobile :wink: 
+
+### Version 1.1.2 - 10 February 2022
+#### 🌟 Improvements
+* Temporary fix to avoid log warnings when the script tries to remove non existing groups (will replace these 3 `choose` blocks with a `repeat` in the next version.
+* Groups will also be removed when the last instance of the script finishes.
+
 ### Version 1.1.1 - 10 February 2022
 #### 🌟 Improvements
 * Changed some templates to a more efficient version
+#### 🧾 Docs
+* Added requirement for `group` integration to requirements section.
 
 ### Version 1.1.0 - 9 February 2022
 #### ✨ New feature
