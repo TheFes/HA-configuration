@@ -1,0 +1,26 @@
+platform: template
+lights:
+  eettafel_template:
+    unique_id: 847f5495-8971-4656-8fde-7a636e983735
+    friendly_name: "Eettafel Template"
+    level_template: "{{ [ 1, ((state_attr('light.eettafel', 'brightness') | int(0) - 255 * 0.145) / 0.855) | round ] | max }}"
+    value_template: "{{ states('light.eettafel') }}"
+    temperature_template: "{{ [ 153, state_attr('light.eettafel', 'color_temp') | int(0)] | max }}"
+    min_mireds_template: "{{ state_attr('light.eettafel', 'min_mireds') | int(153) }}"
+    max_mireds_template: "{{ state_attr('light.eettafel', 'max_mireds') | int(370) }}"
+    availability_template: "{{ not is_state('light.eettafel', 'unavailable') }}"
+    turn_on:
+      service: script.eettafel_turn_on
+    turn_off:
+      service: light.turn_off
+      entity_id: light.eettafel
+    set_level:
+      service: light.turn_on
+      data:
+        entity_id: light.eettafel
+        brightness: "{{ (brightness | float*0.855 + 255*0.145)|round }}"
+    set_temperature:
+      service: light.turn_on
+      data:
+        entity_id: light.eettafel
+        color_temp: "{{ color_temp }}"
