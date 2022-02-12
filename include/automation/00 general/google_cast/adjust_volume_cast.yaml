@@ -34,11 +34,14 @@ condition:
   - alias: "Previous state not unavailable"
     condition: template
     value_template: "{{ trigger.from_state.state not in ['unavailable', 'unkown'] }}"
-  - alias: "TTS active?"
-    condition: state
-    entity_id:
-      - script.google_home_say
-    state: "off"
+  - alias: "No resume active?"
+    condition: template
+    value_template: >
+      {% if not is_state('script.google_home_resume', 'on') %}
+        true
+      {% else %}
+        {{ not trigger.entity_id in state_attr('group.resume_script_active', 'entity_id') }}
+      {% endif %}
 variables:
   player: "{{ trigger.entity_id }}"
   device: "{{ trigger.entity_id | replace('media_player.', '') }}"
