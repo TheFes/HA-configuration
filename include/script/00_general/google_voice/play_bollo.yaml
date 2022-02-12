@@ -1,0 +1,36 @@
+play_bollo:
+  alias: "00 🐻 Play random song of Bollo"
+  icon: mdi:teddy-bear
+  mode: restart
+  sequence:
+    - variables:
+        id: bollo
+        input_text: "{{ 'input_text.played_'~id }}"
+        media: "{{ state_attr('sensor.'~id, 'file_list') | sort }}"
+        playlist: "{{ range(0,media|count) | list }}"
+        exclude_list: "{{ states(input_text).split('|') | map('int') | list }}"
+        to_play: "{{ playlist|reject('in', exclude_list) | list | random }}"
+        thumb: "/local/pictures/tags/{{ id }}.jpg"
+    - alias: "Start script for speaker voice command"
+      service: script.turn_on
+      target:
+        entity_id: script.google_home_voice
+      data:
+        variables:
+          convert_target: true
+          action:
+            - alias: "Remove first song, add new one"
+              service: input_text.set_value
+              target:
+                entity_id: "{{ input_text }}"
+              data:
+                value: "{{ ((states(input_text).split('|') | map('int') | list)[1:] + [to_play]) | join('|') }}"
+            - service: media_player.play_media
+              data:
+                media_content_id: >
+                  {{ media[to_play] | replace('/media', 'media-source://media_source/local') }}
+                media_content_type: "audio/mp3"
+                extra:
+                  title: "{{ (media[to_play].split('/')[5]).split('.')[0].replace('_', ' ') }}"
+                  thumb: "{{ thumb }}"
+          volume: 35
