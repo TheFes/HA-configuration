@@ -23,7 +23,7 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * When speaker groups are changed, the volume of the individual group members will now be restored, instead of the volume of the group.
 * Several changes in templates, and how data of cast entities is gathered and stored
 #### 🧾 Docs
-* Added section on why this is not a blueprint
+* Added [section](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#why-not-a-blueprint-16) on why this is not a blueprint
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
