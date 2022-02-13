@@ -11,7 +11,7 @@ google_home_voice:
     primary_spotcast: pepijn
   sequence:
     - variables:
-        version: 1.1.0
+        version: 1.2.0
         speaker_groups: >
           {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
           {%- set ns = namespace(entities = []) %}
@@ -33,63 +33,50 @@ google_home_voice:
           {{ ns.service }}
         no_service_count: >
           {{ action | reject('in', service_calls) | list | count }}
-        entity_list: >
-          {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
-          {%- set ns = namespace(entities = []) %}
-          {%- for device in devices %}
-            {%- set ids = device_attr(device, 'identifiers') %}
-            {%- set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
-            {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
-              {%- set ns.entities = ns.entities + device_entities(device) %}
-            {%- endif %}
-          {%- endfor %}
-          {{ 
-            (ns.entities + speaker_groups)
-            if speaker_groups is defined and speaker_groups
-            else ns.entities
-          }}
-        entity_playing: >
-          {{ 
-            expand(entity_list) | selectattr('state', 'eq', 'playing') 
-                                | map(attribute='entity_id') 
-                                | list 
-          }}
-        media_player_data: >
-          {%- set entities = expand(entity_playing) %}
+        player_data: >
           {%- set ns = namespace(info=[]) %}
-          {%- for entity in entities %}
-            {%- set ns.info = ns.info +  [ 
+          {%- for entity in expand(integration_entities('cast')) %}
+            {%- set ns.info = ns.info + [
                                           dict(
                                             entity_id = entity.entity_id,
                                             friendly_name = entity.attributes.friendly_name,
+                                            state = entity.state,
                                             media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
                                             media_title = entity.attributes.get('media_title', 'no title'),
                                             media_artist = entity.attributes.get('media_artist', 'no artist'),
                                             media_content_type = entity.attributes.get('media_content_type', 'no type'),
                                             app_name = entity.attributes.get('app_name', 'no app'),
                                             entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                            volume_level = entity.attributes.get('volume_level', 0.25) | round(2)
+                                            volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                            media_position = (
+                                                                now() - entity.attributes.get('media_position_updated_at', now())
+                                                                + timedelta(seconds=entity.attributes.get('media_position', 0))
+                                                              ).seconds
                                             )
-                                        ] 
+                                          ] 
             %}
           {%- endfor %}
           {{ ns.info }}
-        spotify_data: >
-          {%- set ns = namespace(spotify=[]) %}
-          {%- 
-            for entity in states.media_player 
-                            | selectattr('entity_id', 'search', 'spotify')
-                            | selectattr('state', 'eq', 'playing')
-          %}
-            {%- set ns.spotify = ns.spotify +  [ 
-                                                  dict(
-                                                    entity_id = entity.entity_id,
-                                                    source = entity.attributes.source
-                                                    )
-                                                ] 
-            %}
+        spotify_players_info: >
+          {%- set entities = expand(integration_entities('spotify')) %}
+          {%- set ns = namespace(info=[]) %}
+          {%- for entity in entities %}
+            {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
           {%- endfor %}
-          {{ ns.spotify }}
+          {{ ns.info }}
+        ytube_player_info: >
+          {% set ns = namespace(ytube = []) %}
+          {% for item in integration_entities('ytube_music_playr')
+                          | selectattr('state', 'eq', 'playing')
+          %}
+            {% set ns.ytube = ns.ytube +  [
+                                            dict(
+                                                  player = item.entity_id,
+                                                  target = item.attributes.remote_player_id
+                                                )
+                                          ]
+            %}
+          {% endfor %}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -120,12 +107,22 @@ google_home_voice:
         }}
     - variables:
         target: >
-          {{ 
-            expand(states.media_player)
-              | selectattr('attributes.media_title', 'eq', check_for_title)
-              | map(attribute='entity_id') 
-              | list
-          }}
+          {%- 
+            set target = expand(states.media_player)
+                          | selectattr('attributes.media_title', 'eq', check_for_title)
+                          | map(attribute='entity_id') 
+                          | list
+          %}
+          {%- if target_conversion is defined and target_conversion %}
+            {%- set new = target_conversion.get(target[0], target) %}
+            {%- if nes is string %}
+              {{ new.replace(' ', '').split(',') }}
+            {%- else %}
+              {{ new }}
+            {%- endif %}
+          {%- else %}
+            {{ target }}
+          {%- endif %}
     - alias: "No service actions"
       choose:
         - conditions: "{{ service_calls | count != 0 }}"
@@ -137,55 +134,64 @@ google_home_voice:
     - alias: "Are there any service calls to perform"
       condition: template
       value_template: "{{ service_calls | count != 0 }}"
-    - alias: "Send actions using Google Home Resume script"
-      service: script.turn_on
-      target:
-        entity_id: script.google_home_resume
-      data:
-        variables:
-          voice_target: "{{ target }}"
-          voice_media_player_data: "{{ media_player_data | selectattr('entity_id', 'eq', target[0] ) | list }}"
-          voice_groups: >
-            {{ 
-              entity_playing | select('in', speaker_groups) | list 
-              if speakers_groups is defined and speaker_groups 
-              else [] 
-            }}
-          voice_spotcast: >
-            {%- set friendly_name = state_attr(target[0], 'friendly_name') %}
-            {%- set spotify_entity = spotify_data | selectattr('source', 'eq', friendly_name) | map(attribute='entity_id') | join %}
-            {{ 
-              spotify_entity.replace('media_player.spotify_', '')
-              if spotify_entity
-              else (primary_spotcast if primary_spotcast is defined and primary_spotcast else '')
-            }}
-          action: >
-            {%- set ns = namespace(action=[]) %}
-            {%- for item in service_calls %}
-              {%- set ns.action = ns.action + [
-                                                dict(
-                                                  service = item.service,
-                                                  target = { 'entity_id' : target},
-                                                  data = item.get('data', {})
-                                                  )
-                                              ] 
-              %}
-            {%- endfor %}
-            {{ ns.action }}
-    - alias: "TTS volume defined"
+    - alias: "Use resume script or perform actions"
+      choose:
+        - conditions: "{{ use_resume if use_resume is defined else true }}"
+          sequence:
+            - alias: "Send actions using Google Home Resume script"
+              service: script.turn_on
+              target:
+                entity_id: script.google_home_resume
+              data:
+                variables:
+                  voice_target: "{{ target }}"
+                  voice_player_data: "{{ player_data }}"
+                  voice_spotify: "{{ spotify_players_info }}"
+                  voice_ytube_player: >
+                    {{
+                      ytube_player_info | selectattr('player', 'in', target)
+                                        | map(attribute='player')
+                                        | list
+                    }}
+                  voice_ytube_target: >
+                    {{
+                      ytube_player_info | selectattr('player', 'in', target)
+                                        | map(attribute='target')
+                                        | list
+                    }}
+                  action: >
+                    {%- set ns = namespace(action=[]) %}
+                    {%- for item in service_calls %}
+                      {%- set ns.action = ns.action + [
+                                                        dict(
+                                                          service = item.service,
+                                                          target = item.get('target', { 'entity_id' : target}),
+                                                          data = item.get('data', {})
+                                                          )
+                                                      ] 
+                      %}
+                    {%- endfor %}
+                    {{ ns.action }}
+      default:
+        - alias: "Perform service calls defined in action"
+          repeat:
+            count: "{{ service_calls | count }}"
+            sequence:
+              - service: "{{ service_calls[repeat.index -1].service }}"
+                target: "{{ service_calls[repeat.index -1].get('target', { 'entity_id': target}) }}"
+                data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
+    - alias: "Volume defined"
       choose:
         - conditions: "{{ iif(volume) }}"
           sequence:
-            - alias: "Wait first target is idle or off (will prevent volume change of stream in case there is only one target)"
-              wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
-            - alias: "Apply TTS volume"
+            - alias: "Apply volume"
               service: media_player.volume_set
               target:
                 entity_id: "{{ target }}"
               data:
                 volume_level: >
                   {{ [1, volume if volume <= 1 else volume / 100] | min }}
-    - alias: "No service actions"
+    - alias: "Stop ambient sound"
       choose:
         - conditions: "{{ is_state_attr(target, 'media_title', check_for_title) }}"
           sequence:

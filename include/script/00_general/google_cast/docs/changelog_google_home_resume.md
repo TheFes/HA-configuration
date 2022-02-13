@@ -2,6 +2,13 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.2.0 - 13 February 2022
+#### 🔴 BREAKING
+* Made several changes in how data is sent from the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) to this one. So if you update this script, make sure to also update the other one
+#### 🌟 Improvements
+* When speaker groups are changed, the volume of the individual group members will now be restored, instead of the volume of the group.
+* Several changes in templates, and how data of cast entities is gathered and stored
+
 ### Version 1.1.4 - 11 February 2022
 #### 🌟 Improvements
 * Better way of removing groups at start and end of script

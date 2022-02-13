@@ -16,6 +16,23 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
+### Version 
+### Version 1.2.0 - 13 February 2022
+#### 🔴 BREAKING
+* Made several changes in how data is sent from this script to the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
+#### ✨ New feature
+* It is now possible to use `target_conversion`. This means you can give your voice command, and perform your actions on another target eg the speaker group the target belongs to.
+* By setting the `use_resume` variable to `false` you can send the actions without using the Google Home Resume script. This can be used if you for example want to start a radio stream which is not in TuneIn, and do not want to resume other streams in case that one is stopped.
+* The `target` determined by the ambient sound will only be used in case you omit the target in your service call. If you provide it, that target will be used. This can be useful if you also want to provide other actions, for example setting the state of an `input_boolean`.
+* In case you don't have the need to use the Google Home Script at all, you can set `use_resume: false` in the variables of the Google Home Voice script, and it will just send the actions.
+#### 🌟 Improvements
+* Information is shared with the Google Home Resume script in a better way. This was also needed because now multiple targets or groups as target are possible, where in the old version there was always only one target.
+* Information on for the `ytube_music_player` integration is now also shared.
+
+### Version 1.1.0 - 10 February 2022
+#### 🌟 Improvements
+* No need to define `speaker_groups` anymore, as I found a way to define them using a template.
+
 ### Version 1.0.0 - 9 February 2022
 #### ✨ New feature
 * Now the new script is used, other actions besides TTS are supported
@@ -53,6 +70,9 @@ eta_thefes:
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice
       data:
+        target_conversion:
+          media_player.kitchen_hub: media_player.livinghome_group
+        use_resume: true
         action:
           - alias: "Send TTS message"
             service: tts.google_cloud_say
@@ -60,6 +80,14 @@ eta_thefes:
               message: "{{ message }}"
         volume: 35
 ```
+Variables in service call for the script:
+|Variable|Required|Description|
+| --- | --- | --- |
+|action|Yes|The title of the ambient sound as shown in developer tools > states |
+|target_conversion|No|A list dictonary with target replacements when you send the voice command|
+|use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
+
+
 
 # And finally the script itself
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml) on my Github config, so I don have to maintain it in two places
@@ -71,5 +99,5 @@ Only `check_for_title` is mandatory. Resuming Spotify won't work properly withou
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
 |check_for_title|Yes|`Witte Ruis`|The title of the ambient sound as shown in developer tools > states |
-|speaker_groups|No|[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml#L11-L15)|A list of the media player entity_ids corresponding to the speakers groups set up in the Google Home app|
 |primary_spotcast|No|`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
+|use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.

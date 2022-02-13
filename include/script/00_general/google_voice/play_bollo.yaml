@@ -17,7 +17,9 @@ play_bollo:
         entity_id: script.google_home_voice
       data:
         variables:
-          convert_target: true
+          target_conversion:
+            media_player.keuken_hub: media_player.beneden_groep
+            media_player.woonkamer_mini: media_player.beneden_groep
           action:
             - alias: "Remove first song, add new one"
               service: input_text.set_value

@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.1.4
+        version: 1.2.0
     - alias: "Dynamic groups"
       variables:
         groups:
@@ -94,7 +94,7 @@ google_home_resume:
                     service: group.remove
                     data:
                       object_id: >
-                        {% set existing = integration_entities('group')
+                        {%- set existing = integration_entities('group')
                                             | select('in', groups)
                                             | list
                         %}
@@ -192,136 +192,144 @@ google_home_resume:
                 | list
             %}
             {{ target_group + single_not_in_group }}
+        player_data: >
+          {%- if voice_player_data is defined %}
+            {{ voice_player_data }}
+          {%- else %}
+            {%- set ns = namespace(info=[]) %}
+            {%- for entity in expand(integration_entities('cast')) %}
+              {%- set ns.info = ns.info + [
+                                            dict(
+                                              entity_id = entity.entity_id,
+                                              friendly_name = entity.attributes.friendly_name,
+                                              state = entity.state,
+                                              media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                              media_title = entity.attributes.get('media_title', 'no title'),
+                                              media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                              media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                              app_name = entity.attributes.get('app_name', 'no app'),
+                                              entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                              volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                              media_position = (
+                                                                  now() - entity.attributes.get('media_position_updated_at', now())
+                                                                  + timedelta(seconds=entity.attributes.get('media_position', 0))
+                                                                ).seconds
+                                              )
+                                            ] 
+              %}
+            {%- endfor %}
+            {{ ns.info }}
+          {%- endif %}
         players_to_resume: >
           {# set variables based on dynamic groups created by script #}
-            {% set resume_active = state_attr('group.resume_active', 'entity_id') %}
-            {% set resume_active = iif(resume_active, resume_active, []) %}
-            {% set resume_action_false = state_attr('group.resume_action_false', 'entity_id') %}
-            {% set resume_action_false = iif(resume_action_false, resume_action_false, []) %}
-          {# use data from google_home_voice script in case it was used #}
-            {%- if voice_media_player_data is defined %}
-              {{ 
-                voice_media_player_data 
-                  | rejectattr('entity_id', 'in', resume_active)
-                  | rejectattr('entity_id', 'in', resume_action_false)
-                  | list
-              }}
-            {%- else %}
-              {# determine which media_players are playing and store attributes#}
-                {%- 
-                  set all_players_playing = states.media_player 
-                                              | selectattr('state', 'eq', 'playing') 
-                                              | map(attribute='entity_id') 
-                                              | list  
+            {%- set resume_active = state_attr('group.resume_active', 'entity_id') %}
+            {%- set resume_active = iif(resume_active, resume_active, []) %}
+            {%- set resume_action_false = state_attr('group.resume_action_false', 'entity_id') %}
+            {%- set resume_action_false = iif(resume_action_false, resume_action_false, []) %}
+          {# determine which media_players are playing and store attributes#}
+            {%- 
+              set all_players_playing = player_data
+                                          | selectattr('state', 'eq', 'playing') 
+                                          | map(attribute='entity_id') 
+                                          | list  
+            %}
+          {# determine which Google Home speakers groups are playing #}
+            {%- 
+              set all_speaker_groups_playing = all_players_playing
+                                                  | select('in', speaker_group_list)
+                                                  | list
+            %}
+          {# determine which of the targets (including groups members) are playing #}
+            {%- set ns = namespace(targets = []) %}
+              {%- for target in target_list %}
+                {%- set ns.targets = ns.targets +  (
+                                                      speaker_groups[target]
+                                                      if target in speaker_group_list
+                                                      else [ target ]
+                                                    )
                 %}
-              {# determine which Google Home speakers groups are playing #}
-                {%- 
-                  set all_speaker_groups_playing =  voice_groups | default(
-                                                    all_players_playing 
-                                                      | select('in', speaker_group_list) 
-                                                      | list )
-                %}
-              {# determine which of the targets (including groups members) are playing  #}
-                {%- set ns = namespace(targets = []) %}
-                  {%- for target in target_list %}
-                    {%- set ns.targets = ns.targets +  (
-                                                                speaker_groups[target] 
-                                                                if target in speaker_group_list 
-                                                                else [ target ] 
-                                                              ) 
-                    %}
-                  {%- endfor %}
-                {%- set target_playing = ns.targets | select('in', all_players_playing) | list %}
-              {# determine which groups should be resumed becaue a single target is part of that group #}
-                {%- set ns = namespace(groups = []) %}
-                  {%- for group in all_speaker_groups_playing %}
-                    {%- for entity in speaker_groups[group] if entity in target_playing %}
-                      {%- set ns.groups = ns.groups + [group] %}
-                    {%- endfor %}
-                  {%- endfor %}
-                {%- set speaker_groups_resume = ns.groups | unique | list %}
-              {# determine which single entities are in a group which is going to be resumed #}
-                {%- set ns = namespace(reject = []) %}
-                {%- for group in speaker_groups_resume %}
-                  {%- set ns.reject = ns.reject + speaker_groups[group] %}
+              {%- endfor %}
+            {%- set target_playing = ns.targets | select('in', all_players_playing) | list %}
+          {# determine which groups should be resumed becaue a single target is part of that group #}
+            {%- set ns = namespace(groups = []) %}
+              {%- for group in all_speaker_groups_playing %}
+                {%- for entity in speaker_groups[group] if entity in target_playing %}
+                  {%- set ns.groups = ns.groups + [group] %}
                 {%- endfor %}
-                {%- set reject_list = ns.reject %}
-              {# determine which single playing entities are in a group which is a target #}
-                {%- set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
-                {%- set ns = namespace(single_resume = []) %}
-                {%- for group in target_group %}
-                  {%- set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
-                {%- endfor %}
-                {%- set single_resume_list = ns.single_resume %}
-              {# combine all the above to a list of players which should be resumed #}
-                {%- 
-                  set players_resume = (target_playing + speaker_groups_resume + single_resume_list)
-                                        | reject('in', reject_list)
-                                        | reject('in', resume_active)
-                                        | reject('in', resume_action_false)
-                                        | unique
-                                        | list
-                %}
-                {%- set ns = namespace(info=[]) %}
-                {%- for entity in expand(players_resume) %}
-                  {%- set ns.info = ns.info +  [ 
-                                                dict(
-                                                  entity_id = entity.entity_id,
-                                                  friendly_name = entity.attributes.friendly_name, 
-                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                                  media_title = entity.attributes.get('media_title', 'no title'),
-                                                  media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                                  media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                                  app_name = entity.attributes.get('app_name', 'no app'),
-                                                  entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                  volume_level = entity.attributes.get('volume_level', 0.25) | round(2),
-                                                  media_position = (
-                                                                      now() - entity.attributes.get('media_position_updated_at', now())
-                                                                      + timedelta(seconds=entity.attributes.get('media_position', 0))
-                                                                    ).seconds
-                                                  )
-                                              ] 
-                  %}
-                {%- endfor %}
-                {{ ns.info }}
-            {%- endif %}
+              {%- endfor %}
+            {%- set speaker_groups_resume = ns.groups | unique | list %}
+          {# determine which single entities are in a group which is going to be resumed #}
+            {%- set ns = namespace(to_reject = []) %}
+            {%- for group in speaker_groups_resume %}
+              {%- set ns.to_reject = ns.to_reject + speaker_groups[group] %}
+            {%- endfor %}
+            {%- set reject_list = ns.to_reject %}
+          {# determine which single playing entities are in a group which is a target #}
+            {%- set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
+            {%- set ns = namespace(single_resume = []) %}
+            {%- for group in target_group %}
+              {%- set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
+            {%- endfor %}
+            {%- set single_resume_list = ns.single_resume %}
+          {# combine all the above to a list of players which should be resumed #}
+            {{ 
+              (target_playing + speaker_groups_resume + single_resume_list)
+                | reject('in', reject_list)
+                | reject('in', resume_active)
+                | reject('in', resume_action_false)
+                | unique
+                | list
+            }}
         target_not_playing: >
-          {%- set players_resume_entity = players_to_resume | map(attribute='entity_id') | list %}
-          {%- set ns = namespace(members = []) %}
-          {%- for entity in players_resume_entity %}
-            {%- if entity in speaker_group_list %}
-              {%- set ns.members = ns.members + speaker_groups[entity] | list %}
-            {%- endif %}
-          {%- endfor %}
-          {%- set players_resume_all = players_resume_entity + ns.members %}
-          {{ target_list | reject('in', players_resume_all) | list }}
-        spotify_players_info: >
-          {%- set entities = expand(integration_entities('spotify')) %}
-          {%- set ns = namespace(info=[]) %}
-          {%- for entity in entities %}
-            {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
-          {%- endfor %}
-          {{ ns.info }}
-        ytube_music_players: >
-          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
-          {%- set current = state_attr('group.resume_active', 'entity_id') %}
-          {%- set current = [] if current == none else current | list %}
-          {{
-            expand(integration_entities('ytube_music_player'))
-              | selectattr('state', 'eq', 'playing')
-              | selectattr('attributes.remote_player_id', 'in', resume_entities + current)
+          {%- 
+            set playing = player_data
+              | rejectattr('state', 'eq', 'playing')
               | map(attribute='entity_id')
               | list 
-          }}
+          %}
+          {%- set targets_not_playing = target_list | reject('in', playing) | list %}
+          {%- set ns = namespace(members = []) %}
+          {%- for target in targets_not_playing %}
+            {%- if target in speaker_group_list %}
+              {%- set ns.members = ns.members + speaker_groups[target] %}
+            {%- endif %}
+          {%- endfor %}
+          {{ targets_not_playing + ns.members | reject('in', speaker_group_list) | list }}
+        spotify_players_info: >
+          {%- if voice_spotify is defined %}
+            {{ voice_spotify }}
+          {%- else %}
+            {%- set entities = expand(integration_entities('spotify')) %}
+            {%- set ns = namespace(info=[]) %}
+            {%- for entity in entities %}
+              {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}
+            {%- endfor %}
+            {{ ns.info }}
+          {%- endif %}
+        ytube_music_players: >
+          {%- if voice_ytube_player is defined %}
+            {{ voice_ytube_player }}
+          {%- else %}
+            {%- set current = state_attr('group.resume_active', 'entity_id') %}
+            {%- set current = [] if current == none else current | list %}
+            {{
+              expand(integration_entities('ytube_music_player'))
+                | selectattr('state', 'eq', 'playing')
+                | selectattr('attributes.remote_player_id', 'in', players_to_resume + current)
+                | map(attribute='entity_id')
+                | list 
+            }}
+          {%- endif %}
         ytube_music_targets: >
-          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
-          {%- set current = state_attr('group.resume_active', 'entity_id') %}
-          {%- set current = [] if current == none else current | list %}
-          {{
-            expand(ytube_music_players)
-              | map(attribute='attributes.remote_player_id')
-              | list 
-          }}
+          {%- if voice_ytube_target is defined %}
+            {{ voice_ytube_target }}
+          {%- else %}
+            {{
+              expand(ytube_music_players)
+                | map(attribute='attributes.remote_player_id')
+                | list 
+            }}
+          {%- endif %}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -344,12 +352,12 @@ google_home_resume:
     - alias: "Are there any service calls to perform"
       condition: template
       value_template: "{{ service_calls | count != 0 }}"
-    - alias: "Create group with entities which will resume"
+    - alias: "Create group with entities for which the script is active"
       service: group.set
       data:
         object_id: resume_script_active
         name: "Entities currently active with Google Home Resume script"
-        icon: mdi:autorenew
+        icon: mdi:play-box
         entities: >
           {%- set current = state_attr('group.resume_script_active', 'entity_id') %}
           {%- set current = [] if current == none else current | list %}
@@ -365,9 +373,8 @@ google_home_resume:
         entities: >
           {%- set current = state_attr('group.resume_active', 'entity_id') %}
           {%- set current = [] if current == none else current | list %}
-          {%- set resume_entities = players_to_resume | map(attribute='entity_id') | list %}
           {{ 
-              ( current + resume_entities + ytube_music_players ) | unique | list
+              ( current + players_to_resume + ytube_music_players ) | unique | list
           }}
     - alias: "Turn non playing entities on if needed"
       choose:
@@ -376,7 +383,8 @@ google_home_resume:
             - alias: "Turn non playing entities on"
               service: media_player.turn_on
               target:
-                entity_id: "{{ target_not_playing }}"
+                entity_id: >
+                  {{ target_not_playing }}
             - delay: 0.25
     - variables:
         volume_old_not_playing: >
@@ -397,7 +405,11 @@ google_home_resume:
           {%- endfor %}
           {{ ns.info }}
         screen_not_playing: >
-          {{ target_not_playing | select('in', players_screen) | list if (players_scren is defined and players_screen) else [] }}
+          {{
+            target_not_playing | select('in', players_screen) | list 
+            if (players_scren is defined and players_screen) 
+            else [] 
+          }}
     - alias: "Interrupt YouTube music if needed"
       choose:
         - conditions:
@@ -464,7 +476,12 @@ google_home_resume:
                 sequence:
                   - alias: "Variables for specific media_player"
                     variables:
-                      player: "{{ players_to_resume[repeat.index - 1] }}"
+                      player: >
+                        {{ 
+                          player_data 
+                            | selectattr('entity_id', 'eq', players_to_resume[repeat.index - 1])
+                            | join
+                        }}
                       spotify: >
                         {{ player.app_name == 'Spotify' }}
                       youtube: >
@@ -475,30 +492,26 @@ google_home_resume:
                           and not player.entity_id in ytube_music_targets
                         }}
                       spotcast_account: >
-                        {%- if voice_spotcast is defined %}
-                          {{ voice_spotcast }}
+                        {%- if player.app_name != 'Spotify' %}
+                          {%- set spotcast = 'Not Spotify' %}
                         {%- else %}
-                          {%- if player.app_name != 'Spotify' %}
-                            {%- set spotcast = 'Not Spotify' %}
+                          {%- set entity = player.entity_id %}
+                          {%- if speaker_group_list != [] and speaker_groups[entity] %}
+                            {%- set members = speaker_groups[entity] %}
                           {%- else %}
-                            {%- set entity = player.entity_id %}
-                            {%- if speaker_group_list != [] and speaker_groups[entity] %}
-                              {%- set members = speaker_groups[entity] %}
-                            {%- else %}
-                              {%- set members = [] %}
-                            {%- endif %}
-                            {%- set list_check = [ player.entity_id ] + members %}
-                            {%- set names_check = expand(list_check) | map(attribute='name') | list %}
-                              {%- set spotcast =  spotify_players_info
-                                                  | selectattr('source', 'in', names_check) 
-                                                  | map(attribute='entity_id') 
-                                                  | join 
-                                                  | replace('media_player.spotify_', '')
-                                  
-                              %}
+                            {%- set members = [] %}
                           {%- endif %}
-                            {{ spotcast if spotcast else primary_spotcast }}
+                          {%- set list_check = [ player.entity_id ] + members %}
+                          {%- set names_check = expand(list_check) | map(attribute='name') | list %}
+                            {%- set spotcast =  spotify_players_info
+                                                | selectattr('source', 'in', names_check) 
+                                                | map(attribute='entity_id') 
+                                                | join 
+                                                | replace('media_player.spotify_', '')
+                                
+                            %}
                         {%- endif %}
+                          {{ spotcast if spotcast else primary_spotcast }}
                   - alias: "Resume needed?"
                     choose:
                       - conditions:
@@ -525,12 +538,36 @@ google_home_resume:
                                         != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
                                       }}
                                 sequence:
-                                  - alias: "Set volume back to old state"
-                                    service: media_player.volume_set
-                                    target:
-                                      entity_id: "{{ player.entity_id }}"
-                                    data:
-                                      volume_level: "{{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}"
+                                  - alias: "Player is group?"
+                                    choose:
+                                      - conditions: "{{ player.entity_id in speaker_group_list }}"
+                                        sequence:
+                                          - variables:
+                                              members: "{{ speaker_groups[player.entity_id] }}"
+                                          - alias: "Restore volume of members"
+                                            repeat:
+                                              count: "{{ members | count }}"
+                                              sequence:
+                                                - alias: "Set volume back to old state"
+                                                  service: media_player.volume_set
+                                                  target:
+                                                    entity_id: "{{ members[repeat.index -1] }}"
+                                                  data:
+                                                    volume_level: >
+                                                      {{ 
+                                                        player_data
+                                                          | selectattr('entity_id', 'eq', members[repeat.index-1])
+                                                          | map(attribute='volume_level')
+                                                          | join
+                                                          | round(2, default=default_volume_level)
+                                                      }}
+                                    default:
+                                      - alias: "Set volume back to old state"
+                                        service: media_player.volume_set
+                                        target:
+                                          entity_id: "{{ player.entity_id }}"
+                                        data:
+                                          volume_level: "{{ player.volume_level | round(2, default=default_volume_level) }}"
                           - alias: "Resume playing"
                             choose:
                               - alias: "YouTube?"
@@ -580,7 +617,7 @@ google_home_resume:
                                           account: "{{ spotcast_account }}"
                                           force_playback: true
                               - alias: "Stream?"
-                                conditions: "{{ stream and not player.entity_id in ytube_music_targets }}"
+                                conditions: "{{ stream }}"
                                 sequence:
                                   - alias: "Resume stream"
                                     service: media_player.play_media
@@ -793,7 +830,7 @@ google_home_resume:
                     service: group.remove
                     data:
                       object_id: >
-                        {% set existing = integration_entities('group')
+                        {%- set existing = integration_entities('group')
                                             | select('in', groups)
                                             | list
                         %}

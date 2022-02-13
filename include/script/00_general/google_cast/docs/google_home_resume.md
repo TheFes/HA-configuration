@@ -16,9 +16,14 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent change
-### Version 1.1.4 - 11 February 2022
+### Version 1.2.0 - 13 February 2022
+#### 🔴 BREAKING
+* Made several changes in how data is sent from the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) to this one. So if you update this script, make sure to also update the other one
 #### 🌟 Improvements
-* Better way of removing groups at start and end of script
+* When speaker groups are changed, the volume of the individual group members will now be restored, instead of the volume of the group.
+* Several changes in templates, and how data of cast entities is gathered and stored
+#### 🧾 Docs
+* Added section on why this is not a blueprint
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -139,3 +144,11 @@ There are no required variables, but if you use Google Home speaker groups and p
 |fixed_picture||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L39)|A dictionary with the pictures. As key value the artist should be used (check `media_artist` in developer tools > states)|
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived|
+
+# Why not a blueprint?
+I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
+* You need to provide information on your speaker groups, players with a screen and spotcast account. That would mean that you will have to do that each time you use the blueprint to create a script, or that you'll have to add this information each time the blueprint is updated, which would reduce the easiness of updating the script.
+* I tried to bypass the point above by using includes, but the blueprint would do that once, and add the informaton in the yaml, instead of keeping the include code.
+* I use really large and complicated templates, and these would be converted to really messy one line templates, making it impossible to read and debug if needed.
+
+So, basically, I gave it a try, and decided it would not work :)
