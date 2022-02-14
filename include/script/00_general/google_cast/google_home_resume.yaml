@@ -450,7 +450,11 @@ google_home_resume:
         - conditions:
             - alias: "Anything playing"
               condition: template
-              value_template: "{{ ytube_music_players | count > 0 }}"
+              value_template: >
+                {{
+                  not voice_ytube_info is defined
+                  and ytube_music_players | count > 0
+                }}
           sequence:
             - service: ytube_music_player.call_method
               data:
@@ -699,20 +703,11 @@ google_home_resume:
         - conditions:
             - alias: "Anything playing"
               condition: template
-              value_template: >
-                {{
-                  ytube_music_players | count > 0
-                  or voice_ytube_info | count > 0
-                }}
+              value_template: "{{ ytube_music_players | count > 0 }}"
           sequence:
             - service: ytube_music_player.call_method
               data:
-                entity_id: >
-                  {{ 
-                    voice_ytube_info | map(attribute='player') | list
-                    if voice_ytube_info is defined
-                    else ytube_music_players
-                  }}
+                entity_id: "{{ ytube_music_players }}"
                 command: interrupt_resume
             - alias: "Remove entity from group"
               service: group.set
