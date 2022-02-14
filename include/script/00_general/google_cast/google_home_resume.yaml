@@ -355,16 +355,48 @@ google_home_resume:
               else false
             }}
           sequence:
+            - variables:
+                player_ytube: >
+                  {% set y = voice_ytube_info
+                              | rejectattr('target', 'in', players_to_resume)
+                              | map(attribute='player')
+                              | list
+                  %}
+                target_ytube: >
+                  {% set y = voice_ytube_info
+                              | rejectattr('target', 'in', players_to_resume)
+                              | map(attribute='target')
+                              | list
+                  %}
+                  {%- set ns = namespace(members = []) %}
+                  {%- for target in y %}
+                    {%- if target in speaker_group_list %}
+                      {%- set ns.members = ns.members + speaker_groups[target] %}
+                    {%- endif %}
+                  {%- endfor %}
+                  {{ (y + ns.members) | reject('in', speaker_group_list) | unique | list }}
             - service: ytube_music_player.call_method
               data:
-                entity_id: >
-                  {{ 
-                    voice_ytube_info
-                      | rejectattr('target', 'in', players_to_resume)
-                      | map(attribute='target')
-                      | list
-                  }}
+                entity_id: "{{ player_ytube }}"
                 command: interrupt_resume
+            - alias: "Adjust volume"
+              repeat:
+                count: "{{ target_ytube | count }}"
+                sequence:
+                  - variables:
+                      player: >
+                        {{ 
+                          player_data 
+                            | selectattr('entity_id', 'eq', target_ytube[repeat.index - 1])
+                            | join
+                        }}
+                  - alias: "Set volume back to old state"
+                    service: media_player.volume_set
+                    target:
+                      entity_id: "{{ player.entity_id }}"
+                    data:
+                      volume_level: >
+                        {{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -709,6 +741,33 @@ google_home_resume:
               data:
                 entity_id: "{{ ytube_music_players }}"
                 command: interrupt_resume
+            - variables:
+                target_ytube: >
+                  {%- set ns = namespace(members = []) %}
+                  {%- for target in ytube_music_targets %}
+                    {%- if target in speaker_group_list %}
+                      {%- set ns.members = ns.members + speaker_groups[target] %}
+                    {%- endif %}
+                  {%- endfor %}
+                  {{ (ytube_music_targets + ns.members) | reject('in', speaker_group_list) | unique | list }}
+            - alias: "Adjust volume"
+              repeat:
+                count: "{{ target_ytube | count }}"
+                sequence:
+                  - variables:
+                      player: >
+                        {{ 
+                          player_data 
+                            | selectattr('entity_id', 'eq', target_ytube[repeat.index - 1])
+                            | join
+                        }}
+                  - alias: "Set volume back to old state"
+                    service: media_player.volume_set
+                    target:
+                      entity_id: "{{ player.entity_id }}"
+                    data:
+                      volume_level: >
+                        {{ player.volume_level | float(default=default_volume_level | default(0.25)) | round(2) }}
             - alias: "Remove entity from group"
               service: group.set
               data:
