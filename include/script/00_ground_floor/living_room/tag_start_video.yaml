@@ -37,14 +37,18 @@ start_video_tag:
         sequence:
           - variables:
               playlist: "{{ range(0, media | count) | list }}"
-              exclude_list: "{{ states(input_text).split('|') | map('int') | list }}"
+              exclude_list: "{{ states(input_text).split('|') | map('int', default='na') | list }}"
               to_play: "{{ playlist | reject('in', exclude_list) | list | random }}"
-          - alias: "Remove first video from list, add new one"
-            service: input_text.set_value
-            target:
-              entity_id: "{{ input_text }}"
-            data:
-              value: "{{ ((states(input_text).split('|') | map('int') | list)[1:] + [to_play]) | join('|') }}"
+          - alias: "Input text exists"
+            choose:
+              - conditions: "{{ input_text in integration_entities('input_text') }}"
+                sequence:
+                  - alias: "Remove first video from list, add new one"
+                    service: input_text.set_value
+                    target:
+                      entity_id: "{{ input_text }}"
+                    data:
+                      value: "{{ ((states(input_text).split('|') | map('int') | list)[1:] + [to_play]) | join('|') }}"
           - service: media_player.play_media
             target:
               entity_id: "{{ player }}"
