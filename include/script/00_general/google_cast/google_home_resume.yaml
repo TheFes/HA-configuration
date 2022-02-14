@@ -357,13 +357,13 @@ google_home_resume:
           sequence:
             - variables:
                 player_ytube: >
-                  {% set y = voice_ytube_info
+                  {%- set y = voice_ytube_info
                               | rejectattr('target', 'in', players_to_resume)
                               | map(attribute='player')
                               | list
                   %}
                 target_ytube: >
-                  {% set y = voice_ytube_info
+                  {%- set y = voice_ytube_info
                               | rejectattr('target', 'in', players_to_resume)
                               | map(attribute='target')
                               | list

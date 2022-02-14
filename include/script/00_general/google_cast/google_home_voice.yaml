@@ -65,18 +65,18 @@ google_home_voice:
           {%- endfor %}
           {{ ns.info }}
         ytube_player_info: >
-          {% set ns = namespace(ytube = []) %}
-          {% for item in expand(integration_entities('ytube_music_player'))
+          {%- set ns = namespace(ytube = []) %}
+          {%- for item in expand(integration_entities('ytube_music_player'))
                           | selectattr('state', 'eq', 'playing')
           %}
-            {% set ns.ytube = ns.ytube +  [
+            {%- set ns.ytube = ns.ytube +  [
                                             dict(
                                                   player = item.entity_id,
                                                   target = item.attributes.remote_player_id
                                                 )
                                           ]
             %}
-          {% endfor %}
+          {%- endfor %}
           {{ ns.ytube }}
     - alias: "Send log message about wrong actions"
       choose:
