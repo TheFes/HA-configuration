@@ -11,7 +11,7 @@ google_home_voice:
     primary_spotcast: pepijn
   sequence:
     - variables:
-        version: 1.2.0
+        version: 1.2.1
         speaker_groups: >
           {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
           {%- set ns = namespace(entities = []) %}
@@ -66,7 +66,7 @@ google_home_voice:
           {{ ns.info }}
         ytube_player_info: >
           {% set ns = namespace(ytube = []) %}
-          {% for item in integration_entities('ytube_music_playr')
+          {% for item in expand(integration_entities('ytube_music_player'))
                           | selectattr('state', 'eq', 'playing')
           %}
             {% set ns.ytube = ns.ytube +  [
@@ -77,6 +77,7 @@ google_home_voice:
                                           ]
             %}
           {% endfor %}
+          {{ ns.ytube }}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -88,14 +89,25 @@ google_home_voice:
               message: >
                 {%- if service_calls | count == 0 %}
                   There were no service calls defined, no actions are performed.
-                  The script has been aborted
+                  The {{ this.attributes.friendly_name }} script has been aborted
                 {%- elif no_service_count == 1 %}
-                  You added an action which is not a service call to the Google
-                  Cast Resume script. This action was ignored.
+                  You added an action which is not a service call to the 
+                  {{ this.attributes.friendly_name }} script. This action was ignored.
                 {%- else %}
                   You added {{ no_service_count }} actions which are not service calls 
-                  to the Google Cast Resume script. These were ignored.
+                  to the {{ this.attributes.friendly_name }} script. These were ignored.
                 {%- endif %}
+    - alias: "Interrupt YouTube music if needed"
+      choose:
+        - conditions:
+            - alias: "Anything playing"
+              condition: template
+              value_template: "{{ ytube_player_info | count > 0 }}"
+          sequence:
+            - service: ytube_music_player.call_method
+              data:
+                entity_id: "{{ ytube_player_info | map(attribute='player') | list }}"
+                command: interrupt_start
     - alias: "Wait until white noise started"
       wait_template: >
         {{ 
@@ -147,18 +159,7 @@ google_home_voice:
                   voice_target: "{{ target }}"
                   voice_player_data: "{{ player_data }}"
                   voice_spotify: "{{ spotify_players_info }}"
-                  voice_ytube_player: >
-                    {{
-                      ytube_player_info | selectattr('player', 'in', target)
-                                        | map(attribute='player')
-                                        | list
-                    }}
-                  voice_ytube_target: >
-                    {{
-                      ytube_player_info | selectattr('player', 'in', target)
-                                        | map(attribute='target')
-                                        | list
-                    }}
+                  voice_ytube_info: "{{ ytube_player_info }}"
                   action: >
                     {%- set ns = namespace(action=[]) %}
                     {%- for item in service_calls %}
@@ -191,6 +192,7 @@ google_home_voice:
               data:
                 volume_level: >
                   {{ [1, volume if volume <= 1 else volume / 100] | min }}
+    - delay: 5
     - alias: "Stop ambient sound"
       choose:
         - conditions: "{{ is_state_attr(target, 'media_title', check_for_title) }}"

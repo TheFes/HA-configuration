@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.2.0
+        version: 1.2.1
     - alias: "Dynamic groups"
       variables:
         groups:
@@ -307,8 +307,13 @@ google_home_resume:
             {{ ns.info }}
           {%- endif %}
         ytube_music_players: >
-          {%- if voice_ytube_player is defined %}
-            {{ voice_ytube_player }}
+          {%- if voice_ytube_info is defined %}
+            {{ 
+              voice_ytube_info
+                | selectattr('target', 'in', players_to_resume)
+                | map(attribute='player')
+                | list 
+            }}
           {%- else %}
             {%- set current = state_attr('group.resume_active', 'entity_id') %}
             {%- set current = [] if current == none else current | list %}
@@ -321,8 +326,13 @@ google_home_resume:
             }}
           {%- endif %}
         ytube_music_targets: >
-          {%- if voice_ytube_target is defined %}
-            {{ voice_ytube_target }}
+          {%- if voice_ytube_info is defined %}
+            {{ 
+              voice_ytube_info
+                | selectattr('target', 'in', players_to_resume)
+                | map(attribute='target')
+                | list 
+            }}
           {%- else %}
             {{
               expand(ytube_music_players)
@@ -330,6 +340,31 @@ google_home_resume:
                 | list 
             }}
           {%- endif %}
+    - alias: "Resume ytube players which are not a target"
+      choose:
+        - conditions: >
+            {{ 
+              (
+                voice_ytube_info
+                  | rejectattr('target', 'in', players_to_resume)
+                  | map(attribute='target')
+                  | list
+                  | count > 0
+              )
+              if voice_ytube_info is defined
+              else false
+            }}
+          sequence:
+            - service: ytube_music_player.call_method
+              data:
+                entity_id: >
+                  {{ 
+                    voice_ytube_info
+                      | rejectattr('target', 'in', players_to_resume)
+                      | map(attribute='target')
+                      | list
+                  }}
+                command: interrupt_resume
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
@@ -341,13 +376,13 @@ google_home_resume:
               message: >
                 {%- if service_calls | count == 0 %}
                   There were no service calls defined, no actions are performed.
-                  The script has been aborted
+                  The {{ this.attributes.friendly_name }} script has been aborted
                 {%- elif no_service_count == 1 %}
-                  You added an action which is not a service call to the Google
-                  Cast Resume script. This action was ignored.
+                  You added an action which is not a service call to the 
+                  {{ this.attributes.friendly_name }} script. This action was ignored.
                 {%- else %}
                   You added {{ no_service_count }} actions which are not service calls 
-                  to the Google Cast Resume script. These were ignored.
+                  to the {{ this.attributes.friendly_name }} script. These were ignored.
                 {%- endif %}
     - alias: "Are there any service calls to perform"
       condition: template
@@ -664,11 +699,20 @@ google_home_resume:
         - conditions:
             - alias: "Anything playing"
               condition: template
-              value_template: "{{ ytube_music_players | count > 0 }}"
+              value_template: >
+                {{
+                  ytube_music_players | count > 0
+                  or voice_ytube_info | count > 0
+                }}
           sequence:
             - service: ytube_music_player.call_method
               data:
-                entity_id: "{{ ytube_music_players }}"
+                entity_id: >
+                  {{ 
+                    voice_ytube_info | map(attribute='player') | list
+                    if voice_ytube_info is defined
+                    else ytube_music_players
+                  }}
                 command: interrupt_resume
             - alias: "Remove entity from group"
               service: group.set
