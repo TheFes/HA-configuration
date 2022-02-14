@@ -1,10 +1,10 @@
-play_bollo:
-  alias: "00 🐻 Play random song of Bollo"
-  icon: mdi:teddy-bear
+play_juf_roos:
+  alias: "00 🌹 Play random song of Juf Roos"
+  icon: mdi:flower
   mode: restart
   sequence:
     - variables:
-        id: bollo
+        id: juf_roos
         input_text: "{{ 'input_text.played_'~id }}"
         media: "{{ state_attr('sensor.'~id, 'file_list') | sort }}"
         playlist: "{{ range(0,media|count) | list }}"
@@ -34,9 +34,9 @@ play_bollo:
             - service: media_player.play_media
               data:
                 media_content_id: >
-                  {{ media[to_play] | replace('/media', 'media-source://media_source/local') }}
+                  {{ media[to_play].split('/')[5].split('_-_')[-1].split('.')[0].replace('_', ' ') }}
                 media_content_type: "audio/mp3"
                 extra:
-                  title: "{{ media[to_play].split('/')[5].split('.')[0].replace('_', ' ') }}"
+                  title: "{{ (media[to_play].split('/')[5]).split('.')[0].replace('_', ' ') }}"
                   thumb: "{{ thumb }}"
           volume: 35

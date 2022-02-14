@@ -1,10 +1,10 @@
-play_bollo:
-  alias: "00 🐻 Play random song of Bollo"
-  icon: mdi:teddy-bear
+play_sint:
+  alias: "00 🐻 Play random Sinterklaas song"
+  icon: mdi:gift
   mode: restart
   sequence:
     - variables:
-        id: bollo
+        id: sint
         input_text: "{{ 'input_text.played_'~id }}"
         media: "{{ state_attr('sensor.'~id, 'file_list') | sort }}"
         playlist: "{{ range(0,media|count) | list }}"
