@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.2.1 - 14 February 2022 💟
+#### 🐛 Bug fixes
+* Fix for resuming ytube_music_player after Google Home Voice script
+
 ### Version 1.2.0 - 13 February 2022
 #### 🔴 BREAKING
 * Made several changes in how data is sent from the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) to this one. So if you update this script, make sure to also update the other one

@@ -15,7 +15,11 @@ The script itself relies on the other script, so make sure that script is runnin
 * The [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and all its [prerequisites](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#prerequisites-10)
 
 
-# Most recent change
+# Most recent changes
+### Version 1.2.1 - 14 February 2022 💟
+#### 🐛 Bug fixes
+* Fix for resuming ytube_music_player after voice command
+
 ### Version 
 ### Version 1.2.0 - 13 February 2022
 #### 🔴 BREAKING

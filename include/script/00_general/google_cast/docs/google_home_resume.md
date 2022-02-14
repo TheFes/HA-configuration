@@ -16,14 +16,9 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent change
-### Version 1.2.0 - 13 February 2022
-#### 🔴 BREAKING
-* Made several changes in how data is sent from the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) to this one. So if you update this script, make sure to also update the other one
-#### 🌟 Improvements
-* When speaker groups are changed, the volume of the individual group members will now be restored, instead of the volume of the group.
-* Several changes in templates, and how data of cast entities is gathered and stored
-#### 🧾 Docs
-* Added [section](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#why-not-a-blueprint-16) on why this is not a blueprint
+### Version 1.2.1 - 14 February 2022 💟
+#### 🐛 Bug fixes
+* Fix for resuming ytube_music_player after Google Home Voice script
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
