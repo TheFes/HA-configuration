@@ -3,6 +3,8 @@
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
 ### Version 1.2.1 - 14 February 2022 💟
+#### 🌟 Improvements
+* Added volume restore for ytube_music_player
 #### 🐛 Bug fixes
 * Fix for resuming ytube_music_player after Google Home Voice script
 

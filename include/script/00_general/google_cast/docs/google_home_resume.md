@@ -17,6 +17,8 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 
 # Most recent change
 ### Version 1.2.1 - 14 February 2022 💟
+#### 🌟 Improvements
+* Added volume restore for ytube_music_player
 #### 🐛 Bug fixes
 * Fix for resuming ytube_music_player after Google Home Voice script
 
