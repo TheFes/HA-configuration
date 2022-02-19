@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.2.2
+        version: 1.2.3
     - alias: "Dynamic groups"
       variables:
         groups:
@@ -239,6 +239,12 @@ google_home_resume:
                                                   | select('in', speaker_group_list)
                                                   | list
             %}
+          {# determine members of playing speaker groups for rare cases where they are not shown as playing #}
+            {%- set ns = namespace(members_playing = []) %}
+              {%- for group in all_speaker_groups_playing %}
+                {%- set ns.members_playing = ns.members_playing + speaker_groups[group] %}
+              {%- endfor %}
+            {%- set all_players_playing = all_players_playing + ns.members_playing | unique | list %}
           {# determine which of the targets (including groups members) are playing #}
             {%- set ns = namespace(targets = []) %}
               {%- for target in target_list %}
