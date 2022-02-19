@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.2.1
+        version: 1.2.2
     - alias: "Dynamic groups"
       variables:
         groups:
@@ -243,7 +243,7 @@ google_home_resume:
             {%- set ns = namespace(targets = []) %}
               {%- for target in target_list %}
                 {%- set ns.targets = ns.targets +  (
-                                                      speaker_groups[target]
+                                                      (speaker_groups[target] + [target])
                                                       if target in speaker_group_list
                                                       else [ target ]
                                                     )
