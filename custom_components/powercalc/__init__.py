@@ -24,6 +24,7 @@ from homeassistant.components.utility_meter.const import (
 from homeassistant.const import CONF_ENTITY_ID, CONF_SCAN_INTERVAL
 from homeassistant.helpers import discovery
 from homeassistant.helpers.typing import HomeAssistantType
+from pyexpat import model
 
 from .common import create_source_entity, validate_name_pattern
 from .const import (
@@ -32,7 +33,9 @@ from .const import (
     CONF_ENABLE_AUTODISCOVERY,
     CONF_ENERGY_INTEGRATION_METHOD,
     CONF_ENERGY_SENSOR_NAMING,
+    CONF_ENERGY_SENSOR_PRECISION,
     CONF_POWER_SENSOR_NAMING,
+    CONF_POWER_SENSOR_PRECISION,
     CONF_UTILITY_METER_OFFSET,
     CONF_UTILITY_METER_TYPES,
     DATA_CALCULATOR_FACTORY,
@@ -77,6 +80,12 @@ CONFIG_SCHEMA = vol.Schema(
                     vol.Optional(
                         CONF_ENERGY_INTEGRATION_METHOD, default=TRAPEZOIDAL_METHOD
                     ): vol.In(INTEGRATION_METHOD),
+                    vol.Optional(
+                        CONF_ENERGY_SENSOR_PRECISION, default=4
+                    ): cv.positive_int,
+                    vol.Optional(
+                        CONF_POWER_SENSOR_PRECISION, default=2
+                    ): cv.positive_int,
                 }
             ),
         )
@@ -132,6 +141,11 @@ async def autodiscover_entities(
         source_entity = await create_source_entity(entity_entry.entity_id, hass)
         try:
             light_model = await get_light_model(hass, {}, source_entity.entity_entry)
+            if not light_model.is_autodiscovery_allowed:
+                _LOGGER.debug(
+                    f"{entity_entry.entity_id}: Model found in database, but needs manual configuration"
+                )
+                continue
         except ModelNotSupported:
             _LOGGER.debug(
                 "%s: Model not found in library, skipping auto configuration",

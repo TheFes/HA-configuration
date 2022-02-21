@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from decimal import Decimal
 from typing import Optional
 
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
@@ -8,6 +9,7 @@ from homeassistant.components.sensor import STATE_CLASS_MEASUREMENT, SensorEntit
 from homeassistant.const import (
     CONF_NAME,
     CONF_SCAN_INTERVAL,
+    CONF_UNIQUE_ID,
     DEVICE_CLASS_POWER,
     EVENT_HOMEASSISTANT_START,
     POWER_WATT,
@@ -40,6 +42,7 @@ from custom_components.powercalc.const import (
     CONF_MULTIPLY_FACTOR,
     CONF_MULTIPLY_FACTOR_STANDBY,
     CONF_POWER_SENSOR_NAMING,
+    CONF_POWER_SENSOR_PRECISION,
     CONF_STANDBY_POWER,
     CONF_WLED,
     DATA_CALCULATOR_FACTORY,
@@ -83,8 +86,9 @@ async def create_power_sensor(
         ENTITY_ID_FORMAT, name_pattern.format(object_id), hass=hass
     )
 
-    if source_entity.unique_id:
-        async_migrate_entity_id(hass, SENSOR_DOMAIN, source_entity.unique_id, entity_id)
+    unique_id = sensor_config.get(CONF_UNIQUE_ID) or source_entity.unique_id
+    if unique_id:
+        async_migrate_entity_id(hass, SENSOR_DOMAIN, unique_id, entity_id)
 
     light_model = None
     try:
@@ -143,7 +147,7 @@ async def create_power_sensor(
         light_model.manufacturer if light_model else "",
         light_model.model if light_model else "",
         standby_power,
-        source_entity.unique_id,
+        unique_id,
     )
 
     return VirtualPowerSensor(
@@ -153,12 +157,13 @@ async def create_power_sensor(
         name=name,
         source_entity=source_entity.entity_id,
         source_domain=source_entity.domain,
-        unique_id=source_entity.unique_id,
+        unique_id=unique_id,
         standby_power=standby_power,
         scan_interval=sensor_config.get(CONF_SCAN_INTERVAL),
         multiply_factor=sensor_config.get(CONF_MULTIPLY_FACTOR),
         multiply_factor_standby=sensor_config.get(CONF_MULTIPLY_FACTOR_STANDBY),
         ignore_unavailable_state=sensor_config.get(CONF_IGNORE_UNAVAILABLE_STATE),
+        rounding_digits=sensor_config.get(CONF_POWER_SENSOR_PRECISION),
     )
 
 
@@ -207,6 +212,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         multiply_factor: float | None,
         multiply_factor_standby: bool,
         ignore_unavailable_state: bool,
+        rounding_digits: int,
     ):
         """Initialize the sensor."""
         self._power_calculator = power_calculator
@@ -222,6 +228,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         self._multiply_factor = multiply_factor
         self._multiply_factor_standby = multiply_factor_standby
         self._ignore_unavailable_state = ignore_unavailable_state
+        self._rounding_digits = rounding_digits
         self.entity_id = entity_id
 
     async def async_added_to_hass(self):
@@ -274,7 +281,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
             self.async_write_ha_state()
             return False
 
-        self._power = round(self._power, 2)
+        self._power = round(self._power, self._rounding_digits)
 
         _LOGGER.debug(
             '%s: State changed to "%s". Power:%s',
@@ -286,7 +293,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         self.async_write_ha_state()
         return True
 
-    async def calculate_power(self, state) -> Optional[float]:
+    async def calculate_power(self, state) -> Optional[Decimal]:
         """Calculate power consumption using configured strategy."""
 
         if state.state in OFF_STATES:
@@ -298,13 +305,16 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
 
             if self._multiply_factor_standby and self._multiply_factor:
                 standby_power *= self._multiply_factor
-            return standby_power
+            return Decimal(standby_power)
 
         power = await self._power_calculator.calculate(state)
-        if power and self._multiply_factor:
-            power *= self._multiply_factor
+        if not power:
+            return None
 
-        return power
+        if self._multiply_factor:
+            power *= Decimal(self._multiply_factor)
+
+        return Decimal(power)
 
     @property
     def source_entity(self):
