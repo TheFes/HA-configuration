@@ -1,21 +1,23 @@
 icon: "mdi:cast"
 cards:
   # Status media players
-  - type: entities
-    title: Google Cast
-    entities:
-      - entity: media_player.woonkamer_mini
-      - entity: media_player.keuken_hub
-      - entity: media_player.shield
-      - entity: media_player.beneden_groep
-      - entity: media_player.pepijn_mini
-      - entity: media_player.floris_mini
-      - entity: media_player.slaapkamer_hub
-      - entity: media_player.zolder_mini_marleen
-      - entity: media_player.zolder_mini_martijn
-      - entity: media_player.tv_zolder
-      - entity: media_player.boven_groep
-      - entity: media_player.huis_groep
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: Google Cast
+    filter:
+      template: >
+        {{
+          expand(integration_entities('cast'))
+            | rejectattr('state', 'in', ['idle', 'off', 'unavailable'])
+            | map(attribute='entity_id')
+            | list
+        }}
+    sort:
+      method: attribute
+      attribute: "friendly_name"
+      reverse: false
+      numeric: false
   # Card to send TTS message
   - type: vertical-stack
     cards:
