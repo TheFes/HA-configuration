@@ -1,8 +1,6 @@
 """
 Controller to interface with Spotify.
 """
-from __future__ import annotations
-
 import logging
 import threading
 import requests
