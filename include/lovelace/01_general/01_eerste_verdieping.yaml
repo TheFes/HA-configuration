@@ -139,6 +139,18 @@ cards:
                         - entity: input_boolean.cover_pepijn_invert
                     - type: custom:more-info-card
                       entity: cover.pepijn
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: entities
+            entities:
+              - entity: input_datetime.pepijn_time_bed
+                show_name: false
+          - type: entities
+            entities:
+              - entity: input_datetime.pepijn_time_awake
+                show_name: false
       - type: custom:mini-graph-card
         name: Pepijn
         icon: mdi:bed
