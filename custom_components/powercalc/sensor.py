@@ -104,7 +104,11 @@ from .errors import (
     SensorConfigurationError,
 )
 from .model_discovery import is_supported_model
-from .sensors.energy import DailyEnergySensor, EnergySensor, create_energy_sensor
+from .sensors.energy import (
+    EnergySensor,
+    create_daily_fixed_energy_sensor,
+    create_energy_sensor,
+)
 from .sensors.group import GroupedEnergySensor, GroupedPowerSensor, GroupedSensor
 from .sensors.power import PowerSensor, RealPowerSensor, create_power_sensor
 from .sensors.utility_meter import create_utility_meters
@@ -132,6 +136,9 @@ SUPPORTED_ENTITY_DOMAINS = (
     water_heater.DOMAIN,
 )
 
+DEFAULT_DAILY_UPDATE_FREQUENCY = 1800
+MAX_GROUP_NESTING_LEVEL = 5
+
 DAILY_FIXED_ENERGY_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_VALUE): vol.Any(vol.Coerce(float), cv.template),
@@ -139,7 +146,9 @@ DAILY_FIXED_ENERGY_SCHEMA = vol.Schema(
             [ENERGY_KILO_WATT_HOUR, POWER_WATT]
         ),
         vol.Optional(CONF_ON_TIME, default=timedelta(days=1)): cv.time_period,
-        vol.Optional(CONF_UPDATE_FREQUENCY, default=1800): vol.Coerce(int),
+        vol.Optional(
+            CONF_UPDATE_FREQUENCY, default=DEFAULT_DAILY_UPDATE_FREQUENCY
+        ): vol.Coerce(int),
     }
 )
 
@@ -185,9 +194,9 @@ SENSOR_CONFIG = {
 
 
 def build_nested_configuration_schema(schema: dict, iteration: int = 0) -> dict:
-    iteration += 1
-    if iteration == 4:
+    if iteration == MAX_GROUP_NESTING_LEVEL:
         return schema
+    iteration += 1
     schema.update(
         {
             vol.Optional(CONF_ENTITIES): vol.All(
@@ -389,18 +398,17 @@ async def create_individual_sensors(
     entities_to_add = []
 
     energy_sensor = None
-    if not CONF_DAILY_FIXED_ENERGY in sensor_config:
-        # Use an existing power sensor, only create energy sensors / utility meters
-        if CONF_POWER_SENSOR_ID in sensor_config:
-            power_sensor = RealPowerSensor(sensor_config.get(CONF_POWER_SENSOR_ID))
-        # Create the virtual power sensor
-        else:
-            try:
-                power_sensor = await create_power_sensor(
-                    hass, sensor_config, source_entity, discovery_info
-                )
-            except PowercalcSetupError:
-                return []
+    if CONF_DAILY_FIXED_ENERGY in sensor_config:
+        energy_sensor = await create_daily_fixed_energy_sensor(hass, sensor_config)
+        entities_to_add.append(energy_sensor)
+
+    else:
+        try:
+            power_sensor = await create_power_sensor(
+                hass, sensor_config, source_entity, discovery_info
+            )
+        except PowercalcSetupError:
+            return []
 
         entities_to_add.append(power_sensor)
 
@@ -410,21 +418,6 @@ async def create_individual_sensors(
                 hass, sensor_config, power_sensor, source_entity
             )
             entities_to_add.append(energy_sensor)
-
-    if CONF_DAILY_FIXED_ENERGY in sensor_config:
-        mode_config = sensor_config.get(CONF_DAILY_FIXED_ENERGY)
-
-        energy_sensor = DailyEnergySensor(
-            hass,
-            sensor_config.get(CONF_NAME),
-            mode_config.get(CONF_VALUE),
-            mode_config.get(CONF_UNIT_OF_MEASUREMENT),
-            mode_config.get(CONF_UPDATE_FREQUENCY),
-            unique_id=sensor_config.get(CONF_UNIQUE_ID),
-            on_time=mode_config.get(CONF_ON_TIME),
-            rounding_digits=sensor_config.get(CONF_ENERGY_SENSOR_PRECISION),
-        )
-        entities_to_add.append(energy_sensor)
 
     if energy_sensor:
         entities_to_add.extend(
@@ -463,7 +456,13 @@ async def create_group_sensors(
 
     group_sensors = []
 
-    power_sensors = list(filter(lambda elm: isinstance(elm, PowerSensor), entities))
+    power_sensors = list(
+        filter(
+            lambda elm: isinstance(elm, PowerSensor)
+            and not isinstance(elm, GroupedPowerSensor),
+            entities,
+        )
+    )
     power_sensor_ids = list(map(lambda x: x.entity_id, power_sensors))
     name_pattern = sensor_config.get(CONF_POWER_SENSOR_NAMING)
     name = name_pattern.format(group_name)
@@ -479,7 +478,13 @@ async def create_group_sensors(
     )
     _LOGGER.debug(f"Creating grouped power sensor: %s", name)
 
-    energy_sensors = list(filter(lambda elm: isinstance(elm, EnergySensor), entities))
+    energy_sensors = list(
+        filter(
+            lambda elm: isinstance(elm, EnergySensor)
+            and not isinstance(elm, GroupedEnergySensor),
+            entities,
+        )
+    )
     energy_sensor_ids = list(map(lambda x: x.entity_id, energy_sensors))
     name_pattern = sensor_config.get(CONF_ENERGY_SENSOR_NAMING)
     name = name_pattern.format(group_name)
