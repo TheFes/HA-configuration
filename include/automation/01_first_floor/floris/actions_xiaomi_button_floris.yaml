@@ -1,5 +1,5 @@
 id: 54d22a6f-c74e-4bd7-8047-a45a3c05c109
-alias: "F0L 📺 Xiaomi button TV area"
+alias: "F1F 💡 Xiaomi button Floris"
 trigger:
   - platform: event
     event_type: "deconz_event"
@@ -12,29 +12,31 @@ action:
           - alias: "Short"
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
-        sequence:
-          - service: light.toggle
-            target:
-              entity_id: light.tv_lamp
+        sequence: []
       - conditions:
           - alias: "Long"
             condition: template
             value_template: "{{ trigger.event.data.event == 1001 }}"
         sequence:
-          - service: switch.toggle
+          - alias: "Light on"
+            service: light.turn_on
             target:
-              entity_id: switch.backup_02
+              entity_id: light.floris_template
+          - alias: "Send TTS"
+            service: tts.google_cloud_say
+            target:
+              entity_id: media_player.floris_mini
+            data:
+              message: "Slaap lekker Floris!"
+          - alias: "Wait untill TTS is playing"
+            wait_template: "{{ (state_attr('media_player.floris_mini', 'media_content_id') | string).startswith('https://hass.thefes.nl') }}"
       - conditions:
           - alias: "Double"
             condition: template
             value_template: "{{ trigger.event.data.event == 1004 }}"
-        sequence:
-          - service: switch.toggle
-            target:
-              entity_id: switch.tv_meubel
+        sequence: []
       - conditions:
           - alias: "Release"
             condition: template
             value_template: "{{ trigger.event.data.event == 1003 }}"
-        sequence:
-          - delay: 0
+        sequence: []

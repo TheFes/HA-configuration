@@ -1,0 +1,63 @@
+id: 012addf5-428e-45f9-9934-5cec9bc47f23
+alias: "F1P 💡 Xiaomi button Reading Light Pepijn"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: fcbea2e293f4b569d908baf7cc496d9e
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - alias: "Turn on reading light"
+            service: light.toggle
+            target:
+              entity_id:
+                - light.pepijn_leeslamp
+            data:
+              brightness: 100
+              color_temp: 265
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1001 }}"
+        sequence:
+          - alias: "Dim ceiling light"
+            service: light.turn_on
+            target:
+              entity_id: light.pepijn_template
+            data:
+              brightness_pct: 40
+          - alias: "Turn on Miffy light"
+            service: light.turn_on
+            target:
+              entity_id:
+                - light.nijntje
+          - alias: "Turn on reading light"
+            service: light.turn_on
+            target:
+              entity_id:
+                - light.pepijn_leeslamp
+            data:
+              brightness: 100
+              color_temp: 265
+          - alias: "Send TTS"
+            service: tts.google_cloud_say
+            target:
+              entity_id: media_player.pepijn_mini
+            data:
+              message: "Slaap lekker Pepijn!"
+      - conditions:
+          - alias: "Double"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1004 }}"
+        sequence: []
+      - conditions:
+          - alias: "Release"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1003 }}"
+        sequence: []

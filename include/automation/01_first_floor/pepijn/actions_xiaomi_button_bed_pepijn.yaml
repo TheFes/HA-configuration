@@ -1,0 +1,99 @@
+id: dc9ec434-0886-4fd3-a504-006ca6e8ec40
+alias: "F1P 🛌 Xiaomi button Bed Pepijn"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: f448ab96c13a02e1e4ed6dc679d693c5
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - alias: "Which action"
+            choose:
+              - conditions: >
+                  {{ 
+                    is_state('light.nijntje', 'on')
+                    or is_state_attr('light.pepijn_leeslamp', 'brightness', 15)
+                  }}
+                sequence:
+                  - alias: "toggle Miffy"
+                    service: light.toggle
+                    target:
+                      entity_id: light.nijntje
+              - conditions: >
+                  {{ 
+                    now() > today_at(states('input_datetime.pepijn_time_bed')) 
+                    or now() < today_at(states('input_datetime.pepijn_time_awake')) + timedelta(hours=1) 
+                  }}
+                sequence:
+                  - alias: "Sleep or awake?"
+                    choose:
+                      - conditions: >
+                          {%- set awake = today_at(states('input_datetime.pepijn_time_awake')) %} 
+                          {{ awake < now() < awake + timedelta(hours=1)}}
+                        sequence:
+                          - service: light.turn_on
+                            target:
+                              entity_id: light.pepijn_leeslamp
+                            data:
+                              color_name: green
+                              brightness: 15
+                          - delay: 5
+                          - service: light.turn_off
+                            target:
+                              entity_id: light.pepijn_leeslamp
+                      - conditions: >
+                          {%- set awake = today_at(states('input_datetime.pepijn_time_awake')) %} 
+                          {{ awake - timedelta(minutes=30) < now() < awake }}
+                        sequence:
+                          - service: light.turn_on
+                            target:
+                              entity_id: light.pepijn_leeslamp
+                            data:
+                              color_name: orange
+                              brightness: 15
+                          - delay: 5
+                          - service: light.turn_off
+                            target:
+                              entity_id: light.pepijn_leeslamp
+                    default:
+                      - service: light.turn_on
+                        target:
+                          entity_id: light.pepijn_leeslamp
+                        data:
+                          color_name: red
+                          brightness: 15
+                      - delay: 5
+                      - service: light.turn_off
+                        target:
+                          entity_id: light.pepijn_leeslamp
+            default:
+              - service: light.toggle
+                target:
+                  entity_id: light.nijntje
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1001 }}"
+        sequence:
+          - alias: "Turn all lights off"
+            service: light.turn_off
+            target:
+              area_id: slaapkamer_pepijn
+      - conditions:
+          - alias: "Double"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1004 }}"
+        sequence: []
+      - conditions:
+          - alias: "Release"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1003 }}"
+        sequence: []
