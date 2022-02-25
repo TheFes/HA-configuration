@@ -16,6 +16,12 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent changes
+### Version 1.3.0 - 25 February 2022
+#### 🔴 BREAKING
+* Changes in the way data is shared with the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
+#### 🌟 Improvements
+* The ytube music player integration will now resume at the right position in the track
+
 ### Version 1.2.1 - 14 February 2022 💟
 #### 🐛 Bug fixes
 * Fix for resuming ytube_music_player after voice command

@@ -2,6 +2,24 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.5.0 - 25 February 2022
+#### 🔴 BREAKING
+* This version brings quite some changes, which will require also to update the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) in case you use that one as well.
+* The script is now split into one main script (`script.google_home_resume`) and 3 helper-scripts (`script.google_home_resume_perform_resume`, `script.google_home_resume_restore_non_playing` and `script.google_home_resume_ytube_seek`). This allows the resume of different speakers to be ran in parallel, instead of that they will have to wait for each other. So in case you send a TTS and a video feed to one of your Nest Hubs, and only a TTS to a Nest Mini, the Nest Mini can already resume before the Nest Hub is finished. All the scripts are in one yaml-file, the one linked below, please make sure that you copy everything. The script for the resume of the ytube music player integration is at the bottom, if you don't use that, you don't need that script.
+#### 🌟 Improvements
+* The ytube music player integration will now resume at the right position in the track
+* Added a variable `group_id` which is just a random string to make sure no groups not belonging to this script are used
+* Groups are now generated specifically for each script run by use of the the `context.id` which is used as a suffix of the script.
+* Lot's of changes in the way data is stored and shared, also in preparation of a new script which can store the state when you eg leave your house, and resume when you come back
+
+### Version 1.2.2 - 19 February 2022
+#### 🐛 Bug fixes
+* Fixed unusual case (at least as far as I know) where a speaker group is playing, but the members are not shown as such. In case the speaker group was the target of the script, it would have caused the template to not recognize it as a player to resume (it looks like this is the case when a stereo pair is a member of the group)
+
+### Version 1.2.3 - 19 February 2022
+#### 🐛 Bug fixes
+* Addition to v.1.2.2 to make sure the speaker group is also resumed when the target is not the group, but a member of the group
+
 ### Version 1.2.1 - 14 February 2022 💟
 #### 🌟 Improvements
 * Added volume restore for ytube_music_player
@@ -35,7 +53,7 @@
 * Added requirement for `group` integration to requirements section.
 
 ### Version 1.1.0 - 9 February 2022
-#### ✨ New feature
+#### ✨ New features
 * I added a new field `resume_this_action`. This is a boolean (`true` or `false`). The default is `true`. If set to `false` the actions which you use in the script will not be resumed if the script is called again. I can best explain this using a real life example. 
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With `resume_this_action: false` this will not be the case.
 * To let the `resume_this_action: false` setting work, I've added two dynamically created groups. Because this can get messy when you do a script reload while the scripts are running, the script will remove these groups if it is started for the first time.

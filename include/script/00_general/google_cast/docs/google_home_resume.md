@@ -16,11 +16,15 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent change
-### Version 1.2.1 - 14 February 2022 💟
+### Version 1.5.0 - 25 February 2022
+#### 🔴 BREAKING
+* This version brings quite some changes, which will require also to update the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) in case you use that one as well.
+* The script is now split into one main script (`script.google_home_resume`) and 3 helper-scripts (`script.google_home_resume_perform_resume`, `script.google_home_resume_restore_non_playing` and `script.google_home_resume_ytube_seek`). This allows the resume of different speakers to be ran in parallel, instead of that they will have to wait for each other. So in case you send a TTS and a video feed to one of your Nest Hubs, and only a TTS to a Nest Mini, the Nest Mini can already resume before the Nest Hub is finished. All the scripts are in one yaml-file, the one linked below, please make sure that you copy everything. The script for the resume of the ytube music player integration is at the bottom, if you don't use that, you don't need that script.
 #### 🌟 Improvements
-* Added volume restore for ytube_music_player
-#### 🐛 Bug fixes
-* Fix for resuming ytube_music_player after Google Home Voice script
+* The ytube music player integration will now resume at the right position in the track
+* Added a variable `group_id` which is just a random string to make sure no groups not belonging to this script are used
+* Groups are now generated specifically for each script run by use of the the `context.id` which is used as a suffix of the script.
+* Lot's of changes in the way data is stored and shared, also in preparation of a new script which can store the state when you eg leave your house, and resume when you come back
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
