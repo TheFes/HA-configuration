@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.5
+        version: 1.5.1
         group_id: acb8195x
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
@@ -619,6 +619,7 @@ google_home_resume:
                       variables:
                         player: "{{ player_data | selectattr('entity_id', 'eq', target_not_playing[repeat.index-1]) | join }}"
                         players_screen: "{{ players_screen }}"
+                        group_id: "{{ group_id }}"
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
