@@ -8,6 +8,28 @@ use_blueprint:
       - service: switch.turn_on
         target:
           entity_id: switch.bureau_martijn
+      - alias: "Turn on radio if morning on workday"
+        choose:
+          - conditions:
+              - alias: "Morning"
+                condition: time
+                before: "10:00:00"
+                weekday:
+                  - "mon"
+                  - "tue"
+                  - "thu"
+                  - "fri"
+            sequence:
+              - alias: "Turn on Radio 2"
+                service: media_player.play_media
+                target:
+                  entity_id: media_player.zolder_mini_martijn
+                data:
+                  media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+                  media_content_type: music
+                  extra:
+                    title: "NPO Radio 2"
+                    thumb: "/local/pictures/radio/npo_radio_2.png"
     rotate_clockwise:
       - service: media_player.volume_set
         target:
