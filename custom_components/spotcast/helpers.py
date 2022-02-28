@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import requests
@@ -28,25 +30,25 @@ def get_spotify_devices(hass, spotify_user_id):
                 isinstance(entity, SpotifyMediaPlayer)
                 and entity.unique_id == spotify_user_id
             ):
-                if hasattr(entity, "_devices"):
-                    _LOGGER.debug(
-                        f"get_spotify_devices: {entity.entity_id}: {entity.name}: %s",
-                        entity._devices,
-                    )
-                else:
-                    _LOGGER.debug(
-                        f"get_spotify_devices: {entity.entity_id}: {entity.name}: %s",
-                        entity.data.devices.data,
-                    )
+
+                try:
+                    entity_devices = entity._devices
+                except(AttributeError):
+                    entity_devices = entity.data.devices.data
+
+                _LOGGER.debug(f"get_spotify_devices: {entity.entity_id}: {entity.name}: %s", entity_devices)
                 spotify_media_player = entity
                 break
+
     if spotify_media_player:
         # Need to come from media_player spotify's sp client due to token issues
-        if hasattr(entity, "_spotify"):
+        try:
             resp = spotify_media_player._spotify.devices()
-        else:
+        except(AttributeError):
             resp = spotify_media_player.data.client.devices()
+
         _LOGGER.debug("get_spotify_devices: %s", resp)
+        
         return resp
 
 def get_spotify_install_status(hass):
@@ -130,12 +132,19 @@ def get_search_results(search:str, spotify_client:spotipy.Spotify, country:str=N
     return bestMatch['uri']
 
 def get_random_playlist_from_category(spotify_client:spotipy.Spotify, category:str, country:str=None, limit:int=20) -> str:
-    _LOGGER.debug(f"Get random playlist among {limit} playlists from category {category} in country {country}")
+    
+    if country is None:
+        
+        _LOGGER.debug(f"Get random playlist among {limit} playlists from category {category}, no country specified.")
 
-    # validate category and country are valid entries
-    if country.upper() not in spotify_client.country_codes:
-        _LOGGER.error(f"{country} is not a valid country code")
-        return None
+    else:
+
+        _LOGGER.debug(f"Get random playlist among {limit} playlists from category {category} in country {country}")
+
+        # validate category and country are valid entries
+        if country.upper() not in spotify_client.country_codes:
+            _LOGGER.error(f"{country} is not a valid country code")
+            return None
     
     # get list of playlist from category and localisation provided
     try:
