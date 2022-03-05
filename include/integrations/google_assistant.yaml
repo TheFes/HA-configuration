@@ -6,24 +6,24 @@ google_assistant:
     - script
   entity_config:
     # KERST
-    switch.backup_02:
-      name: Kerstvaas
-      aliases:
-        - Vaas
-      room: Woonkamer
-    switch.backup_01:
-      name: Kerstster
-      aliases:
-        - Ster
-      room: Keuken
-    switch.bw_plug_19:
-      name: IJspegels
-      aliases:
-        - Pegels
-      room: Tuin
-    switch.bw_plug_20:
-      name: Kerstboom
-      room: Keuken
+    # switch.backup_02:
+    #   name: Kerstvaas
+    #   aliases:
+    #     - Vaas
+    #   room: Woonkamer
+    # switch.backup_01:
+    #   name: Kerstster
+    #   aliases:
+    #     - Ster
+    #   room: Keuken
+    # switch.bw_plug_19:
+    #   name: IJspegels
+    #   aliases:
+    #     - Pegels
+    #   room: Tuin
+    # switch.bw_plug_20:
+    #   name: Kerstboom
+    #   room: Keuken
     # Slaapkamer Floris
     light.floris_template:
       name: Floris
@@ -260,6 +260,13 @@ google_assistant:
         - Zolder temperatuur
       room: Zolder
     # Zone Algemeen
+    input_boolean.gast:
+      name: Gast Modus
+      aliases:
+        - Gast stand
+        - Gaststand
+        - Gast
+      room: Zone Algemeen
     light.groep_beneden:
       name: Beneden
       aliases:

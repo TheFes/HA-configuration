@@ -12,18 +12,7 @@ trigger:
       - above_horizon
       - below_horizon
 action:
-  - alias: "Above or below horizon?"
-    choose:
-      - conditions:
-          - alias: "Zon onder?"
-            condition: state
-            entity_id: sun.sun
-            state: "below_horizon"
-        sequence:
-          - service: frontend.set_theme
-            data:
-              name: "Google Dark Theme"
-    default:
-      - service: frontend.set_theme
-        data:
-          name: "Google Light Theme"
+  - service: frontend.set_theme
+    data:
+      name: "Google Theme"
+      mode: "{{ 'light' if is_state('sun.sun', 'above_horizon') else 'dark' }}"

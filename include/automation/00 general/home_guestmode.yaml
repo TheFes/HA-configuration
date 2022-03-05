@@ -1,0 +1,45 @@
+id: b5652fa9-d044-40b8-b53e-62886309dca8
+alias: "00 🏠 Arrive home with guest mode on"
+trigger:
+  - platform: state
+    entity_id: person.martijn
+    from: "not_home"
+    to: "home"
+condition:
+  - alias: "Guest Mode on"
+    condition: state
+    entity_id: input_boolean.gast
+    state: "on"
+action:
+  - service: notify.mobile_app_pixel_5
+    data:
+      title: "🏡 Welkom thuis"
+      message: "Mag de gastmodus uit?"
+      data:
+        channel: Guest
+        ttl: 0
+        priority: high
+        notification_icon: mdi:home
+        tag: Guest
+        actions:
+          - action: "guest_mode_off"
+            title: "Yep"
+          - action: "guest_mode_on"
+            title: "Nope"
+  - wait_for_trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "guest_mode_off"
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "guest_mode_on"
+  - alias: "Turn of guest mode if needed"
+    choose:
+      - conditions: "{{ wait.trigger.event.data.action == 'guest_mode_off' }}"
+        sequence:
+          - alias: "Turn of guest mode"
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.gast
