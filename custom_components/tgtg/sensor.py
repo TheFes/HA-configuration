@@ -117,7 +117,6 @@ class TGTGSensor(SensorEntity):
         if not self.tgtg_answer:
             return None
         data = {}
-        # if self.tgtg_answer["item"]["item_id"]:
         if "item" in self.tgtg_answer:
             if "item_id" in self.tgtg_answer["item"]:
                 data[ATTR_ITEM_ID] = self.tgtg_answer["item"]["item_id"]
