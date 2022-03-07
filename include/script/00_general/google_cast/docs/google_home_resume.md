@@ -16,15 +16,14 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent change
-### Version 1.5.0 - 25 February 2022
+### Version 1.6.0 - 7 March 2022
 #### 🔴 BREAKING
-* This version brings quite some changes, which will require also to update the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) in case you use that one as well.
-* The script is now split into one main script (`script.google_home_resume`) and 3 helper-scripts (`script.google_home_resume_perform_resume`, `script.google_home_resume_restore_non_playing` and `script.google_home_resume_ytube_seek`). This allows the resume of different speakers to be ran in parallel, instead of that they will have to wait for each other. So in case you send a TTS and a video feed to one of your Nest Hubs, and only a TTS to a Nest Mini, the Nest Mini can already resume before the Nest Hub is finished. All the scripts are in one yaml-file, the one linked below, please make sure that you copy everything. The script for the resume of the ytube music player integration is at the bottom, if you don't use that, you don't need that script.
+* I've added YAML anchors to copy the variables set in the main resume script to the helper scripts, this means you need to keep the scripts in one yaml file, otherwise the anchors will not work.
+* The variable `group_id` whichis used for the group creation is moved to the config variables, because it was also used in the helper scripts
 #### 🌟 Improvements
-* The ytube music player integration will now resume at the right position in the track
-* Added a variable `group_id` which is just a random string to make sure no groups not belonging to this script are used
-* Groups are now generated specifically for each script run by use of the the `context.id` which is used as a suffix of the script.
-* Lot's of changes in the way data is stored and shared, also in preparation of a new script which can store the state when you eg leave your house, and resume when you come back
+* Other changes to make the script work with the new Google Home Event script which I will publish soon.
+#### 🐛 Bug fixes
+* Fix for volume restore of group members
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -134,6 +133,9 @@ This wait template will make sure the volume for the TTS message is not applied 
 
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
 
+Add this script to `scripts.yaml` by copying the contents of the link below, and pasting it in `scripts.yaml`. Don't use the GUI, use a file editor (add-on).
+Change the variables described below to match your setup.
+
 # Explanation of variables in the script
 
 There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those. Resuming Spotify won't work properly without `default_spotcast`.
@@ -145,6 +147,13 @@ There are no required variables, but if you use Google Home speaker groups and p
 |fixed_picture||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L39)|A dictionary with the pictures. As key value the artist should be used (check `media_artist` in developer tools > states)|
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived|
+|group_id||`some_string`|A string which will be added to the group object id's so they can be identified as belonging to this script|
+
+# Buy me a coffee
+If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
+In case you decide to do so, thanks a lot!
+
+<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](upload://zyyhWlE190RjgJNhRPCoBuUDhKa.png)</a>
 
 # Why not a blueprint?
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:

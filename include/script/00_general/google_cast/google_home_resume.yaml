@@ -28,7 +28,7 @@ google_home_resume:
       required: false
       selector:
         boolean:
-  variables:
+  variables: &config_vars
     players_screen:
       - media_player.keuken_hub
       - media_player.slaapkamer_hub
@@ -59,11 +59,11 @@ google_home_resume:
         - media_player.zolder_mini_marleen
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
+    group_id: acb8195x
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.5.1
-        group_id: acb8195x
+        version: 1.6.0
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: >
@@ -532,16 +532,11 @@ google_home_resume:
                       variables:
                         start_time: "{{ start_time }}"
                         player: "{{ player }}"
-                        speaker_groups: "{{ speaker_groups }}"
-                        speaker_group_list: "{{ speaker_group_list }}"
+                        player_data: "{{ player_data }}"
                         spotify_data: "{{ spotify_data }}"
                         ytube_music_data: "{{ ytube_music_data }}"
-                        primary_spotcast: "{{ primary_spotcast }}"
-                        players_screen: "{{ players_screen }}"
-                        fixed_picture: "{{ fixed_picture }}"
                         players_to_resume: "{{ players_to_resume }}"
-                        group_id: "{{ group_id }}"
-    - alias: "Resume ytube players which are not a target"
+    - alias: "Resume ytube players which are a target"
       choose:
         - conditions: >
             {{ 
@@ -592,7 +587,6 @@ google_home_resume:
                         player_data: "{{ player_data }}"
                         player: "{{ player }}"
                         target_ytube: "{{ target_ytube }}"
-                        group_id: "{{ group_id }}"
             - alias: "Remove entity from group"
               service: group.set
               data:
@@ -618,7 +612,6 @@ google_home_resume:
                     data:
                       variables:
                         player: "{{ player_data | selectattr('entity_id', 'eq', target_not_playing[repeat.index-1]) | join }}"
-                        players_screen: "{{ players_screen }}"
                         group_id: "{{ group_id }}"
     - alias: "Create variable for existing groups"
       variables:
@@ -652,9 +645,11 @@ google_home_resume_perform_resume:
   description: Helper script to perform the resume for the Google Home Resume script
   icon: mdi:cast-audio
   mode: parallel
+  variables: *config_vars
   sequence:
     - alias: "Set variables"
       variables:
+        speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         spotify: >
           {{ player.app_name == 'Spotify' }}
         youtube: >
@@ -706,7 +701,7 @@ google_home_resume_perform_resume:
         - conditions:
             - alias: "State changed since script started?"
               condition: template
-              value_template: "{{ states[player.entity_id].last_changed > as_datetime(start_time) }}"
+              value_template: "{{ states[player.entity_id].last_changed > as_datetime(start_time) if start_time is defined else true }}"
           sequence:
             - alias: "Wait until player is idle again, and all other scripts are finished"
               wait_template: >
@@ -864,15 +859,35 @@ google_home_resume_perform_resume:
         entities: >
           {%- set current = state_attr('group.resume_active', 'entity_id') %}
           {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
-    - alias: "Remove entity from group"
-      service: group.set
-      data:
-        object_id: resume_script_active_{{ group_id }}_{{ context.id }}
-        name: "Entities currently active with Google Home Resume script"
-        icon: mdi:play-box
-        entities: >
-          {%- set current = state_attr('group.resume_active', 'entity_id') %}
-          {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
+    - alias: "Remove group in case of event script and empty group"
+      choose:
+        - conditions: "{{ player.data_source == 'event_script' and not iif(state_attr('group.resume_active', 'entity_id')) }}"
+          sequence:
+            - alias: "Remove group"
+              service: group.remove
+              data:
+                object_id: resume_active_{{ group_id }}_{{ context.id }}
+    - alias: "Check if resume_script_active group exists"
+      choose:
+        - conditions: >
+            {{ 
+              integration_entities('group') 
+                | select('search', group_id) 
+                | select('search', 'resume_script_active')
+                | select('search', context.id)
+                | list 
+                | count > 0 
+            }}
+          sequence:
+            - alias: "Remove entity from group"
+              service: group.set
+              data:
+                object_id: resume_script_active_{{ group_id }}_{{ context.id }}
+                name: "Entities currently active with Google Home Resume script"
+                icon: mdi:play-box
+                entities: >
+                  {%- set current = state_attr('group.resume_active', 'entity_id') %}
+                  {{ iif(current == none, [], current) | reject('eq', player.entity_id) | list }}
 
 # GOOGLE HOME RESUME RESTORE NON PLAYING
 
@@ -881,6 +896,7 @@ google_home_resume_restore_non_playing:
   description: Helper script to restore non playing entities for the Google Home Resume script
   icon: mdi:cast-audio
   mode: parallel
+  variables: *config_vars
   sequence:
     - alias: "Wait until entity is idle or off"
       wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
