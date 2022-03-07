@@ -143,4 +143,4 @@ There are no required variables, but if you use Google Home speaker groups and p
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
 
-<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](upload://zyyhWlE190RjgJNhRPCoBuUDhKa.png)</a>
+<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>

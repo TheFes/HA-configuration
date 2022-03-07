@@ -153,7 +153,7 @@ There are no required variables, but if you use Google Home speaker groups and p
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
 
-<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](upload://zyyhWlE190RjgJNhRPCoBuUDhKa.png)</a>
+<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
 
 # Why not a blueprint?
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
