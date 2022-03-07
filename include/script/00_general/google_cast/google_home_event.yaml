@@ -1,0 +1,301 @@
+google_home_event:
+  alias: "00 🔊 Google Home Event"
+  description: Script for resuming Google Home speakers
+  icon: mdi:cast-audio
+  mode: parallel
+  fields:
+    resume_id:
+      description: "ID to match the storing and resuming"
+      required: true
+      selector:
+        text:
+    resume:
+      description: "True for resuming the states, false for storing the states"
+      required: true
+      selector:
+        boolean:
+    target:
+      description: "Enter the targets in case they are not clear from the service calls"
+      required: false
+      selector:
+        target:
+          entity:
+            integration: cast
+            domain: media_player
+          device:
+            integration: cast
+  variables:
+    sensor: binary_sensor.resume_data
+    notify: notify.resume_data
+  sequence:
+    - variables:
+        version: 0.1.0
+    - variables:
+        target_list: >
+          {# determine entities of cast integraton #}
+            {%- set cast_entities = integration_entities('cast') %}
+          {# create target lists #}
+          {%- if target is defined %}
+            {# create lists based on target input #}
+              {%- set area_list = target.get('area_id', []) %}
+              {%- set area_list = area_list.replace(' ' , '').split(',') if area_list is string else area_list %}
+              {%- set device_list = target.get('device_id', [])%}
+              {%- set device_list = device_list.replace(' ' , '').split(',') if device_list is string else device_list %}
+              {%- set entity_list = target.get('entity_id', []) %}
+              {%- set entity_list = entity_list.replace(' ' , '').split(',') if entity_list is string else entity_list %}
+            {# determine cast entities of areas #}
+              {%- set ns = namespace(area_cast = []) %}
+              {%- for area in area_list %}
+                {%- set ns.area_cast = ns.area_cast + area_entities(area) %}
+              {%- endfor %}
+              {%- set area_cast = ns.area_cast | select('in', cast_entities) | list %}
+            {# determine cast entities of devices #}
+              {%- set ns = namespace(device_cast = []) %}
+              {%- for device in device_list %}
+                {%- set ns.device_cast = ns.device_cast + device_entities(device) %}
+              {%- endfor %}
+              {%- set device_cast = ns.device_cast | select('in', cast_entities) | list %}
+            {# determine cast entities of all entities #}
+              {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
+          {# create list with all entities #}
+            {%- set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
+          {# avoid to target both complete speaker groups and single members #}
+            {%- set target_group = total_list | select('in', speaker_group_list) | list %}
+            {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
+            {%- set ns = namespace(groupmembers = []) %}
+            {%- for group in target_group %}
+              {%- set ns.groupmembers = ns.groupmembers + speaker_groups[group] %}
+            {%- endfor %}
+            {%- 
+              set single_not_in_group = target_single 
+                | reject('in', ns.groupmembers | unique | list)
+                | list
+            %}
+            {{ target_group + single_not_in_group }}
+          {%- else %}
+            []
+          {%- endif %}
+        exclude_list: >
+          {%- if exclude is defined and exclude %}
+            {{ exclude.replace(' ', '').split(',') if exclude is string else exclude }}
+          {%- else %}
+            []
+          {%- endif %}
+    - alias: "Store or resume"
+      choose:
+        - conditions: "{{ not resume }}"
+          sequence:
+            - variables:
+                player_data: >
+                  {%- set ns = namespace(info=[]) %}
+                  {%- for entity in expand(integration_entities('cast')) %}
+                    {% if entity.state == 'playing' %}
+                      {%- set ns.info = ns.info + [
+                                                    dict(
+                                                      entity_id = entity.entity_id,
+                                                      friendly_name = entity.attributes.friendly_name,
+                                                      state = entity.state,
+                                                      media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                      media_title = entity.attributes.get('media_title', 'no title'),
+                                                      media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                                      media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                                      app_name = entity.attributes.get('app_name', 'no app'),
+                                                      entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                                      volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                      media_position =  as_timestamp(now()) | round(2)
+                                                                        - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                        + entity.attributes.get('media_position', 0),
+                                                      data_source = 'event_script'
+                                                      )
+                                                    ] 
+                      %}
+                    {% endif %}
+                  {%- endfor %}
+                  {{ ns.info | selectattr('entity_id', 'in', target_list) | list if target is defined else ns.info }}
+                spotify_data: >
+                  {%- set entities = expand(integration_entities('spotify')) %}
+                  {%- set ns = namespace(info=[]) %}
+                  {%- for entity in entities %}
+                    {% if entity.state == 'playing' %}
+                      {%- set ns.info = ns.info + [
+                                                    dict(
+                                                          entity_id = entity.entity_id, 
+                                                          source = entity.attributes.get('source', 'No source'),
+                                                          data_source = 'event_script'
+                                                        ) 
+                                                  ] 
+                      %}
+                    {%- endif %}
+                  {%- endfor %}
+                  {%- set target_friendly = expand(target_list) | map(attribute='attributes.friendly_name') | list %}
+                  {{ ns.info | selectattr('source', 'in', target_friendly) | list if target is defined else ns.info }}
+                ytube_music_data: >
+                  {%- set ns = namespace(info = []) %}
+                  {%- for entity in expand(integration_entities('ytube_music_player')) %}
+                    {% if entity.state == 'playing' %}
+                      {%- set ns.info = ns.info + [
+                                                      dict(
+                                                            player = entity.entity_id,
+                                                            target = entity.attributes.get('remote_player_id', 'No target'),
+                                                            position =  as_timestamp(now()) | round(2)
+                                                                        - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                        + entity.attributes.get('media_position', 0),
+                                                            data_source = 'event_script'
+                                                          )
+                                                    ]
+                      %}
+                    {%- endif %}
+                  {%- endfor %}
+                  {{ ns.info | selectattr('target', 'in', target_list) | list if target is defined else ns.info }}
+                resume_data_new:
+                  - resume_id: "{{ resume_id }}"
+                    player_data: "{{ player_data }}"
+                    spotify_data: "{{ spotify_data }}"
+                    ytube_music_data: "{{ ytube_music_data }}"
+                resume_data: >
+                  {{ state_attr(sensor, 'resume_data') | rejectattr('resume_id', 'eq', resume_id) | list + resume_data_new }}
+            - event: store_data
+              event_data:
+                resume_data: "{{ resume_data }}"
+            - alias: "Persistant backup of player_data"
+              choose:
+                - conditions: "{{ notify is defined and iif(notify) }}"
+                  sequence:
+                    - service: "{{ notify }}"
+                      data:
+                        message: >
+                          {%- set data = { 'resume_data': resume_data } %}
+                          '{{ (data | string).replace("'","|").replace('|', '"') }}'
+            - alias: "Command line restore needed"
+              choose:
+                - conditions: "{{ notify is defined and iif(notify) }}"
+                  sequence:
+                    - service: command_line.reload
+            - alias: "Interrupt YouTube music if needed"
+              choose:
+                - conditions:
+                    - alias: "Anything playing"
+                      condition: template
+                      value_template: "{{ ytube_music_data | count > 0 }}"
+                  sequence:
+                    - service: ytube_music_player.call_method
+                      data:
+                        entity_id: >
+                          {{
+                            ytube_music_data
+                                      | rejectattr('target', 'in', target_list if target is defined else integration_entities('cast'))
+                                      | map(attribute='player')
+                                      | list
+                          }}
+                        command: interrupt_start
+            - service: media_player.turn_off
+              target:
+                entity_id: "{{ integration_entities('cast') | select('in', target_list) | list if target is defined else integration_entities('cast') }}"
+        - conditions: "{{ resume }}"
+          sequence:
+            - variables:
+                player_data: >
+                  {{ state_attr(sensor, 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='player_data') | join }}
+                spotify_data: >
+                  {{ state_attr(sensor, 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='spotify_data') | join }}
+                ytube_music_date: >
+                  {{ state_attr(sensor, 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='ytube_music_data') | join }}
+                players_to_resume: >
+                  {% set player_list = player_data | map(attribute='entity_id') | list %}
+                  {{ player_list | select('in', target_list) | list if target is defined else player_list }}
+            - alias: "Anything to resume?"
+              choose:
+                - conditions:
+                    - alias: "Anything playing"
+                      condition: template
+                      value_template: "{{ players_to_resume | count > 0 }}"
+                  sequence:
+                    - alias: "Resume players"
+                      repeat:
+                        count: "{{ players_to_resume | count }}"
+                        sequence:
+                          - alias: "Variables for specific media_player"
+                            variables:
+                              player: >
+                                {{
+                                  player_data
+                                    | selectattr('entity_id', 'eq', players_to_resume[repeat.index - 1])
+                                    | join
+                                }}
+                          - alias: "Start perform resume script"
+                            service: script.turn_on
+                            target:
+                              entity_id: script.google_home_resume_perform_resume
+                            data:
+                              variables:
+                                player: "{{ player }}"
+                                player_data: "{{ player_data }}"
+                                spotify_data: "{{ spotify_data }}"
+                                ytube_music_data: "{{ ytube_music_data }}"
+                                players_to_resume: "{{ players_to_resume }}"
+            - alias: "Resume ytube players which are a target"
+              choose:
+                - conditions: >
+                    {{ 
+                      (
+                        ytube_music_data
+                          | selectattr('target', 'in', players_to_resume)
+                          | list
+                          | count > 0
+                      )
+                    }}
+                  sequence:
+                    - variables:
+                        player_ytube: >
+                          {{
+                            ytube_music_data
+                                      | rejectattr('target', 'in', players_to_resume)
+                                      | map(attribute='player')
+                                      | list
+                          }}
+                        target_ytube: >
+                          {%- set y = ytube_music_data
+                                      | rejectattr('target', 'in', players_to_resume)
+                                      | map(attribute='target')
+                                      | list
+                          %}
+                          {%- set ns = namespace(members = []) %}
+                          {%- for target in y %}
+                            {%- if target in speaker_group_list %}
+                              {%- set ns.members = ns.members + speaker_groups[target] %}
+                            {%- endif %}
+                          {%- endfor %}
+                          {{ (y + ns.members) | reject('in', speaker_group_list) | unique | list }}
+                    - service: ytube_music_player.call_method
+                      data:
+                        entity_id: "{{ player_ytube }}"
+                        command: interrupt_resume
+                    - alias: "Set right position for ytube_music"
+                      repeat:
+                        count: "{{ player_ytube | count }}"
+                        sequence:
+                          - variables:
+                              player: "{{ ytube_music_data | selectattr('player', 'eq', player_ytube[repeat.index-1]) | join }}"
+                          - service: script.turn_on
+                            target:
+                              entity_id: script.google_home_resume_ytube_seek
+                            data:
+                              variables:
+                                player_data: "{{ player_data }}"
+                                player: "{{ player }}"
+                                target_ytube: "{{ target_ytube }}"
+            - variables:
+                resume_data: >
+                  {{ state_attr(sensor, 'resume_data') | rejectattr('resume_id', 'eq', resume_id) | list }}
+            - event: store_data
+              event_data:
+                resume_data: "{{ resume_data }}"
+            - alias: "Persistant backup of player_data"
+              choose:
+                - conditions: "{{ notify is defined and iif(notify) }}"
+                  sequence:
+                    - service: "{{ notify }}"
+                      data:
+                        message: >
+                          {%- set data = { 'resume_data': resume_data } %}
+                          '{{ (data | string).replace("'","|").replace('|', '"') }}'
