@@ -91,7 +91,7 @@ The `resume_id` is also required, it will be used to match the data stored to th
 |resume|Yes|`false` to store data `true` to resume |
 |resume_id|Yes|A identifier to match the resume action with|
 
-*Example for data storage when leaving he home*
+*Example for data storage when leaving the home, and resume when arriving back home*
 ```yaml
 trigger:
   - platform: state
