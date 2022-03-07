@@ -1,0 +1,24 @@
+trigger:
+  - platform: event
+    event_type: "store_data"
+    id: store
+  - platform: homeassistant
+    event: start
+    id: restart
+  - platform: event
+    event_type: event_template_reloaded
+    id: restart
+binary_sensor:
+  - unique_id: 438601c4-b299-49e4-b5d4-f751f5853684
+    name: "Resume Data"
+    state: >
+      {{ iif(state_attr('binary_sensor.resume_data', 'resume_data')) }}
+    attributes:
+      resume_data: >
+        {%- if trigger.id == 'store' %}
+          {{ trigger.event.data.resume_data }}
+        {%- elif states('sensor.resume_data') != 'unknown' %}
+          {{ state_attr('sensor.resume_data', 'resume_data') }}
+        {%- else %}
+          []
+        {%- endif %}

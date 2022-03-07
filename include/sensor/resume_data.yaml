@@ -1,0 +1,7 @@
+platform: command_line
+unique_id: 3fbccbaa-a66a-43eb-84ed-cb869a82e899
+name: Resume Data
+command: "tail -n 1 /config/include/files/resume_data.txt | cut -c 2- | sed 's/.$//'"
+value_template: "{{ iif(value_json.resume_data, 'Resume Active', 'No Resume Active') }}"
+json_attributes:
+  - resume_data
