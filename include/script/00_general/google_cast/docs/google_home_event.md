@@ -136,8 +136,8 @@ There are no required variables, but if you use Google Home speaker groups and p
 
 |Variable|Default|Example|Description|
 | --- | --- | --- | --- |
-|sensor||'binary_sensor.resume_data'|The template binary sensor you created for this script|
-|notify||'notify.resume_data'|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
+|sensor||`binary_sensor.resume_data`|The template binary sensor you created for this script|
+|notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
 
 # Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
