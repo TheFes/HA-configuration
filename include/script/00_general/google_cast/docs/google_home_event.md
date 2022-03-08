@@ -18,8 +18,8 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 
 # Setup
 * You need to have the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) up and running.
-* To store the data, you need to create a template binary sensor, which will be triggered by an event sent by the script. This will store the data until template sensors are reloaded, or Home Assistant is restarted. The setup for this binary template sensor can be found here.
-* To also allow persistant storage allowing resuming the Cast devices after a reload or restart, you need to set up the File integration, and a command line sensor which retrieves the data from the file, this is explained here.
+* To store the data, you need to create a template binary sensor, which will be triggered by an event sent by the script. This will store the data until template sensors are reloaded, or Home Assistant is restarted. The setup for this binary template sensor can be found [here](https://github.com/TheFes/HA-configuration/blob/86e1cdd314b49317a39335ea09dc7e3f3a814d27/include/script/00_general/google_cast/docs/google_home_event.md#template-binary-sensor).
+* To also allow persistant storage allowing resuming the Cast devices after a reload or restart, you need to set up the File integration, and a command line sensor which retrieves the data from the file, this is explained [here](https://github.com/TheFes/HA-configuration/blob/86e1cdd314b49317a39335ea09dc7e3f3a814d27/include/script/00_general/google_cast/docs/google_home_event.md#file-integration-and-command-line-sensor).
 
 # Template binary sensor
 The yaml code for the template binary sensor placed below. This is required to have the script working
