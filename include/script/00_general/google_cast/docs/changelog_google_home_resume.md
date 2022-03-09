@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.6.1 - 9 March 2022
+#### 🌟 Improvements
+* Changed service call to resume audio streams so it will display the image on players with a screen
+
 ### Version 1.6.0 - 7 March 2022
 #### 🔴 BREAKING
 * I've added YAML anchors to copy the variables set in the main resume script to the helper scripts, this means you need to keep the scripts in one yaml file, otherwise the anchors will not work.
