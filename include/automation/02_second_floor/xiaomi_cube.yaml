@@ -28,8 +28,12 @@ use_blueprint:
                   media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
                   media_content_type: music
                   extra:
-                    title: "NPO Radio 2"
-                    thumb: "/local/pictures/radio/npo_radio_2.png"
+                    metadata:
+                      metadataType: 3
+                      title: "Er is maar één NPO Radio 2"
+                      artist: "NPO Radio 2"
+                      images:
+                        - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
     rotate_clockwise:
       - service: media_player.volume_set
         target:

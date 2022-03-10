@@ -35,8 +35,12 @@ action:
               media_content_id: "https://playerservices.streamtheworld.com/api/livestream-redirect/VERONICAAAC.aac?dist=tunein&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY0MzYzMjYxNywiaXNzIjoidGlzcnYifQ.OlnnADm_zLoI56zh6I0ITMdOEvwLcWs1X-T8HRhiccg"
               media_content_type: music
               extra:
-                title: "Radio Veronica"
-                thumb: "https://cdn-profiles.tunein.com/s6717/images/logoq.jpg?t=2"
+                metadata:
+                  metadataType: 3
+                  title: "WE. LOVE. MUSIC."
+                  artist: "Radio Veronica"
+                  images:
+                    - url: "http://192.168.2.3:8123/local/pictures/radio/radio_veronica.png"
       - conditions:
           - alias: "And switch back"
             condition: template
@@ -58,5 +62,9 @@ action:
               media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
               media_content_type: music
               extra:
-                title: "NPO Radio 2"
-                thumb: "/local/pictures/radio/npo_radio_2.png"
+                metadata:
+                  metadataType: 3
+                  title: "Er is maar één NPO Radio 2"
+                  artist: "NPO Radio 2"
+                  images:
+                    - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"

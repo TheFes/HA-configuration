@@ -35,8 +35,12 @@ start_audio_tag:
               media_content_id: "{{ media[to_play] | replace('/media', 'media-source://media_source/local') }}"
               media_content_type: "audio/mp3"
               extra:
-                title: "{{ media[to_play].split('/')[5].split('_-_')[-1].split('.')[0].replace('_', ' ') }}"
-                thumb: "{{ thumb }}"
+                metadata:
+                  metadataType: 3
+                  title: "{{ media[to_play].split('/')[5].split('_-_')[-1].split('.')[0].replace('_', ' ') }}"
+                  artist: "{{ artist }}"
+                  images:
+                    - url: "{{ thumb }}"
           - alias: "Delay to make sure music is playing"
             delay: 7
           - alias: "Wait until music is stopped"

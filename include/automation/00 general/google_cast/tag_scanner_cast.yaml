@@ -34,10 +34,11 @@ action:
               variables:
                 input_text: "{{ 'input_text.played_' + tags[trigger.event.data.tag_id].card_id }}"
                 media: "{{ state_attr('sensor.'~tags[trigger.event.data.tag_id].card_id, 'file_list') | sort }}"
+                artist: "{{ tags[trigger.event.data.tag_id].get('artist', 'Onbekend') }}"
                 player: "{{player_audio if tag_type == 'audio' else player_video}}"
                 number_of_plays: "{{ tags[trigger.event.data.tag_id].number_of_plays }}"
                 volume: "{{ tags[trigger.event.data.tag_id].volume if tag_type == 'audio' else 0 }}"
-                thumb: "/local/pictures/tags/{{ tags[trigger.event.data.tag_id].card_id }}.jpg"
+                thumb: "http://192.168.2.3:8123/local/pictures/tags/{{ tags[trigger.event.data.tag_id].card_id }}.jpg"
   - alias: "Turn led to green"
     service: light.turn_on
     target:
