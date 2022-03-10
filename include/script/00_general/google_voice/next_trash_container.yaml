@@ -7,31 +7,49 @@ next_trash_container_routine:
           restgft: "rest- en GFT-bak"
           dhm: "papier- en PMD-bak"
           kerstbomen: "kerstboom"
+        trash_pickup: >
+          {%- set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
+          {{ trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list }}
+        when: >
+          {%- set days_until = ((state_attr('sensor.afvalwijzer_next_date', 'year_month_day_date') | as_datetime).date() - now().date()).days %}
+          {%- if days_until == 0 %}
+            Vandaag
+          {%- elif days_until == 1 %}
+            Morgen
+          {%- else %}
+            {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
+            {{ days[now().weekday() + days_until] }}
+          {%- endif %}
+    - alias: "Send TTS to Dummy"
+      service: tts.google_cloud_say
+      target:
+        entity_id: media_player.tts_dummy
+      data:
+        message: >
+          {%- if trash_pickup | length > 1 %}
+            {{ when }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
+          {%- else %}
+            {{ when }} moet de {{ trash_pickup[0] }} buiten.
+          {%- endif %}
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice
       data:
         action:
-          - alias: "Send TTS message"
-            service: tts.google_cloud_say
+          - alias: "Send TTS message with picture"
+            service: media_player.play_media
             data:
-              message: >
-                {# select the right descriptions form the variable #}
-                  {%- set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
-                  {%- set trash_pickup = trash_descr.items() | list | selectattr('0', 'in', trash_pickup) | map(attribute='1') | list %}
-                {# deterimine when the next pickup is (today, tomorrow, or day-name) #}
-                  {%- set days_until = ((state_attr('sensor.afvalwijzer_next_date', 'year_month_day_date') | as_datetime).date() - now().date()).days %}
-                  {%- if days_until == 0 %}
-                    {%- set when = 'Vandaag' %}
-                  {%- elif days_until == 1 %}
-                    {%- set when = 'Morgen' %}
-                  {%- else %}
-                    {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-                    {%- set when = days[now().weekday() + days_until] %}
-                  {%- endif %}
-                {# set the correct message (based on number of pickup types) #}
-                  {%- if trash_pickup | length > 1 %}
-                    {{ when }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
-                  {%- else %}
-                    {{ when }} moet de {{ trash_pickup[0] }} buiten.
-                  {%- endif %}
+              media_content_id: "{{ states('sensor.tts_dummy') }}"
+              media_content_type: "music"
+              extra:
+                metadata:
+                  metadataType: 3
+                  title: >
+                    {%- if trash_pickup | length > 1 %}
+                      {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }}
+                    {%- else %}
+                      {{ trash_pickup[0] }}
+                    {%- endif %}
+                  artist: "{{ when }}"
+                  images:
+                    - url: "http://192.168.2.3:8123/local/pictures/tts/{{ 'papierpmd.png' if 'dhm' in states('sensor.afvalwijzer_next_type') else 'restgft.png' }}"
         volume: 35
