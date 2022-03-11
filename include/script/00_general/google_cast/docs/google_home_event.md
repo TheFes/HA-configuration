@@ -12,7 +12,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
-### Version 0.2.0 - 11 March 2022
+### Version 0.2.0/0.2.1 - 11 March 2022
 #### 🛑: Breaking change
 * If you use speaker groups, you need to provide the data in the variable speaker_groupsnow. (You can copy paste it from the Google Home Resume script).
 #### ✨: New features
@@ -22,6 +22,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Should work correctly with speaker groups now
 #### 🐛: Bug fixes
 * Typo in the ytube_music_data variable somewhere in the script.
+* (0.2.1) Small fix in template to determine `resume_id`
 
 ### Version 0.1.0 - 7 March 2022
 #### ✨ New features
