@@ -55,10 +55,10 @@ google_home_event:
         - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.2.2
+        version: 0.2.2.2
     - variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
-        resume_id: "{{ resume_id if (resume_id is defined and iif(resume_id)) else 'not provided' }}"
+        resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         target_list: >
           {# determine entities of cast integraton #}
             {%- set cast_entities = integration_entities('cast') %}
