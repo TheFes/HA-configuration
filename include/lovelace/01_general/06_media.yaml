@@ -18,6 +18,28 @@ cards:
       attribute: "friendly_name"
       reverse: false
       numeric: false
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.spotify_playing
+        state: "on"
+    card:
+      type: custom:auto-entities
+      card:
+        type: entities
+        title: Spotify
+      filter:
+        template: >
+          {{
+            expand(integration_entities('spotify'))
+              | rejectattr('state', 'in', ['idle', 'off', 'unavailable'])
+              | map(attribute='entity_id')
+              | list
+          }}
+      sort:
+        method: attribute
+        attribute: "friendly_name"
+        reverse: false
+        numeric: false
   # Card to send TTS message
   - type: vertical-stack
     cards:
