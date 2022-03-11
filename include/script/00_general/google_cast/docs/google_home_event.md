@@ -14,14 +14,14 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 # Most recent changes
 ### Version 0.2.0/0.2.1 - 11 March 2022
 #### 🛑: Breaking change
-* If you use speaker groups, you need to provide the data in the variable speaker_groupsnow. (You can copy paste it from the Google Home Resume script).
+* If you use speaker groups, you need to provide the data in the variable `speaker_groups` now. (You can copy paste it from the Google Home Resume script).
 #### ✨: New features
-* Added an optional boolean remove_data which can be set to true to remove all the existing data from the binary_sensor and the file
+* Added an optional boolean `remove_data` which can be set to true to remove all the existing data from the binary_sensor and the file
 #### 🌟: Improvements
-* All fields are optional now. If no resume_id is entered, the default will be not provided, and if no setting for resume is set, the default will be false (so data storage).
+* All fields are optional now. If no `resume_id` is entered, the default will be `not provided`, and if no setting for `resume` is set, the default will be `false` (so data storage).
 * Should work correctly with speaker groups now
 #### 🐛: Bug fixes
-* Typo in the ytube_music_data variable somewhere in the script.
+* Typo in the `ytube_music_data` variable somewhere in the script.
 * (0.2.1) Small fix in template to determine `resume_id`
 
 ### Version 0.1.0 - 7 March 2022
