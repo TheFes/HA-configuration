@@ -55,7 +55,7 @@ google_home_event:
         - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.2.1
+        version: 0.2.2
     - variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         resume_id: "{{ resume_id if (resume_id is defined and iif(resume_id)) else 'not provided' }}"
@@ -105,7 +105,7 @@ google_home_event:
           {%- endif %}
     - alias: "Store or resume or remove data"
       choose:
-        - conditions: "{{ remove_data }}"
+        - conditions: "{{ remove_data if remove_data is defined else false }}"
           sequence:
             - variables:
                 resume_data: []
@@ -126,7 +126,7 @@ google_home_event:
                 - conditions: "{{ notify is defined and iif(notify) }}"
                   sequence:
                     - service: command_line.reload
-        - conditions: "{{ not resume is defined or not resume }}"
+        - conditions: "{{ not resume if resume is defined else true }}"
           sequence:
             - variables:
                 player_data: >
@@ -233,7 +233,7 @@ google_home_event:
             - service: media_player.turn_off
               target:
                 entity_id: "{{ integration_entities('cast') | select('in', target_list) | list if target is defined else integration_entities('cast') }}"
-        - conditions: "{{ resume }}"
+        - conditions: "{{ resume if resume is defined else false }}"
           sequence:
             - variables:
                 player_data: >

@@ -23,6 +23,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 #### 🐛: Bug fixes
 * Typo in the `ytube_music_data` variable somewhere in the script.
 * (0.2.1) Small fix in template to determine `resume_id`
+* (0.2.2) Avoid some template warnings
 
 ### Version 0.1.0 - 7 March 2022
 #### ✨ New features
