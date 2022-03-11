@@ -4,3 +4,10 @@ notify:
     services:
       - service: mobile_app_pixel_5
       - service: mobile_app_marleen_app
+  - name: WhatsApp Martijn
+    platform: rest
+    resource: https://api.callmebot.com/whatsapp.php
+    data:
+      source: HA
+      phone: !secret phone
+      apikey: !secret callmebot_api
