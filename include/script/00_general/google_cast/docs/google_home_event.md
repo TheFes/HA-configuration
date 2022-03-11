@@ -11,7 +11,18 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 # To Do
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
-# Most recent change
+# Most recent changes
+### Version 0.2.0 - 11 March 2022
+#### 🛑: Breaking change
+* If you use speaker groups, you need to provide the data in the variable speaker_groupsnow. (You can copy paste it from the Google Home Resume script).
+#### ✨: New features
+* Added an optional boolean remove_data which can be set to true to remove all the existing data from the binary_sensor and the file
+#### 🌟: Improvements
+* All fields are optional now. If no resume_id is entered, the default will be not provided, and if no setting for resume is set, the default will be false (so data storage).
+* Should work correctly with speaker groups now
+#### 🐛: Bug fixes
+* Typo in the ytube_music_data variable somewhere in the script.
+
 ### Version 0.1.0 - 7 March 2022
 #### ✨ New features
 * Initial publication
@@ -88,10 +99,11 @@ The `resume_id` is also required, it will be used to match the data stored to th
 |Field|Required|Description|
 | --- | --- | --- | 
 |target|No|The targets which should be stored or resumed|
-|resume|Yes|`false` to store data `true` to resume |
-|resume_id|Yes|A identifier to match the resume action with|
+|resume|No|`false` to store data `true` to resume (default is `false`, so data storage) |
+|resume_id|No|A identifier to match the resume action with (default is `not provided`)|
+|remove_data|No|Set to `true` to remove all data from the binary_sensor and file (default is `false`)|
 
-*Example for data storage when leaving the home, and resume when arriving back home*
+*Example for data storage of devices in the living room when leaving the home, and resume when arriving back home*
 ```yaml
 trigger:
   - platform: state
@@ -138,6 +150,7 @@ There are no required variables, but if you use Google Home speaker groups and p
 | --- | --- | --- | --- |
 |sensor||`binary_sensor.resume_data`|The template binary sensor you created for this script|
 |notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
+|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 
 # Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
