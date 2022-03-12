@@ -142,7 +142,8 @@ google_home_event:
                         | map(attribute='entity_id')
                         | list
                         | count > 0
-                      and retreive_vol_all if retreive_vol_all is defined else true
+                      and (retreive_vol_all if retreive_vol_all is defined else true)
+                      and speaker_group_list | count > 0
                     }}
                   sequence:
                     - alias: "Turn on all media_players which are off"
