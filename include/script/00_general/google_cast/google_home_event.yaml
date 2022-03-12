@@ -29,6 +29,11 @@ google_home_event:
       required: false
       selector:
         boolean:
+    retreive_vol_all:
+      description: "Set to true if you want to retreive the volume of all players"
+      required: false
+      selector:
+        boolean:
   variables:
     sensor: binary_sensor.resume_data
     notify: notify.resume_data
@@ -55,7 +60,7 @@ google_home_event:
         - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.2.2.2
+        version: 0.2.3
     - variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
@@ -128,30 +133,67 @@ google_home_event:
                     - service: command_line.reload
         - conditions: "{{ not resume if resume is defined else true }}"
           sequence:
+            - alias: "Any players off and retreive volume all true"
+              choose:
+                - conditions: >
+                    {{
+                      expand(integration_entities('cast'))
+                        | selectattr('state', 'eq', 'off')
+                        | map(attribute='entity_id')
+                        | list
+                        | count > 0
+                      and retreive_vol_all if retreive_vol_all is defined else true
+                    }}
+                  sequence:
+                    - alias: "Turn on all media_players which are off"
+                      service: media_player.turn_on
+                      target:
+                        entity_id: >
+                          {{
+                            expand(integration_entities('cast'))
+                              | selectattr('state', 'eq', 'off')
+                              | map(attribute='entity_id')
+                              | list 
+                          }}
+                    - delay: 0.25
             - variables:
                 player_data: >
                   {%- set ns = namespace(info=[]) %}
                   {%- for entity in expand(integration_entities('cast')) %}
-                    {%- set ns.info = ns.info + [
-                                                  dict(
-                                                    entity_id = entity.entity_id,
-                                                    friendly_name = entity.attributes.friendly_name,
-                                                    state = entity.state,
-                                                    media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                                    media_title = entity.attributes.get('media_title', 'no title'),
-                                                    media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                                    media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                                    app_name = entity.attributes.get('app_name', 'no app'),
-                                                    entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                    volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                                    media_position =  as_timestamp(now()) | round(2)
-                                                                      - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                      + entity.attributes.get('media_position', 0),
-                                                    target = entity.entity_id in target_list if target is defined else true,
-                                                    data_source = 'event_script'
-                                                    )
-                                                  ] 
-                    %}
+                    {%- if entity.state ==  'playing' %}
+                      {%- set ns.info = ns.info + [
+                                                    dict(
+                                                      entity_id = entity.entity_id,
+                                                      friendly_name = entity.attributes.friendly_name,
+                                                      state = entity.state,
+                                                      media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                      media_title = entity.attributes.get('media_title', 'no title'),
+                                                      media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                                      media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                                      app_name = entity.attributes.get('app_name', 'no app'),
+                                                      entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                                      volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                      media_position =  as_timestamp(now()) | round(2)
+                                                                        - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                        + entity.attributes.get('media_position', 0),
+                                                      target = iif(entity.entity_id in target_list, 'target', 'no_target') if target is defined else 'target',
+                                                      data_source = 'event_script'
+                                                      )
+                                                    ] 
+                      %}
+                    {%- else %}
+                      {%- set ns.info = ns.info + [
+                                                    dict(
+                                                      entity_id = entity.entity_id,
+                                                      friendly_name = entity.attributes.friendly_name,
+                                                      state = entity.state,
+                                                      volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                      target = iif(entity.entity_id in target_list, 'target', 'no_target') if target is defined else 'target',
+                                                      data_source = 'event_script'
+                                                      )
+                                                    ] 
+                      %}
+                    {%- endif %}
                   {%- endfor %}
                   {{ ns.info | selectattr('entity_id', 'in', target_list) | list if target is defined else ns.info }}
                 spotify_data: >
@@ -208,10 +250,6 @@ google_home_event:
                         message: >
                           {%- set data = { 'resume_data': resume_data } %}
                           '{{ (data | string).replace("'","|").replace('|', '"') }}'
-            - alias: "Command line restore needed"
-              choose:
-                - conditions: "{{ notify is defined and iif(notify) }}"
-                  sequence:
                     - service: command_line.reload
             - alias: "Interrupt YouTube music if needed"
               choose:
@@ -244,7 +282,7 @@ google_home_event:
                   {{ state_attr(sensor, 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='ytube_music_data') | join }}
                 players_to_resume: >
                   {% set player_list = player_data
-                                        | selectattr('target' 'eq', true)
+                                        | selectattr('target', 'eq', 'target')
                                         | selectattr('state', 'eq', 'playing')
                                         | map(attribute='entity_id')
                                         | list 
@@ -353,3 +391,4 @@ google_home_event:
                         message: >
                           {%- set data = { 'resume_data': resume_data } %}
                           '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                    - service: command_line.reload
