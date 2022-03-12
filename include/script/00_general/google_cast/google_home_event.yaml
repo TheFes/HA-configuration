@@ -29,11 +29,6 @@ google_home_event:
       required: false
       selector:
         boolean:
-    retreive_vol_all:
-      description: "Set to true if you want to retreive the volume of all players"
-      required: false
-      selector:
-        boolean:
   variables:
     sensor: binary_sensor.resume_data
     notify: notify.resume_data
@@ -60,7 +55,7 @@ google_home_event:
         - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.2.3
+        version: 0.2.4
     - variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
@@ -133,30 +128,6 @@ google_home_event:
                     - service: command_line.reload
         - conditions: "{{ not resume if resume is defined else true }}"
           sequence:
-            - alias: "Any players off and retreive volume all true"
-              choose:
-                - conditions: >
-                    {{
-                      expand(integration_entities('cast'))
-                        | selectattr('state', 'eq', 'off')
-                        | map(attribute='entity_id')
-                        | list
-                        | count > 0
-                      and (retreive_vol_all if retreive_vol_all is defined else true)
-                      and speaker_group_list | count > 0
-                    }}
-                  sequence:
-                    - alias: "Turn on all media_players which are off"
-                      service: media_player.turn_on
-                      target:
-                        entity_id: >
-                          {{
-                            expand(integration_entities('cast'))
-                              | selectattr('state', 'eq', 'off')
-                              | map(attribute='entity_id')
-                              | list 
-                          }}
-                    - delay: 0.25
             - variables:
                 player_data: >
                   {%- set ns = namespace(info=[]) %}
