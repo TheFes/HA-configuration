@@ -38,6 +38,7 @@ action:
                 player: "{{player_audio if tag_type == 'audio' else player_video}}"
                 number_of_plays: "{{ tags[trigger.event.data.tag_id].number_of_plays }}"
                 volume: "{{ tags[trigger.event.data.tag_id].volume if tag_type == 'audio' else 0 }}"
+                list_length: "{{ tags[trigger.event.data.tag_id].list_length }}"
                 thumb: "http://192.168.2.3:8123/local/pictures/tags/{{ tags[trigger.event.data.tag_id].card_id }}.jpg"
   - alias: "Turn led to green"
     service: light.turn_on

@@ -9,8 +9,9 @@ play_bollo:
         input_text: "{{ 'input_text.played_'~id }}"
         media: "{{ state_attr('sensor.'~id, 'file_list') | sort }}"
         playlist: "{{ range(0,media|count) | list }}"
-        exclude_list: "{{ states(input_text).split('|') | map('int', default='na') | list }}"
+        exclude_list: "{{ states(input_text).split('|') | select('is_number') | map('int') | list }}"
         to_play: "{{ playlist|reject('in', exclude_list) | list | random }}"
+        list_length: 4
         thumb: "http://192.168.2.3:8123/local/pictures/tags/{{ id }}.jpg"
     - alias: "Start script for speaker voice command"
       service: script.turn_on
@@ -27,7 +28,7 @@ play_bollo:
               target:
                 entity_id: "{{ input_text }}"
               data:
-                value: "{{ ((states(input_text).split('|') | map('int', default='na') | list)[1:] + [to_play]) | join('|') }}"
+                value: "{{ (exclude_list + [to_play])[-list_length:] | join('|') }}"
             - service: media_player.play_media
               data:
                 media_content_id: >

@@ -16,7 +16,7 @@ start_audio_tag:
         sequence:
           - variables:
               playlist: "{{ range(0,media|count) | list }}"
-              exclude_list: "{{ states(input_text).split('|') | map('int', default='na') | list }}"
+              exclude_list: "{{ states(input_text).split('|') | select('is_number') | map('int') | list }}"
               to_play: "{{ playlist|reject('in', exclude_list) | list | random }}"
           - alias: "Input text exists"
             choose:
@@ -27,7 +27,7 @@ start_audio_tag:
                     target:
                       entity_id: "{{ input_text }}"
                     data:
-                      value: "{{ ((states(input_text).split('|') | map('int', default='na') | list)[1:] + [to_play]) | join('|') }}"
+                      value: "{{ (exclude_list + [to_play])[-list_length:] | join('|') }}"
           - service: media_player.play_media
             target:
               entity_id: "{{ player }}"
