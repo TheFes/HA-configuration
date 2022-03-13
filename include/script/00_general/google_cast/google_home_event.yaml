@@ -24,6 +24,13 @@ google_home_event:
             domain: media_player
           device:
             integration: cast
+    resume_volume:
+      description: "Volume to be used then resuming the speaker, should be set while storing the data. Eiter use a number between 0 and 1 or 1 and 100 (%)"
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
     remove_data:
       description: "Set to true if you want to remove all stored data (default is false)"
       required: false
@@ -55,10 +62,14 @@ google_home_event:
         - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.2.4
+        version: 0.3.0
     - variables:
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
+        resume_volume: >
+          {%- if resume_volume is defined and iif(resume_volume) %}
+            {{ [1, resume_volume / 100] | min if resume_volume > 1 else resume_volume }}
+          {%- endif %}
         target_list: >
           {# determine entities of cast integraton #}
             {%- set cast_entities = integration_entities('cast') %}
@@ -144,7 +155,7 @@ google_home_event:
                                                       media_content_type = entity.attributes.get('media_content_type', 'no type'),
                                                       app_name = entity.attributes.get('app_name', 'no app'),
                                                       entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                      volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                      volume_level = resume_volume if iif(resume_volume) else entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
                                                       media_position =  as_timestamp(now()) | round(2)
                                                                         - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
                                                                         + entity.attributes.get('media_position', 0),
@@ -159,7 +170,7 @@ google_home_event:
                                                       entity_id = entity.entity_id,
                                                       friendly_name = entity.attributes.friendly_name,
                                                       state = entity.state,
-                                                      volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                      volume_level = resume_volume if iif(resume_volume) else entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
                                                       target = iif(entity.entity_id in target_list, 'target', 'no_target') if target is defined else 'target',
                                                       data_source = 'event_script'
                                                       )

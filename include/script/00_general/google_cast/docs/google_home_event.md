@@ -12,7 +12,15 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
-### Version 0.2.0/0.2.1 - 11 March 2022
+### Version 0.3.0 - 13 March 2022
+#### ✨: New features
+* Added `resume_volume` field which can be set while storing the data, and will overwrite the actual volume with this value. This will make sure the speakers are not resumed very loud, when they were playing at high volume while storing the data.
+
+### Version 0.2.3/0.2.4 - 12 March 2022
+#### 🐛: Bug fixes
+* Finally fixed the template errors
+
+### Version 0.2.0/0.2.1/0.2.2 - 11 March 2022
 #### 🛑: Breaking change
 * If you use speaker groups, you need to provide the data in the variable `speaker_groups` now. (You can copy paste it from the Google Home Resume script).
 #### ✨: New features
@@ -103,6 +111,7 @@ The `resume_id` is also required, it will be used to match the data stored to th
 |target|No|The targets which should be stored or resumed|
 |resume|No|`false` to store data `true` to resume (default is `false`, so data storage) |
 |resume_id|No|A identifier to match the resume action with (default is `not provided`)|
+|resume_volume|No|Volume to be used when resuming the speakers, needs to be provided when storing the data. (default is current volume of speaker)
 |remove_data|No|Set to `true` to remove all data from the binary_sensor and file (default is `false`)|
 
 *Example for data storage of devices in the living room when leaving the home, and resume when arriving back home*
