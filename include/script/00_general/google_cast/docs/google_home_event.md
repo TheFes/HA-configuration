@@ -163,6 +163,9 @@ There are no required variables, but if you use Google Home speaker groups and p
 |notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 
+# Other scripts
+For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+
 # Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!

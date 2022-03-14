@@ -112,6 +112,9 @@ Only `check_for_title` is mandatory. Resuming Spotify won't work properly withou
 |primary_spotcast|No|`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
 |use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.
 
+# Other scripts
+For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+
 # Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!

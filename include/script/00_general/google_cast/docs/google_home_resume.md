@@ -153,12 +153,6 @@ There are no required variables, but if you use Google Home speaker groups and p
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived|
 |group_id||`some_string`|A string which will be added to the group object id's so they can be identified as belonging to this script|
 
-# Buy me a coffee
-If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
-In case you decide to do so, thanks a lot!
-
-<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
-
 # Why not a blueprint?
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
 * You need to provide information on your speaker groups, players with a screen and spotcast account. That would mean that you will have to do that each time you use the blueprint to create a script, or that you'll have to add this information each time the blueprint is updated, which would reduce the easiness of updating the script.
@@ -166,3 +160,12 @@ I've been asked a couple of times if I ever considered to make a blueprint out o
 * I use really large and complicated templates, and these would be converted to really messy one line templates, making it impossible to read and debug if needed.
 
 So, basically, I gave it a try, and decided it would not work :)
+
+# Other scripts
+For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+
+# Buy me a coffee
+If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
+In case you decide to do so, thanks a lot!
+
+<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
