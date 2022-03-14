@@ -8,6 +8,8 @@ trigger:
     event_data:
       device_id: f448ab96c13a02e1e4ed6dc679d693c5
 action:
+  - variables:
+      toggle: "{{ is_state('light.pepijn_leeslamp', 'on') or is_state('light.nijntje', 'on') }}"
   - alias: "Which click type"
     choose:
       - conditions:
@@ -19,18 +21,11 @@ action:
             choose:
               - conditions: >
                   {{ 
-                    is_state('light.nijntje', 'on')
-                    or is_state_attr('light.pepijn_leeslamp', 'brightness', 15)
-                  }}
-                sequence:
-                  - alias: "toggle Miffy"
-                    service: light.toggle
-                    target:
-                      entity_id: light.nijntje
-              - conditions: >
-                  {{ 
-                    now() > today_at(states('input_datetime.pepijn_time_bed')) 
-                    or now() < today_at(states('input_datetime.pepijn_time_awake')) + timedelta(hours=1) 
+                    (
+                      now() > today_at(states('input_datetime.pepijn_time_bed')) 
+                      or now() < today_at(states('input_datetime.pepijn_time_awake')) + timedelta(hours=1)
+                    )
+                    and not toggle
                   }}
                 sequence:
                   - alias: "Sleep or awake?"
