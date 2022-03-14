@@ -63,7 +63,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.6.1
+        version: 1.6.2
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: >
@@ -190,25 +190,38 @@ google_home_resume:
           {%- else %}
             {%- set ns = namespace(info=[]) %}
             {%- for entity in expand(integration_entities('cast')) %}
-              {%- set ns.info = ns.info + [
-                                            dict(
-                                              entity_id = entity.entity_id,
-                                              friendly_name = entity.attributes.friendly_name,
-                                              state = entity.state,
-                                              media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                              media_title = entity.attributes.get('media_title', 'no title'),
-                                              media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                              media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                              app_name = entity.attributes.get('app_name', 'no app'),
-                                              entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                              volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                              media_position =  as_timestamp(now()) | round(2) - 
-                                                                as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                + entity.attributes.get('media_position', 0),
-                                              data_source = 'resume_script'
-                                              )
-                                            ] 
-              %}
+              {%- if entity.state == 'playing' %}
+                {%- set ns.info = ns.info + [
+                                              dict(
+                                                entity_id = entity.entity_id,
+                                                friendly_name = entity.attributes.friendly_name,
+                                                state = entity.state,
+                                                media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                media_title = entity.attributes.get('media_title', 'no title'),
+                                                media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                                media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                                app_name = entity.attributes.get('app_name', 'no app'),
+                                                entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                                volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                media_position =  as_timestamp(now()) | round(2) - 
+                                                                  as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                  + entity.attributes.get('media_position', 0),
+                                                data_source = 'resume_script'
+                                                )
+                                              ] 
+                %}
+              {%- else %}
+                {%- set ns.info = ns.info + [
+                                              dict(
+                                                entity_id = entity.entity_id,
+                                                friendly_name = entity.attributes.friendly_name,
+                                                state = entity.state,
+                                                volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
+                                                data_source = 'resume_script'
+                                                )
+                                              ] 
+                %}
+              {%- endif %}
             {%- endfor %}
             {{ ns.info }}
           {%- endif %}
@@ -308,7 +321,9 @@ google_home_resume:
           {%- if spotify_data is defined %}
             {{ spotify_data }}
           {%- else %}
-            {%- set entities = expand(integration_entities('spotify')) %}
+            {%- set entities = expand(integration_entities('spotify'))
+                                | selectattr('state', 'eq', 'playing')
+            %}
             {%- set ns = namespace(info=[]) %}
             {%- for entity in entities %}
               {%- set ns.info = ns.info + [ dict(entity_id=entity.entity_id, source=entity.attributes.source) ] %}

@@ -16,18 +16,9 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.6.1 - 9 March 2022
+### Version 1.6.1 - 14 March 2022
 #### 🌟 Improvements
-* Changed service call to resume audio streams so it will display the image on players with a screen
-
-### Version 1.6.0 - 7 March 2022
-#### 🔴 BREAKING
-* I've added YAML anchors to copy the variables set in the main resume script to the helper scripts, this means you need to keep the scripts in one yaml file, otherwise the anchors will not work.
-* The variable `group_id` whichis used for the group creation is moved to the config variables, because it was also used in the helper scripts
-#### 🌟 Improvements
-* Other changes to make the script work with the new Google Home Event script which I will publish soon.
-#### 🐛 Bug fixes
-* Fix for volume restore of group members
+* Do not store unnecessary data of non playing devices
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

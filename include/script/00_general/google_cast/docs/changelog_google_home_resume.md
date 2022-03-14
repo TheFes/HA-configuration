@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.6.1 - 14 March 2022
+#### 🌟 Improvements
+* Do not store unnecessary data of non playing devices
+
 ### Version 1.6.1 - 9 March 2022
 #### 🌟 Improvements
 * Changed service call to resume audio streams so it will display the image on players with a screen
