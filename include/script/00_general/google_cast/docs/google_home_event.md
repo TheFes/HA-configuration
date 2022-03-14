@@ -78,7 +78,7 @@ template:
 To make sure the players can be resumed after a reboot, you can set up the file integration to store the data, and retrieve it using a command line sensor:
 
 File integration (a notify service to store the data in a file):
-Change the file location to anywhere you want to have it.
+Change the file location to anywhere you want to have it. Please not you need to create the folder(s) first, the integration won't do that for you.
 ```yaml
 notify:
   - name: resume_data
