@@ -1,5 +1,5 @@
 # Background
-I've created the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) last year, to resume a Google Cast device after it has been interrupted. One of the users asked if it would be possible to also resume on eg leaving the house, and restoring the state when you return, and this script is the result
+I've created the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) last year, to resume a Google Cast device after it has been interrupted. One of the users asked if it would be possible to also resume on eg leaving the house, and restoring the state when you return, and this script is the result.
 
 # This script supports
 * Store the state of your Google Cast devices in a template sensor, or with additional setup, in a file. The latter allows you to restore the state even after a reboot of Home Assistant.
@@ -42,7 +42,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * To store the data, you need to create a template binary sensor, which will be triggered by an event sent by the script. This will store the data until template sensors are reloaded, or Home Assistant is restarted. The setup for this binary template sensor can be found [here](https://github.com/TheFes/HA-configuration/blob/86e1cdd314b49317a39335ea09dc7e3f3a814d27/include/script/00_general/google_cast/docs/google_home_event.md#template-binary-sensor).
 * To also allow persistant storage allowing resuming the Cast devices after a reload or restart, you need to set up the File integration, and a command line sensor which retrieves the data from the file, this is explained [here](https://github.com/TheFes/HA-configuration/blob/86e1cdd314b49317a39335ea09dc7e3f3a814d27/include/script/00_general/google_cast/docs/google_home_event.md#file-integration-and-command-line-sensor).
 
-# Template binary sensor
+## Template binary sensor
 The yaml code for the template binary sensor placed below. This is required to have the script working
 This can be placed in `configuration.yaml` if you don't have a `template.yaml` in your configuration.
 
@@ -74,8 +74,8 @@ template:
             {%- endif %}
 ```
 
-# File integration and command line sensor
-To make sure the players can be resumed after a reboot, you can set up the file integration to store the data, and retrieve it using a command line sensor:
+## File integration and command line sensor
+To make sure the players can be resumed after a reboot of Home Assistant, you can set up the file integration to store the data, and retrieve it using a command line sensor:
 
 File integration (a notify service to store the data in a file):
 Change the file location to anywhere you want to have it. Please not you need to create the folder(s) first, the integration won't do that for you.
@@ -98,12 +98,29 @@ sensor:
     json_attributes:
       - resume_data
 ```
+## And finally the script itself
+
+[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_event.yaml) on my Github config, so I don't have to maintain it in two places
+
+Place it in your `scripts.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
+
+# Explanation of variables in the script
+
+There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those. Resuming Spotify won't work properly without `default_spotcast`.
+
+|Variable|Default|Example|Description|
+| --- | --- | --- | --- |
+|sensor||`binary_sensor.resume_data`|The name of the template binary sensor you created for this script|
+|notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
+|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group. You can copy/paste the list of your Google Home Resume Script.|
 
 # How to start the script
-There are 3 fields which can be set while running the script.
+There are 5 fields which can be set while running the script.
 `target` is optional, if you don't provide it, it will use all entities of the Cast integration (including Chromecast, Google TV devices, etc).
 The `resume` boolean is required. If set to `false` it will store the data, if set to `true` it will resume the players based on the data which was stored.
 The `resume_id` is also required, it will be used to match the data stored to the resume action. This will allow to store multiple events. Data with the same `resume_id` will be overwritten when storing the data, and after resuming it will be removed.
+The `resume_volume` sets a fixed volume when storing (`resume = true`) the data, instead of using the current volume. This can be helpful if you tend to set high volumes while getting ready for work and don't want to be greeted by blasting music when resuming the speakers in the middle of the night. ;-)
+The `remove_data` deletes all data from the binary sensor and file when set to true.
 
 *Description of fields:*
 |Field|Required|Description|
@@ -146,22 +163,6 @@ action:
 ```
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
-
-# And finally the script itself
-
-[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_event.yaml) on my Github config, so I don have to maintain it in two places
-
-Place it in your `scripts.yaml` with a file editor, not via the GUI. 
-
-# Explanation of variables in the script
-
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those. Resuming Spotify won't work properly without `default_spotcast`.
-
-|Variable|Default|Example|Description|
-| --- | --- | --- | --- |
-|sensor||`binary_sensor.resume_data`|The template binary sensor you created for this script|
-|notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
-|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 
 # Other scripts
 For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
