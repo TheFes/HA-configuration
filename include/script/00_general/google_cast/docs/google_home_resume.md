@@ -16,9 +16,10 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.7.0
+### Version 1.7.0 - 21 March 2022
 #### 🌟 Improvements
 * No need for YAML anchors anymore, all data in the variables will be applied in the main script now.
+* Several changes to work better with the [Google Home Event script](https://community.home-assistant.io/t/store-media-state-of-cast-devices-on-event-e-g-leaving-home-and-resume-later/403059)
 #### 🐛 Bug fixes
 * Fix for volume restore
 
