@@ -8,10 +8,9 @@ google_home_voice:
   max_exceeded: silent
   variables:
     check_for_title: "Witte ruis"
-    primary_spotcast: pepijn
   sequence:
     - variables:
-        version: 1.3.1
+        version: 1.3.2
         speaker_groups: >
           {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
           {%- set ns = namespace(entities = []) %}
@@ -71,7 +70,9 @@ google_home_voice:
           {%- endfor %}
           {{ ns.info }}
         spotify_data: >
-          {%- set entities = expand(integration_entities('spotify')) %}
+          {%- set entities = expand(integration_entities('spotify'))
+                              | selectattr('state', 'eq', 'playing')
+          %}
           {%- set ns = namespace(info=[]) %}
           {%- for entity in entities %}
             {%- set ns.info = ns.info + [

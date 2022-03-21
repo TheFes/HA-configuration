@@ -16,11 +16,10 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.3.1 - 14 March 2022
+### Version 1.3.2 - 21 March 2022
 #### 🌟 Improvements
-* Do not store unnecessary data of non playing devices
-#### 🧾 Documentation
-* Created seperate file for older changes
+* No need to for the variable `primary_spotcast` anymore, this will be handled by the Google Home Resume script
+* Only data of playing Spotify entities will be stored (other non playing entities were already excluded in 1.3.1)
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
@@ -70,7 +69,6 @@ Variables in service call for the script:
 |use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
 
 
-
 # And finally the script itself
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml) on my Github config, so I don have to maintain it in two places
 
@@ -81,7 +79,6 @@ Only `check_for_title` is mandatory. Resuming Spotify won't work properly withou
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
 |check_for_title|Yes|`Witte Ruis`|The title of the ambient sound as shown in developer tools > states |
-|primary_spotcast|No|`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
 |use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.
 
 # Other scripts

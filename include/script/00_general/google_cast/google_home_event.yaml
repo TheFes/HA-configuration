@@ -43,32 +43,10 @@ google_home_event:
   variables:
     sensor: binary_sensor.resume_data
     notify: notify.resume_data
-    speaker_groups:
-      media_player.huis_groep:
-        - media_player.keuken_hub
-        - media_player.slaapkamer_hub
-        - media_player.pepijn_mini
-        - media_player.woonkamer_mini
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
-        - media_player.floris_mini
-      media_player.boven_groep:
-        - media_player.pepijn_mini
-        - media_player.slaapkamer_hub
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
-        - media_player.floris_mini
-      media_player.beneden_groep:
-        - media_player.keuken_hub
-        - media_player.woonkamer_mini
-      media_player.zolder_groep:
-        - media_player.zolder_mini_marleen
-        - media_player.zolder_mini_martijn
   sequence:
     - variables:
-        version: 0.3.0
+        version: 0.4.0
     - variables:
-        speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
           {%- if resume_volume is defined and iif(resume_volume) %}
@@ -101,20 +79,7 @@ google_home_event:
             {# determine cast entities of all entities #}
               {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
           {# create list with all entities #}
-            {%- set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
-          {# avoid to target both complete speaker groups and single members #}
-            {%- set target_group = total_list | select('in', speaker_group_list) | list %}
-            {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
-            {%- set ns = namespace(groupmembers = []) %}
-            {%- for group in target_group %}
-              {%- set ns.groupmembers = ns.groupmembers + speaker_groups[group] %}
-            {%- endfor %}
-            {%- 
-              set single_not_in_group = target_single 
-                | reject('in', ns.groupmembers | unique | list)
-                | list
-            %}
-            {{ target_group + single_not_in_group }}
+            {{ (area_cast + device_cast + entity_cast) | unique | list }}
           {%- else %}
             []
           {%- endif %}
@@ -182,7 +147,7 @@ google_home_event:
                       %}
                     {%- endif %}
                   {%- endfor %}
-                  {{ ns.info | selectattr('entity_id', 'in', target_list) | list if target is defined else ns.info }}
+                  {{ ns.info }}
                 spotify_data: >
                   {%- set entities = expand(integration_entities('spotify')) %}
                   {%- set ns = namespace(info=[]) %}
@@ -274,14 +239,7 @@ google_home_event:
                                         | map(attribute='entity_id')
                                         | list 
                   %}
-                  {% set player_list = player_list | select('in', target_list) | list if target is defined else player_list %}
-                  {%- set ns = namespace(members = []) %}
-                  {%- for item in player_list %}
-                    {%- if item in speaker_group_list %}
-                      {%- set ns.members = ns.members + speaker_groups[item] %}
-                    {%- endif %}
-                  {%- endfor %}
-                  {{ player_list | reject('in', ns.members) | list }}
+                  {{ player_list | select('in', target_list) | list if target is defined else player_list }}
             - alias: "Anything to resume?"
               choose:
                 - conditions:
@@ -293,76 +251,18 @@ google_home_event:
                       repeat:
                         count: "{{ players_to_resume | count }}"
                         sequence:
-                          - alias: "Variables for specific media_player"
-                            variables:
-                              player: >
-                                {{
-                                  player_data
-                                    | selectattr('entity_id', 'eq', players_to_resume[repeat.index - 1])
-                                    | join
-                                }}
                           - alias: "Start perform resume script"
                             service: script.turn_on
                             target:
-                              entity_id: script.google_home_resume_perform_resume
+                              entity_id: script.google_home_resume
                             data:
                               variables:
-                                player: "{{ player }}"
                                 player_data: "{{ player_data }}"
                                 spotify_data: "{{ spotify_data }}"
                                 ytube_music_data: "{{ ytube_music_data }}"
                                 players_to_resume: "{{ players_to_resume }}"
-            - alias: "Resume ytube players which are a target"
-              choose:
-                - conditions: >
-                    {{ 
-                      (
-                        ytube_music_data
-                          | selectattr('target', 'in', players_to_resume)
-                          | list
-                          | count > 0
-                      )
-                    }}
-                  sequence:
-                    - variables:
-                        player_ytube: >
-                          {{
-                            ytube_music_data
-                                      | rejectattr('target', 'in', players_to_resume)
-                                      | map(attribute='player')
-                                      | list
-                          }}
-                        target_ytube: >
-                          {%- set y = ytube_music_data
-                                      | rejectattr('target', 'in', players_to_resume)
-                                      | map(attribute='target')
-                                      | list
-                          %}
-                          {%- set ns = namespace(members = []) %}
-                          {%- for target in y %}
-                            {%- if target in speaker_group_list %}
-                              {%- set ns.members = ns.members + speaker_groups[target] %}
-                            {%- endif %}
-                          {%- endfor %}
-                          {{ (y + ns.members) | reject('in', speaker_group_list) | unique | list }}
-                    - service: ytube_music_player.call_method
-                      data:
-                        entity_id: "{{ player_ytube }}"
-                        command: interrupt_resume
-                    - alias: "Set right position for ytube_music"
-                      repeat:
-                        count: "{{ player_ytube | count }}"
-                        sequence:
-                          - variables:
-                              player: "{{ ytube_music_data | selectattr('player', 'eq', player_ytube[repeat.index-1]) | join }}"
-                          - service: script.turn_on
-                            target:
-                              entity_id: script.google_home_resume_ytube_seek
-                            data:
-                              variables:
-                                player_data: "{{ player_data }}"
-                                player: "{{ player }}"
-                                target_ytube: "{{ target_ytube }}"
+                                action: []
+                                event_script: true
             - variables:
                 resume_data: >
                   {{ state_attr(sensor, 'resume_data') | rejectattr('resume_id', 'eq', resume_id) | list }}

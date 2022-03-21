@@ -16,9 +16,11 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.6.1 - 14 March 2022
+### Version 1.7.0
 #### 🌟 Improvements
-* Do not store unnecessary data of non playing devices
+* No need for YAML anchors anymore, all data in the variables will be applied in the main script now.
+#### 🐛 Bug fixes
+* Fix for volume restore
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

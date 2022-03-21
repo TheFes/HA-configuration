@@ -2,6 +2,11 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 1.3.2 - 21 March 2022
+#### 🌟 Improvements
+* No need to for the variable `primary_spotcast` anymore, this will be handled by the Google Home Resume script
+* Only data of playing Spotify entities will be stored (other non playing entities were already excluded in 1.3.1)
+
 ### Version 1.3.1 - 14 March 2022
 #### 🌟 Improvements
 * Do not store unnecessary data of non playing devices

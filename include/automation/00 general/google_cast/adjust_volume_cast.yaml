@@ -37,11 +37,9 @@ condition:
   - alias: "No resume active?"
     condition: template
     value_template: >
-      {% if not is_state('script.google_home_resume', 'on') %}
-        true
-      {% else %}
-        {{ not trigger.entity_id in state_attr('group.resume_script_active', 'entity_id') }}
-      {% endif %}
+      {% set groups = integration_entities('group') | select('search', 'group.resume_script_active') | list %}
+      {% set entities = expand(groups) | map(attribute='entity_id') | list  %}
+      {{ not trigger.entity_id in entities }}
 variables:
   player: "{{ trigger.entity_id }}"
   device: "{{ trigger.entity_id | replace('media_player.', '') }}"

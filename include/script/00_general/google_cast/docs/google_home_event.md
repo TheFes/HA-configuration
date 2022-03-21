@@ -12,6 +12,12 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
+### Version 0.4.0 - 21 March 2022
+#### 🛑: Breaking change
+* The script now uses the main [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and not only the Google Home Resume Perform Resume helper script. So if you only included that last script, you will have to include the total [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) now.
+#### ✨: Improvements
+* No need to maintain `speaker_groups` in this script anymore, this will be handled by the Google Home Resume script now
+
 ### Version 0.3.0 - 13 March 2022
 #### ✨: New features
 * Added `resume_volume` field which can be set while storing the data, and will overwrite the actual volume with this value. This will make sure the speakers are not resumed very loud, when they were playing at high volume while storing the data.

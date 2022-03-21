@@ -2,6 +2,13 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.7.0
+#### 🌟 Improvements
+* No need for YAML anchors anymore, all data in the variables will be applied in the main script now.
+* Several changes to work better with the [Google Home Event script](https://community.home-assistant.io/t/store-media-state-of-cast-devices-on-event-e-g-leaving-home-and-resume-later/403059)
+#### 🐛 Bug fixes
+* Fix for volume restore
+
 ### Version 1.6.1 - 14 March 2022
 #### 🌟 Improvements
 * Do not store unnecessary data of non playing devices
