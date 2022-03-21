@@ -32,10 +32,6 @@ action:
     choose:
       - conditions: "{{ trigger.id == 'home' }}"
         sequence:
-          - alias: "Disable sending of snapshots on motion"
-            service: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.motion_snapshots
           - alias: "Turn on exractor hood plug when arriving home"
             service: switch.turn_on
             target:
