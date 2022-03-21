@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.0
+        version: 1.7.1
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: >
@@ -435,7 +435,7 @@ google_home_resume:
             {%- endif %}
             {%- if entity.state == 'playing' %}
               {%- set picture = fixed_picture[entity.media_artist] 
-                                if fixed_picture is defined and entity.media_artis in fixed_picture.keys()
+                                if fixed_picture is defined and iif(fixed_picture) and entity.media_artis in fixed_picture.keys() | list
                                 else entity.entity_picture
               %}
               {%- set list_check = [ entity.entity_id ] + members %}
@@ -675,12 +675,19 @@ google_home_resume:
             - repeat:
                 count: "{{ target_not_playing | count }}"
                 sequence:
+                  - variables:
+                      player: >
+                        {{
+                          player_data_enriched 
+                            | selectattr('entity_id', 'eq', target_not_playing[repeat.index-1])
+                            | join
+                        }}
                   - service: script.turn_on
                     target:
                       entity_id: script.google_home_resume_restore_non_playing
                     data:
                       variables:
-                        player: "{{ player_data_enriched | selectattr('entity_id', 'eq', target_not_playing[repeat.index-1]) | join }}"
+                        player: "{{ player }}"
                         member_data: "{{ player_data_enriched | selectattr('entity_id', 'in', player.members) | list }}"
     - alias: "Create variable for existing groups"
       variables:
