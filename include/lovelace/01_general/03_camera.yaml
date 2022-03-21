@@ -1,43 +1,14 @@
 icon: "mdi:webcam"
 cards:
-  - type: custom:vertical-stack-in-card
-    cards:
-      - type: picture-entity
-        aspect_ratio: 50%
-        camera_view: live
-        entity: camera.floriscam_2
-        show_name: false
-        show_state: false
-      - type: glance
-        show_name: false
-        show_state: false
-        entities:
-          - entity: switch.floris_detect
-            name: Detect
-          - entity: switch.floris_recordings
-            name: Record
-          - entity: switch.floris_snapshots
-            name: Snapshots
-  - type: custom:vertical-stack-in-card
-    cards:
-      - type: picture-entity
-        aspect_ratio: 50%
-        camera_view: live
-        entity: camera.pepijncam_2
-        show_name: false
-        show_state: false
-      - type: glance
-        show_name: false
-        show_state: false
-        entities:
-          - entity: switch.pepijn_detect
-            name: Detect
-          - entity: switch.pepijn_recordings
-            name: Record
-          - entity: switch.pepijn_snapshots
-            name: Snapshots
-  - type: entities
-    state_color: true
-    entities:
-      - entity: input_boolean.motion_snapshots
-        name: Stuur snapshots bij beweging
+  - type: picture-entity
+    aspect_ratio: 50%
+    camera_view: live
+    entity: camera.floriscam_2
+    show_name: false
+    show_state: false
+  - type: picture-entity
+    aspect_ratio: 50%
+    camera_view: live
+    entity: camera.pepijncam_2
+    show_name: false
+    show_state: false

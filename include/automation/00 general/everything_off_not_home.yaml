@@ -16,19 +16,9 @@ condition:
     entity_id: sensor.house_mode
     state: "Afwezig"
 action:
-  - alias: "Enable sending of snapshots on motion"
-    service: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.motion_snapshots
   - alias: "TV on"
     choose:
-      - conditions:
-          - condition: not
-            conditions:
-              - alias: "Shield off"
-                condition: state
-                entity_id: media_player.shield
-                state: "off"
+      - conditions: "{{ not states('media_player.shield') in [ 'idle', 'off' ] }}"
         sequence:
           - alias: "Enable guest mode to avoid that they will be in the dark"
             service: input_boolean.turn_on
