@@ -1,0 +1,23 @@
+platform: template
+covers:
+  slaapkamer_midden_template:
+    unique_id: 38ab5b16-02dc-450a-be78-4cd67f6b5d1b
+    device_class: blind
+    availability_template: "{{ not states('cover.slaapkamer_midden') in ['unknown', 'unavailable'] }}"
+    friendly_name: "Screen Slaapkamer Midden"
+    position_template: >
+      {{ 100 - state_attr('cover.slaapkamer_midden', 'current_position') | float(0) }}
+    open_cover:
+      service: cover.close_cover
+      entity_id: cover.slaapkamer_midden
+    close_cover:
+      service: cover.open_cover
+      entity_id: cover.slaapkamer_midden
+    stop_cover:
+      service: cover.stop_cover
+      entity_id: cover.slaapkamer_midden
+    set_cover_position:
+      service: cover.set_cover_position
+      entity_id: cover.slaapkamer_midden
+      data:
+        position: "{{ 100 - position }}"

@@ -45,9 +45,12 @@ cards:
                       show_header_toggle: false
                       title: false
                       entities:
-                        - cover.slaapkamer_links
-                        - cover.slaapkamer_midden
-                        - cover.slaapkamer_rechts
+                        - entity: cover.slaapkamer_links_template
+                          name: Links
+                        - entity: cover.slaapkamer_midden_template
+                          name: Midden
+                        - entity: cover.slaapkamer_rechts_template
+                          name: Rechts
                     - type: custom:more-info-card
                       entity: cover.slaapkamer
           - entity: input_boolean.wakeup_enabled
