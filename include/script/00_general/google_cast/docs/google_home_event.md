@@ -12,6 +12,11 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
+### Version 1.4.1 - 22 March 2022
+#### 🌟 Improvements
+* Added a update of Spotify entities before data is stored, so the most recent data is used
+* Only relevant data of entities is stored (depending on state and playing app)
+
 ### Version 0.4.0 - 21 March 2022
 #### 🛑: Breaking change
 * The script now uses the main [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and not only the Google Home Resume Perform Resume helper script. So if you only included that last script, you will have to include the total [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) now.

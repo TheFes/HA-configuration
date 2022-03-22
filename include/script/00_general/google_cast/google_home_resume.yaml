@@ -62,7 +62,15 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.1
+        version: 1.7.2
+    - alias: "Are there Spotify entities?"
+      choose:
+        - conditions: "{{ integration_entities('spotify') | count > 0 }}"
+          sequence:
+            - alias: "Update Spotify entities"
+              service: homeassistant.update_entity
+              target:
+                entity_id: "{{ integration_entities('spotify') }}"
     - alias: "Failsafe to remove all groups if the script was not running"
       choose:
         - conditions: >
@@ -194,38 +202,47 @@ google_home_resume:
           {%- else %}
             {%- set ns = namespace(info=[]) %}
             {%- for entity in expand(integration_entities('cast')) %}
-              {%- if entity.state == 'playing' %}
-                {%- set ns.info = ns.info + [
-                                              dict(
-                                                entity_id = entity.entity_id,
-                                                friendly_name = entity.attributes.friendly_name,
-                                                state = entity.state,
-                                                media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                                media_title = entity.attributes.get('media_title', 'no title'),
-                                                media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                                media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                                app_name = entity.attributes.get('app_name', 'no app'),
-                                                entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                                media_position =  as_timestamp(now()) | round(2) - 
-                                                                  as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                  + entity.attributes.get('media_position', 0),
-                                                data_source = 'resume_script'
-                                                )
-                                              ] 
+                {%- set general = dict(
+                                        data_source = 'resume_script',
+                                        entity_id = entity.entity_id,
+                                        state = entity.state
+                                        )
                 %}
-              {%- else %}
-                {%- set ns.info = ns.info + [
-                                              dict(
-                                                entity_id = entity.entity_id,
-                                                friendly_name = entity.attributes.friendly_name,
-                                                state = entity.state,
-                                                volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                                data_source = 'resume_script'
-                                                )
-                                              ] 
-                %}
-              {%- endif %}
+                {%- if entity.attributes.app_name eq 'Spotify' %}
+                  {%- set additional = dict(
+                                            app_name = 'Spotify',
+                                            volume_level = entity.attributes.volume_level,
+                                            media_position =  as_timestamp(now()) | round(2)
+                                                              - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                              + entity.attributes.get('media_position', 0)
+                                            )
+                  %}
+                {%- if entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                  {%- set additional = dict(
+                                            app_name = entity.attributes.app_name,
+                                            volume_level = entity.attributes.volume_level,
+                                            media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                            media_position =  as_timestamp(now()) | round(2)
+                                                              - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                              + entity.attributes.get('media_position', 0)
+                                            )
+                  %}
+                {%- elif entity.state == 'playing' %}
+                  {%- set additional = dict(
+                                            app_name = entity.attributes.app_name,
+                                            volume_level = entity.attributes.volume_level,
+                                            media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                            media_title = entity.attributes.get('media_title', 'no title'),
+                                            media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                            media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                            entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                            media_position =  as_timestamp(now()) | round(2)
+                                                              - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                              + entity.attributes.get('media_position', 0)
+                                            )
+                  %}
+                {%- endif %}
+              {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
             {%- endfor %}
             {{ ns.info }}
           {%- endif %}
@@ -426,18 +443,9 @@ google_home_resume:
                               else []
             %}
             {%- set screen = players_screen is defined and entity.entity_id in players_screen %}
-            {%- set type = iif(members != 'no group','group',iif(screen,'screen','no screen')) %}
-            {%- if entity.volume_level == 'no volume' %}
-              {%- set volume = state_attr(entity.entity_id, 'volume_level') %}
-              {%- set volume = volume if volume | is_number else default_volume_level %}
-            {%- else %}
-              {%- set volume = entity.volume_level %}
-            {%- endif %}
-            {%- if entity.state == 'playing' %}
-              {%- set picture = fixed_picture[entity.media_artist] 
-                                if fixed_picture is defined and iif(fixed_picture) and entity.media_artis in fixed_picture.keys() | list
-                                else entity.entity_picture
-              %}
+            {%- set type = iif(members,'group',iif(screen,'screen','no screen')) %}
+            {%- set additional =  dict(members = members, type = type) %}
+            {%- if entity.app_name == 'Spotify' %}
               {%- set list_check = [ entity.entity_id ] + members %}
               {%- set names_check = expand(list_check) | map(attribute='name') | list %}
               {%- set spotcast = spotify_data
@@ -448,40 +456,22 @@ google_home_resume:
               %}
               {% set spotcast = iif(spotcast, spotcast, primary_spotcast) %}
               {% set spotcast = iif(spotcast == primary_spotcast, 'primary_account', spotcast) %}
-              {%- set ns.info = ns.info + [
-                                            dict(
-                                              entity_id = entity.entity_id,
-                                              friendly_name = entity.friendly_name,
-                                              members = members,
-                                              state = entity.state,
-                                              media_content_id = entity.media_content_id,
-                                              media_title = entity.media_title,
-                                              media_artist = entity.media_artist,
-                                              media_content_type = entity.media_content_type,
-                                              app_name = entity.app_name,
-                                              spotcast = iif(entity.app_name == 'Spotify', spotcast, 'no spotify'),
-                                              entity_picture = picture,
-                                              volume_level = volume,
-                                              media_position = entity.media_position,
-                                              type = type,
-                                              data_source = entity.data_source
-                                              )
-                                            ] 
-              %}
-            {%- else %}
-              {%- set ns.info = ns.info + [
-                                            dict(
-                                              entity_id = entity.entity_id,
-                                              friendly_name = entity.friendly_name,
-                                              members = members,
-                                              state = entity.state,
-                                              volume_level = volume,
-                                              type = type,
-                                              data_source = entity.data_source
-                                              )
-                                            ] 
-              %}
+              {%- set add_spotcast =  dict(spotcast = spotcast) %}
+              {%- set additional = dict(additional, **add_spotcast) %}
+            {%- elif entity.state == 'playing'
+                      and fixed_picture is defined
+                      and iif(fixed_picture)
+                      and entity.media_artist in fixed_picture.keys() | list
+            %}
+              {%- set add_picture = dict(fixed_picture = fixed_picture[entity.media_artist]) %}
+              {%- set additional = dict(additional, **add_picture) %}
+            {%- elif entity.state == 'off' %}
+              {%- set volume = state_attr(entity.entity_id, 'volume_level') %}
+              {%- set volume = volume if volume | is_number else default_volume_level %}
+              {%- set add_volume = dict(volume_level = volume) %}
+              {%- set additional = dict(additional, **add_volume) %}
             {%- endif %}
+            {%- set ns.info = ns.info + [ dict(entity, **additional) ] %}
           {%- endfor %}
           {{ ns.info }}
         target_not_playing: >
@@ -736,7 +726,8 @@ google_home_resume_perform_resume:
                       | list
           %}
           {{
-            (player.media_content_id).startswith('http')
+            player.media_content_id is defined
+            and player.media_content_id.startswith('http')
             and not player.entity_id in y
           }}
     - alias: "Add entity to the resume active group"
@@ -860,13 +851,14 @@ google_home_resume_perform_resume:
                   conditions: "{{ stream }}"
                   sequence:
                     - variables:
+                        picture_url: "{{ player.fixed_picture if player.fixed_picture is defined else player.entity_picture }}"
                         metadata:
                           metadataType: 3
                           title: "{{ player.media_title }}"
                           artist: "{{ player.media_artist }}"
                         picture:
                           images:
-                            - url: "{{ player.entity_picture }}"
+                            - url: "{{ picture_url }}"
                     - alias: "Resume stream"
                       service: media_player.play_media
                       target:
@@ -876,11 +868,7 @@ google_home_resume_perform_resume:
                         media_content_type: "{{ player.media_content_type }}"
                         extra:
                           metadata: >
-                            {%- if player.entity_picture == 'no pic' %}
-                              {{ metadata }}
-                            {%- else %}
-                              {{ dict(metadata, **picture) }}
-                            {%- endif %}
+                            {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
     - alias: "Check if resume_action_false group exists"
       choose:
         - conditions: >

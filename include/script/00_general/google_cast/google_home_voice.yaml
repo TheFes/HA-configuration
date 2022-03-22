@@ -10,18 +10,16 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.3.2
-        speaker_groups: >
-          {%- set devices = states | map(attribute='entity_id') | map('device_id') | unique | reject('eq',None) | list %}
-          {%- set ns = namespace(entities = []) %}
-          {%- for device in devices %}
-            {%- set ids = device_attr(device, 'identifiers') %}
-            {%- set ids = device_attr(device, 'identifiers') | list | first if ids else [] %}
-            {%- if ids and ids | length == 2 and ids[0] == 'cast' %}
-              {%- set ns.entities = ns.entities + device_entities(device) %}
-            {%- endif %}
-          {%- endfor %}
-          {{ integration_entities('cast') | reject('in', ns.entities) | list }}
+        version: 1.3.3
+    - alias: "Are there Spotify entities?"
+      choose:
+        - conditions: "{{ integration_entities('spotify') | count > 0 }}"
+          sequence:
+            - alias: "Update Spotify entities"
+              service: homeassistant.update_entity
+              target:
+                entity_id: "{{ integration_entities('spotify') }}"
+    - variables:
         service_calls: >
           {%- set ns = namespace(service = []) %}
           {%- for item in action %}
@@ -35,54 +33,47 @@ google_home_voice:
         player_data: >
           {%- set ns = namespace(info=[]) %}
           {%- for entity in expand(integration_entities('cast')) %}
-            {%- if entity.state == 'playing' %}
-              {%- set ns.info = ns.info + [
-                                            dict(
-                                              entity_id = entity.entity_id,
-                                              friendly_name = entity.attributes.friendly_name,
-                                              state = entity.state,
-                                              media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                              media_title = entity.attributes.get('media_title', 'no title'),
-                                              media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                              media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                              app_name = entity.attributes.get('app_name', 'no app'),
-                                              entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                              volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                              media_position =  as_timestamp(now()) | round(2)
-                                                                - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                + entity.attributes.get('media_position', 0),
-                                              data_source = 'voice_script'
-                                              )
-                                            ] 
+              {%- set general = dict(
+                                      data_source = 'voice_script',
+                                      entity_id = entity.entity_id,
+                                      state = entity.state
+                                      )
               %}
-            {%- else %}
-              {%- set ns.info = ns.info + [
-                                            dict(
-                                              entity_id = entity.entity_id,
-                                              friendly_name = entity.attributes.friendly_name,
-                                              state = entity.state,
-                                              volume_level = entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                              data_source = 'voice_script'
-                                              )
-                                            ] 
-              %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.info }}
-        spotify_data: >
-          {%- set entities = expand(integration_entities('spotify'))
-                              | selectattr('state', 'eq', 'playing')
-          %}
-          {%- set ns = namespace(info=[]) %}
-          {%- for entity in entities %}
-            {%- set ns.info = ns.info + [
-                                          dict(
-                                                entity_id = entity.entity_id, 
-                                                source = entity.attributes.source,
-                                                data_source = 'voice_script'
-                                              ) 
-                                        ] 
-            %}
+              {%- if entity.attributes.app_name eq 'Spotify' %}
+                {%- set additional = dict(
+                                          app_name = 'Spotify',
+                                          volume_level = entity.attributes.volume_level,
+                                          media_position =  as_timestamp(now()) | round(2)
+                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                            + entity.attributes.get('media_position', 0)
+                                          )
+                %}
+              {%- if entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                {%- set additional = dict(
+                                          app_name = entity.attributes.app_name,
+                                          volume_level = entity.attributes.volume_level,
+                                          media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                          media_position =  as_timestamp(now()) | round(2)
+                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                            + entity.attributes.get('media_position', 0)
+                                          )
+                %}
+              {%- elif entity.state == 'playing' %}
+                {%- set additional = dict(
+                                          app_name = entity.attributes.app_name,
+                                          volume_level = entity.attributes.volume_level,
+                                          media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                          media_title = entity.attributes.get('media_title', 'no title'),
+                                          media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                          media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                          entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                          media_position =  as_timestamp(now()) | round(2)
+                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                            + entity.attributes.get('media_position', 0)
+                                          )
+                %}
+              {%- endif %}
+            {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
           {%- endfor %}
           {{ ns.info }}
         ytube_music_data: >
@@ -103,6 +94,22 @@ google_home_voice:
             %}
           {%- endfor %}
           {{ ns.ytube }}
+        spotify_data: >
+          {%- set entities = expand(integration_entities('spotify'))
+                              | selectattr('state', 'eq', 'playing')
+          %}
+          {%- set ns = namespace(info=[]) %}
+          {%- for entity in entities %}
+            {%- set ns.info = ns.info + [
+                                          dict(
+                                                entity_id = entity.entity_id, 
+                                                source = entity.attributes.source,
+                                                data_source = 'voice_script'
+                                              ) 
+                                        ] 
+            %}
+          {%- endfor %}
+          {{ ns.info }}
     - alias: "Send log message about wrong actions"
       choose:
         - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"

@@ -2,6 +2,11 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.7.2 - 22 March 2022
+#### 🌟 Improvements
+* Added a update of Spotify entities before data is stored, so the most recent data is used
+* Only relevant data of entities is stored (depending on state and playing app)
+
 ### Version 1.7.0/1.7.1 - 21 March 2022
 #### 🌟 Improvements
 * No need for YAML anchors anymore, all data in the variables will be applied in the main script now.

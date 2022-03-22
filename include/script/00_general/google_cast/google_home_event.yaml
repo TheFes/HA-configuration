@@ -45,7 +45,7 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.4.0
+        version: 0.4.1
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
@@ -108,63 +108,61 @@ google_home_event:
                     - service: command_line.reload
         - conditions: "{{ not resume if resume is defined else true }}"
           sequence:
+            - alias: "Are there Spotify entities?"
+              choose:
+                - conditions: "{{ integration_entities('spotify') | count > 0 }}"
+                  sequence:
+                    - alias: "Update Spotify entities"
+                      service: homeassistant.update_entity
+                      target:
+                        entity_id: "{{ integration_entities('spotify') }}"
             - variables:
                 player_data: >
                   {%- set ns = namespace(info=[]) %}
                   {%- for entity in expand(integration_entities('cast')) %}
-                    {%- if entity.state ==  'playing' %}
-                      {%- set ns.info = ns.info + [
-                                                    dict(
-                                                      entity_id = entity.entity_id,
-                                                      friendly_name = entity.attributes.friendly_name,
-                                                      state = entity.state,
-                                                      media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                                      media_title = entity.attributes.get('media_title', 'no title'),
-                                                      media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                                      media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                                      app_name = entity.attributes.get('app_name', 'no app'),
-                                                      entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                      volume_level = resume_volume if iif(resume_volume) else entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                                      media_position =  as_timestamp(now()) | round(2)
-                                                                        - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                        + entity.attributes.get('media_position', 0),
-                                                      target = iif(entity.entity_id in target_list, 'target', 'no_target') if target is defined else 'target',
-                                                      data_source = 'event_script'
-                                                      )
-                                                    ] 
+                      {%- set general = dict(
+                                              data_source = 'event_script',
+                                              entity_id = entity.entity_id,
+                                              state = entity.state
+                                              )
                       %}
-                    {%- else %}
-                      {%- set ns.info = ns.info + [
-                                                    dict(
-                                                      entity_id = entity.entity_id,
-                                                      friendly_name = entity.attributes.friendly_name,
-                                                      state = entity.state,
-                                                      volume_level = resume_volume if iif(resume_volume) else entity.attributes.get('volume_level', 'NA') | round(2, default='no volume'),
-                                                      target = iif(entity.entity_id in target_list, 'target', 'no_target') if target is defined else 'target',
-                                                      data_source = 'event_script'
-                                                      )
-                                                    ] 
-                      %}
-                    {%- endif %}
+                      {%- if entity.attributes.app_name eq 'Spotify' %}
+                        {%- set additional = dict(
+                                                  app_name = 'Spotify',
+                                                  volume_level = entity.attributes.volume_level,
+                                                  media_position =  as_timestamp(now()) | round(2)
+                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                    + entity.attributes.get('media_position', 0)
+                                                  )
+                        %}
+                      {%- if entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                        {%- set additional = dict(
+                                                  app_name = entity.attributes.app_name,
+                                                  volume_level = entity.attributes.volume_level,
+                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                  media_position =  as_timestamp(now()) | round(2)
+                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                    + entity.attributes.get('media_position', 0)
+                                                  )
+                        %}
+                      {%- elif entity.state == 'playing' %}
+                        {%- set additional = dict(
+                                                  app_name = entity.attributes.app_name,
+                                                  volume_level = entity.attributes.volume_level,
+                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                  media_title = entity.attributes.get('media_title', 'no title'),
+                                                  media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                                  media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                                  entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                                  media_position =  as_timestamp(now()) | round(2)
+                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                    + entity.attributes.get('media_position', 0)
+                                                  )
+                        %}
+                      {%- endif %}
+                    {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
                   {%- endfor %}
                   {{ ns.info }}
-                spotify_data: >
-                  {%- set entities = expand(integration_entities('spotify')) %}
-                  {%- set ns = namespace(info=[]) %}
-                  {%- for entity in entities %}
-                    {% if entity.state == 'playing' %}
-                      {%- set ns.info = ns.info + [
-                                                    dict(
-                                                          entity_id = entity.entity_id, 
-                                                          source = entity.attributes.get('source', 'No source'),
-                                                          data_source = 'event_script'
-                                                        ) 
-                                                  ] 
-                      %}
-                    {%- endif %}
-                  {%- endfor %}
-                  {%- set target_friendly = expand(target_list) | map(attribute='attributes.friendly_name') | list %}
-                  {{ ns.info | selectattr('source', 'in', target_friendly) | list if target is defined else ns.info }}
                 ytube_music_data: >
                   {%- set ns = namespace(info = []) %}
                   {%- for entity in expand(integration_entities('ytube_music_player')) %}
@@ -183,6 +181,23 @@ google_home_event:
                     {%- endif %}
                   {%- endfor %}
                   {{ ns.info | selectattr('target', 'in', target_list) | list if target is defined else ns.info }}
+                spotify_data: >
+                  {%- set entities = expand(integration_entities('spotify')) %}
+                  {%- set ns = namespace(info=[]) %}
+                  {%- for entity in entities %}
+                    {% if entity.state == 'playing' %}
+                      {%- set ns.info = ns.info + [
+                                                    dict(
+                                                          entity_id = entity.entity_id, 
+                                                          source = entity.attributes.get('source', 'No source'),
+                                                          data_source = 'event_script'
+                                                        ) 
+                                                  ] 
+                      %}
+                    {%- endif %}
+                  {%- endfor %}
+                  {%- set target_friendly = expand(target_list) | map(attribute='attributes.friendly_name') | list %}
+                  {{ ns.info | selectattr('source', 'in', target_friendly) | list if target is defined else ns.info }}
                 resume_data_new:
                   - resume_id: "{{ resume_id }}"
                     player_data: "{{ player_data }}"
