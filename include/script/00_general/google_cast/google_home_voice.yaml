@@ -39,7 +39,7 @@ google_home_voice:
                                       state = entity.state
                                       )
               %}
-              {%- if entity.attributes.app_name eq 'Spotify' %}
+              {%- if entity.attributes.app_name == 'Spotify' %}
                 {%- set additional = dict(
                                           app_name = 'Spotify',
                                           volume_level = entity.attributes.volume_level,
@@ -48,7 +48,7 @@ google_home_voice:
                                                             + entity.attributes.get('media_position', 0)
                                           )
                 %}
-              {%- if entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+              {%- elif entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
                 {%- set additional = dict(
                                           app_name = entity.attributes.app_name,
                                           volume_level = entity.attributes.volume_level,
