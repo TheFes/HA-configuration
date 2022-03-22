@@ -12,10 +12,12 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
-### Version 1.4.1 - 22 March 2022
+### Version 0.4.1/0.4.2 - 22 March 2022
 #### 🌟 Improvements
 * Added a update of Spotify entities before data is stored, so the most recent data is used
 * Only relevant data of entities is stored (depending on state and playing app)
+#### 🐛 Bug fixes
+* (0.4.2) Template fix
 
 ### Version 0.4.0 - 21 March 2022
 #### 🛑: Breaking change

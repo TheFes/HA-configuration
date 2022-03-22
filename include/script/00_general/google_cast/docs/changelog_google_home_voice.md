@@ -2,10 +2,12 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
-### Version 1.3.3 - 22 March 2022
+### Version 1.3.3/1.3.4 - 22 March 2022
 #### 🌟 Improvements
 * Added a update of Spotify entities before data is stored, so the most recent data is used
 * Only relevant data of entities is stored (depending on state and playing app)
+#### 🐛 Bug fixes
+* (1.3.4) Template fix
 
 ### Version 1.3.2 - 21 March 2022
 #### 🌟 Improvements
