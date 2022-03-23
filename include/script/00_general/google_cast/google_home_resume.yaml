@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.4
+        version: 1.7.5
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -435,6 +435,84 @@ google_home_resume:
       condition: template
       value_template: "{{ event_script or service_calls | count != 0 }}"
     - variables:
+        target_not_playing: >
+          {%- 
+            set playing = player_data
+              | selectattr('state', 'eq', 'playing')
+              | map(attribute='entity_id')
+              | list 
+          %}
+          {%- set ns = namespace(members=[]) %}
+          {%- for player in player_data %}
+            {%- if player.entity_id in target_list and player.type == 'group' %}
+              {% set ns.members = ns.members + player.members %}
+            {%- endif %}
+          {%- endfor %}
+          {{ 
+            (target_list + ns.members) 
+              | reject('in', speaker_group_list + playing) 
+              | list 
+          }}
+        target_no_volume: >
+          {% set vol_unknown = player_data
+                  | selectattr('volume_level', 'eq', 'no volume')
+                  | map(attribute='entity_id')
+                  | list
+          %}
+          {{ target_not_playing | select('in', vol_unknown) | list }}
+    - alias: "Create group with entities for which the script is active"
+      service: group.set
+      data:
+        object_id: resume_script_active_ghresume_{{ context.id }}
+        name: "Entities currently active with Google Home Resume script"
+        icon: mdi:play-box
+        entities: "{{ players_to_resume + target_not_playing }}"
+    - alias: "Create group for entities which will be resumed"
+      service: group.set
+      data:
+        object_id: resume_active_ghresume_{{ context.id }}
+        name: "Add ytube music players which will be resumed to resume active group"
+        icon: mdi:autorenew
+        entities: >
+          {{ ytube_music_data
+              | selectattr('target', 'in', players_to_resume)
+              | map(attribute='player')
+              | list
+          }}
+    - alias: "Create group for resume_this_action setting"
+      choose:
+        - conditions: "{{ iif(resume_this_action is defined and resume_this_action,false,true) }}"
+          sequence:
+            - alias: "Create group entities with resume_this_action to false"
+              service: group.set
+              data:
+                object_id: resume_action_false_ghresume_{{ context.id }}
+                name: "Entities with actions which should not be resumed"
+                icon: mdi:alert-octagon
+                entities: "{{ players_to_resume + target_not_playing }}"
+    - alias: "Turn non playing entities on if needed"
+      choose:
+        - conditions: >
+            {% set vol_unknown = player_data
+                    | selectattr('volume_level', 'eq', 'no volume')
+                    | map(attribute='entity_id')
+                    | list
+            %}
+            {{ target_no_volume | count > 0 }}
+          sequence:
+            - alias: "Turn non playing entities on"
+              service: media_player.turn_on
+              target:
+                entity_id: >
+                  {{ target_no_volume }}
+            - wait_template: >
+                {{
+                  expand(target_no_volme)
+                    | selectattr('state', 'eq', 'off')
+                    | list
+                    | count == 0
+                }}
+    - variables:
         player_data_enriched: >
           {%- set ns = namespace(info=[]) %}
           {%- for entity in player_data %}
@@ -474,70 +552,6 @@ google_home_resume:
             {%- set ns.info = ns.info + [ dict(entity, **additional) ] %}
           {%- endfor %}
           {{ ns.info }}
-        target_not_playing: >
-          {%- 
-            set playing = player_data
-              | selectattr('state', 'eq', 'playing')
-              | map(attribute='entity_id')
-              | list 
-          %}
-          {%- set ns = namespace(members=[]) %}
-          {%- for player in player_data %}
-            {%- if player.entity_id in target_list and player.type == 'group' %}
-              {% set ns.members = ns.members + player.members %}
-            {%- endif %}
-          {%- endfor %}
-          {{ 
-            (target_list + ns.members) 
-              | reject('in', speaker_group_list + playing) 
-              | list 
-          }}
-    - alias: "Create group with entities for which the script is active"
-      service: group.set
-      data:
-        object_id: resume_script_active_ghresume_{{ context.id }}
-        name: "Entities currently active with Google Home Resume script"
-        icon: mdi:play-box
-        entities: "{{ players_to_resume + target_not_playing }}"
-    - alias: "Create group for entities which will be resumed"
-      service: group.set
-      data:
-        object_id: resume_active_ghresume_{{ context.id }}
-        name: "Add ytube music players which will be resumed to resume active group"
-        icon: mdi:autorenew
-        entities: >
-          {{ ytube_music_data
-              | selectattr('target', 'in', players_to_resume)
-              | map(attribute='player')
-              | list
-          }}
-    - alias: "Create group for resume_this_action setting"
-      choose:
-        - conditions: "{{ iif(resume_this_action is defined and resume_this_action,false,true) }}"
-          sequence:
-            - alias: "Create group entities with resume_this_action to false"
-              service: group.set
-              data:
-                object_id: resume_action_false_ghresume_{{ context.id }}
-                name: "Entities with actions which should not be resumed"
-                icon: mdi:alert-octagon
-                entities: "{{ players_to_resume + target_not_playing }}"
-    - alias: "Turn non playing entities on if needed"
-      choose:
-        - conditions: >
-            {% set vol_unknown = player_data
-                    | selectattr('volume_level', 'eq', 'no volume')
-                    | map(attribute='entity_id')
-                    | list
-            %}
-            {{ target_not_playing | select('in', vol_unknown) | list | count > 0 }}
-          sequence:
-            - alias: "Turn non playing entities on"
-              service: media_player.turn_on
-              target:
-                entity_id: >
-                  {{ target_not_playing }}
-            - delay: 0.25
     - alias: "Interrupt YouTube music if needed"
       choose:
         - conditions:
@@ -562,8 +576,8 @@ google_home_resume:
           - service: "{{ service_calls[repeat.index -1].service }}"
             target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
             data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
-    - alias: "Short delay"
-      delay: "{{ 0 if event_script else 4 }}"
+    # - alias: "Short delay"
+    #   delay: "{{ 0 if event_script else 4 }}"
     - alias: "Anything to resume?"
       choose:
         - conditions:
@@ -713,23 +727,9 @@ google_home_resume_perform_resume:
   mode: parallel
   max: 20
   sequence:
-    - alias: "Set variables"
-      variables:
-        spotify: >
-          {{ player.app_name == 'Spotify' }}
-        youtube: >
-          {{ player.app_name in ['YouTube', 'YouTube Music'] }}
-        stream: >
-          {%- set y = ytube_music_data
-                      | rejectattr('target', 'in', players_to_resume)
-                      | map(attribute='target')
-                      | list
-          %}
-          {{
-            player.media_content_id is defined
-            and player.media_content_id.startswith('http')
-            and not player.entity_id in y
-          }}
+    - alias: "State changed since script started?"
+      wait_template: "{{ event_script or (states[player.entity_id].last_changed > as_datetime(start_time)) }}"
+      timeout: "00:00:30"
     - alias: "Add entity to the resume active group"
       service: group.set
       data:
@@ -747,8 +747,25 @@ google_home_resume_perform_resume:
         - conditions:
             - alias: "State changed since script started?"
               condition: template
-              value_template: "{{ event_script or (states[player.entity_id].last_changed > as_datetime(start_time) if start_time is defined else true) }}"
+              value_template: "{{ wait.completed }}"
           sequence:
+            - alias: "Set variables"
+              variables:
+                spotify: >
+                  {{ player.app_name == 'Spotify' }}
+                youtube: >
+                  {{ player.app_name in ['YouTube', 'YouTube Music'] }}
+                stream: >
+                  {%- set y = ytube_music_data
+                              | rejectattr('target', 'in', players_to_resume)
+                              | map(attribute='target')
+                              | list
+                  %}
+                  {{
+                    player.media_content_id is defined
+                    and player.media_content_id.startswith('http')
+                    and not player.entity_id in y
+                  }}
             - alias: "Wait until player is idle again, and all other scripts are finished"
               wait_template: >
                 {%- set current = expand(states.group
