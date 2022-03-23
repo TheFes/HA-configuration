@@ -16,12 +16,9 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.7.2/1.7.3 - 22 March 2022
-#### 🌟 Improvements
-* Added a update of Spotify entities before data is stored, so the most recent data is used
-* Only relevant data of entities is stored (depending on state and playing app)
+### Version 1.7.4
 #### 🐛 Bug fixes
-* (1.7.3) Template fix
+* Added a check if all members of a speaker group are `idle` or `off` before resuming the stream to avoid resuming to early (in case a group was playing, but the action causing the interruption was only sent to one of the members)
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

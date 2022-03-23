@@ -2,7 +2,11 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
-### Version 1.7.2 - 22 March 2022
+### Version 1.7.4
+#### 🐛 Bug fixes
+* Added a check if all members of a speaker group are `idle` or `off` before resuming the stream to avoid resuming to early (in case a group was playing, but the action causing the interruption was only sent to one of the members)
+
+### Version 1.7.2/1.7.3 - 22 March 2022
 #### 🌟 Improvements
 * Added a update of Spotify entities before data is stored, so the most recent data is used
 * Only relevant data of entities is stored (depending on state and playing app)

@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.3
+        version: 1.7.4
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -757,8 +757,9 @@ google_home_resume_perform_resume:
                                     | map(attribute='entity_id')
                                     | list) | map(attribute='entity_id') | list
                 %}
+                {%- set checklist = [player.entity_id] + player.members %}
                 {{
-                  states(player.entity_id) in ['idle', 'off']
+                  expand(checklist) | rejectattr('state', 'in', ['idle', 'off']) | list | count == 0
                   and current | select('eq', player.entity_id) | list | count == 0
                 }}
             - alias: "Set volume to old volume if needed"
