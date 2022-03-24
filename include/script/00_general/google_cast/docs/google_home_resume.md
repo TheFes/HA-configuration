@@ -16,6 +16,10 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
+### Version 1.7.6 - 24 March 2022
+#### 🐛 Bug fixes
+* Fix for wait template to determine if resume can be started (it was starting too soon)
+
 ### Version 1.7.4/1.7.5 - 23 March 2022
 #### 🌟 Improvements
 * (1.7.5) Replaces fixed delays with wait templates so there is no unneeded delay in resuming (for example when only a short TTS is sent)

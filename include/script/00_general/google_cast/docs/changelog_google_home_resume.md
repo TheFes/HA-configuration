@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.7.6 - 24 March 2022
+#### 🐛 Bug fixes
+* Fix for wait template to determine if resume can be started (it was starting too soon)
+
 ### Version 1.7.4/1.7.5 - 23 March 2022
 #### 🌟 Improvements
 * (1.7.5) Replaces fixed delays with wait templates so there is no unneeded delay in resuming (for example when only a short TTS is sent)

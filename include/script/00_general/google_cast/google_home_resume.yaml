@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.5
+        version: 1.7.6
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -728,7 +728,10 @@ google_home_resume_perform_resume:
   max: 20
   sequence:
     - alias: "State changed since script started?"
-      wait_template: "{{ event_script or (states[player.entity_id].last_changed > as_datetime(start_time)) }}"
+      wait_template: >
+        {{ event_script or 
+          ((states[player.entity_id].last_changed > as_datetime(start_time)) and is_state(player.entity_id, 'playing')) 
+        }}
       timeout: "00:00:30"
     - alias: "Add entity to the resume active group"
       service: group.set
