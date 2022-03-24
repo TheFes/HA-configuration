@@ -576,8 +576,6 @@ google_home_resume:
           - service: "{{ service_calls[repeat.index -1].service }}"
             target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
             data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
-    # - alias: "Short delay"
-    #   delay: "{{ 0 if event_script else 4 }}"
     - alias: "Anything to resume?"
       choose:
         - conditions:
