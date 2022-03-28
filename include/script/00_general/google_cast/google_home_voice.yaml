@@ -169,7 +169,7 @@ google_home_voice:
           {%- endif %}
     - alias: "No service actions"
       choose:
-        - conditions: "{{ service_calls | count != 0 }}"
+        - conditions: "{{ service_calls | count == 0 }}"
           sequence:
             - alias: "Stop ambient sound"
               service: media_player.media_stop
