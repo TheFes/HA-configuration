@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.6
+        version: 1.7.6.1
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -517,10 +517,15 @@ google_home_resume:
           {%- set ns = namespace(info=[]) %}
           {%- for entity in player_data %}
             {%- set members = speaker_groups[entity.entity_id]
-                              if speaker_groups is defined and entity.entity_id in speaker_group_list
+                              if speaker_groups is defined
+                                and iif(speaker_groups)
+                                and entity.entity_id in speaker_group_list
                               else []
             %}
-            {%- set screen = players_screen is defined and entity.entity_id in players_screen %}
+            {%- set screen = players_screen is defined
+                              and iif(players_screen)
+                              and entity.entity_id in players_screen
+            %}
             {%- set type = iif(members,'group',iif(screen,'screen','no screen')) %}
             {%- set additional =  dict(members = members, type = type) %}
             {%- if entity.app_name == 'Spotify' %}
