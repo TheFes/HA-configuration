@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.6.1
+        version: 1.7.6.2
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -893,6 +893,15 @@ google_home_resume_perform_resume:
                         extra:
                           metadata: >
                             {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
+                    - delay: 2
+                    - alias: "Player still idle?"
+                      choose:
+                        - conditions: "{{ is_state(player.entity_id, 'idle') }}"
+                          sequence:
+                            - alias: "Play"
+                              service: media_player.media_play
+                              target:
+                                entity_id: "{{ player.entity_id }}"
     - alias: "Check if resume_action_false group exists"
       choose:
         - conditions: >
