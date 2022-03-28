@@ -10,7 +10,8 @@ lights:
     max_mireds_template: "{{ state_attr('light.eettafel', 'max_mireds') | int(370) }}"
     availability_template: "{{ not is_state('light.eettafel', 'unavailable') }}"
     turn_on:
-      service: script.eettafel_turn_on
+      service: light.turn_on
+      entity_id: light.eettafel
     turn_off:
       service: light.turn_off
       entity_id: light.eettafel
