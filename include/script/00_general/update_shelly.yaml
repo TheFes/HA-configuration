@@ -1,0 +1,15 @@
+update_shelly:
+  alias: "00 🆙 OTA updates on Shelly"
+  icon: mdi:update
+  sequence:
+    - service: button.press
+      target:
+        entity_id: >
+          {%- set update = expand(integration_entities('shelly')) | selectattr('domain', 'eq', 'binary_sensor') | selectattr('state', 'eq', 'on') | map(attribute= 'entity_id') | select('search', 'firmware') | list %}
+          {%- set ns = namespace(buttons=[]) %}
+          {%- for entity in update %}
+            {%- set device = device_id(entity) %}
+            {%- set button = device_entities(device) | select('search', 'ota_update') | list %}
+            {%- set ns.buttons = ns.buttons + button %}
+          {%- endfor %}
+          {{ ns.buttons }}
