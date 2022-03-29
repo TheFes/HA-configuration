@@ -1,0 +1,21 @@
+type: conditional
+conditions:
+  - entity: binary_sensor.shelly_firmware
+    state: "on"
+card:
+  type: custom:vertical-stack-in-card
+  title: Firmware updates
+  cards:
+    - type: "custom:auto-entities"
+      card:
+        type: entities
+        show_header_toggle: false
+      filter:
+        include:
+          - entity_id: "*firmware_update*"
+        exclude:
+          - state: "off"
+    - type: entities
+      entities:
+        - entity: script.update_shelly
+          name: Update all

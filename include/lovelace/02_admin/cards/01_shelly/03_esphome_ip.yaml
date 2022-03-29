@@ -1,0 +1,14 @@
+type: "custom:auto-entities"
+card:
+  type: entities
+  title: ESPHome IP
+  show_header_toggle: false
+filter:
+  template: >
+    {{
+      expand(integration_entities('esphome'))
+        | selectattr('domain', 'in', 'sensor')
+        | map(attribute='entity_id')
+        | select('search', 'ip')
+        | list
+    }}
