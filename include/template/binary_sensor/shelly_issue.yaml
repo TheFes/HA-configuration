@@ -7,7 +7,7 @@ binary_sensor:
         expand(integration_entities('shelly'))
           | selectattr('state', 'eq', 'on')
           | map(attribute='entity_id')
-          | select('firmware_update')
+          | select('search', 'firmware_update')
           | list
           | count > 0
       }}
