@@ -4,8 +4,8 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: group.m_en_m
-    to: not_home
+    entity_id: zone.home
+    to: "0"
     for: "12:00:00"
     id: boolean_on
   - platform: event
@@ -18,10 +18,10 @@ trigger:
     event_type: mobile_app_notification_action
     event_data:
       action: "no_holiday"
-  - platform: state
+  - platform: numeric_state
     id: holiday_over
-    entity_id: group.m_en_m
-    to: home
+    entity_id: zone.home
+    above: 0
 action:
   - alias: "Actions holiday mode"
     choose:

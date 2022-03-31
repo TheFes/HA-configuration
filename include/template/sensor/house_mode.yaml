@@ -2,18 +2,18 @@ sensor:
   - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
     name: House Mode
     state: >-
-      {%- if is_state('group.m_en_m', 'not_home') 
+      {%- if is_state('zone.home', '0')
           and is_state('input_boolean.gast', 'off') 
           and is_state('input_boolean.vakantie', 'on') %}
         Vakantie
-      {%- elif is_state('group.m_en_m', 'not_home') 
+      {%- elif is_state('zone.home', '0')
           and is_state('input_boolean.gast', 'on') %}
         Gast
-      {%- elif is_state('group.m_en_m', 'not_home') %}
+      {%- elif is_state('zone.home', '0') %}
         Afwezig
       {%- 
         elif 
-          is_state('group.m_en_m', 'home') 
+          states('zone.home') | int(0) > 0
           and 
             (
               as_timestamp(now()) | timestamp_custom('%H:%M') >= '22:30' 
