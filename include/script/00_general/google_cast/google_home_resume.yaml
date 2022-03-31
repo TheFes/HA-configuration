@@ -954,6 +954,12 @@ google_home_resume_restore_non_playing:
   icon: mdi:cast-audio
   mode: parallel
   sequence:
+    - alias: "State changed since script started?"
+      wait_template: >
+        {{ event_script or 
+          ((states[player.entity_id].last_changed > as_datetime(start_time)) and is_state(player.entity_id, 'playing')) 
+        }}
+      timeout: "00:00:30"
     - alias: "Wait until entity is idle or off"
       wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
     - alias: "Google Home with screen back to idle screen"
