@@ -3,10 +3,10 @@ sensor:
     name: Extractor hood status
     state: >-
       {%- if is_state('switch.afzuigkap', 'on') 
-          and states('sensor.afzuigkap_power') | float(0) > 5 %}
+          and states('sensor.afzuigkap_power') | float > 5 %}
         Afzuigen
       {%- elif is_state('switch.afzuigkap', 'on') 
-          and states('sensor.afzuigkap_power') | float(0) > 0.5 %}
+          and states('sensor.afzuigkap_power') | float > 0.5 %}
         Licht aan
       {%- elif is_state('switch.afzuigkap', 'on') %}
         Inactief
@@ -23,3 +23,4 @@ sensor:
       {%- elif is_state('sensor.extractor_hood_status', 'Plug uit') %}
         mdi:power-plug-off-outline
       {%- endif %}
+    availability: "{{ states('sensor.afzuigkap_power') | is_number }}"

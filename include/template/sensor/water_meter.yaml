@@ -6,12 +6,14 @@ sensor:
     state: >
       {{ 
         (
-          states('input_number.correction_water_meter') | float(0) 
-          + states('sensor.yearly_water') | float(0)
+          states('input_number.correction_water_meter') | float
+          + states('sensor.yearly_water') | float / 1000
         ) | round(3)
       }}
+    availability: "{{ states('sensor.water_yearly') | is_number and states('input_number.correction_water_meter') | is_number }}"
   - unique_id: 398d2263-18b8-48d0-b463-1fbf873b50f7
-    name: "Watermeter usage in L"
-    state: "{{ (states('sensor.water_meter_total_consumption') | float(0) * 1000) | int }}"
+    name: "Water usage in L"
+    state: "{{ (states('sensor.water_meter_total_consumption') | float * 1000) | int }}"
     state_class: measurement
     icon: mdi:water
+    availability: "{{ states('sensor.water_meter_total_consumption') | is_number }}"

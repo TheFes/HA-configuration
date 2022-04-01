@@ -5,8 +5,8 @@ max_exceeded: silent
 trigger:
   - entity_id: sensor.wasmachine_remain_time
     platform: state
-    from: 0:01
-    to: 0:00
+    from: 0:01:00
+    to: 0:00:00
 action:
   - alias: "Notification to phones"
     service: notify.all_phones

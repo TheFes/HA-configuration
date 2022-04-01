@@ -69,17 +69,9 @@ action:
           - variables:
               triggered_by_extra: "{{ 'extra' in trigger.entity_id }}"
               program_old: >
-                {%- if triggered_by_extra %}
-                  {{ states('input_select.dishwasher_program') }}
-                {%- else %}
-                  {{ trigger.from_state.state }}
-                {%- endif %}
+                {{ states('input_select.dishwasher_program') if triggered_by_extra else trigger.from_state.state }}
               extra_old: >
-                {%- if triggered_by_extra %}
-                  {{ trigger.from_state.state }}
-                {%- else %}
-                  {{ states('input_select.dishwasher_program_extra') }}
-                {%- endif %}
+                {{ trigger.from_state.state if triggered_by_extra else states('input_select.dishwasher_program_extra') }}
               program: "{{ states('input_select.dishwasher_program') }}"
               extra: "{{ states('input_select.dishwasher_program_extra') }}"
               seconds_old: >
