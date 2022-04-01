@@ -1,0 +1,24 @@
+type: vertical-stack
+cards:
+  - type: custom:body-miscale-card
+    entity: bodymiscale.marleen
+    image: /local/pictures/miscale2.jpg
+    name: Marleen
+    model: true
+    show_name: true
+    show_state: true
+    show_attributes: true
+    show_toolbar: true
+    show_body: true
+    show_states: true
+    show_buttons: true
+    body:
+      body_type: false
+  - type: statistics-graph
+    stat_types:
+      - mean
+    entities:
+      - entity: sensor.weight_marleen
+        name: Gewicht (kg)
+      - entity: sensor.water_marleen
+        name: Water (%)
