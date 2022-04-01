@@ -2,29 +2,23 @@
 When sending a TTS, you can only define the message, but if you have a device with a screen, it would be nice if it could display additional information while the text is being played. Especially if there are other sounds, like screaming children, loud espresso machines or drilling neighbours.
 
 # Requirements
-* A dummy media player to send the TTS to
+* A dummy media player to send the TTS to. As of 2022.4 this media_player needs to work with the TTS service, because otherwise it will throw an error and the script will not continue. I've installed the VLC add-on on my system, and use `media_player.vlc_telnet` created by the VLC Telnet integration for the TTS.
 * A trigger based template sensor to store the link to the TTS mp3
 
 
 # Most recent changes
+### Version 1.1.0 - 14 March 2022
+#### :star2: Improvements
+* Home Assistant 2022.4 checks if an entity actually works with a service call, and throws an error if not, therefor I had to replace the Dummy Media Player with the VLC Media Player.
+
 ### Version 1.0.0 - 14 March 2022
 #### ✨ New feature
-* Initial post of script
+* Initial post of script on Github, posted on the forum here on 17th of March
 
 # Setup
 ## Dummy media player
-For the Dummy media_player I used this [HACS custom component](https://github.com/Sennevds/media_player.template)
-```yaml
-media_player:
-  - platform: media_player_template
-    media_players:
-      tts_dummy:
-        friendly_name: TTS Dummy
-        device_class: speaker
-        value_template: "off"
-        turn_on: []
-        turn_off: []
-```
+Install the VLC Add on from the Add on store in the Superviser. HA should automatically find a new integration and after adding that you should have `media_player.vlc_telnet`
+In case you don't have the Superviser, because you use `core` or `docker` you could probably use another VLC instance to do the same.
 
 ## Trigger based template sensor
 This is the trigger based template sensor in which the location of the TTS mp3 is stored:
@@ -38,7 +32,7 @@ template:
           service: play_media
           service_data:
             media_content_type: music
-            entity_id: ["media_player.tts_dummy"]
+            entity_id: ["media_player.vlc_telnet"]
     sensor:
       - name: TTS Dummy
         unique_id: 059c2595-7308-4259-a320-2ee37eb2f5b0
@@ -56,7 +50,7 @@ Both variables are required for correct working of the script
 
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
-|media_player|Yes|`media_player.tts_dummy`|The entity_id of the dummy media_player|
+|media_player|Yes|`media_player.vlc_telnet`|The entity_id of the dummy media_player|
 |sensor|Yes|`sensor.tts_dummy`|The entity_id of the sensor in which the TTS mp3 link is stored|
 
 ## How to use the script
