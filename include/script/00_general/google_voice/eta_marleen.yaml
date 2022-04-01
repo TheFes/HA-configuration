@@ -39,7 +39,7 @@ eta_marleen_routine:
     - alias: "Send TTS to Dummy"
       service: tts.google_cloud_say
       target:
-        entity_id: media_player.tts_dummy
+        entity_id: media_player.vlc_telnet
       data:
         message: "{{ message }}"
     - alias: "TTS for speaker voice command"
