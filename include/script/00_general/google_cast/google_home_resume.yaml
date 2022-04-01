@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.6.3
+        version: 1.7.7
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -685,7 +685,7 @@ google_home_resume:
                   - variables:
                       player: >
                         {{
-                          player_data_enriched 
+                          player_data_enriched
                             | selectattr('entity_id', 'eq', target_not_playing[repeat.index-1])
                             | join
                         }}
@@ -707,8 +707,8 @@ google_home_resume:
     - alias: "Wait until helper scripts are finished"
       wait_template: >
         {{ 
-          states.script | selectattr('entity_id', 'search', 'script.google_home_resume_') 
-                        | map(attribute='attributes.current') 
+          states.script | selectattr('entity_id', 'search', 'script.google_home_resume_')
+                        | map(attribute='attributes.current')
                         | sum == 0
         }}
     - alias: "Remove groups"
@@ -930,10 +930,10 @@ google_home_resume_perform_resume:
       choose:
         - conditions: >
             {{ 
-              integration_entities('group') 
+              integration_entities('group')
                 | select('search', 'resume_script_active_ghresume_' ~ context.id)
-                | list 
-                | count > 0 
+                | list
+                | count > 0
             }}
           sequence:
             - alias: "Remove entity from group"
@@ -1012,10 +1012,10 @@ google_home_resume_restore_non_playing:
       choose:
         - conditions: >
             {{ 
-              integration_entities('group') 
+              integration_entities('group')
                 | select('search', 'resume_action_false_ghresume' ~ context.id)
-                | list 
-                | count > 0 
+                | list
+                | count > 0
             }}
           sequence:
             - alias: "Remove entity from group"
@@ -1058,7 +1058,7 @@ google_home_resume_ytube_seek:
       wait_template: >
         {{ 
           iif(state_attr(player.player, '_media_id'))
-          and iif(state_attr(player.player, 'media_position')) 
+          and iif(state_attr(player.player, 'media_position'))
         }}
     - alias: "Seek"
       service: media_player.media_seek

@@ -16,16 +16,12 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.7.6 - 24 March 2022
-#### 🐛 Bug fixes
-* Fix for wait template to determine if resume can be started (it was starting too soon)
-
-### Version 1.7.4/1.7.5 - 23 March 2022
+### Version 1.7.7 - 1 April 2022
 #### 🌟 Improvements
-* (1.7.5) Replaces fixed delays with wait templates so there is no unneeded delay in resuming (for example when only a short TTS is sent)
+* Added additional `media_player.media_play` service call after the stream has been sent tot the player, to prevent a delayed start for some streams
 #### 🐛 Bug fixes
-* Added a check if all members of a speaker group are `idle` or `off` before resuming the stream to avoid resuming to early (in case a group was playing, but the action causing the interruption was only sent to one of the members)
-* (1.7.5) Fixed retrieving volume for players which were in state `off`
+* Better handling of empty variable `players_screen`
+* Fix for wait template to determine if non playing devices should be restored to the old state (it was starting too soon)
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

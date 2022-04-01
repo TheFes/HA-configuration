@@ -2,6 +2,13 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.7.7 - 1 April 2022
+#### 🌟 Improvements
+* Added additional `media_player.media_play` service call after the stream has been sent tot the player, to prevent a delayed start for some streams
+#### 🐛 Bug fixes
+* Better handling of empty variable `players_screen`
+* Fix for wait template to determine if non playing devices should be restored to the old state (it was starting too soon)
+
 ### Version 1.7.6 - 24 March 2022
 #### 🐛 Bug fixes
 * Fix for wait template to determine if resume can be started (it was starting too soon)
