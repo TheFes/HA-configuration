@@ -38,7 +38,7 @@ google_home_tts:
       selector:
         text:
   variables:
-    version: 1.0.0
+    version: 1.1.0
     media_player: media_player.vlc_telnet
     sensor: sensor.tts_dummy
   sequence:
@@ -48,7 +48,7 @@ google_home_tts:
         entity_id: "{{ media_player }}"
       data:
         message: "{{ message }}"
-    - wait_template: "{{ (as_timestamp(now()) - as_timestamp(states[sensor].last_changed)) < 1 }}"
+    - wait_template: "{{ (now() - states.sensor.tts_dummy.last_changed).seconds < 1 }}"
     - alias: "Send TTS message with picture"
       service: media_player.play_media
       target: "{{ target }}"
