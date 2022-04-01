@@ -7,7 +7,7 @@ When sending a TTS, you can only define the message, but if you have a device wi
 
 
 # Most recent changes
-### Version 1.1.0 - 14 March 2022
+### Version 1.1.0 - 1 April 2022
 #### :star2: Improvements
 * Home Assistant 2022.4 checks if an entity actually works with a service call, and throws an error if not, therefor I had to replace the Dummy Media Player with the VLC Media Player.
 
