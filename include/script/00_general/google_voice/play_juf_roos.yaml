@@ -32,7 +32,7 @@ play_juf_roos:
             - service: media_player.play_media
               data:
                 media_content_id: >
-                  {{ media[to_play].split('/')[5].split('_-_')[-1].split('.')[0].replace('_', ' ') }}
+                  {{ media[to_play] | replace('/media', 'media-source://media_source/local') }}
                 media_content_type: "audio/mp3"
                 extra:
                   metadata:
