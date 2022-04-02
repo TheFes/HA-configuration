@@ -2,6 +2,10 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 1.3.5 - 2 April 2022
+#### 🌟 Improvements
+* Ambient sound will now be stopped after the data from the media_player is stored
+
 ### Version 1.3.3/1.3.4 - 22 March 2022
 #### 🌟 Improvements
 * Added a update of Spotify entities before data is stored, so the most recent data is used
@@ -30,7 +34,6 @@
 #### 🐛 Bug fixes
 * Fix for resuming ytube_music_player after voice command
 
-### Version 
 ### Version 1.2.0 - 13 February 2022
 #### 🔴 BREAKING
 * Made several changes in how data is sent from this script to the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
@@ -50,7 +53,6 @@
 ### Version 1.0.0 - 9 February 2022
 #### ✨ New feature
 * Now the new script is used, other actions besides TTS are supported
-
 #### 🌟 Improvements
 * Added version number as a variable to the `sequence`. This will make it more easy to see which changes there are since you last updated the script
 * Several improvements in the templates

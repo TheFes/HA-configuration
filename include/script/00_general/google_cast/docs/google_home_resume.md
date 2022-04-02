@@ -16,12 +16,9 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.7.7 - 1 April 2022
-#### 🌟 Improvements
-* Added additional `media_player.media_play` service call after the stream has been sent tot the player, to prevent a delayed start for some streams
+### Version 1.7.8 - 2 April 2022
 #### 🐛 Bug fixes
-* Better handling of empty variable `players_screen`
-* Fix for wait template to determine if non playing devices should be restored to the old state (it was starting too soon)
+* Fixes for missing variables for restoring non playing devices.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
