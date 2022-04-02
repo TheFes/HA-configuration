@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.7.7
+        version: 1.7.8
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -694,6 +694,8 @@ google_home_resume:
                       entity_id: script.google_home_resume_restore_non_playing
                     data:
                       variables:
+                        start_time: "{{ start_time }}"
+                        event_script: "{{ event_script }}"
                         player: "{{ player }}"
                         member_data: "{{ player_data_enriched | selectattr('entity_id', 'in', player.members) | list }}"
     - alias: "Create variable for existing groups"
