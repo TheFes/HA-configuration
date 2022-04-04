@@ -2,6 +2,12 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.8.0 - 4 April 2022
+#### 🌟 Improvements
+* Improved templates on several places to make it more efficient
+#### 🧾 Docs
+* Added information that the target of the service call needs to be provided either under `target` or under `data`, not directly in the service call.
+
 ### Version 1.7.8 - 2 April 2022
 #### 🐛 Bug fixes
 * Fixes for missing variables for restoring non playing devices.

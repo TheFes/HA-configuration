@@ -16,9 +16,11 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent changes
-### Version 1.7.8 - 2 April 2022
-#### 🐛 Bug fixes
-* Fixes for missing variables for restoring non playing devices.
+### Version 1.8.0 - 4 April 2022
+#### 🌟 Improvements
+* Improved templates on several places to make it more efficient
+#### 🧾 Docs
+* Added information that the target of the service call needs to be provided either under `target` or under `data`, not directly in the service call.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -43,13 +45,13 @@ You can also start a script in a service call, so this allows you to do more adv
 There are examples below for both use cases.
 
 
-The boolean 'resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
+The boolean `resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
 
 *Description of fields:*
 |Field|Required|Description|
 | --- | --- | --- | 
-|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported|
+|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported. Needs to be entered under `data` or `target`, not directly in the service call.
 |action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
 |resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
 

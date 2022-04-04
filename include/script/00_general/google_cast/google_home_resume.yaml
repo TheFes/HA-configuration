@@ -104,13 +104,7 @@ google_home_resume:
         event_script: "{{ event_script if event_script is defined else false }}"
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         service_calls: >
-          {%- set ns = namespace(service = []) %}
-          {%- for item in action %}
-            {%- if item.get('service', 'uhoh') != 'uhoh' %}
-              {%- set ns.service = ns.service + [ item ] %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.service }}
+          {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list }}
         no_service_count: >
           {{ action | reject('in', service_calls) | list | count }}
         target_list: >
@@ -127,44 +121,36 @@ google_home_resume:
                 {%- set entity_list = target.entity_id.replace(' ' , '').split(',') if target.entity_id is string else target.entity_id %}
             {%- endif %}
             {# determine targets based on actions #}
-              {%- set ns = namespace(entity = [], device = [], area = [] ) %}
-              {%- for item in service_calls %}
-                {%- set entity_s = item.get('entity_id', []) %}
-                {%- set device_s = item.get('device_id', []) %}
-                {%- set area_s = item.get('area_id', []) %}
-                {%- if item.target is defined %}
-                  {%- set entity = item.target.get('entity_id', []) %}
-                  {%- set entity = entity.replace(' ','').split(',') if entity is string else entity %}
-                  {%- set device = item.target.get('device_id', []) %}
-                  {%- set device = device.replace(' ','').split(',') if device is string else device %}
-                  {%- set area = item.target.get('area_id', []) %}
-                  {%- set area = area.replace(' ','').split(',') if area is string else area %}
-                {%- else %}
-                  {%- if item.data is defined %}
-                    {%- set entity_d = item.data.get('entity_id', []) %}
-                    {%- set entity_d = entity_d.replace(' ','').split(',') if entity_d is string else entity_d %}
-                    {%- set device_d = item.data.get('device_id', []) %}
-                    {%- set device_d = device_d.replace(' ','').split(',') if device_d is string else device_d %}
-                    {%- set area_d = item.data.get('area_id', []) %}
-                    {%- set area_d = area_d.replace(' ','').split(',') if area_d is string else area_d %}
-                  {%- endif %}
-                  {%- set entity = item.get('entity_id', []) %}
-                  {%- set entity = entity.replace(' ','').split(',') if entity is string else entity %}
-                  {%- set entity = entity + (entity_d if entity_d is defined else []) %}
-                  {%- set device = item.get('device_id', []) %}
-                  {%- set device = device.replace(' ','').split(',') if device is string else device %}
-                  {%- set device = device + (device_d if device_d is defined else []) %}
-                  {%- set area = item.get('area_id', []) %}
-                  {%- set area = area.replace(' ','').split(',') if area is string else area %}
-                  {%- set area = area + (area_d if area_d is defined else []) %}
-                {%- endif %}
-                  {%- set ns.entity = entity + ns.entity %}
-                  {%- set ns.device = device + ns.device%}
-                  {%- set ns.area = area + ns.area %}
-              {%- endfor %}
-              {%- set area_list = ns.area + (area_list if area_list is defined else []) %}
-              {%- set device_list = ns.device + (device_list if device_list is defined else []) %}
-              {%- set entity_list = ns.entity + (entity_list if entity_list is defined else []) %}
+              {% set entity_list = ((service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
+                                                    | map(attribute='data.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
+                                                    | map(attribute='data.entity_id') | reject('string') | select('iterable') | sum(start=[])
+                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined')
+                                                      | map(attribute='target.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined') 
+                                                    | map(attribute='target.entity_id') | reject('string') | select('iterable') | sum(start=[]))
+                                      | reject('eq', '') | list
+              %}
+              {% set device_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
+                                                    | map(attribute='data.device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
+                                                    | map(attribute='data.device_id') | reject('string') | select('iterable') | sum(start=[])
+                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.device_id', 'defined')
+                                                      | map(attribute='target.device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('target', 'defined') | selectattr('target.device_id', 'defined') 
+                                                    | map(attribute='target.device_id') | reject('string') | select('iterable') | sum(start=[]))
+                                      | reject('eq', '') | list
+              %}
+              {% set area_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
+                                                  | map(attribute='data.area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
+                                                    | map(attribute='data.area_id') | reject('string') | select('iterable') | sum(start=[])
+                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.area_id', 'defined')
+                                                      | map(attribute='target.area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                                    + service_calls | selectattr('target', 'defined') | selectattr('target.area_id', 'defined') 
+                                                    | map(attribute='target.area_id') | reject('string') | select('iterable') | sum(start=[]))
+                                      | reject('eq', '') | list
+              %}
             {# create entity list based on device/area input #}
               {# determine cast entities of areas #}
                 {%- set ns = namespace(area_cast = []) %}
@@ -183,14 +169,12 @@ google_home_resume:
             {# create list with all entities #}
               {%- set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
             {# avoid to target both complete speaker groups and single members #}
-              {%- set target_group =  total_list | select('in', speaker_group_list) | list %}
+              {%- set target_group = total_list | select('in', speaker_group_list) | list %}
               {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
               {%- set groupmembers = speaker_groups.items()
                                       | selectattr('0', 'in', target_group)
                                       | map(attribute='1')
-                                      | sum(start=[])
-                                      | unique
-                                      | list
+                                      | sum(start=[]) | unique | list
               %}
               {%- set single_not_in_group = target_single
                                               | reject('in', groupmembers)
