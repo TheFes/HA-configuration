@@ -103,6 +103,7 @@ google_home_resume:
         start_time: "{{ now() }}"
         event_script: "{{ event_script if event_script is defined else false }}"
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
+        speaker_groups: "{{ speaker_groups if (speaker_groups is defined and speaker_groups) else { 'no group': [ 'no members' ] } }}"
         service_calls: >
           {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list }}
         no_service_count: >
@@ -370,11 +371,11 @@ google_home_resume:
               %}
             {# determine which single playing entities are in a group which is a target #}
               {%- set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
-              {%- set ns = namespace(single_resume = []) %}
-              {%- for group in target_group %}
-                {%- set ns.single_resume = ns.single_resume + speaker_groups[group] | select('in', all_players_playing) | list %}
-              {%- endfor %}
-              {%- set single_resume_list = ns.single_resume %}
+              {%- set single_resume_list = speaker_groups.items()
+                                            | selectattr('0', 'in', target_group)
+                                            | map(attribute='1')
+                                            | sum(start=[]) | unique | list
+              %}
             {# combine all the above to a list of players which should be resumed #}
               {{ 
                 (target_playing + speaker_groups_resume + single_resume_list)
