@@ -13,4 +13,4 @@ action:
     target:
       entity_id: input_number.correction_water_meter
     data:
-      value: "{{ (states('input_number.correction_water_meter') | float(0) + (state_attr('sensor.yearly_water','last_period') | float(0) / 1000))|round(3) }}"
+      value: "{{ (states('input_number.correction_water_meter') | float(0) + (state_attr('sensor.water_yearly','last_period') | float(0) / 1000))|round(3) }}"

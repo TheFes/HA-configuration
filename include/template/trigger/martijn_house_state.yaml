@@ -24,7 +24,7 @@ sensor:
         Niet thuis
       {%- 
         elif (last_change_min > 10 and is_state(person, 'home')) 
-        or (is_state(person, 'home') and is_state('sensor.huis_status_martijn', 'Just Left'))
+        or (is_state(person, 'home') and is_state('sensor.house_state_martijn', 'Just Left'))
       %}
         Thuis
       {%- elif is_state(person, 'home') %}

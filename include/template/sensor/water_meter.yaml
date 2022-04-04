@@ -1,19 +1,19 @@
 sensor:
-  - unique_id: e1638c75-58ff-422a-8242-51311716feee
-    name: "Meter water"
+  - unique_id: ef338056f-328b-4ce8-b418-6f1ddab2c38b
+    name: "Water Meter"
     unit_of_measurement: m3
     state_class: total_increasing
     state: >
       {{ 
         (
           states('input_number.correction_water_meter') | float
-          + states('sensor.yearly_water') | float / 1000
+          + states('sensor.water_yearly') | float / 1000
         ) | round(3)
       }}
     availability: "{{ states('sensor.water_yearly') | is_number and states('input_number.correction_water_meter') | is_number }}"
-  - unique_id: 398d2263-18b8-48d0-b463-1fbf873b50f7
-    name: "Water usage in L"
+  - unique_id: 71cc676c-149f-488c-93b6-c2e87edb984a
+    name: "Water usage liter"
     state: "{{ (states('sensor.water_meter_total_consumption') | float * 1000) | int }}"
-    state_class: measurement
+    state_class: total_increasing
     icon: mdi:water
     availability: "{{ states('sensor.water_meter_total_consumption') | is_number }}"
