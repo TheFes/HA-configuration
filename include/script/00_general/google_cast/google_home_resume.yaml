@@ -374,7 +374,9 @@ google_home_resume:
               {%- set single_resume_list = speaker_groups.items()
                                             | selectattr('0', 'in', target_group)
                                             | map(attribute='1')
-                                            | sum(start=[]) | unique | list
+                                            | sum(start=[])
+                                            | select('in', all_players_playing)
+                                            | unique | list
               %}
             {# combine all the above to a list of players which should be resumed #}
               {{ 
