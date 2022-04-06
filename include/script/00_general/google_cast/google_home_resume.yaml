@@ -62,7 +62,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.8.0
+        version: 1.8.1
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -720,9 +720,14 @@ google_home_resume_perform_resume:
   sequence:
     - alias: "State changed since script started?"
       wait_template: >
-        {{ 
+        {{
           event_script or
-          ((states[player.entity_id].last_changed > as_datetime(start_time)) and is_state(player.entity_id, 'playing')) 
+          (
+            (states[player.entity_id].last_changed > as_datetime(start_time))
+            and expand([player.entity_id] + player.members)
+                  | selectattr('state', 'eq', 'playing')
+                  | list | count > 0
+          )
         }}
       timeout: "00:00:30"
     - alias: "Add entity to the resume active group"
@@ -945,12 +950,23 @@ google_home_resume_restore_non_playing:
   sequence:
     - alias: "State changed since script started?"
       wait_template: >
-        {{ event_script or 
-          ((states[player.entity_id].last_changed > as_datetime(start_time)) and is_state(player.entity_id, 'playing')) 
+        {{
+          event_script or
+          (
+            (states[player.entity_id].last_changed > as_datetime(start_time))
+            and expand([player.entity_id] + player.members)
+                  | selectattr('state', 'eq', 'playing')
+                  | list | count > 0
+          )
         }}
       timeout: "00:00:30"
-    - alias: "Wait until entity is idle or off"
-      wait_template: "{{ states(player.entity_id) in ['idle', 'off'] }}"
+    - alias: "Wait until entity and members are not playing"
+      wait_template: >
+        {{
+          expand([player.entity_id] + player.members)
+                  | selectattr('state', 'eq', 'playing')
+                  | list | count == 0
+        }}
     - alias: "Google Home with screen back to idle screen"
       choose:
         - conditions: "{{ player.type == 'screen' }}"

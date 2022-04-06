@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.8.1 - 6 April 2022
+#### 🐛 Bug fixes
+* Fix for resuming/restoring groups when interrupted by an service call sent to a group member
+
 ### Version 1.8.0 - 4 April 2022
 #### 🌟 Improvements
 * Improved templates on several places to make it more efficient

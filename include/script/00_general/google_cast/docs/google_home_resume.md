@@ -15,12 +15,10 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 # To Do
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
-# Most recent changes
-### Version 1.8.0 - 4 April 2022
-#### 🌟 Improvements
-* Improved templates on several places to make it more efficient
-#### 🧾 Docs
-* Added information that the target of the service call needs to be provided either under `target` or under `data`, not directly in the service call.
+# Most recent change
+### Version 1.8.1 - 6 April 2022
+#### 🐛 Bug fixes
+* Fix for resuming/restoring groups when interrupted by an service call sent to a group member
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
