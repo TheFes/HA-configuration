@@ -1,72 +1,85 @@
 id: 5e74e69a-7e31-4769-ad6a-c438fce816dc
 alias: "00 🔧 Notifactions for new HA version"
-mode: single
+mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: template
-    value_template: >
-      {%- 
-        if not states('sensor.latest_stable') in ['unavailable', 'unknown' ] 
-        and not states('sensor.current_version') in ['unavailable', 'unknown' ]
-      %}
-        {%- set yc, mc, vc = states('sensor.current_version').split('.')  %}
-        {%- set y, m, v  = states('sensor.latest_stable').split('.') %}
-        {{ iif(yc | int < y | int, true, iif(yc == y, iif(mc | int < m | int, true, iif(mc == m, vc < v)))) }}
-      {%- endif %}
-    id: "stable"
-  - platform: template
-    value_template: >
-      {%- 
-        if not states('sensor.latest_beta') in ['unavailable', 'unknown' ] 
-        and not states('sensor.current_version') in ['unavailable', 'unknown' ]
-        and 'b' in states('sensor.latest_beta')
-      %}
-        {%- set yc, mc, vc = states('sensor.current_version').split('.')  %}
-        {%- set y, m, v  = states('sensor.latest_beta').split('.') %}
-        {{ iif(yc | int < y | int, true, iif(yc == y, iif(mc | int < m | int, true, iif(mc == m, vc < v)))) }}
-      {%- endif %}
-    id: "beta"
-variables:
-  current: "{{ states('sensor.current_version') }}"
-  stable: "{{ states('sensor.latest_stable') }}"
-  beta: "{{ states('sensor.latest_beta') }}"
+  - platform: homeassistant
+    event: start
+    id: clear
+  - platform: event
+    event_type: automation_reloaded
+    id: clear
+  - platform: state
+    entity_id:
+      - update.home_assistant_core_update
+      - update.home_assistant_operating_system_update
+    to: "on"
+    variables:
+      what: "{{ state_attr(trigger.entity_id, 'title') }}"
+      from: "{{ state_attr(trigger.entity_id, 'installed_version') }}"
+      to: "{{ state_attr(trigger.entity_id, 'latest_version') }}"
+      url: >
+        {%- 
+          if what == 'Home Assistant Operating System'
+          or to.split('.')[-1].split('b')[-1] == '0' 
+        %}
+          {{ state_attr(trigger.entity_id, 'release_url') }}
+        {%- else %}
+          https://github.com/home-assistant/core/releases/tag/{{ to }}
+        {%- endif %}
 action:
-  - alias: "Dismiss old notification"
-    service: persistent_notification.dismiss
-    data:
-      notification_id: ha_update
-  - alias: "Create persistant notification"
-    service: persistent_notification.create
-    data:
-      title: >
-        {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
-      notification_id: ha_update
-      message: >-
-        Versie _{{ iif(trigger.id == 'beta', beta, stable) }}_ is nu beschikbaar. Je zit nu op _{{ current }}_.
-        [Changelog](https://github.com/home-assistant/core/releases/tag/{{ (trigger.id == 'beta') | iif(beta, stable) }})
-        {%- set b = states('sensor.potential_breaking_changes') | int %}
-        {{ 
-          ((b != 1) | iif('Er zijn ', 'Er is ') ~ (b == 0) | iif('geen', b) ~ ' breaking change' ~ (b != 1) | iif('s.', '. '))
-          if trigger.id == 'stable'
-        }}
-  - alias: "Send notification to phone"
+  - alias: "Update possible?"
+    choose:
+      - conditions: "{{ not trigger.id == 'clear'}}"
+        sequence:
+          - alias: "Set up variables for the actions"
+            variables:
+              action_update: "{{ 'UPDATE_' ~ context.id }}"
+          - alias: "Dismiss old notification"
+            service: persistent_notification.dismiss
+            data:
+              notification_id: ha_update
+          - alias: "Create persistant notification"
+            service: persistent_notification.create
+            data:
+              title: >
+                Update: {{ what }}
+              notification_id: ha_update
+              message: >-
+                Versie _{{ to }}_ is nu beschikbaar. Je zit nu op _{{ from }}_.
+                [Changelog]({{ url }})
+          - alias: "Send notification to phone"
+            service: notify.mobile_app_pixel_5
+            data:
+              title: >
+                {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
+              message: >-
+                Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
+              data:
+                tag: "ha_update"
+                channel: Home Assistant
+                ttl: 0
+                priority: high
+                clickAction: "/config/dashboard"
+                actions:
+                  - action: "URI"
+                    title: "Changelog"
+                    uri: "{{ url }}"
+                  - action: "{{ action_update }}"
+                    title: Update
+          - alias: "Wait for a response"
+            wait_for_trigger:
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "{{ action_update }}"
+          - alias: "Update"
+            service: update.install
+            target:
+              entity_id: "{{ trigger.entity_id }}"
+  - alias: "Dismiss notification"
     service: notify.mobile_app_pixel_5
     data:
-      title: >
-        {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
-      message: >-
-        Versie {{ iif(trigger.id == 'beta', beta, stable) }} is nu beschikbaar. Je zit nu op {{ current }}.
-        {%- set b = states('sensor.potential_breaking_changes') | int %}
-        {{ 
-          (iif(b != 1, 'Er zijn ', 'Er is ') ~ iif(b == 0, 'geen', b) ~ ' breaking change' ~ iif(b != 1, 's.', '. '))
-          if trigger.id == 'stable'
-        }}
+      message: "clear_notification"
       data:
-        channel: Home Assistant
-        ttl: 0
-        priority: high
-        clickAction: "/config/dashboard"
-        actions:
-          - action: "URI"
-            title: "Changelog"
-            uri: "https://github.com/home-assistant/core/releases/tag/{{ iif(trigger.id == 'beta', beta, stable) }}"
+        tag: "ha_update"
