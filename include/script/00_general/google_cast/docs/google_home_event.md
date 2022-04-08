@@ -111,7 +111,7 @@ sensor:
     json_attributes:
       - resume_data
 ```
-## And finally the script itself
+## The script itself
 
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_event.yaml) on my Github config, so I don't have to maintain it in two places
 
