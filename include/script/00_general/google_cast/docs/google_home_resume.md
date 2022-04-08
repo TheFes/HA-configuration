@@ -12,7 +12,8 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
 * The script creates groups while running, so if you don't have any groups set up already, add `group:` to your configuration.yaml.
 ## Spotify resume
-* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
+* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration)). 
+* The `accounts` dict must be [configured](https://github.com/fondberg/spotcast#:~:text=added%20in%203.6.24-,accounts,-%3A%0A%20%20%20%20niklas%3A%0A%20%20%20%20%20%20sp_dc%3A%20!secret) even if you are only using a single account. 
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
