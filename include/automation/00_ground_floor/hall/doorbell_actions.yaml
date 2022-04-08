@@ -77,14 +77,8 @@ action:
                       entity_id: media_player.zolder_mini_martijn
                     data:
                       message: "Ding Dong! Er staat iemand aan de deur!"
-          - alias: "Wait until the target is idle or off before applying the volume for the TTS message"
-            wait_template: "{{ states('media_player.zolder_mini_martijn') in ['idle', 'off'] }}"
-          - alias: "Apply TTS volume"
-            service: media_player.volume_set
-            target:
-              entity_id: media_player.zolder_mini_martijn
-            data:
-              volume_level: 0.35
+                    extra:
+                      volume: 0.35
   - alias: "Chime off and someone home?"
     choose:
       # Blink lights when chime is off and someone is home

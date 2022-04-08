@@ -10,7 +10,7 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.3.5
+        version: 1.3.6
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -196,7 +196,8 @@ google_home_voice:
                                                         dict(
                                                           service = item.service,
                                                           target = item.get('target', { 'entity_id' : target}),
-                                                          data = item.get('data', {})
+                                                          data = item.get('data', {}),
+                                                          extra = item.get('extra', {})
                                                           )
                                                       ] 
                       %}

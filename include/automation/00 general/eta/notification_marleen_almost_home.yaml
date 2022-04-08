@@ -54,11 +54,9 @@ action:
               entity_id: "{{ target }}"
             data:
               message: "Hoera! Marleen is bijna thuis!"
-  - alias: "Wait first target is idle or off (will prevent volume change of stream in case there is only one target)"
-    wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
-  - alias: "Apply TTS volume"
-    service: media_player.volume_set
-    target:
-      entity_id: "{{ target }}"
-    data:
-      volume_level: 0.35
+            extra:
+              screen_tts:
+                large_text: HOERA!
+                small_text: Marleen is bijna thuis
+                picture_url: "http://192.168.2.3:8123/local/pictures/marleen.gif"
+              volume: 0.35

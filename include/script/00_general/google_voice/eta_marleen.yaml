@@ -35,36 +35,9 @@ eta_marleen_routine:
             service: tts.google_cloud_say
             data:
               message: "{{ message }}"
-        volume: 35
-    - alias: "Send TTS to Dummy"
-      service: tts.google_cloud_say
-      target:
-        entity_id: media_player.vlc_telnet
-      data:
-        message: "{{ message }}"
-    - alias: "TTS for speaker voice command"
-      service: script.google_home_voice
-      data:
-        action:
-          - alias: "Send TTS message with picture"
-            service: media_player.play_media
-            data:
-              media_content_id: "{{ states('sensor.tts_dummy') }}"
-              media_content_type: "music"
-              extra:
-                metadata:
-                  metadataType: 3
-                  title: "{{ eta }}"
-                  artist: >
-                    {%- if is_state('person.marleen', 'home') %}
-                      Marleen is al thuis
-                    {%- elif is_state_attr('proximity.marleen', 'dir_of_travel', 'towards') %}
-                      Marleen is om {{ eta }} thuis.
-                    {%- elif is_state_attr('proximity.marleen', 'dir_of_travel', 'away_from') %}
-                      Marleen gaat de verkeerde kant op.
-                    {%- else %}
-                      Marleen is nog niet onderweg.
-                    {%- endif %}
-                  images:
-                    - url: "http://192.168.2.3:8123/local/pictures/marleen.gif"
-        volume: 35
+            extra:
+              volume: 0.35
+              screen_tts:
+                large_text: "{{ eta }}"
+                small_text: "{{ message }}"
+                picture_url: "http://192.168.2.3:8123/local/pictures/marleen.gif"

@@ -10,9 +10,9 @@ eta_martijn_routine:
           {%- elif is_state_attr('proximity.martijn', 'dir_of_travel', 'towards') %}
             Martijn is om {{ eta }} thuis.
           {%- elif is_state_attr('proximity.martijn', 'dir_of_travel', 'away_from') %}
-            Martijn gaat de verkeerde kant op, maar als hij nu omdraait is ze om {{ eta }} thuis.
+            Martijn gaat de verkeerde kant op, maar als hij nu omdraait is hij om {{ eta }} thuis.
           {%- else %}
-            Martijn is nog niet onderweg, maar als hij nu vertrekt is ze om {{ eta }} thuis.           
+            Martijn is nog niet onderweg, maar als hij nu vertrekt is hij om {{ eta }} thuis.
           {%- endif %}
     - alias: "Notification phone Marleen"
       service: notify.mobile_app_marleen_app
@@ -30,4 +30,9 @@ eta_martijn_routine:
             service: tts.google_cloud_say
             data:
               message: "{{ message }}"
-        volume: 35
+            extra:
+              volume: 0.35
+              screen_tts:
+                large_text: "{{ eta }}"
+                small_text: "{{ message }}"
+                picture_url: "http://192.168.2.3:8123/local/pictures/martijn.gif"

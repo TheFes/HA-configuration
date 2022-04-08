@@ -127,21 +127,12 @@ script:
                   entity_id: "{{ target }}"
                 data:
                   message: "{{ states('input_text.tts_message') }}"
-      - alias: "Set volume to TTS volume if set"
-        choose:
-          - conditions:
-              - alias: "TTS Volume set?"
-                condition: template
-                value_template: "{{ is_state('input_boolean.tts_volume', 'on') }}"
-            sequence:
-              - alias: "Wait first tts_target is idle or off (will prevent volume change of stream in case there is only one target)"
-                wait_template: "{{ states(target[0]) in ['idle', 'off'] }}"
-              - alias: "Apply TTS volume"
-                service: media_player.volume_set
-                target:
-                  entity_id: "{{ target }}"
-                data:
-                  volume_level: "{{ states('input_number.tts_volume') | float(25) / 100 | round(2) }}"
+                extra: >
+                  {{
+                    dict(volume = states('input_number.tts_volume') | float(25) / 100 | round(2))
+                    if is_state('input_boolean.tts_volume', 'on')
+                    else {}
+                  }}
       - alias: "Reset volume"
         choose:
           - conditions: "{{ True if default_volume else False }}"

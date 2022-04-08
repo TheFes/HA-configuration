@@ -27,4 +27,9 @@ dishwasher_remaining_time_routine:
             service: tts.google_cloud_say
             data:
               message: "{{ message }}"
-        volume: 35
+            extra:
+              volume: 0.35
+              screen_tts:
+                large_text: "{{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }}"
+                small_text: "{{ message }}"
+                picture_url: "http://192.168.2.3:8123/local/pictures/dishwasher_2.jpg"
