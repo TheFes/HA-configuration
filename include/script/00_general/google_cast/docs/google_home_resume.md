@@ -1,19 +1,20 @@
-# Background
-I've shared [a script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634) last year, to resume a Google Cast device after a TTS has been sent to it. However, this script was limited to TTS only. I now created a new script based on the TTS script to perform other actions (like playing an mp3, casting a lovelace dashboard, showing an image, etc)
+# Description
+A script to send actions to Google Cast devices, resume what was playing afterwards and restore the previous volume in case the volume was changed.
 **Note:** Only service calls are supported, but you can call a script in a service call, so other actions can be performed by calling a script.
 
 # This script supports
-* Resuming of TuneIn, Spotify, YouTube and generic streams after any actions which interrupted the audio
+* Resuming of TuneIn, Spotify, YouTube (only for players with screen) YouTube music (only if custom integration is used) and generic streams after any actions which interrupted the audio
 * Resuming an entire speaker group after a single group member has been interrupted
 * Resuming of individual group members after the speaker group has performed an action
 
 # Requirements
+## General
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
-* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
 * The script creates groups while running, so if you don't have any groups set up already, add `group:` to your configuration.yaml.
-
-# To Do
-* Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
+## Spotify resume
+* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
+## YouTube Music resume
+* Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
 ### Version 2.0.0 - 8 April 2022
@@ -23,6 +24,7 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * More information on how it works [here]
 #### 🧾 Docs
 * Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
+* Changed background to description and removed reference to old TTS script
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
