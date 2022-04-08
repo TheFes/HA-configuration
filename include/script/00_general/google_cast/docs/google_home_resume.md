@@ -112,7 +112,7 @@ The script can also be started from the GUI, both in YAML mode and full GUI mode
 # Questions/issues/bugs/feature requests?
 In case you have a question, you found a bug, or have a feature request, you can either ask here, or open an [issue](https://github.com/TheFes/HA-configuration/issues) on my GitHub repository. In case you create a GitHub issue, please label it with `google home scripts`
 
-In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded a a json file. To do this follow the steps below:
+In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded as a json file. To do this follow the steps below:
 1. Go to `Configuration > Automations & Scenes > Scripts` or use [![Open your Home Assistant instance and show your scripts.](https://my.home-assistant.io/badges/scripts.svg)](https://my.home-assistant.io/redirect/scripts/)
 1. Find the Google Home Resume script in the list.
 1. Click on the clock icon (with the arrow around it) next to the script.
