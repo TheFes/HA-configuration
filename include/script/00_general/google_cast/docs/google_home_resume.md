@@ -21,10 +21,10 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 #### ✨ New features
 * You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
 * Supports sending TTS together with picture and text when sent to a player with a screen.
-* More information on how it works [here]
+* More information on how it works [here](#how-to-use-the-script)
 #### 🧾 Docs
 * Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
-* Changed background to description and removed reference to old TTS script
+* Partial rewrite of the script docs
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
