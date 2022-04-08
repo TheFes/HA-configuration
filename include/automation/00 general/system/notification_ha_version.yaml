@@ -52,7 +52,7 @@ action:
             service: notify.mobile_app_pixel_5
             data:
               title: >
-                {{ iif(trigger.id == 'beta', 'Beta update HA', 'Stable update HA') }}
+                Update: {{ what }}
               message: >-
                 Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
               data:
