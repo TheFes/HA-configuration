@@ -92,6 +92,7 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
 
 # Multiple actions to the same target, which need to wait for each other.
 In case you send multiple actions to the same target, which need to wait for each other, enter `wait: true` under `extra`
+Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 
 ```yaml
 - alias: "Send multiple TTS to the same target"

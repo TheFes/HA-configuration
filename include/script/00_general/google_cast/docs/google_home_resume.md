@@ -17,7 +17,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.0.0 - 8 April 2022
+### Version 2.0.0/2.0.1 - 8 April 2022
 #### 🔴 BREAKING
 * `fixed_picture` has bee changed to `radio_data` and now also provides the option to add a fixed `title` for the radio stream. As TuneIn changes the title according to the song playing (well at least it should, but this seems broken lateley) it will no longer refresh after resuming the stream, as TuneIn is no longer used then. To prevent this the `title` can be provided as well now, for example the slogan of the radio channel can be used here.
 #### ✨ New features
@@ -27,6 +27,8 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 #### 🧾 Docs
 * Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
 * Partial rewrite of the script docs
+#### 🐛 Bug fixes
+* (2.0.1) Several bugs fixed which I did not notice in initial testing
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -87,7 +89,7 @@ When calling the script, there are 3 fields you can provide. `action` is require
 |action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
 |resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
 
-As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. This is not supported if you use the GUI.
+As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. This is not supported if you use the GUI. Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 The following variables are supported:
 |Variable|Example|Description|
 |---|---|---|

@@ -213,7 +213,7 @@ google_home_voice:
                 data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
     - alias: "Volume defined"
       choose:
-        - conditions: "{{ iif(volume) }}"
+        - conditions: "{{ volume is defined and iif(volume) }}"
           sequence:
             - alias: "Apply volume"
               service: media_player.volume_set

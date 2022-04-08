@@ -2,12 +2,18 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
-### Version 2.0.0 - 8 April 2022
+### Version 2.0.0/2.0.1 - 8 April 2022
+#### 🔴 BREAKING
+* `fixed_picture` has bee changed to `radio_data` and now also provides the option to add a fixed `title` for the radio stream. As TuneIn changes the title according to the song playing (well at least it should, but this seems broken lateley) it will no longer refresh after resuming the stream, as TuneIn is no longer used then. To prevent this the `title` can be provided as well now, for example the slogan of the radio channel can be used here.
 #### ✨ New features
 * You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
 * Supports sending TTS together with picture and text when sent to a player with a screen.
+* More information on how it works [here](#how-to-use-the-script)
 #### 🧾 Docs
 * Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
+* Partial rewrite of the script docs
+#### 🐛 Bug fixes
+* (2.0.1) Several bugs fixed which I did not notice in initial testing
 
 ### Version 1.8.1 - 6 April 2022
 #### 🐛 Bug fixes

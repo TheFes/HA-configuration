@@ -576,7 +576,7 @@ google_home_resume:
         sequence:
           - variables:
               service_call: "{{ service_calls[repeat.index -1] }}"
-              volume_set: "{{ iif(service_call.extra.get('volume', '')) }}"
+              volume_set: "{{ service_call.extra is defined and iif(service_call.extra.get('volume', '')) }}"
               wait_set: "{{ service_call.extra is defined and service_call.extra.get('wait', false) }}"
               tts: "{{ service_call.service.split('.')[0] == 'tts' }}"
               target_entities: >
@@ -645,18 +645,6 @@ google_home_resume:
                 {{ service_call.get('target', {}) }}
               {%- endif %}
             data: "{{ service_call.get('data', {}) }}"
-          - alias: "Wait until targets are idle if needed"
-            choose:
-              - conditions: "{{ volume_set or wait_set }}"
-                sequence:
-                  - wait_template: >
-                      {{
-                        expand(target_entities)
-                          | selectattr('state', 'in', ['idle', 'off', 'unavailable'])
-                          | list
-                          | count
-                        == target_entities | count
-                      }}
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
@@ -670,6 +658,11 @@ google_home_resume:
             choose:
               - conditions: "{{ wait_set }}"
                 sequence:
+                  - wait_for_trigger:
+                      - platform: event
+                        event_type: state_changed
+                        event_data:
+                          entity_id: "{{ target_entities[0] }}"
                   - wait_template: >
                       {{
                         expand(target_entities)
