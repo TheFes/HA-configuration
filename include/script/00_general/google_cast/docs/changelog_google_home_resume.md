@@ -2,6 +2,13 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.0.0 - 8 April 2022
+#### ✨ New features
+* You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
+* Supports sending TTS together with picture and text when sent to a player with a screen.
+#### 🧾 Docs
+* Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
+
 ### Version 1.8.1 - 6 April 2022
 #### 🐛 Bug fixes
 * Fix for resuming/restoring groups when interrupted by an service call sent to a group member

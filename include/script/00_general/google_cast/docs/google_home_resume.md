@@ -16,124 +16,46 @@ I've shared [a script](https://community.home-assistant.io/t/script-to-resume-ra
 * Make it possible to queue actions if the script is called multiple times for the same entity (this will require the script to be cut into different scripts)
 
 # Most recent change
-### Version 1.8.1 - 6 April 2022
-#### 🐛 Bug fixes
-* Fix for resuming/restoring groups when interrupted by an service call sent to a group member
+### Version 2.0.0 - 8 April 2022
+#### ✨ New features
+* You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
+* Supports sending TTS together with picture and text when sent to a player with a screen.
+* More information on how it works [here]
+#### 🧾 Docs
+* Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
-# Prerequisites
-1. The entity_id's for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
-1. The primary Spotcast user needs to be specified under `primary_spotcast` (see comment above).
-1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). For more details see [this post](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896/33).
-1. Google Nest Hub speakers can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing.
-1. If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
-
-# Known limitations
-* It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
-* When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards.
-* YouTube and YouTube music will only resume the video/song which was playing at the time of the interruption, and only on players with a screen if not started using the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration.
-
-# How to start the script
-This script only conains the code to resume after the interruption, it doesn't contain any standard actions (like sending a TTS or playing an MP3 file.
-
-To perform such an action, you need to provide them in the `action` field. In case you use the GUI, it will allow al kind of actions (like `delay` or `choose`) but  it can only handle service calls (so starting with `service`). 
-
-You can also start a script in a service call, so this allows you to do more advanced actions, like using `choose` or a `wait_template`. But in that case there will be no information regarding the target of the service call in the action data. In that case you can enter that information in the `target` field.
-There are examples below for both use cases.
-
-
-The boolean `resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
-I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
-
-*Description of fields:*
-|Field|Required|Description|
-| --- | --- | --- | 
-|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported. Needs to be entered under `data` or `target`, not directly in the service call.
-|action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
-|resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
-
-*Example without the requirement for `target`*
-```yaml
-alias: "Play sound when there is someone at the door"
-service: script.google_home_resume
-data:
-  action:
-    - service: media_player.volume_set
-      target:
-        area_id: 'living_room'
-        entity_id:
-          - media_player.bedroom
-          - media_player.guestroom
-      data:
-        volume_level: 0.5
-    - service: media_player.play_media
-      target:
-        area_id: 'living_room'
-        entity_id:
-          - media_player.bedroom
-          - media_player.guestroom
-      data:
-        media_content_type: music
-        media_content_id: "media-source://media_source/local/dingdong.mp3"
-```
-
-*Examle where another script is started, so it is not clear which players are affected*
-```yaml
-alias: "Play sound when there is someone at the door via script"
-service: script.google_home_resume
-data:
-  target:
-    area_id: 'living_room'
-    entity_id:
-      - media_player.bedroom
-      - media_player.guestroom
-  action:
-    - service: script.play_sound
-      data:
-        file: "media-source://media_source/local/dingdong.mp3"
-```
-
-The script can also be started from the GUI, both in YAML mode and full GUI mode. 
-
-# Send TTS and apply volume for the TTS message
-Below you will find an example on how to use this script to send a TTS message and apply the right volume for this message. Only the TTS service call is in the script, the volume is applied in the actions below, as a `wait_template` is used, which is not allowed in the script `action` section.
-This wait template will make sure the volume for the TTS message is not applied too soon, so when e.g. the Spotify stream is still playing. Note that I'm using `script.turn_on` here, otherwise the `wait_template` will start after the resume script is completed, which will actually apply the volume on the resumed stream.
-
-```yaml
-- alias: "Send TTS using Google Home Resume script"
-  service: script.turn_on
-  target:
-    entity_id: script.google_home_resume
-  data:
-    variables:
-      action:
-        - alias: "Send TTS message"
-          service: tts.google_cloud_say
-          target:
-            entity_id: media_player.zolder_mini_martijn
-          data:
-            message: "Ding Dong! Er staat iemand aan de deur!"
-- alias: "Wait until the target is idle or off before applying the volume for the TTS message"
-  wait_template: "{{ states('media_player.zolder_mini_martijn') in ['idle', 'off'] }}"
-- alias: "Apply TTS volume"
-  service: media_player.volume_set
-  target:
-    entity_id: media_player.zolder_mini_martijn
-  data:
-    volume_level: 0.35
-```
-
-# And finally the script itself
-
+# Setup
+## The script itself
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
 
 Add this script to `scripts.yaml` by copying the contents of the link below, and pasting it in `scripts.yaml`. Don't use the GUI, use a file editor (add-on).
 Change the variables described below to match your setup.
 
+## Spotify specific settings
+1. The entity_id's for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
+1. The primary Spotcast user needs to be specified under `primary_spotcast` (see comment above).
+1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). For more details see [this post](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896/33).
+
+## Cast devices with screen (like Google Nest Hub or Android TV)
+1. Google Nest Hub speakers and other cast devices with a screen can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing, and supports resume of YouTube.
+1. In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages. More info [here]
+
+## Google Home Speaker groups
+1. If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
+
+## Dummy player for TTS with picture and text
+The feature to send a TTS together with picture and text works as as follows. The TTS is sent to a dummy player, and the script will wait for this event, and will take the url the the mp3 used as TTS message. It will then send this mp3 together with the picture and text to the actual target.
+As of Home Assistant 2022.4 there is a check if a target of a service call actually supports the service call. So the dummy player has to support TTS. As the media_player created by the [VLC Telnet integration](https://www.home-assistant.io/integrations/vlc_telnet/) supports TTS, I use this.
+
+In case you use HA OS, or run a supervised install, you can add the VLS Telnet add-on from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
+
+In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide is somewhere :wink:
+
 # Explanation of variables in the script
 
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those. Resuming Spotify won't work properly without `default_spotcast`.
+There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify won't work properly without `default_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
 
 |Variable|Default|Example|Description|
 | --- | --- | --- | --- |
@@ -141,8 +63,57 @@ There are no required variables, but if you use Google Home speaker groups and p
 |primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
 |fixed_picture||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L39)|A dictionary with the pictures. As key value the artist should be used (check `media_artist` in developer tools > states)|
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
-|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived|
-|group_id||`some_string`|A string which will be added to the group object id's so they can be identified as belonging to this script|
+|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
+|dummy_player|`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
+
+# How to use the script
+This script only contains the code to resume after the interruption, it doesn't contain any standard actions (like sending a TTS or playing an MP3 file)
+
+To perform such an action, you need to provide them in the `action` field. In case you use the GUI, it will allow al kind of actions (like `delay` or `choose`) but the script can only handle service calls (so starting with `service`).
+
+You can also start a script in a service call, so this allows you to do more advanced actions, like using `choose` or a `wait_template`. But in that case there will be no information regarding the target of the service call in the action data. In that case you can enter that information in the `target` field.
+
+The boolean `resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
+I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
+
+When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
+|Field|Required|Description|
+| --- | --- | --- | 
+|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported. Needs to be entered under `data` or `target`, not directly in the service call.
+|action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
+|resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
+
+As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. This is not supported if you use the GUI.
+The following variables are supported:
+|Variable|Example|Description|
+|---|---|---|
+|`volume`|`0.25` or `25`|Applies the volume set for the service call|
+|`wait`|`true`|If set to `true` the script will wait until the target(s) are `idle` or `off` again until resuming with the next service call|
+|`screen_tts`||Use this to provide the details to send a TTS together with picture and text (see the next variables below)|
+|> `large_text`|`BIG`|Will be displayed large on the screen together with the TTS message (normally used for the `title`)|
+|> `small_text`|`small`|Will be displayed small on the screen together with the TTS message (normally used for the `artist`)|
+|> `picture_url`|`small`|Will be displayed small on the screen together with the TTS message (normally used for the `media_picture`)|
+
+Examples for different use cases can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
+
+The script can also be started from the GUI, both in YAML mode and full GUI mode. 
+
+# Known limitations
+* It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
+* When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards. To minimize this, Spotify entities are updated just before the information is stored.
+* YouTube and YouTube music will only resume the video/song which was playing at the time of the interruption, and only on players with a screen if not started using the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration.
+
+# Questions/issues/bugs/feature requests?
+In case you have a question, you found a bug, or have a feature request, you can either ask here, or open an [issue](https://github.com/TheFes/HA-configuration/issues) on my GitHub repository. In case you create a GitHub issue, please label it with `google home scripts`
+
+In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded a a json file. To do this follow the steps below:
+1. Go to `Configuration > Automations & Scenes > Scripts` or use [![Open your Home Assistant instance and show your scripts.](https://my.home-assistant.io/badges/scripts.svg)](https://my.home-assistant.io/redirect/scripts/)
+1. Find the Google Home Resume script in the list.
+1. Click on the clock icon (with the arrow around it) next to the script.
+1. Press the download icon in the top right corner.
+1. Repeat for the Google Home Resume - Perform Resume and/or Google Home Resume - Restore non playing if the error is in that step.
+
+In case you create the issue on GitHub you can upload the json files, in case you create the issue as a post here, you can copy the json files to a code sharing website like [codepile.net](https://www.codepile.net). Please create a different link for each json file.
 
 # Why not a blueprint?
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
