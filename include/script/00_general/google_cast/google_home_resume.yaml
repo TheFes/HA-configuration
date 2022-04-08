@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.0.1
+        version: 2.0.2
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -581,12 +581,18 @@ google_home_resume:
               tts: "{{ service_call.service.split('.')[0] == 'tts' }}"
               target_entities: >
                 {%- set cast_entities = integration_entities('cast') %}
-                {%- set e = service_call.target.get('entity_id', []) %}
-                {%- set d = service_call.target.get('device_id', []) %}
-                {%- set a = service_call.target.get('area_id', []) %}
-                {%- set e = e.replace(' ','').split(',') if e is string else e %}
-                {%- set d = d.replace(' ','').split(',') if d is string else d %}
-                {%- set a = a.replace(' ','').split(',') if a is string else a %}
+                {%- set et = service_call.get('target', {}).get('entity_id', []) %}
+                {%- set dt = service_call.get('target', {}).get('device_id', []) %}
+                {%- set at = service_call.get('target', {}).get('area_id', []) %}
+                {%- set e = et.replace(' ','').split(',') if et is string else et %}
+                {%- set d = dt.replace(' ','').split(',') if dt is string else dt %}
+                {%- set a = at.replace(' ','').split(',') if at is string else at %}
+                {%- set ed = service_call.get('data', {}).get('entity_id', []) %}
+                {%- set dd = service_call.get('data', {}).get('device_id', []) %}
+                {%- set ad = service_call.get('data', {}).get('area_id', []) %}
+                {%- set e = e + ed.replace(' ','').split(',') if ed is string else ed %}
+                {%- set d = d + dd.replace(' ','').split(',') if dd is string else dd %}
+                {%- set a = a + ad.replace(' ','').split(',') if ad is string else ad %}
                 {# create entity list based on device/area input #}
                   {# determine cast entities of areas #}
                     {%- set ns = namespace(area_cast = []) %}
@@ -629,7 +635,7 @@ google_home_resume:
                     data:
                       variables:
                         dummy_player: "{{ dummy_player }}"
-                        target: "{{ service_call.target }}"
+                        target: "{{ target_entities }}"
                         large_text: "{{ service_call.extra.screen_tts.get('large_text', '') }}"
                         small_text: "{{ service_call.extra.screen_tts.get('small_text', '') }}"
                         picture_url: "{{ service_call.extra.screen_tts.get('picture_url', '') }}"
@@ -644,7 +650,19 @@ google_home_resume:
               {%- else %}
                 {{ service_call.get('target', {}) }}
               {%- endif %}
-            data: "{{ service_call.get('data', {}) }}"
+            data: >
+              {%- if screen and tts %}
+                {% set ns = namespace(s={}) %}
+                {% for item in service_call.items() | list %}
+                  {% if not item[0] in [ 'entity_id', 'device_id', 'area_id' ] %}
+                    {% set add = { item[0]: item[1] } %}
+                    {% set ns.s = dict(ns.s, **add) %}
+                  {% endif %}
+                {% endfor %}
+                {{ ns.s }}
+              {%- else %}
+                {{ service_call.get('data', {}) }}
+              {%- endif %}
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
@@ -1217,7 +1235,8 @@ google_home_resume_tts_screen:
               entity_id: "{{ [ dummy_player ] }}"
     - alias: "Send TTS message with picture"
       service: media_player.play_media
-      target: "{{ target }}"
+      target:
+        entity_id: "{{ target }}"
       data:
         media_content_id: "{{ wait.trigger.event.data.service_data.media_content_id }}"
         media_content_type: "music"
