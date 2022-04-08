@@ -1,59 +1,31 @@
 # Script to send a TTS to a Google Cast device with a screen (e.g. Google Nest Hub) and show text and a picture
 # for more details: https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_tts.md
 #
-google_home_tts:
-  alias: "00 🔊 Google Home TTS with picture and text"
-  description: Script to send TTS with picture and text
+google_home_tts_screen:
+  alias: "Google Home - Send TTS with picture and information"
+  description: Script to send a TTS with picture and text to a player with screen
   icon: mdi:cast-audio
   mode: parallel
-  fields:
-    target:
-      description: "Enter the targets for the TTS message"
-      required: true
-      selector:
-        target:
-          entity:
-            integration: cast
-            domain: media_player
-          device:
-            integration: cast
-    message:
-      description: "TTS Message"
-      required: true
-      selector:
-        text:
-    large_text:
-      description: "Large text to be displayed on the screen"
-      required: true
-      selector:
-        text:
-    small_text:
-      description: "Small text to be displayed on the screen"
-      required: true
-      selector:
-        text:
-    picture_url:
-      description: "Picture URL (full url, not HA internal URL)"
-      required: true
-      selector:
-        text:
-  variables:
-    version: 1.1.0
-    media_player: media_player.vlc_telnet
-    sensor: sensor.tts_dummy
+  max: 20
   sequence:
-    - alias: "Send TTS to Dummy"
-      service: tts.google_cloud_say
-      target:
-        entity_id: "{{ media_player }}"
-      data:
-        message: "{{ message }}"
-    - wait_template: "{{ (now() - states.sensor.tts_dummy.last_changed).seconds < 1 }}"
+    - alias: "Version number"
+      variables:
+        version: 2.0.0
+    - wait_for_trigger:
+        - platform: event
+          event_type: call_service
+          event_data:
+            domain: media_player
+            service: play_media
+            service_data:
+              media_content_type: music
+              entity_id: "{{ [ dummy_player ] }}"
     - alias: "Send TTS message with picture"
       service: media_player.play_media
-      target: "{{ target }}"
+      target:
+        entity_id: "{{ target }}"
       data:
-        media_content_id: "{{ states(sensor) }}"
+        media_content_id: "{{ wait.trigger.event.data.service_data.media_content_id }}"
         media_content_type: "music"
         extra:
           metadata:
