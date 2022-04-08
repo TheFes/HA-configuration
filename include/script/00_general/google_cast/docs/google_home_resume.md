@@ -18,6 +18,8 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 
 # Most recent change
 ### Version 2.0.0 - 8 April 2022
+#### 🔴 BREAKING
+* `fixed_picture` has bee changed to `radio_data` and now also provides the option to add a fixed `title` for the radio stream. As TuneIn changes the title according to the song playing (well at least it should, but this seems broken lateley) it will no longer refresh after resuming the stream, as TuneIn is no longer used then. To prevent this the `title` can be provided as well now, for example the slogan of the radio channel can be used here.
 #### ✨ New features
 * You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
 * Supports sending TTS together with picture and text when sent to a player with a screen.
@@ -42,7 +44,7 @@ Change the variables described below to match your setup.
 
 ## Cast devices with screen (like Google Nest Hub or Android TV)
 1. Google Nest Hub speakers and other cast devices with a screen can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing, and supports resume of YouTube.
-1. In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages. More info [here]
+1. In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages. More info [here](#dummy-player-for-tts-with-picture-and-text)
 
 ## Google Home Speaker groups
 1. If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
@@ -63,7 +65,7 @@ There are no required variables, but if you use Google Home speaker groups and p
 | --- | --- | --- | --- |
 |players_screen||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L32-L35)|Enter a list of cast devices with a screen. Do not use a comma seperated string here.|
 |primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
-|fixed_picture||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L39)|A dictionary with the pictures. As key value the artist should be used (check `media_artist` in developer tools > states)|
+|radio_data||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L39)|A dictionary with the pictures. As key value the artist should be used (check `media_artist` in developer tools > states)|
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
