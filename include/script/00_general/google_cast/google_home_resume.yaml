@@ -59,10 +59,11 @@ google_home_resume:
         - media_player.zolder_mini_marleen
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
+    dummy_player: media_player.vlc_telnet
   sequence:
     - alias: "Version number"
       variables:
-        version: 1.8.1
+        version: 2.0.0
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -122,7 +123,7 @@ google_home_resume:
                 {%- set entity_list = target.entity_id.replace(' ' , '').split(',') if target.entity_id is string else target.entity_id %}
             {%- endif %}
             {# determine targets based on actions #}
-              {% set entity_list = ((service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
+              {%- set entity_list = ((service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
                                                     | map(attribute='data.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
                                     + service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
                                                     | map(attribute='data.entity_id') | reject('string') | select('iterable') | sum(start=[])
@@ -132,7 +133,7 @@ google_home_resume:
                                                     | map(attribute='target.entity_id') | reject('string') | select('iterable') | sum(start=[]))
                                       | reject('eq', '') | list
               %}
-              {% set device_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
+              {%- set device_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
                                                     | map(attribute='data.device_id') | select('string') | join(',') | replace(' ','')).split(',')
                                     + service_calls | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
                                                     | map(attribute='data.device_id') | reject('string') | select('iterable') | sum(start=[])
@@ -142,7 +143,7 @@ google_home_resume:
                                                     | map(attribute='target.device_id') | reject('string') | select('iterable') | sum(start=[]))
                                       | reject('eq', '') | list
               %}
-              {% set area_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
+              {%- set area_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
                                                   | map(attribute='data.area_id') | select('string') | join(',') | replace(' ','')).split(',')
                                     + service_calls | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
                                                     | map(attribute='data.area_id') | reject('string') | select('iterable') | sum(start=[])
@@ -537,7 +538,7 @@ google_home_resume:
             {%- for entity in player_data %}
               {%- if entity.state == 'off' and entity.entity_id in target_not_playing %}
                 {%- set volume = state_attr(entity.entity_id, 'volume_level') %}
-                {%- set volume = volume if volume | is_number else default_volume_level %}
+                {%- set volume = volume if volume | is_number else default_restore_volume %}
                 {%- set add_volume = dict(volume_level = volume) %}
                 {%- set ns.info = ns.info + [ dict(entity, **add_volume) ] %}
               {%- else %}
@@ -569,9 +570,117 @@ google_home_resume:
       repeat:
         count: "{{ service_calls | count }}"
         sequence:
-          - service: "{{ service_calls[repeat.index -1].service }}"
-            target: "{{ service_calls[repeat.index -1].get('target', {}) }}"
-            data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
+          - variables:
+              service_call: "{{ service_calls[repeat.index -1] }}"
+              volume_set: "{{ iif(service_call.extra.get('volume', '')) }}"
+              wait_set: "{{ service_call.extra is defined and service_call.extra.get('wait', false) }}"
+              tts: "{{ service_call.service.split('.')[0] == 'tts' }}"
+              target_entities: >
+                {%- set cast_entities = integration_entities('cast') %}
+                {%- set e = service_call.target.get('entity_id', []) %}
+                {%- set d = service_call.target.get('device_id', []) %}
+                {%- set a = service_call.target.get('area_id', []) %}
+                {%- set e = e.replace(' ','').split(',') if e is string else e %}
+                {%- set d = d.replace(' ','').split(',') if d is string else d %}
+                {%- set a = a.replace(' ','').split(',') if a is string else a %}
+                {# create entity list based on device/area input #}
+                  {# determine cast entities of areas #}
+                    {%- set ns = namespace(area_cast = []) %}
+                    {%- for area in a %}
+                      {%- set ns.area_cast = ns.area_cast + area_entities(area) | list %}
+                    {%- endfor %}
+                    {%- set a = ns.area_cast %}
+                  {# determine cast entities of devices #}
+                    {%- set ns = namespace(device_cast = []) %}
+                    {%- for device in d %}
+                      {%- set ns.device_cast = ns.device_cast + device_entities(device) | list %}
+                    {%- endfor %}
+                    {%- set d = ns.device_cast %}
+                {# create list with all entities #}
+                  {{ (a + d + e) | select('in', cast_entities) | unique | list }}
+              screen: >
+                {%- set members = player_data 
+                                    | selectattr('entity_id', 'in', target_entities)
+                                    | map(attribute='members')
+                                    | sum(start=[])
+                %}
+                {{
+                  player_data
+                    | selectattr('entity_id', 'in', target_entities + members)
+                    | selectattr('type', 'eq', 'screen')
+                    | list
+                    | count > 0
+                  and service_call.extra is defined
+                  and service_call.extra.screen_tts is defined
+                  and dummy_player is defined and iif(dummy_player)
+                }}
+          - alias: "Built in TTS with metadata for screen?"
+            choose:
+              - conditions: "{{ tts and screen }}"
+                sequence:
+                  - alias: "Call TTS for screen script"
+                    service: script.turn_on
+                    target:
+                      entity_id: script.google_home_resume_tts_screen
+                    data:
+                      variables:
+                        dummy_player: "{{ dummy_player }}"
+                        target: "{{ service_call.target }}"
+                        large_text: "{{ service_call.extra.screen_tts.get('large_text', '') }}"
+                        small_text: "{{ service_call.extra.screen_tts.get('small_text', '') }}"
+                        picture_url: "{{ service_call.extra.screen_tts.get('picture_url', '') }}"
+          - service: "{{ service_call.service }}"
+            target: >
+              {%- if screen and tts %}
+                {{ dict(entity_id = dummy_player) }}
+              {%- elif tts and service_data.target is defined 
+                  and iif(service_data.target.get('area_id', ''))
+              %}
+                {{ dict(entity_id = target_entities) }}
+              {%- else %}
+                {{ service_call.get('target', {}) }}
+              {%- endif %}
+            data: "{{ service_call.get('data', {}) }}"
+          - alias: "Wait until targets are idle if needed"
+            choose:
+              - conditions: "{{ volume_set or wait_set }}"
+                sequence:
+                  - wait_template: >
+                      {{
+                        expand(target_entities)
+                          | selectattr('state', 'in', ['idle', 'off', 'unavailable'])
+                          | list
+                          | count
+                        == target_entities | count
+                      }}
+          - alias: "Set volume to TTS volume if set"
+            choose:
+              - conditions: "{{ volume_set }}"
+                sequence:
+                  - alias: "Apply TTS volume"
+                    service: media_player.volume_set
+                    target: "{{ service_call.target }}"
+                    data:
+                      volume_level: "{{ service_call.extra.volume }}"
+          - alias: "Wait until targets are playing and idle again if needed"
+            choose:
+              - conditions: "{{ wait_set }}"
+                sequence:
+                  - wait_template: >
+                      {{
+                        expand(target_entities)
+                          | rejectattr('state', 'eq', 'playing')
+                          | list
+                          | count == 0
+                      }}
+                  - wait_template: >
+                      {{
+                        expand(target_entities)
+                          | selectattr('state', 'in', ['idle', 'off', 'unavailable'])
+                          | list
+                          | count
+                        == target_entities | count
+                      }}
     - alias: "Anything to resume?"
       choose:
         - conditions:
@@ -695,7 +804,8 @@ google_home_resume:
     - alias: "Wait until helper scripts are finished"
       wait_template: >
         {{ 
-          states.script | selectattr('entity_id', 'search', 'script.google_home_resume_')
+          states.script | selectattr('entity_id', 'search', 'script.google_home_resume')
+                        | rejectattr('entity_id', 'eq', this.entity_id)
                         | map(attribute='attributes.current')
                         | sum == 0
         }}
@@ -1089,3 +1199,35 @@ google_home_resume_ytube_seek:
               entity_id: "{{ player.entity_id }}"
             data:
               volume_level: "{{ player.volume_level }}"
+
+# GOOGLE HOME RESUME SEND TTS SCREEN
+
+google_home_resume_tts_screen:
+  alias: "00 🔊 Google Home Resume - Send TTS for Screen"
+  description: Helper script to send a TTS with picture and text to a player with screen
+  icon: mdi:cast-audio
+  mode: parallel
+  max: 20
+  sequence:
+    - wait_for_trigger:
+        - platform: event
+          event_type: call_service
+          event_data:
+            domain: media_player
+            service: play_media
+            service_data:
+              media_content_type: music
+              entity_id: "{{ [ dummy_player ] }}"
+    - alias: "Send TTS message with picture"
+      service: media_player.play_media
+      target: "{{ target }}"
+      data:
+        media_content_id: "{{ wait.trigger.event.data.service_data.media_content_id }}"
+        media_content_type: "music"
+        extra:
+          metadata:
+            metadataType: 3
+            title: "{{ large_text }}"
+            artist: "{{ small_text }}"
+            images:
+              - url: "{{ picture_url }}"
