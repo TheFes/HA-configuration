@@ -55,7 +55,7 @@ As of Home Assistant 2022.4 there is a check if a target of a service call actua
 
 In case you use HA OS, or run a supervised install, you can add the VLS Telnet add-on from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
 
-In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide is somewhere :wink:
+In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide it somewhere :wink:
 
 # Explanation of variables in the script
 
