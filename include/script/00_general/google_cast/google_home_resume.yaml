@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.0.2
+        version: 2.1.0
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -109,6 +109,17 @@ google_home_resume:
         event_script: "{{ event_script if event_script is defined else false }}"
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         speaker_groups: "{{ speaker_groups if (speaker_groups is defined and speaker_groups) else { 'no group': [ 'no members' ] } }}"
+        primary_spotcast_check: >
+          {% set spotify = integration_entities('spotify') %}
+          {% set accounts = (spotify | join(',') | replace('media_player.spotify_', '')).split(',') %}
+          {{
+            spotify | count <= 1 
+            or (
+              primary_spotcast is defined
+              and iif(primary_spotcast)
+              and primary_spotcast in accounts
+              )
+          }}
         service_calls: >
           {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list }}
         no_service_count: >
@@ -290,6 +301,10 @@ google_home_resume:
             {%- if entity.app_name == 'Spotify' %}
               {%- set list_check = [ entity.entity_id ] + members %}
               {%- set names_check = expand(list_check) | map(attribute='name') | list %}
+              {%- set primary_spotcast = primary_spotcast 
+                                        if (primary_spotcast is defined and iif(primary_spotcast))
+                                        else 'primary_spotcast' 
+              %}
               {%- set spotcast = spotify_data
                                   | selectattr('source', 'in', names_check)
                                   | map(attribute='entity_id')
@@ -298,6 +313,8 @@ google_home_resume:
               %}
               {%- set spotcast = iif(spotcast, spotcast, primary_spotcast) %}
               {%- set spotcast = iif(spotcast == primary_spotcast, 'primary_account', spotcast) %}
+              {%- set spotcast = spotcast if integration_entities('spotify') | count > 1 else 'primary_spotcast' %}
+              {%- set spotcast = spotcast if primary_spotcast_check else 'primary_spotcast' %}
               {%- set add_spotcast =  dict(spotcast = spotcast) %}
               {%- set additional = dict(additional, **add_spotcast) %}
             {%- elif entity.state == 'playing'
@@ -459,6 +476,18 @@ google_home_resume:
                   You added {{ no_service_count }} actions which are not service calls 
                   to the {{ this.attributes.friendly_name }} script. These were ignored.
                 {%- endif %}
+    - alias: "Send log message about wrong wrong primary_spotcast"
+      choose:
+        - conditions: "{{ not primary_spotcast_check }}"
+          sequence:
+            service: system_log.write
+            data:
+              level: "warning"
+              logger: "{{ this.entity_id }}"
+              message: >
+                The primary_spotcast account provided was wrong or incorrect.
+                The script will not use accounts for Spotify resume, and will always use 
+                the primary spotcast account.
     - alias: "Are there any service calls to perform, otherwise stop script"
       condition: template
       value_template: "{{ event_script or service_calls | count != 0 }}"
@@ -576,23 +605,24 @@ google_home_resume:
         sequence:
           - variables:
               service_call: "{{ service_calls[repeat.index -1] }}"
+              target: >
+                {% set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                {{ dict(s, **dict(t, **dict(d))) }}
+              data: >
+                {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list) }}
               volume_set: "{{ service_call.extra is defined and iif(service_call.extra.get('volume', '')) }}"
               wait_set: "{{ service_call.extra is defined and service_call.extra.get('wait', false) }}"
               tts: "{{ service_call.service.split('.')[0] == 'tts' }}"
               target_entities: >
                 {%- set cast_entities = integration_entities('cast') %}
-                {%- set et = service_call.get('target', {}).get('entity_id', []) %}
-                {%- set dt = service_call.get('target', {}).get('device_id', []) %}
-                {%- set at = service_call.get('target', {}).get('area_id', []) %}
-                {%- set e = et.replace(' ','').split(',') if et is string else et %}
-                {%- set d = dt.replace(' ','').split(',') if dt is string else dt %}
-                {%- set a = at.replace(' ','').split(',') if at is string else at %}
-                {%- set ed = service_call.get('data', {}).get('entity_id', []) %}
-                {%- set dd = service_call.get('data', {}).get('device_id', []) %}
-                {%- set ad = service_call.get('data', {}).get('area_id', []) %}
-                {%- set e = e + ed.replace(' ','').split(',') if ed is string else ed %}
-                {%- set d = d + dd.replace(' ','').split(',') if dd is string else dd %}
-                {%- set a = a + ad.replace(' ','').split(',') if ad is string else ad %}
+                {%- set e = target.get('entity_id', []) %}
+                {%- set d = target.get('device_id', []) %}
+                {%- set a = target.get('area_id', []) %}
+                {%- set e = e.replace(' ','').split(',') if e is string else e %}
+                {%- set d = d.replace(' ','').split(',') if d is string else d %}
+                {%- set a = a.replace(' ','').split(',') if a is string else a %}
                 {# create entity list based on device/area input #}
                   {# determine cast entities of areas #}
                     {%- set ns = namespace(area_cast = []) %}
@@ -635,7 +665,7 @@ google_home_resume:
                     data:
                       variables:
                         dummy_player: "{{ dummy_player }}"
-                        target: "{{ target_entities }}"
+                        target: "{{ target }}"
                         large_text: "{{ service_call.extra.screen_tts.get('large_text', '') }}"
                         small_text: "{{ service_call.extra.screen_tts.get('small_text', '') }}"
                         picture_url: "{{ service_call.extra.screen_tts.get('picture_url', '') }}"
@@ -643,26 +673,12 @@ google_home_resume:
             target: >
               {%- if screen and tts %}
                 {{ dict(entity_id = dummy_player) }}
-              {%- elif tts and service_call.target is defined 
-                  and iif(service_call.target.get('area_id', ''))
-              %}
+              {%- elif tts and iif(target.get('area_id', '')) %}
                 {{ dict(entity_id = target_entities) }}
               {%- else %}
-                {{ service_call.get('target', {}) }}
+                {{ target }}
               {%- endif %}
-            data: >
-              {%- if screen and tts %}
-                {% set ns = namespace(s={}) %}
-                {% for item in service_call.items() | list %}
-                  {% if not item[0] in [ 'entity_id', 'device_id', 'area_id' ] %}
-                    {% set add = { item[0]: item[1] } %}
-                    {% set ns.s = dict(ns.s, **add) %}
-                  {% endif %}
-                {% endfor %}
-                {{ ns.s }}
-              {%- else %}
-                {{ service_call.get('data', {}) }}
-              {%- endif %}
+            data: "{{ data }}"
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
@@ -1235,8 +1251,7 @@ google_home_resume_tts_screen:
               entity_id: "{{ [ dummy_player ] }}"
     - alias: "Send TTS message with picture"
       service: media_player.play_media
-      target:
-        entity_id: "{{ target }}"
+      target: "{{ target }}"
       data:
         media_content_id: "{{ wait.trigger.event.data.service_data.media_content_id }}"
         media_content_type: "music"

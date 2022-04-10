@@ -2,6 +2,16 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.1.0 - 10 April 2022
+#### 🌟 Improvements
+* `primary_spotcast` no longer required when only one Spotify account is used
+* Script will check if the `primary_spotcast` which is entered (if needed) is correct, and if not issue a warning in the log. In that case the primary spotcast account will be used to avoid errors in the script
+* Target entities, areas and devices can be entered anywhere in the service call where that would normally be allowed, so directly in the service call, or under `data` or under `target`
+
+### Version 2.0.2 - 9 April 2022
+#### 🐛 Bug fixes
+* (2.0.1) Fix template in case target was defined under `data`
+
 ### Version 2.0.0/2.0.1 - 8 April 2022
 #### 🔴 BREAKING
 * `fixed_picture` has bee changed to `radio_data` and now also provides the option to add a fixed `title` for the radio stream. As TuneIn changes the title according to the song playing (well at least it should, but this seems broken lateley) it will no longer refresh after resuming the stream, as TuneIn is no longer used then. To prevent this the `title` can be provided as well now, for example the slogan of the radio channel can be used here.

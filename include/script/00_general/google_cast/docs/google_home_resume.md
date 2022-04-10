@@ -17,18 +17,11 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.0.0/2.0.1 - 8 April 2022
-#### 🔴 BREAKING
-* `fixed_picture` has bee changed to `radio_data` and now also provides the option to add a fixed `title` for the radio stream. As TuneIn changes the title according to the song playing (well at least it should, but this seems broken lateley) it will no longer refresh after resuming the stream, as TuneIn is no longer used then. To prevent this the `title` can be provided as well now, for example the slogan of the radio channel can be used here.
-#### ✨ New features
-* You can provide `extra` setttings to your service call. Curruntly supported are `volume`, `wait` and `tts`.
-* Supports sending TTS together with picture and text when sent to a player with a screen.
-* More information on how it works [here](#how-to-use-the-script)
-#### 🧾 Docs
-* Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
-* Partial rewrite of the script docs
-#### 🐛 Bug fixes
-* (2.0.1) Several bugs fixed which I did not notice in initial testing
+### Version 2.1.0 - 10 April 2022
+#### 🌟 Improvements
+* `primary_spotcast` no longer required when only one Spotify account is used
+* Script will check if the `primary_spotcast` which is entered (if needed) is correct, and if not issue a warning in the log. In that case the primary spotcast account will be used to avoid errors in the script
+* Target entities, areas and devices can be entered anywhere in the service call where that would normally be allowed, so directly in the service call, or under `data` or under `target`
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -40,9 +33,42 @@ Add this script to `scripts.yaml` by copying the contents of the link below, and
 Change the variables described below to match your setup.
 
 ## Spotify specific settings
+* In case you only have one Spotify account set up in Home Assistant, there are no additional settings needed besides intalling the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
+
+In case you use multiple accounts, you need to add the Spotify integration for all accounts, besides that you take care of the following:
 1. The entity_id's for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
 1. The primary Spotcast user needs to be specified under `primary_spotcast` (see comment above).
-1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). For more details see [this post](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896/33).
+1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). 
+
+This is how it is set up in my system:
+4 Spotify integrations (account `Pepijn` not shown here, as it didn't fit):
+![image|440x279](https://community-assets.home-assistant.io/original/4X/a/9/4/a942d64e3f46104adf270fdc6d3035a148137cf6.png)
+
+Spotcast (the Spotify account for `Pepijn` is the primary account, and has no named account in the spotcast setup):
+```yaml
+spotcast:
+  sp_dc: !secret sp_dc
+  sp_key: !secret sp_key
+  country: NL
+  accounts:
+    martijn:
+      sp_dc: !secret sp_dc_martijn
+      sp_key: !secret sp_key_martijn
+    marleen:
+      sp_dc: !secret sp_dc_marleen
+      sp_key: !secret sp_key_marleen
+    floris:
+      sp_dc: !secret sp_dc_floris
+      sp_key: !secret sp_key_floris
+```
+
+The media_players connected to the Spotify integration are named (matching the spotcast configuration and the `primary_spotcast` variable in the script, which is `pepijn`):
+```
+media_player.spotify_pepijn
+media_player.spotify_martijn
+media_player.spotify_marleen
+media_player.spotify_floris
+```
 
 ## Cast devices with screen (like Google Nest Hub or Android TV)
 1. Google Nest Hub speakers and other cast devices with a screen can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing, and supports resume of YouTube.
@@ -61,7 +87,7 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 # Explanation of variables in the script
 
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify won't work properly without `default_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
+There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
 
 |Variable|Default|Example|Description|
 | --- | --- | --- | --- |
@@ -85,7 +111,7 @@ I've set up a tag scanner on which my kids can scan a card, and then some song w
 When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
 |Field|Required|Description|
 | --- | --- | --- | 
-|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported. Needs to be entered under `data` or `target`, not directly in the service call.
+|target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported.
 |action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
 |resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
 
