@@ -4,7 +4,7 @@
 
 ### Version 2.2.0 - 12 April 2022
 #### 🌟 Improvements
-* The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI.
+* The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI. [Example](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md#using-the-script_extra-key-under-data) on how to use this.
 #### 🐛 Bug fixes
 * Fix for resuming Spotify when only one Spotify account is used, and `primary_spotcast` is not provided.
 
