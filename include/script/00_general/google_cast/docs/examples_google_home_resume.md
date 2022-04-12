@@ -66,6 +66,7 @@ Based on the targets provided, and the variable `players_screen` for the script 
 For this the script uses the helper script `script.google_home_resume_tts_screen`
 The `picture_url` should be a full url (starting with `http://` or `https://`, not a HA internal url) it can be an url within your network.
 
+## Using the `extra` key on the same level as `data` and `target`
 ```yaml
 - alias: "Send TTS with picture and "
   service: script.turn_on
@@ -89,6 +90,31 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
               picture_url: http://10.0.0.5:8123/media/camera_front_door/snapshot.jpg
             volume: 0.5
 ```
+## Using the `script_extra` key under `data`
+```yaml
+- alias: "Send TTS with picture and "
+  service: script.turn_on
+  target:
+    entity_id: script.google_home_resume
+  data:
+    variables:
+      action:
+        - alias: "Send TTS message"
+          service: tts.google_cloud_say
+          target:
+            entity_id: 
+              - media_player.living_mini
+              - media_player.office_hub
+          data:
+            message: "Ding Dong! There is someone at the door!"
+            script_extra:
+              screen_tts:
+                large_text: DING DONG
+                small_text: There is someone at the door
+                picture_url: http://10.0.0.5:8123/media/camera_front_door/snapshot.jpg
+              volume: 0.5
+```
+
 
 # Multiple actions to the same target, which need to wait for each other.
 In case you send multiple actions to the same target, which need to wait for each other, enter `wait: true` under `extra`
