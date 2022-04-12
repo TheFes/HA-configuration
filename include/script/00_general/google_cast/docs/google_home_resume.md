@@ -17,11 +17,12 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.2.0 - 12 April 2022
+### Version 2.2.0 / 2.2.1 - 12 April 2022
 #### 🌟 Improvements
 * The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI. [Example](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md#using-the-script_extra-key-under-data) on how to use this.
 #### 🐛 Bug fixes
 * Fix for resuming Spotify when only one Spotify account is used, and `primary_spotcast` is not provided.
+* Fixed a bug in setting the volume in the `extra` or `script_extra` setting
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

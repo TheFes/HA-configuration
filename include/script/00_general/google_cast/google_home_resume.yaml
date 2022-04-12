@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.2.0
+        version: 2.2.1
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -689,7 +689,7 @@ google_home_resume:
                 sequence:
                   - alias: "Apply TTS volume"
                     service: media_player.volume_set
-                    target: "{{ service_call.target }}"
+                    target: "{{ target }}"
                     data:
                       volume_level: "{{ extra.volume }}"
           - alias: "Wait until targets are playing and idle again if needed"
