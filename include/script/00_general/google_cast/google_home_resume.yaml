@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.1.0
+        version: 2.2.0
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -313,8 +313,8 @@ google_home_resume:
               %}
               {%- set spotcast = iif(spotcast, spotcast, primary_spotcast) %}
               {%- set spotcast = iif(spotcast == primary_spotcast, 'primary_account', spotcast) %}
-              {%- set spotcast = spotcast if integration_entities('spotify') | count > 1 else 'primary_spotcast' %}
-              {%- set spotcast = spotcast if primary_spotcast_check else 'primary_spotcast' %}
+              {%- set spotcast = spotcast if integration_entities('spotify') | count > 1 else 'primary_account' %}
+              {%- set spotcast = spotcast if primary_spotcast_check else 'primary_account' %}
               {%- set add_spotcast =  dict(spotcast = spotcast) %}
               {%- set additional = dict(additional, **add_spotcast) %}
             {%- elif entity.state == 'playing'
@@ -611,9 +611,13 @@ google_home_resume:
                 {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {{ dict(s, **dict(t, **dict(d))) }}
               data: >
-                {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list) }}
-              volume_set: "{{ service_call.extra is defined and iif(service_call.extra.get('volume', '')) }}"
-              wait_set: "{{ service_call.extra is defined and service_call.extra.get('wait', false) }}"
+                {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
+              extra: >
+                {%- set extra = service_call.get('extra', {}) %}
+                {%- set script_extra = service_call.get('data', {}).get('script_extra', {}) %}
+                {{ dict(extra, **script_extra) }}
+              volume_set: "{{ iif(extra.get('volume', '')) }}"
+              wait_set: "{{ extra.get('wait', false) }}"
               tts: "{{ service_call.service.split('.')[0] == 'tts' }}"
               target_entities: >
                 {%- set cast_entities = integration_entities('cast') %}
@@ -650,8 +654,8 @@ google_home_resume:
                     | selectattr('type', 'eq', 'screen')
                     | list
                     | count > 0
-                  and service_call.extra is defined
-                  and service_call.extra.screen_tts is defined
+                  and iif(extra)
+                  and extra.screen_tts is defined
                   and dummy_player is defined and iif(dummy_player)
                 }}
           - alias: "Built in TTS with metadata for screen?"
@@ -666,9 +670,9 @@ google_home_resume:
                       variables:
                         dummy_player: "{{ dummy_player }}"
                         target: "{{ target }}"
-                        large_text: "{{ service_call.extra.screen_tts.get('large_text', '') }}"
-                        small_text: "{{ service_call.extra.screen_tts.get('small_text', '') }}"
-                        picture_url: "{{ service_call.extra.screen_tts.get('picture_url', '') }}"
+                        large_text: "{{ extra.screen_tts.get('large_text', '') }}"
+                        small_text: "{{ extra.screen_tts.get('small_text', '') }}"
+                        picture_url: "{{ extra.screen_tts.get('picture_url', '') }}"
           - service: "{{ service_call.service }}"
             target: >
               {%- if screen and tts %}
@@ -687,7 +691,7 @@ google_home_resume:
                     service: media_player.volume_set
                     target: "{{ service_call.target }}"
                     data:
-                      volume_level: "{{ service_call.extra.volume }}"
+                      volume_level: "{{ extra.volume }}"
           - alias: "Wait until targets are playing and idle again if needed"
             choose:
               - conditions: "{{ wait_set }}"

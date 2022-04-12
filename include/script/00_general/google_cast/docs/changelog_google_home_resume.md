@@ -2,6 +2,12 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.2.0 - 12 April 2022
+#### 🌟 Improvements
+* The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI.
+#### 🐛 Bug fixes
+* Fix for resuming Spotify when only one Spotify account is used, and `primary_spotcast` is not provided.
+
 ### Version 2.1.0 - 10 April 2022
 #### 🌟 Improvements
 * `primary_spotcast` no longer required when only one Spotify account is used
