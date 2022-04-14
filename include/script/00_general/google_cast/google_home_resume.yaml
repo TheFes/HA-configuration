@@ -643,16 +643,18 @@ google_home_resume:
                 {# create list with all entities #}
                   {{ (a + d + e) | unique | list }}
               media_entities: "{{ expand(target_entities) | selectattr('domain', 'eq', 'media_player') | map(attribute='entity_id') | list }}"
-              cast_entities: "{{ media_entities | select('in', cast_entities) | list }}"
+              cast_target: >
+                {%- set cast_entities = integration_entities('cast') %}
+                {{ media_entities | select('in', cast_entities) | list }}
               screen: >
                 {%- set members = player_data 
-                                    | selectattr('entity_id', 'in', cast_entities)
+                                    | selectattr('entity_id', 'in', cast_target)
                                     | map(attribute='members')
                                     | sum(start=[])
                 %}
                 {{
                   player_data
-                    | selectattr('entity_id', 'in', cast_entities + members)
+                    | selectattr('entity_id', 'in', cast_target + members)
                     | selectattr('type', 'eq', 'screen')
                     | list
                     | count > 0
@@ -711,17 +713,17 @@ google_home_resume:
                       - platform: event
                         event_type: state_changed
                         event_data:
-                          entity_id: "{{ cast_entities[0] }}"
+                          entity_id: "{{ cast_target[0] }}"
                   - wait_template: >
                       {{
-                        expand(cast_entities)
+                        expand(cast_target)
                           | rejectattr('state', 'eq', 'playing')
                           | list
                           | count == 0
                       }}
                   - wait_template: >
                       {{
-                        expand(cast_entities)
+                        expand(cast_target)
                           | selectattr('state', 'in', ['idle', 'off', 'unavailable'])
                           | list
                           | count
