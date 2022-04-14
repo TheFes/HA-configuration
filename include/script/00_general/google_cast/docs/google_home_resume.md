@@ -26,8 +26,9 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Targets entered in `extra` or `script_extra` will also be taken into account for resuming afterwards
 #### 🐛 Bug fixes
 * Removed a bug where group members of a speaker group were added to the players to be resumed, while they were not playing
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 * (2.3.1) Fix for targets provided under `extra`
+
+Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
 # Setup
 ## The script itself
