@@ -2,6 +2,11 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.2.2 - 14 April 2022
+#### 🌟 Improvements
+* Moved the volume change before the service call
+* As volume changes to a Google Home speaker group are no longer synced to their members (due to patent reasons) the volume set in the `extra` or `script_extra` setting will be sent to the members of the speaker group.
+
 ### Version 2.2.0 / 2.2.1 - 12 April 2022
 #### 🌟 Improvements
 * The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI. [Example](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md#using-the-script_extra-key-under-data) on how to use this.
