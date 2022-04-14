@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.3.0
+        version: 2.3.1
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -675,9 +675,7 @@ google_home_resume:
                 {% set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                {% set e = service_call.get('extra', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                {% set de = service_call.get('data', {}).get('script_extra', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                {{ dict(s, **dict(t, **dict(d, **dict(e, **dict(de))))) }}
+                {{ dict(s, **dict(t, **dict(d))) }}
               data: >
                 {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
               extra: >
@@ -705,6 +703,12 @@ google_home_resume:
                 {%- set e = e.replace(' ','').split(',') if e is string else e %}
                 {%- set d = d.replace(' ','').split(',') if d is string else d %}
                 {%- set a = a.replace(' ','').split(',') if a is string else a %}
+                {%- set ee = extra.get('entity_id', []) %}
+                {%- set ed = extra.get('device_id', []) %}
+                {%- set ea = extra.get('area_id', []) %}
+                {%- set e = e + (ee.replace(' ','').split(',') if ee is string else ee) %}
+                {%- set d = d + (ed.replace(' ','').split(',') if ed is string else ed) %}
+                {%- set a = a + (ea.replace(' ','').split(',') if ea is string else ea) %}
                 {# create entity list based on device/area input #}
                   {# determine cast entities of areas #}
                     {%- set ns = namespace(area_cast = []) %}

@@ -17,7 +17,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.3.0 - 14 April 2022
+### Version 2.3.0 / 2.3.1 - 14 April 2022
 #### ✨ New features
 * Targets (`entity_id`, `device_id` and/or `area_id`) can be added to `extra` or `script_extra` so `volume` can be applied to those entities for a specific service call in which they are not mentioned as targets themselved (eg when calling a script)
 #### 🌟 Improvements
@@ -27,6 +27,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 #### 🐛 Bug fixes
 * Removed a bug where group members of a speaker group were added to the players to be resumed, while they were not playing
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
+* (2.3.1) Fix for targets provided under `extra`
 
 # Setup
 ## The script itself
@@ -91,7 +92,6 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 
 # Explanation of variables in the script
-
 There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
 
 |Variable|Default|Example|Description|
@@ -120,7 +120,7 @@ When calling the script, there are 3 fields you can provide. `action` is require
 |action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
 |resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
 
-As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. This is not supported if you use the GUI. Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
+As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. It is also possible to add them under `data`, in that case you can use `script_extra`. Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 The following variables are supported:
 |Variable|Example|Description|
 |---|---|---|
@@ -130,6 +130,9 @@ The following variables are supported:
 |> `large_text`|`BIG`|Will be displayed large on the screen together with the TTS message (normally used for the `title`)|
 |> `small_text`|`small`|Will be displayed small on the screen together with the TTS message (normally used for the `artist`)|
 |> `picture_url`|`small`|Will be displayed small on the screen together with the TTS message (normally used for the `media_picture`)|
+| `entity_id` | `media_player.kitchen` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
+| `area_id` | `kitchen` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
+| `device_id` | `whatever` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
 
 Examples for different use cases can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
 

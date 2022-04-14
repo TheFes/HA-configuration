@@ -2,7 +2,7 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
-### Version 2.3.0 - 14 April 2022
+### Version 2.3.0 / 2.3.1 - 14 April 2022
 #### ✨ New features
 * Targets (`entity_id`, `device_id` and/or `area_id`) can be added to `extra` or `script_extra` so `volume` can be applied to those entities for a specific service call in which they are not mentioned as targets themselved (eg when calling a script)
 #### 🌟 Improvements
@@ -11,6 +11,8 @@
 * Targets entered in `extra` or `script_extra` will also be taken into account for resuming afterwards
 #### 🐛 Bug fixes
 * Removed a bug where group members of a speaker group were added to the players to be resumed, while they were not playing
+Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
+* (2.3.1) Fix for targets provided under `extra`
 
 ### Version 2.2.0 / 2.2.1 - 12 April 2022
 #### 🌟 Improvements
