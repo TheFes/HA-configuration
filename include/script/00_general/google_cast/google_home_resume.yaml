@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.2.2.6
+        version: 2.2.2.7
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -131,43 +131,108 @@ google_home_resume:
             {# determine entities of cast integraton #}
               {%- set cast_entities = integration_entities('cast') %}
             {# create target lists #}
-            {%- if target is defined %}
-              {# create lists based on target input #}
-                {%- set area_list = target.area_id.replace(' ' , '').split(',') if target.area_id is string else target.area_id %}
-                {%- set device_list = target.device_id.replace(' ' , '').split(',') if target.device_id is string else target.device_id %}
-                {%- set entity_list = target.entity_id.replace(' ' , '').split(',') if target.entity_id is string else target.entity_id %}
-            {%- endif %}
+            {%- set target = target if target is defined else {} %}
+            {# create lists based on target input #}
+              {%- set area_list = target.get('area_id', []).replace(' ' , '').split(',')
+                                  if target.get('area_id', []) is string
+                                  else target.get('area_id', [])
+              %}
+              {%- set device_list = target.get('device_id', []).replace(' ' , '').split(',')
+                                    if target.get('device_id', []) is string
+                                    else target.get('device_id', [])
+              %}
+              {%- set entity_list = target.get('entity_id', []).replace(' ' , '').split(',')
+                                    if target.get('entity_id', []) is string
+                                    else target.get('entity_id', [])
+              %}
             {# determine targets based on actions #}
-              {%- set entity_list = ((service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
-                                                    | map(attribute='data.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
-                                                    | map(attribute='data.entity_id') | reject('string') | select('iterable') | sum(start=[])
-                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined')
-                                                      | map(attribute='target.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined') 
-                                                    | map(attribute='target.entity_id') | reject('string') | select('iterable') | sum(start=[]))
-                                      | reject('eq', '') | list
-              %}
-              {%- set device_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
-                                                    | map(attribute='data.device_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
-                                                    | map(attribute='data.device_id') | reject('string') | select('iterable') | sum(start=[])
-                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.device_id', 'defined')
-                                                      | map(attribute='target.device_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('target', 'defined') | selectattr('target.device_id', 'defined') 
-                                                    | map(attribute='target.device_id') | reject('string') | select('iterable') | sum(start=[]))
-                                      | reject('eq', '') | list
-              %}
-              {%- set area_list = ((service_calls  | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
-                                                  | map(attribute='data.area_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
-                                                    | map(attribute='data.area_id') | reject('string') | select('iterable') | sum(start=[])
-                                    + (service_calls  | selectattr('target', 'defined') | selectattr('target.area_id', 'defined')
-                                                      | map(attribute='target.area_id') | select('string') | join(',') | replace(' ','')).split(',')
-                                    + service_calls | selectattr('target', 'defined') | selectattr('target.area_id', 'defined') 
-                                                    | map(attribute='target.area_id') | reject('string') | select('iterable') | sum(start=[]))
-                                      | reject('eq', '') | list
-              %}
+              {# entities #}
+                {%- set s = (service_calls | selectattr('entity_id', 'defined')
+                                | map(attribute='entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('entity_id', 'defined')
+                                | map(attribute='data.entity_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set d = (service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
+                                | map(attribute='data.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.entity_id', 'defined')
+                                | map(attribute='data.entity_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set t = (service_calls | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined')
+                                | map(attribute='target.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('target', 'defined') | selectattr('target.entity_id', 'defined') 
+                                | map(attribute='target.entity_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set e = (service_calls | selectattr('extra', 'defined') | selectattr('extra.entity_id', 'defined')
+                                | map(attribute='extra.entity_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('extra', 'defined') | selectattr('extra.entity_id', 'defined') 
+                                | map(attribute='extra.entity_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set se = (service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.entity_id', 'defined') | map(attribute='data.script_extra.entity_id')
+                                | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.entity_id', 'defined') | map(attribute='data.script_extra.entity_id')
+                                | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {% set entity_list = entity_list + (s + t + d + e + se) | reject('eq', '') | list %}
+              {# devices #}
+                {%- set s = (service_calls | selectattr('device_id', 'defined')
+                                | map(attribute='device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('device_id', 'defined')
+                                | map(attribute='data.device_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set d = (service_calls | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
+                                | map(attribute='data.device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.device_id', 'defined')
+                                | map(attribute='data.device_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set t = (service_calls | selectattr('target', 'defined') | selectattr('target.device_id', 'defined')
+                                | map(attribute='target.device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('target', 'defined') | selectattr('target.device_id', 'defined') 
+                                | map(attribute='target.device_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set e = (service_calls | selectattr('extra', 'defined') | selectattr('extra.device_id', 'defined')
+                                | map(attribute='extra.device_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('extra', 'defined') | selectattr('extra.device_id', 'defined') 
+                                | map(attribute='extra.device_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set se = (service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.device_id', 'defined') | map(attribute='data.script_extra.device_id')
+                                | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.device_id', 'defined') | map(attribute='data.script_extra.device_id')
+                                | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {% set device_list = device_list + (s + t + d + e + se) | reject('eq', '') | list %}
+              {# areas #}
+                {%- set s = (service_calls | selectattr('area_id', 'defined')
+                                | map(attribute='area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('area_id', 'defined')
+                                | map(attribute='data.area_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set d = (service_calls | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
+                                | map(attribute='data.area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.area_id', 'defined')
+                                | map(attribute='data.area_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set t = (service_calls | selectattr('target', 'defined') | selectattr('target.area_id', 'defined')
+                                | map(attribute='target.area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('target', 'defined') | selectattr('target.area_id', 'defined') 
+                                | map(attribute='target.area_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set e = (service_calls | selectattr('extra', 'defined') | selectattr('extra.area_id', 'defined')
+                                | map(attribute='extra.area_id') | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('extra', 'defined') | selectattr('extra.area_id', 'defined') 
+                                | map(attribute='extra.area_id') | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {%- set se = (service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.area_id', 'defined') | map(attribute='data.script_extra.area_id')
+                                | select('string') | join(',') | replace(' ','')).split(',')
+                              + service_calls | selectattr('data', 'defined') | selectattr('data.script_extra', 'defined')
+                                | selectattr('data.script_extra.area_id', 'defined') | map(attribute='data.script_extra.area_id')
+                                | reject('string') | select('iterable') | sum(start=[])
+                %}
+                {% set area_list = area_list + (s + t + d + e + se) | reject('eq', '') | list %}
             {# create entity list based on device/area input #}
               {# determine cast entities of areas #}
                 {%- set ns = namespace(area_cast = []) %}
@@ -354,7 +419,7 @@ google_home_resume:
                 set all_players_playing = player_data
                                             | selectattr('state', 'eq', 'playing') 
                                             | map(attribute='entity_id') 
-                                            | list  
+                                            | list
               %}
             {# determine which Google Home speakers groups are playing #}
               {%- 
@@ -372,6 +437,7 @@ google_home_resume:
             {# determine which of the targets (including groups members) are playing #}
               {%- set groupmembers = speaker_groups.items()
                                       | selectattr('0', 'in', target_list)
+                                      | selectattr('0', 'in', all_players_playing)
                                       | map(attribute='1')
                                       | sum(start=[]) | unique | list
               %}
