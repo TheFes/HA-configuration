@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.2.1
+        version: 2.2.2
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -658,6 +658,15 @@ google_home_resume:
                   and extra.screen_tts is defined
                   and dummy_player is defined and iif(dummy_player)
                 }}
+          - alias: "Set volume to TTS volume if set"
+            choose:
+              - conditions: "{{ volume_set }}"
+                sequence:
+                  - alias: "Apply TTS volume"
+                    service: media_player.volume_set
+                    target: "{{ target }}"
+                    data:
+                      volume_level: "{{ extra.volume }}"
           - alias: "Built in TTS with metadata for screen?"
             choose:
               - conditions: "{{ tts and screen }}"
@@ -683,15 +692,6 @@ google_home_resume:
                 {{ target }}
               {%- endif %}
             data: "{{ data }}"
-          - alias: "Set volume to TTS volume if set"
-            choose:
-              - conditions: "{{ volume_set }}"
-                sequence:
-                  - alias: "Apply TTS volume"
-                    service: media_player.volume_set
-                    target: "{{ target }}"
-                    data:
-                      volume_level: "{{ extra.volume }}"
           - alias: "Wait until targets are playing and idle again if needed"
             choose:
               - conditions: "{{ wait_set }}"
