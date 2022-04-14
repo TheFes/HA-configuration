@@ -664,7 +664,16 @@ google_home_resume:
                 sequence:
                   - alias: "Apply TTS volume"
                     service: media_player.volume_set
-                    target: "{{ target }}"
+                    target:
+                      entity_id: >
+                        {{
+                          (
+                            target_entities + player_data 
+                                                | selectattr('entity_id', 'in', target_entities)
+                                                | map(attribute='members')
+                                                | sum(start=[])
+                          ) | reject('in', speaker_group_list) | unique | list
+                        }}
                     data:
                       volume_level: "{{ extra.volume }}"
           - alias: "Built in TTS with metadata for screen?"
