@@ -36,13 +36,13 @@ sensor:
         Thuis
       {%- endif %}
     icon: >-
-      {%- if is_state('sensor.huis_modus', 'Gast') %}
+      {%- if is_state('sensor.house_mode', 'Gast') %}
         mdi:account
-      {%- elif is_state('sensor.huis_modus', 'Afwezig') %}
+      {%- elif is_state('sensor.house_mode', 'Afwezig') %}
         mdi:home-outline
-      {%- elif is_state('sensor.huis_modus', 'Vakantie') %}
+      {%- elif is_state('sensor.house_mode', 'Vakantie') %}
         mdi:bag-suitcase
-      {%- elif is_state('sensor.huis_modus', 'Slapen') %}
+      {%- elif is_state('sensor.house_mode', 'Slapen') %}
         mdi:bed
       {%- else %}
         mdi:home
