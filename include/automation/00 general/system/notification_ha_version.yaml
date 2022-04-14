@@ -35,19 +35,6 @@ action:
           - alias: "Set up variables for the actions"
             variables:
               action_update: "{{ 'UPDATE_' ~ context.id }}"
-          - alias: "Dismiss old notification"
-            service: persistent_notification.dismiss
-            data:
-              notification_id: ha_update
-          - alias: "Create persistant notification"
-            service: persistent_notification.create
-            data:
-              title: >
-                Update: {{ what }}
-              notification_id: ha_update
-              message: >-
-                Versie _{{ to }}_ is nu beschikbaar. Je zit nu op _{{ from }}_.
-                [Changelog]({{ url }})
           - alias: "Send notification to phone"
             service: notify.mobile_app_pixel_5
             data:
