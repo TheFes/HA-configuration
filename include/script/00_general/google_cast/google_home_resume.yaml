@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.2.2.5
+        version: 2.2.2.6
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -609,12 +609,24 @@ google_home_resume:
                 {% set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                {{ dict(s, **dict(t, **dict(d))) }}
+                {% set e = service_call.get('extra', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                {% set de = service_call.get('data', {}).get('script_extra', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                {{ dict(s, **dict(t, **dict(d, **dict(e, **dict(de))))) }}
               data: >
                 {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
               extra: >
-                {%- set extra = service_call.get('extra', {}) %}
-                {%- set script_extra = service_call.get('data', {}).get('script_extra', {}) %}
+                {%- set extra =
+                          dict(service_call.get('extra', {}).items()
+                                  | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']
+                                  | list)
+                                )
+                %}
+                {%- set script_extra =
+                          dict(service_call.get('data', {}).get('script_extra', {}).items()
+                                  | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']
+                                  | list)
+                                )
+                %}
                 {{ dict(extra, **script_extra) }}
               volume_set: "{{ iif(extra.get('volume', '')) }}"
               wait_set: "{{ extra.get('wait', false) }}"
