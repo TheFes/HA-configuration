@@ -17,11 +17,15 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.2.2 - 14 April 2022
+### Version 2.3.0 - 14 April 2022
+#### ✨ New features
+* Targets (`entity_id`, `device_id` and/or `area_id`) can be added to `extra` or `script_extra` so `volume` can be applied to those entities for a specific service call in which they are not mentioned as targets themselved (eg when calling a script)
 #### 🌟 Improvements
-* Moved the volume change before the service call, to avoid it being applied to late.
+* Moved the volume change before the service call
 * As volume changes to a Google Home speaker group are no longer synced to their members (due to patent reasons) the volume set in the `extra` or `script_extra` setting will be sent to the members of the speaker group.
-
+* Targets entered in `extra` or `script_extra` will also be taken into account for resuming afterwards
+#### 🐛 Bug fixes
+* Removed a bug where group members of a speaker group were added to the players to be resumed, while they were not playing
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
 # Setup
