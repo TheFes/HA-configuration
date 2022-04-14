@@ -641,16 +641,18 @@ google_home_resume:
                     {%- endfor %}
                     {%- set d = ns.device_cast %}
                 {# create list with all entities #}
-                  {{ (a + d + e) | select('in', cast_entities) | unique | list }}
+                  {{ (a + d + e) | unique | list }}
+              media_entities: "{{ expand(target_entities) | selectattr('domain', 'eq', 'media_player') | map(attribute='entity_id') | list }}"
+              cast_entities: "{{ media_entities | select('in', cast_entities) | list }}"
               screen: >
                 {%- set members = player_data 
-                                    | selectattr('entity_id', 'in', target_entities)
+                                    | selectattr('entity_id', 'in', cast_entities)
                                     | map(attribute='members')
                                     | sum(start=[])
                 %}
                 {{
                   player_data
-                    | selectattr('entity_id', 'in', target_entities + members)
+                    | selectattr('entity_id', 'in', cast_entities + members)
                     | selectattr('type', 'eq', 'screen')
                     | list
                     | count > 0
@@ -668,8 +670,8 @@ google_home_resume:
                       entity_id: >
                         {{
                           (
-                            target_entities + player_data 
-                                                | selectattr('entity_id', 'in', target_entities)
+                            media_entities + player_data 
+                                                | selectattr('entity_id', 'in', cast_entities)
                                                 | map(attribute='members')
                                                 | sum(start=[])
                           ) | reject('in', speaker_group_list) | unique | list
@@ -696,7 +698,7 @@ google_home_resume:
               {%- if screen and tts %}
                 {{ dict(entity_id = dummy_player) }}
               {%- elif tts and iif(target.get('area_id', '')) %}
-                {{ dict(entity_id = target_entities) }}
+                {{ dict(entity_id = media_entities) }}
               {%- else %}
                 {{ target }}
               {%- endif %}
@@ -709,21 +711,21 @@ google_home_resume:
                       - platform: event
                         event_type: state_changed
                         event_data:
-                          entity_id: "{{ target_entities[0] }}"
+                          entity_id: "{{ cast_entities[0] }}"
                   - wait_template: >
                       {{
-                        expand(target_entities)
+                        expand(cast_entities)
                           | rejectattr('state', 'eq', 'playing')
                           | list
                           | count == 0
                       }}
                   - wait_template: >
                       {{
-                        expand(target_entities)
+                        expand(cast_entities)
                           | selectattr('state', 'in', ['idle', 'off', 'unavailable'])
                           | list
                           | count
-                        == target_entities | count
+                        == cast_entities | count
                       }}
     - alias: "Anything to resume?"
       choose:
