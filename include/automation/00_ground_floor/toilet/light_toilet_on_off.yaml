@@ -12,7 +12,7 @@ action:
     service: light.turn_on
     target:
       entity_id: light.wc
-  - alias: "Wait until motion stopped for 5 minutes"
+  - alias: "Wait until motion stopped for 5 minutes or light is turned off"
     wait_for_trigger:
       - platform: state
         entity_id: binary_sensor.motion_wc
@@ -20,6 +20,9 @@ action:
         to: "off"
         for:
           minutes: 5
+      - platform: state
+        entity_id: light.wc
+        to: "off"
   - alias: "Turn light off"
     service: light.turn_off
     target:
