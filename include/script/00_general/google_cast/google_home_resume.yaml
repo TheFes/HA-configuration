@@ -628,11 +628,7 @@ google_home_resume:
     - alias: Add volume for players which were off
       variables:
         player_data: >
-          {%- if 'off' in player_data
-                            | selectattr('entity_id', 'in', target_not_playing)
-                            | map(attribute='state')
-                            | list
-          %}
+          {%- if target_no_volume | count > 0 %}
             {%- set ns = namespace(info=[]) %}
             {%- for entity in player_data %}
               {%- if entity.state == 'off' and entity.entity_id in target_not_playing %}
