@@ -302,9 +302,7 @@ google_home_resume:
         player_data: >
           {%- if player_data is undefined %}
             {%- set ns = namespace(info=[]) %}
-            {%- for entity in expand(integration_entities('cast'))
-                                | rejectattr('state', 'in', ['unavailable', 'unknown'])
-            %}
+            {%- for entity in expand(integration_entities('cast')) %}
                 {%- set general = dict(
                                         data_source = 'resume_script',
                                         entity_id = entity.entity_id,
@@ -344,7 +342,7 @@ google_home_resume:
                                                               + entity.attributes.get('media_position', 0)
                                             )
                   %}
-                {%- elif entity.state != 'off' %}
+                {%- elif not entity.state in ['off', 'unavailable', 'unknown'] %}
                   {%- set additional = dict( volume_level = entity.attributes.volume_level ) %}
                 {%- endif %}
               {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
