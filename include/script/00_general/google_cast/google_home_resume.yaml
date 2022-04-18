@@ -574,7 +574,7 @@ google_home_resume:
         target_no_volume: >
           {{ player_data
               | selectattr('entity_id', 'in', target_not_playing)
-              | selectattr('volume_level', 'undefined')
+              | selectattr('state', 'off')
               | map(attribute='entity_id')
               | list
           }}
