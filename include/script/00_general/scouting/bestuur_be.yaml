@@ -1,0 +1,44 @@
+bestuur_be_remove:
+  alias: "00 📆 Remove agenda item from bestuur BE Agenda"
+  icon: mdi:close
+  sequence:
+    - service: input_select.set_options
+      target:
+        entity_id: input_select.agenda_bestuur_be
+      data:
+        options: >
+          {{
+            state_attr('input_select.agenda_bestuur_be', 'options')
+              | reject('eq', states('input_select.agenda_bestuur_be'))
+              | list
+          }}
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.agenda_bestuur_be
+      data:
+        option: "{{ state_attr('input_select.agenda_bestuur_be', 'options')[0] }}"
+
+bestuur_be_add:
+  alias: "00 ➕ Add agenda item to bestuur BE Agenda"
+  icon: mdi:plus
+  sequence:
+    - variables:
+        text: "{{ states('input_text.bestuur_be_add') }}"
+    - service: input_select.set_options
+      target:
+        entity_id: input_select.agenda_bestuur_be
+      data:
+        options: >
+          {% set current = state_attr('input_select.agenda_bestuur_be', 'options') %}
+          {% set index = state_attr('input_select.agenda_bestuur_be', 'options').index(states('input_select.agenda_bestuur_be')) %}
+          {{ current[0:index+1] + [text] + current[index+1:] }}
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bestuur_be_add
+      data:
+        value: "*"
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.agenda_bestuur_be
+      data:
+        option: "{{ text }}"

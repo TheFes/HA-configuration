@@ -11,3 +11,51 @@ notify:
       source: HA
       phone: !secret phone
       apikey: !secret callmebot_api
+  - name: mail_bestuur_be
+    platform: smtp
+    server: "smtp.gmail.com"
+    port: 587
+    timeout: 15
+    sender: !secret gmail
+    encryption: starttls
+    username: !secret gmail
+    password: !secret gmail_asp
+    recipient:
+      - !secret bestuur_be
+    sender_name: !secret gmail_name
+  - name: mail_all_be
+    platform: smtp
+    server: "smtp.gmail.com"
+    port: 587
+    timeout: 15
+    sender: !secret gmail
+    encryption: starttls
+    username: !secret gmail
+    password: !secret gmail_asp
+    recipient:
+      - !secret all_be
+    sender_name: !secret gmail_name
+  - name: mail_bestuur_regio
+    platform: smtp
+    server: "smtp.gmail.com"
+    port: 587
+    timeout: 15
+    sender: !secret gmail
+    encryption: starttls
+    username: !secret gmail
+    password: !secret gmail_asp
+    recipient:
+      - !secret bestuur_regio
+    sender_name: !secret gmail_name
+  - name: mail_self
+    platform: smtp
+    server: "smtp.gmail.com"
+    port: 587
+    timeout: 15
+    sender: !secret gmail
+    encryption: starttls
+    username: !secret gmail
+    password: !secret gmail_asp
+    recipient:
+      - !secret gmail
+    sender_name: !secret gmail_name

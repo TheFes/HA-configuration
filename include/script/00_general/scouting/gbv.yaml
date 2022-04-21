@@ -1,0 +1,44 @@
+gbv_remove:
+  alias: "00 📆 Remove agenda item from GBV Agenda"
+  icon: mdi:close
+  sequence:
+    - service: input_select.set_options
+      target:
+        entity_id: input_select.agenda_gbv
+      data:
+        options: >
+          {{
+            state_attr('input_select.agenda_gbv', 'options')
+              | reject('eq', states('input_select.agenda_gbv'))
+              | list
+          }}
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.agenda_gbv
+      data:
+        option: "{{ state_attr('input_select.agenda_gbv', 'options')[0] }}"
+
+gbv_add:
+  alias: "00 ➕ Add agenda item to GBV Agenda"
+  icon: mdi:plus
+  sequence:
+    - variables:
+        text: "{{ states('input_text.gbv_add') }}"
+    - service: input_select.set_options
+      target:
+        entity_id: input_select.agenda_gbv
+      data:
+        options: >
+          {% set current = state_attr('input_select.agenda_gbv', 'options') %}
+          {% set index = state_attr('input_select.agenda_gbv', 'options').index(states('input_select.agenda_gbv')) %}
+          {{ current[0:index+1] + [text] + current[index+1:] }}
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.gbv_add
+      data:
+        value: "*"
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.agenda_gbv
+      data:
+        option: "{{ text }}"
