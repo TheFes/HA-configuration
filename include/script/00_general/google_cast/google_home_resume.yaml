@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.3.2
+        version: 2.3.3
     - alias: "Are there Spotify entities?"
       choose:
         - conditions: "{{ integration_entities('spotify') | count > 0 }}"
@@ -434,6 +434,15 @@ google_home_resume:
                                       | sum(start=[]) | unique | list
               %}
               {%- set all_players_playing = all_players_playing + groupmembers | unique | list %}
+            {# determine which single playing entities are in a group which is a target #}
+              {%- set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
+              {%- set single_resume_list = speaker_groups.items()
+                                            | selectattr('0', 'in', target_group)
+                                            | map(attribute='1')
+                                            | sum(start=[])
+                                            | select('in', all_players_playing)
+                                            | unique | list
+              %}
             {# determine which of the targets (including groups members) are playing #}
               {%- set groupmembers = speaker_groups.items()
                                       | selectattr('0', 'in', target_list)
@@ -442,7 +451,11 @@ google_home_resume:
                                       | sum(start=[]) | unique | list
               %}
               {%- set all_players_playing = all_players_playing + groupmembers | unique | list %}
-              {%- set target_playing = (target_list + groupmembers) | select('in', all_players_playing) | unique | list %}
+              {%- set target_playing = (target_list + groupmembers + single_resume_list)
+                                        | select('in', all_players_playing)
+                                        | unique
+                                        | list
+              %}
             {# determine which groups should be resumed becaue a single target is part of that group #}
               {%- set ns = namespace(groups = []) %}
                 {%- for group in all_speaker_groups_playing %}
@@ -456,15 +469,6 @@ google_home_resume:
                                       | selectattr('0', 'in', speaker_groups_resume)
                                       | map(attribute='1')
                                       | sum(start=[]) | unique | list
-              %}
-            {# determine which single playing entities are in a group which is a target #}
-              {%- set target_group = target_list | select('in', speaker_group_list) | reject('in', all_speaker_groups_playing) |list %}
-              {%- set single_resume_list = speaker_groups.items()
-                                            | selectattr('0', 'in', target_group)
-                                            | map(attribute='1')
-                                            | sum(start=[])
-                                            | select('in', all_players_playing)
-                                            | unique | list
               %}
             {# combine all the above to a list of players which should be resumed #}
               {{ 
