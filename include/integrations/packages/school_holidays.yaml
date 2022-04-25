@@ -40,10 +40,10 @@ sensor:
 # The attributes show the selected region, the current holiday and a list with all holidays
 template:
   - binary_sensor:
-      unique_id: e038f350-3d72-4bef-a658-739077b0d419
-      name: Schoolvakanties
+      unique_id: 4d816314-1eaf-41d0-ab16-ec3c57bac38f
+      name: Schoolvakantie
       state: >
-        {%- set v = state_attr('binary_sensor.schoolvakanties', 'vakanties') %}
+        {%- set v = state_attr('binary_sensor.schoolvakantie', 'vakanties') %}
         {%- set c = v | selectattr('start', '<=', now().date() | string)
                       | selectattr('end', '>=', now().date() | string)
                       | map(attribute='name') | join
@@ -52,7 +52,7 @@ template:
       attributes:
         regio: "{{ states('input_select.region') }}"
         nu: >
-          {%- set v = state_attr('binary_sensor.schoolvakanties', 'vakanties') %}
+          {%- set v = state_attr('binary_sensor.schoolvakantie', 'vakanties') %}
           {%- set c = v | selectattr('start', '<=', now().date() | string)
                         | selectattr('end', '>=', now().date() | string)
                         | map(attribute='name') | join
@@ -62,7 +62,10 @@ template:
           {# data summer holiday last school year #}
             {%- set vs = state_attr('sensor.schoolvakanties_vorig_jaar', 'vacations') %}
             {%- set vs = iif(vs, vs, [ dict(type='error rest sensor vorig jaar') ]) %}
-            {%- set r = state_attr('input_select.region', 'options').index(states('input_select.region')) %}
+            {%- set r = state_attr('input_select.region', 'options').index(states('input_select.region'))
+                        if not states('input_select.region') in [ 'unavailable', 'unknown' ]
+                        else 0
+            %}
             {%- set n = vs[-1].type.strip() %}
             {%- set s = as_datetime(vs[-1].get('regions', [{},{},{}])[r].get('startdate', 0)).date() | string %}
             {%- set e = as_datetime(vs[-1].get('regions', [{},{},{}])[r].get('enddate', 0)).date() | string %}
