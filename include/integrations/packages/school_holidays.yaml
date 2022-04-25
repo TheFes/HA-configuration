@@ -38,6 +38,7 @@ template:
         {%- set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
         {{ iif(c) }}
       attributes:
+        regio: "{{ states('input_select.region') }}"
         nu: >
           {%- set list = state_attr('binary_sensor.schoolvakanties', 'vakanties') %}
           {%- set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
