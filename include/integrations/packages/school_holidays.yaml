@@ -35,16 +35,16 @@ template:
       name: Schoolvakanties
       state: >
         {%- set list = state_attr('binary_sensor.schoolvakanties', 'vakanties') %}
-        {% set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
+        {%- set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
         {{ iif(c) }}
       attributes:
         nu: >
           {%- set list = state_attr('binary_sensor.schoolvakanties', 'vakanties') %}
-          {% set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
+          {%- set c = list | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | map(attribute='name') | join %}
           {{ iif(c, c, 'Geen vakantie') }}
         vakanties: >
-          {% set vs = state_attr('sensor.schoolvakanties_vorig_jaar', 'vacations') %}
-          {% set r = state_attr('input_select.region', 'options').index(states('input_select.region')) %}
+          {%- set vs = state_attr('sensor.schoolvakanties_vorig_jaar', 'vacations') %}
+          {%- set r = state_attr('input_select.region', 'options').index(states('input_select.region')) %}
           {%- set n = vs[-1].type.strip() %}
           {%- set s = as_datetime(vs[-1].regions[r].startdate).date() | string %}
           {%- set e =  as_datetime(vs[-1].regions[r].enddate).date() | string %}
