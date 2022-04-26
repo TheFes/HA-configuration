@@ -77,7 +77,7 @@ template:
             {%- for v in vs %}
               {%- set n = v.type.strip() %}
               {%- set r = 0 if v.get('regions', [ 1 ]) | count == 1 else r %}
-              {%- set s = as_datetime(v.get('regions', [{}])[r].get('enddate', 0)).date() | string %}
+              {%- set s = as_datetime(v.get('regions', [{}])[r].get('startdate', 0)).date() | string %}
               {%- set e =  as_datetime(v.get('regions', [{}])[r].get('enddate', 0)).date() | string %}
               {%- set ns.v = ns.v + [ dict(name=n, start=s, end=e) ] %}
             {%- endfor %}
