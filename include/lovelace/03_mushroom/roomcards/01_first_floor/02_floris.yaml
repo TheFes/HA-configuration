@@ -53,14 +53,16 @@ cards:
         entity: cover.floris
         layout: vertical
         icon: |-
-          {% if is_state('cover.floris', 'open') %}
+          {% if is_state('cover.floris_tahoma', 'closed') %}
             mdi:blinds-open
           {% else %}
             mdi:blinds
           {% endif %}
         icon_color: |-
-          {% if is_state('cover.floris', 'closed') %}
+          {% if is_state('cover.floris_tahoma', 'open') %}
             yellow
+          {% elif states('cover.floris_tahoma') in [ 'opening', 'closing' ] %}
+            green
           {% endif %}
       - type: conditional
         conditions:

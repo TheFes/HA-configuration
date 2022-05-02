@@ -60,8 +60,8 @@ cards:
         icon_color: |-
           {% if is_state('cover.pepijn_tahoma', 'open') %}
             yellow
-          {% elif states('conver.pepijn_tahoma') in [ 'opening', 'closing'] %}
-            red
+          {% elif states('cover.pepijn_tahoma') in [ 'opening', 'closing' ] %}
+            green
           {% endif %}
       - type: conditional
         conditions:
