@@ -4,11 +4,11 @@ lights:
     unique_id: 847f5495-8971-4656-8fde-7a636e983735
     friendly_name: "Eettafel Template"
     level_template: "{{ [ 1, ((state_attr('light.eettafel', 'brightness') | int(0) - 255 * 0.145) / 0.855) | round ] | max }}"
-    value_template: "{{ states('light.eettafel') }}"
+    value_template: "{{ is_state('light.eettafel', 'on') }}"
     temperature_template: "{{ [ 153, state_attr('light.eettafel', 'color_temp') | int(0)] | max }}"
     min_mireds_template: "{{ state_attr('light.eettafel', 'min_mireds') | int(153) }}"
     max_mireds_template: "{{ state_attr('light.eettafel', 'max_mireds') | int(370) }}"
-    availability_template: "{{ not is_state('light.eettafel', 'unavailable') }}"
+    availability_template: "{{ not states('light.eettafel') in ['unavailable', 'unknown'] }}"
     turn_on:
       service: light.turn_on
       entity_id: light.eettafel
