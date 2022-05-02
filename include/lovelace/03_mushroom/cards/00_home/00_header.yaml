@@ -212,9 +212,9 @@ chips:
           type: vertical-stack
           cards:
             - type: custom:mushroom-title-card
-              title: |-
+              title: >-
                 {%- set s = states.update | selectattr('state', 'eq', 'on') | list | count %}
-                Er zijn nu {{ 'geen' if s == 0 else s }} updates.
+                Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
             - type: "custom:auto-entities"
               card:
                 type: entities
@@ -222,7 +222,7 @@ chips:
               filter:
                 template: >
                   {{
-                    [ 'button.update_alles' ] if is_state('binary_sensor.updates_available', 'on') else [] +
                     states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list
+                    + ([ 'button.update_alles' ] if is_state('binary_sensor.updates_available', 'on') else [])
                   }}
 alignment: center

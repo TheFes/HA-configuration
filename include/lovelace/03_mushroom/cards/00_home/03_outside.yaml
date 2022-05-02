@@ -4,13 +4,6 @@ title: Buiten
 type: grid
 cards:
   - type: custom:vertical-stack-in-card
-    card_mod:
-      style: |
-        ha-card {
-          border: 0px;
-          background: none;
-          box-shadow: none;
-        }
     cards:
       - type: custom:mushroom-template-card
         primary: Tuin
@@ -24,40 +17,26 @@ cards:
         tap_action:
           action: navigate
           navigation_path: tuin
-        card_mod:
-          style: |
-            ha-card {
-              border: 0px;
-              background: none;
-              box-shadow: none;
-            }
       - type: custom:vertical-stack-in-card
         horizontal: true
         cards:
           - type: custom:mushroom-template-card
             entity: light.groep_tuin
             layout: vertical
-            icon: |-
+            icon: >-
               {% if is_state('light.groep_tuin', 'on') %}
                 mdi:lightbulb-group
               {% else %}
                 mdi:lightbulb-group-off
               {% endif %}
-            icon_color: |-
+            icon_color: >-
               {% if is_state('light.groep_tuin', 'on') %}
                 yellow
               {% endif %}
-            card_mod:
-              style: |
-                ha-card {
-                  border: 0px;
-                  background: none;
-                  box-shadow: none;
-                }
           - type: custom:mushroom-template-card
             entity: cover.veranda
             layout: vertical
-            icon: |-
+            icon: >-
               {% if is_state('cover.veranda', 'open') %}
                 mdi:storefront
               {% elif is_state('cover.veranda', 'opening') %}
@@ -67,19 +46,12 @@ cards:
               {% else %}
                 mdi:storefront-outline
               {% endif %}
-            icon_color: |-
+            icon_color: >-
               {% if is_state('cover.veranda', 'open') %}
                 yellow
               {% elif states('cover.veranda') in ['opening', 'closing'] %}
                 green
               {% endif %}
-            card_mod:
-              style: |
-                ha-card {
-                  border: 0px;
-                  background: none;
-                  box-shadow: none;
-                }
   - type: custom:vertical-stack-in-card
     cards:
       - type: custom:mushroom-entity-card

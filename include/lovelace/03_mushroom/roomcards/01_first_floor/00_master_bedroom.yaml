@@ -17,26 +17,26 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.slaapkamer
         layout: vertical
-        icon: |-
+        icon: >-
           {% if is_state('light.slaapkamer', 'on') %}
             mdi:lightbulb
           {% else %}
             mdi:lightbulb-off
           {% endif %}
-        icon_color: |-
+        icon_color: >-
           {% if is_state('light.slaapkamer', 'on') %}
             yellow
           {% endif %}
       - type: custom:mushroom-template-card
         entity: cover.slaapkamer
         layout: vertical
-        icon: |-
+        icon: >-
           {% if is_state('cover.slaapkamer', 'open') %}
             mdi:blinds-open
           {% else %}
             mdi:blinds
           {% endif %}
-        icon_color: |-
+        icon_color: >-
           {% if is_state('cover.slaapkamer', 'closed') %}
             yellow
           {% endif %}
@@ -44,7 +44,7 @@ cards:
         entity: vacuum.rockrobo_vacuum_v1
         layout: vertical
         icon: mdi:robot-vacuum
-        icon_color: |-
+        icon_color: >-
           {% if is_state('vacuum.rockrobo_vacuum_v1', 'cleaning') %}
             yellow
           {% elif is_state('vacuum.rockrobo_vacuum_v1', 'error') %}
