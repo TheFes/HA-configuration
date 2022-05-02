@@ -2,6 +2,22 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.4.0 - 4 May 2022
+#### 🔴 BREAKING
+* Due to implemented changes introduced in 2022.5 this version is now required for the script
+#### 🌟 Improvements
+* Merged the Perform Resume and Restore Non Playing devices helper scripts into one script
+* Code review and implementation of new script actions introduced in HA 2022.5
+
+### Version 2.3.3 - 22 April 2022
+#### 🐛 Bug fixes
+* Fix for resume of speaker groups
+
+### Version 2.3.2 - 18 April 2022
+#### 🐛 Bug fixes
+* Fixed a bug caused by storing the volume of a a speaker with state `unavailable`
+* Fixed restore of volume for non playing entities
+
 ### Version 2.3.0 / 2.3.1 - 14 April 2022
 #### ✨ New features
 * Targets (`entity_id`, `device_id` and/or `area_id`) can be added to `extra` or `script_extra` so `volume` can be applied to those entities for a specific service call in which they are not mentioned as targets themselved (eg when calling a script)

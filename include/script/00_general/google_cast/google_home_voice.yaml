@@ -10,15 +10,14 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.3.6
+        version: 1.4.0
     - alias: "Are there Spotify entities?"
-      choose:
-        - conditions: "{{ integration_entities('spotify') | count > 0 }}"
-          sequence:
-            - alias: "Update Spotify entities"
-              service: homeassistant.update_entity
-              target:
-                entity_id: "{{ integration_entities('spotify') }}"
+      if: "{{ integration_entities('spotify') | count > 0 }}"
+      then:
+        - alias: "Update Spotify entities"
+          service: homeassistant.update_entity
+          target:
+            entity_id: "{{ integration_entities('spotify') }}"
     - variables:
         service_calls: >
           {%- set ns = namespace(service = []) %}
@@ -110,36 +109,13 @@ google_home_voice:
             %}
           {%- endfor %}
           {{ ns.info }}
-    - alias: "Send log message about wrong actions"
-      choose:
-        - conditions: "{{ service_calls | count == 0 or no_service_count > 0 }}"
-          sequence:
-            service: system_log.write
-            data:
-              level: "{{ iif(service_calls | count == 0, 'error', 'warning') }}"
-              logger: "{{ this.entity_id }}"
-              message: >
-                {%- if service_calls | count == 0 %}
-                  There were no service calls defined, no actions are performed.
-                  The {{ this.attributes.friendly_name }} script has been aborted
-                {%- elif no_service_count == 1 %}
-                  You added an action which is not a service call to the 
-                  {{ this.attributes.friendly_name }} script. This action was ignored.
-                {%- else %}
-                  You added {{ no_service_count }} actions which are not service calls 
-                  to the {{ this.attributes.friendly_name }} script. These were ignored.
-                {%- endif %}
     - alias: "Interrupt YouTube music if needed"
-      choose:
-        - conditions:
-            - alias: "Anything playing"
-              condition: template
-              value_template: "{{ ytube_music_data | count > 0 }}"
-          sequence:
-            - service: ytube_music_player.call_method
-              data:
-                entity_id: "{{ ytube_music_data | map(attribute='player') | list }}"
-                command: interrupt_start
+      if: "{{ ytube_music_data | count > 0 }}"
+      then:
+        - service: ytube_music_player.call_method
+          data:
+            entity_id: "{{ ytube_music_data | map(attribute='player') | list }}"
+            command: interrupt_start
     - alias: "Wait until white noise started"
       wait_template: >
         {{ 
@@ -151,74 +127,80 @@ google_home_voice:
         }}
     - variables:
         target: >
-          {%- 
-            set target = expand(states.media_player)
-                          | selectattr('attributes.media_title', 'eq', check_for_title)
-                          | map(attribute='entity_id') 
-                          | list
-          %}
+          {{
+            expand(states.media_player)
+              | selectattr('attributes.media_title', 'eq', check_for_title)
+              | map(attribute='entity_id')
+              | join
+          }}
+        target_list: >
           {%- if target_conversion is defined and target_conversion %}
-            {%- set new = target_conversion.get(target[0], target) %}
-            {%- if new is string %}
-              {{ new.replace(' ', '').split(',') }}
-            {%- else %}
-              {{ new }}
-            {%- endif %}
+            {%- set new = target_conversion.get(target, target) %}
+            {{ new.replace(' ', '').split(',') if new is string else new }}
           {%- else %}
-            {{ target }}
+            {{ [ target ] }}
           {%- endif %}
     - alias: "Stop ambient sound"
       service: media_player.media_stop
       target:
         entity_id: "{{ target }}"
-    - alias: "Are there any service calls to perform"
-      condition: template
-      value_template: "{{ service_calls | count != 0 }}"
-    - wait_template: "{{ is_state(target[0], 'idle') }}"
-    - alias: "Use resume script or perform actions"
+    - alias: "Wrong actions provided"
       choose:
-        - conditions: "{{ use_resume if use_resume is defined else true }}"
+        - conditions: "{{ service_calls | count == 0 }}"
           sequence:
-            - alias: "Send actions using Google Home Resume script"
-              service: script.turn_on
-              target:
-                entity_id: script.google_home_resume
+            - stop: "There were no service calls defined, no actions are performed. The script script has been aborted."
+              error: true
+        - conditions: "{{ no_service_count > 0 }}"
+          sequence:
+            - service: system_log.write
               data:
-                variables:
-                  target_list: "{{ target }}"
-                  player_data: "{{ player_data }}"
-                  spotify_data: "{{ spotify_data }}"
-                  ytube_music_data: "{{ ytube_music_data }}"
-                  action: >
-                    {%- set ns = namespace(action=[]) %}
-                    {%- for item in service_calls %}
-                      {%- set ns.action = ns.action + [
-                                                        dict(
-                                                          service = item.service,
-                                                          target = item.get('target', { 'entity_id' : target}),
-                                                          data = item.get('data', {}),
-                                                          extra = item.get('extra', {})
-                                                          )
-                                                      ] 
-                      %}
-                    {%- endfor %}
-                    {{ ns.action }}
-      default:
+                level: "warning"
+                logger: "{{ this.entity_id }}"
+                message: >
+                  {{ no_service_count }} out of {{ service_calls | count }} actions were not performed because they are not service calls.
+    - wait_template: "{{ is_state(target, 'idle') }}"
+    - alias: "Use resume script or perform actions"
+      if: "{{ use_resume if use_resume is defined else true }}"
+      then:
+        - alias: "Send actions using Google Home Resume script"
+          service: script.turn_on
+          target:
+            entity_id: script.google_home_resume
+          data:
+            variables:
+              target_list: "{{ target_list }}"
+              player_data: "{{ player_data }}"
+              spotify_data: "{{ spotify_data }}"
+              ytube_music_data: "{{ ytube_music_data }}"
+              action: >
+                {%- set ns = namespace(action=[]) %}
+                {%- for item in service_calls %}
+                  {%- set ns.action = ns.action + [
+                                                    dict(
+                                                      service = item.service,
+                                                      target = item.get('target', { 'entity_id' : target_list}),
+                                                      data = item.get('data', {}),
+                                                      extra = item.get('extra', {})
+                                                      )
+                                                  ] 
+                  %}
+                {%- endfor %}
+                {{ ns.action }}
+      else:
         - alias: "Perform service calls defined in action"
           repeat:
-            count: "{{ service_calls | count }}"
+            for_each: "{{ service_calls }}"
             sequence:
-              - service: "{{ service_calls[repeat.index -1].service }}"
-                target: "{{ service_calls[repeat.index -1].get('target', { 'entity_id': target}) }}"
-                data: "{{ service_calls[repeat.index -1].get('data', {}) }}"
+              - service: "{{ repeat.item.service }}"
+                target: "{{ repeat.item.get('target', { 'entity_id': target_list}) }}"
+                data: "{{ repeat.item.get('data', {}) }}"
     - alias: "Volume defined"
-      choose:
-        - conditions: "{{ volume is defined and iif(volume) }}"
-          sequence:
-            - alias: "Apply volume"
-              service: media_player.volume_set
-              target:
-                entity_id: "{{ target }}"
-              data:
-                volume_level: >
-                  {{ [1, volume if volume <= 1 else volume / 100] | min }}
+      if: "{{ volume is defined and iif(volume) }}"
+      then:
+        - alias: "Apply volume"
+          service: media_player.volume_set
+          target:
+            entity_id: "{{ target_list }}"
+          data:
+            volume_level: >
+              {{ [1, volume if volume <= 1 else volume / 100] | min }}

@@ -9,24 +9,19 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 
 # Requirements
 ## General
-* Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
+* Home Assistant version 2022.5 is required
 * The script creates groups while running, so if you don't have any groups set up already, add `group:` to your configuration.yaml.
 ## Spotify resume
 * For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
-# Most recent change
-### Version 2.3.0 / 2.3.1 - 14 April 2022
-#### ✨ New features
-* Targets (`entity_id`, `device_id` and/or `area_id`) can be added to `extra` or `script_extra` so `volume` can be applied to those entities for a specific service call in which they are not mentioned as targets themselved (eg when calling a script)
+### Version 2.4.0 - 4 May 2022
+#### 🔴 BREAKING
+* Due to implemented changes introduced in 2022.5 this version is now required for the script
 #### 🌟 Improvements
-* Moved the volume change before the service call
-* As volume changes to a Google Home speaker group are no longer synced to their members (due to patent reasons) the volume set in the `extra` or `script_extra` setting will be sent to the members of the speaker group.
-* Targets entered in `extra` or `script_extra` will also be taken into account for resuming afterwards
-#### 🐛 Bug fixes
-* Removed a bug where group members of a speaker group were added to the players to be resumed, while they were not playing
-* (2.3.1) Fix for targets provided under `extra`
+* Merged the Perform Resume and Restore Non Playing devices helper scripts into one script
+* Code review and implementation of new script actions introduced in HA 2022.5
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
