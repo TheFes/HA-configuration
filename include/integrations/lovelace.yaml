@@ -29,11 +29,20 @@ lovelace:
       type: module
     - url: /hacsfiles/lovelace-mushroom/mushroom.js
       type: module
+    - url: /hacsfiles/kiosk-mode/kiosk-mode.js
+      type: module
   dashboards:
     lovelace-admin:
       mode: yaml
       filename: /config/ui-lovelace-admin.yaml
       title: Admin
       icon: mdi:tools
+      show_in_sidebar: true
+      require_admin: true
+    mushroom-phone:
+      mode: yaml
+      filename: /config/ui-lovelace-mushroom.yaml
+      title: Phones
+      icon: mdi:mushroom
       show_in_sidebar: true
       require_admin: true
