@@ -3,12 +3,6 @@ alias: "00 🔧 Notifactions for new HA version"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: homeassistant
-    event: start
-    id: clear
-  - platform: event
-    event_type: automation_reloaded
-    id: clear
   - platform: state
     entity_id:
       - update.home_assistant_core_update
@@ -28,45 +22,35 @@ trigger:
           https://github.com/home-assistant/core/releases/tag/{{ to }}
         {%- endif %}
 action:
-  - alias: "Update possible?"
-    choose:
-      - conditions: "{{ not trigger.id == 'clear'}}"
-        sequence:
-          - alias: "Set up variables for the actions"
-            variables:
-              action_update: "{{ 'UPDATE_' ~ context.id }}"
-          - alias: "Send notification to phone"
-            service: notify.mobile_app_pixel_5
-            data:
-              title: >
-                Update: {{ what }}
-              message: >-
-                Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
-              data:
-                tag: "ha_update"
-                channel: Home Assistant
-                ttl: 0
-                priority: high
-                clickAction: "/config/dashboard"
-                actions:
-                  - action: "URI"
-                    title: "Changelog"
-                    uri: "{{ url }}"
-                  - action: "{{ action_update }}"
-                    title: Update
-          - alias: "Wait for a response"
-            wait_for_trigger:
-              - platform: event
-                event_type: mobile_app_notification_action
-                event_data:
-                  action: "{{ action_update }}"
-          - alias: "Update"
-            service: update.install
-            target:
-              entity_id: "{{ trigger.entity_id }}"
-  - alias: "Dismiss notification"
+  - alias: "Set up variables for the actions"
+    variables:
+      action_update: "{{ 'UPDATE_' ~ context.id }}"
+  - alias: "Send notification to phone"
     service: notify.mobile_app_pixel_5
     data:
-      message: "clear_notification"
+      title: >
+        Update: {{ what }}
+      message: >-
+        Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
       data:
         tag: "ha_update"
+        channel: Home Assistant
+        ttl: 0
+        priority: high
+        clickAction: "/config/dashboard"
+        actions:
+          - action: "URI"
+            title: "Changelog"
+            uri: "{{ url }}"
+          - action: "{{ action_update }}"
+            title: Update
+  - alias: "Wait for a response"
+    wait_for_trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ action_update }}"
+  - alias: "Update"
+    service: update.install
+    target:
+      entity_id: "{{ trigger.entity_id }}"

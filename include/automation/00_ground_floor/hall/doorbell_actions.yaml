@@ -18,24 +18,23 @@ variables:
       - light.pepijn
       - light.pepijn_leeslamp
       - light.floris
-  type:
-    hue:
-      - light.slaapkamer
-      - light.zolder_bol
-    esphome: >
-      {{
-        expand(integration_entities('esphome'))
-          | selectattr('domain', 'eq', 'light')
-          | map(attribute='entity_id')
-          | reject('eq', 'light.tagreader_led')
-          | list 
-      }}
-    other: >
-      {{
-        (blink.always + blink.only_on)
-          | reject('in', type.hue + type.esphome)
-          | list
-      }}
+  hue:
+    - light.slaapkamer
+    - light.zolder_bol
+  esphome: >
+    {{
+      expand(integration_entities('esphome'))
+        | selectattr('domain', 'eq', 'light')
+        | map(attribute='entity_id')
+        | reject('eq', 'light.tagreader_led')
+        | list 
+    }}
+  other: >
+    {{
+      (blink.always + blink.only_on)
+        | reject('in', hue + esphome)
+        | list
+    }}
 action:
   - alias: "Notification for phones"
     service: notify.all_phones
@@ -49,56 +48,49 @@ action:
         ttl: 0
         notification_icon: mdi:bell
   - alias: "Nvidia Shield active?"
-    choose:
-      - conditions:
-          - alias: "Shield active"
-            condition: not
-            conditions:
-              - condition: state
-                entity_id: media_player.nvidia_shield
-                state: "off"
-        sequence:
-          - alias: "Pause Shield"
-            service: media_player.media_pause
-            target:
-              entity_id: media_player.nvidia_shield
+    if:
+      - not:
+          - condition: state
+            entity_id: media_player.nvidia_shield
+            state: "off"
+    then:
+      - alias: "Pause Shield"
+        service: media_player.media_pause
+        target:
+          entity_id: media_player.nvidia_shield
   - alias: "Google Home attic active or someone there"
-    choose:
-      - conditions:
-          - condition: or
-            conditions:
-              - alias: "Google zolder Martijn actief?"
-                condition: state
-                entity_id: media_player.zolder_mini_martijn
-                state: "playing"
-              - alias: "Google zolder Marleen actief?"
-                condition: state
-                entity_id: media_player.zolder_mini_marleen
-                state: "playing"
-              - alias: "Marleen on attic"
-                condition: state
-                entity_id: sensor.location_phone_marleen
-                state: "Zolder"
-              - alias: "Martijn on attic"
-                condition: state
-                entity_id: sensor.location_phone_martijn
-                state: "Zolder"
-        sequence:
-          - alias: "Send TTS using Google Home Resume script"
-            service: script.turn_on
-            target:
-              entity_id: script.google_home_resume
-            data:
-              variables:
-                action:
-                  - alias: "Send TTS message"
-                    service: tts.google_cloud_say
-                    target:
-                      entity_id: media_player.zolder_mini_martijn
-                    data:
-                      message: "Ding Dong! Er staat iemand aan de deur!"
-                    extra:
-                      volume: 0.35
+    if:
+      - or:
+          - alias: "Speaker on attic playing"
+            condition: state
+            entity_id:
+              - media_player.zolder_mini_martijn
+              - media_player.zolder_mini_marleen
+            match: any
+            state: "playing"
+          - alias: "Someone on attic"
+            condition: state
+            entity_id:
+              - sensor.location_phone_martijn
+              - sensor.location_phone_marleen
+            match: any
+            state: "Zolder"
+    then:
+      - alias: "Send TTS using Google Home Resume script"
+        service: script.turn_on
+        target:
+          entity_id: script.google_home_resume
+        data:
+          variables:
+            action:
+              - alias: "Send TTS message"
+                service: tts.google_cloud_say
+                target:
+                  entity_id: media_player.zolder_mini_martijn
+                data:
+                  message: "Ding Dong! Er staat iemand aan de deur!"
+                extra:
+                  volume: 0.35
   - alias: "Chime off and someone home?"
     choose:
       # Blink lights when chime is off and someone is home
@@ -122,48 +114,36 @@ action:
               scene_id: before
               snapshot_entities: "{{ lights }}"
           - alias: "Hue lights to blink?"
-            choose:
-              - conditions:
-                  - alias: "Hue lights count"
-                    condition: template
-                    value_template: "{{ lights | select('in', type.hue) | list | count > 0 }}"
-                sequence:
-                  - alias: "Blink lights (hue_lights)"
-                    service: light.turn_on
-                    target:
-                      entity_id: "{{ lights | select('in', type.hue) | list }}"
-                    data:
-                      flash: long
+            if: "{{ lights | select('in', hue) | list | count > 0 }}"
+            then:
+              - alias: "Blink lights (hue_lights)"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ lights | select('in', hue) | list }}"
+                data:
+                  flash: long
           - alias: "ESPHome lights to blink?"
-            choose:
-              - conditions:
-                  - alias: "ESPHome lights count"
-                    condition: template
-                    value_template: "{{ lights | select('in', type.esphome) | list | count > 0 }}"
-                sequence:
-                  - alias: "Blink lights (ESPHome)"
-                    service: light.turn_on
-                    target:
-                      entity_id: "{{ lights | select('in', type.esphome) | list }}"
-                    data:
-                      effect: "Fast Pulse"
+            if: "{{ lights | select('in', esphome) | list | count > 0 }}"
+            then:
+              - alias: "Blink lights (ESPHome)"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ lights | select('in', esphome) | list }}"
+                data:
+                  effect: "Fast Pulse"
           - alias: "Others lights to blink?"
-            choose:
-              - conditions:
-                  - alias: "Other lights count"
-                    condition: template
-                    value_template: "{{ lights | select('in', type.other) | list | count > 0 }}"
-                sequence:
-                  - alias: "Blink other lights using repeat loop"
-                    repeat:
-                      count: 10
-                      sequence:
-                        - alias: "Toggle other lights"
-                          service: light.toggle
-                          data:
-                            entity_id: "{{ lights | select('in', type.other) | list }}"
-                        - alias: "Short delay between toggle"
-                          delay: 0.5
+            if: "{{ lights | select('in', other) | list | count > 0 }}"
+            then:
+              - alias: "Blink other lights using repeat loop"
+                repeat:
+                  count: 10
+                  sequence:
+                    - alias: "Toggle other lights"
+                      service: light.toggle
+                      data:
+                        entity_id: "{{ lights | select('in', other) | list }}"
+                    - alias: "Short delay between toggle"
+                      delay: 0.5
           - alias: "Restore state"
             service: scene.turn_on
             target:
@@ -184,7 +164,7 @@ action:
             data:
               scene_id: before
               snapshot_entities: light.voordeur
-          - alias: "Loopje met knipper"
+          - alias: "Blink loop"
             repeat:
               count: 10
               sequence:

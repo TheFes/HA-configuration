@@ -10,13 +10,13 @@ variables:
     {%- set bt_old_list = 
       (
         trigger.from_state.attributes.connected_paired_devices 
-          | replace('[', '') 
+          | replace('[', '')
           | replace(']', '')
       ).split(',') %}
     {%- set bt_new_list =
       (
         trigger.to_state.attributes.connected_paired_devices 
-          | replace('[', '') 
+          | replace('[', '')
           | replace(']', '')
       ).split(',') %}
     {{ 
@@ -27,6 +27,7 @@ variables:
   headphones:
     - 60:AB:D2:3C:85:66
     - E0:67:81:01:F7:D3
+    - E8:07:BF:13:99:AB
 condition: "{{ bt_added in headphones }}"
 action:
   - alias: "Send notification to select right app"
