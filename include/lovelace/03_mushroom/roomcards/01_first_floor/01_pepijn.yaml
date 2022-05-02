@@ -1,12 +1,5 @@
 type: custom:vertical-stack-in-card
 mode: vertical
-card_mod:
-  style: |
-    ha-card {
-      border: 0px;
-      background: none;
-      box-shadow: none;
-    }
 cards:
   - type: custom:mushroom-template-card
     primary: Pepijn
@@ -18,46 +11,32 @@ cards:
     tap_action:
       action: navigate
       navigation_path: pepijn
-    card_mod:
-      style: |
-        ha-card {
-          border: 0px;
-          background: none;
-          box-shadow: none;
-        }
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
         entity: light.groep_pepijn
         layout: vertical
-        icon: |-
+        icon: >-
           {% if is_state('light.groep_pepijn', 'on') %}
             mdi:lightbulb-group
           {% else %}
             mdi:lightbulb-group-off
           {% endif %}
-        icon_color: |-
+        icon_color: >-
           {% if is_state('light.groep_pepijn', 'on') %}
             yellow
           {% endif %}
-        card_mod:
-          style: |
-            ha-card {
-              border: 0px;
-              background: none;
-              box-shadow: none;
-            }
       - type: custom:mushroom-template-card
         entity: cover.pepijn
         layout: vertical
-        icon: |-
+        icon: >-
           {% if is_state('cover.pepijn_tahoma', 'closed') %}
             mdi:blinds-open
           {% else %}
             mdi:blinds
           {% endif %}
-        icon_color: |-
+        icon_color: >-
           {% if is_state('cover.pepijn_tahoma', 'open') %}
             yellow
           {% elif states('cover.pepijn_tahoma') in [ 'opening', 'closing' ] %}
@@ -78,8 +57,3 @@ cards:
             {% if is_state('media_player.pepijn_mini', 'playing') %}
               yellow
             {% endif %}
-          style: |
-            ha-card {
-              background: none;
-              box-shadow: none;
-            }
