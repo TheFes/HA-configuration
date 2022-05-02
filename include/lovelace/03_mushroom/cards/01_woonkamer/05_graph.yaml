@@ -1,0 +1,25 @@
+type: custom:mini-graph-card
+name: Woonkamer
+icon: mdi:sofa
+hour24: true
+align_header: left
+align_icon: left
+font_size: 80
+points_per_hour: 2
+show:
+  extrema: true
+entities:
+  - entity: sensor.woonkamer_temp
+  - entity: sensor.woonkamer_vocht
+    show_graph: false
+    show_state: true
+  - entity: sensor.licht_woonkamer
+    show_graph: false
+    show_state: true
+  - color: gray
+    entity: sensor.nightstate
+    name: Nacht
+    show_legend: false
+    show_line: false
+    show_points: false
+    y_axis: secondary

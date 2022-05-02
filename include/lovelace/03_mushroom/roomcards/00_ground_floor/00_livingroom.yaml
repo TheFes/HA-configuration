@@ -1,0 +1,112 @@
+type: custom:vertical-stack-in-card
+mode: vertical
+card_mod:
+  style: |
+    ha-card {
+      border: 0px;
+      background: none;
+      box-shadow: none;
+    }
+cards:
+  - type: custom:mushroom-template-card
+    primary: Woonkamer
+    icon: mdi:sofa
+    icon_color: blue
+    layout: horizontal
+    entity: light.groep_woonkamer
+    secondary: >-
+      {{ states('sensor.woonkamer_temp') }}°C | 
+      {{states('sensor.licht_woonkamer') | int }} lx
+    tap_action:
+      action: navigate
+      navigation_path: woonkamer
+    card_mod:
+      style: |
+        ha-card {
+          border: 0px;
+          background: none;
+          box-shadow: none;
+        }
+  - type: custom:vertical-stack-in-card
+    horizontal: true
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.groep_woonkamer
+        layout: vertical
+        icon: |-
+          {% if is_state('light.groep_woonkamer', 'on') %}
+            mdi:lightbulb-group
+          {% else %}
+            mdi:lightbulb-group-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('light.groep_woonkamer', 'on') %}
+            yellow
+          {% endif %}
+        card_mod:
+          style: |
+            ha-card {
+              border: 0px;
+              background: none;
+              box-shadow: none;
+            }
+      - type: custom:mushroom-template-card
+        entity: switch.groep_woonkamer
+        layout: vertical
+        icon: |-
+          {% if is_state('switch.groep_woonkamer', 'on') %}
+            mdi:toggle-switch-variant
+          {% else %}
+            mdi:toggle-switch-variant-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('switch.groep_woonkamer', 'on') %}
+            yellow
+          {% endif %}
+        card_mod:
+          style: |
+            ha-card {
+              border: 0px;
+              background: none;
+              box-shadow: none;
+            }
+      - type: custom:mushroom-template-card
+        entity: media_player.shield_en_soundbar
+        layout: vertical
+        icon: >-
+          {% if not states('media_player.shield_en_soundbar') in
+          ['unavailable', 'unknown', 'off'] %}
+            mdi:television
+          {% else %}
+            mdi:television-off
+          {% endif %}
+        icon_color: >-
+          {% if not states('media_player.shield_en_soundbar') in
+          ['unavailable', 'unknown', 'off'] %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }
+      - type: conditional
+        conditions:
+          - entity: media_player.woonkamer_mini
+            state_not: "off"
+          - entity: media_player.woonkamer_mini
+            state_not: "idle"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          entity: media_player.woonkamer_mini
+          icon: mdi:cast
+          icon_color: >-
+            {% if is_state('media_player.woonkamer_mini', 'playing') %}
+              yellow
+            {% endif %}
+          style: |
+            ha-card {
+              background: none;
+              box-shadow: none;
+            }

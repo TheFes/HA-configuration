@@ -4,11 +4,8 @@ lights:
     unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c1
     friendly_name: "Slaapkamer Template"
     level_template: "{{ state_attr('light.slaapkamer', 'brightness') | int(0) }}"
-    value_template: "{{ states('light.slaapkamer') }}"
-    #    temperature_template: "{{ state_attr('light.slaapkamer', 'color_temp') | int(325) }}"
-    #    min_mireds_template: "{{ state_attr('light.slaapkamer', 'min_mireds') | int(140) }}"
-    #    max_mireds_template: "{{ state_attr('light.slaapkamer', 'max_mireds') | int(650) }}"
-    availability_template: "{{ not is_state('light.slaapkamer', 'unavailable') }}"
+    value_template: "{{ is_state('light.slaapkamer', 'on') }}"
+    availability_template: "{{ not states('light.slaapkamer') in ['unavailable', 'unknown'] }}"
     turn_on:
       service: script.slaapkamer_turn_on
       data:
@@ -22,8 +19,3 @@ lights:
       data:
         entity_id: light.slaapkamer
         brightness: "{{ brightness }}"
-#    set_temperature:
-#      service: light.turn_on
-#      data:
-#        entity_id: light.slaapkamer
-#        color_temp: "{{ color_temp }}"

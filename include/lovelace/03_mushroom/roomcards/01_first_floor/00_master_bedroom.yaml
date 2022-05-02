@@ -1,0 +1,89 @@
+type: custom:vertical-stack-in-card
+mode: vertical
+cards:
+  - type: custom:mushroom-template-card
+    primary: Slaapkamer
+    icon: mdi:bed-double
+    icon_color: blue
+    layout: horizontal
+    secondary: >-
+      {{ states('sensor.slaapkamer_temp') }}°C
+    tap_action:
+      action: navigate
+      navigation_path: slaapkamer
+  - type: custom:vertical-stack-in-card
+    horizontal: true
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.slaapkamer
+        layout: vertical
+        icon: |-
+          {% if is_state('light.slaapkamer', 'on') %}
+            mdi:lightbulb
+          {% else %}
+            mdi:lightbulb-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('light.slaapkamer', 'on') %}
+            yellow
+          {% endif %}
+      - type: custom:mushroom-template-card
+        entity: cover.slaapkamer
+        layout: vertical
+        icon: |-
+          {% if is_state('cover.slaapkamer', 'open') %}
+            mdi:blinds-open
+          {% else %}
+            mdi:blinds
+          {% endif %}
+        icon_color: |-
+          {% if is_state('cover.slaapkamer', 'closed') %}
+            yellow
+          {% endif %}
+      - type: custom:mushroom-template-card
+        entity: vacuum.rockrobo_vacuum_v1
+        layout: vertical
+        icon: mdi:robot-vacuum
+        icon_color: |-
+          {% if is_state('vacuum.rockrobo_vacuum_v1', 'cleaning') %}
+            yellow
+          {% elif is_state('vacuum.rockrobo_vacuum_v1', 'error') %}
+            red
+          {% endif %}
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Stofzuiger
+            card:
+              type: custom:xiaomi-vacuum-map-card
+              entity: vacuum.rockrobo_vacuum_v1
+              map_source:
+                camera: camera.xiaomi_cloud_map_extractor
+              calibration_source:
+                camera: true
+              map_modes:
+                - template: vacuum_clean_zone
+                - template: vacuum_goto
+                - template: vacuum_clean_zone_predefined
+                  predefined_selections:
+                    - zones: [[24145, 22380, 28925, 25965]] # Slaapkamer
+                    - zones: [[28906, 22304, 32795, 25946]] # Pepijn
+                    - zones: [[30196, 20180, 32814, 22304]] # Floris
+                    - zones: [[27104, 20217, 30234, 22380]] # Hal
+                    - zones: [[24012, 20199, 27161, 22418]] # Badkamer
+      - type: conditional
+        conditions:
+          - entity: media_player.slaapkamer_hub
+            state_not: "off"
+          - entity: media_player.slaapkamer_hub
+            state_not: "idle"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          entity: media_player.slaapkamer_hub
+          icon: mdi:cast
+          icon_color: >-
+            {% if is_state('media_player.slaapkamer_hub', 'playing') %}
+              yellow
+            {% endif %}

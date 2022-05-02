@@ -1,7 +1,0 @@
-platform: sql
-db_url: !secret mariadb_url_recorder
-queries:
-  - name: Database Grootte
-    query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
-    column: "value"
-    unit_of_measurement: mB

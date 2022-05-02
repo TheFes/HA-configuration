@@ -4,11 +4,11 @@ lights:
     unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
     friendly_name: "Floris Template"
     level_template: "{{ [ 1, ((state_attr('light.floris', 'brightness') | int(0) - 255 * 0.145) / 0.855) | round ] | max }}"
-    value_template: "{{ states('light.floris') }}"
+    value_template: "{{ is_state('light.floris', 'on') }}"
     temperature_template: "{{ [ 153, state_attr('light.floris', 'color_temp') | int(0)] | max }}"
     min_mireds_template: "{{ state_attr('light.floris', 'min_mireds') | int(153) }}"
     max_mireds_template: "{{ state_attr('light.floris', 'max_mireds') | int(370) }}"
-    availability_template: "{{ not is_state('light.floris', 'unavailable') }}"
+    availability_template: "{{ not states('light.floris') in ['unavailable', 'unknown'] }}"
     turn_on:
       service: script.floris_turn_on
     turn_off:

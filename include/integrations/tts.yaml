@@ -1,8 +1,6 @@
-# Text to speech voor Google Homes
 tts:
   - platform: google_translate
     language: "nl"
-    base_url: !secret ha_url
     cache: false
   - platform: google_cloud
     key_file: /config/.google_api/google_tts.json

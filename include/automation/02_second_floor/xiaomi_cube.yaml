@@ -14,11 +14,10 @@ use_blueprint:
               - alias: "Morning"
                 condition: time
                 before: "10:00:00"
-                weekday:
-                  - "mon"
-                  - "tue"
-                  - "thu"
-                  - "fri"
+              - alias: "Workday"
+                condition: state
+                entity_id: binary_sensor.workday_sensor
+                state: "on"
             sequence:
               - alias: "Turn on Radio 2"
                 service: media_player.play_media

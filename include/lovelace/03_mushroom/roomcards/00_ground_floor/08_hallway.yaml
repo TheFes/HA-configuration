@@ -1,0 +1,54 @@
+type: custom:stack-in-card
+mode: vertical
+cards:
+  - type: custom:mushroom-template-card
+    primary: Hal/Voordeur
+    icon: mdi:door
+    icon_color: blue
+    layout: horizontal
+    entity: light.groep_keuken
+    tap_action:
+      action: navigate
+      navigation_path: hal
+    style: |
+      ha-card {
+        background: none;
+        box-shadow: none;
+      }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        layout: vertical
+        icon: |-
+          {% if is_state('light.voordeur', 'on') %}
+            mdi:lightbulb
+          {% else %}
+            mdi:lightbulb-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('light.voordeur', 'on') %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }
+      - type: custom:mushroom-template-card
+        entity: switch.doorbell_chime_active
+        layout: vertical
+        icon: |-
+          {% if is_state('switch.doorbell_chime_active', 'on') %}
+            mdi:bell
+          {% else %}
+            mdi:bell-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('switch.doorbell_chime_active', 'on') %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }

@@ -1,0 +1,16 @@
+id: 1dc827cc-4287-48b1-8894-ad2e0202dd94
+alias: "00 🏠 Make sure switches installed for power metering only are always on"
+trigger:
+  - platform: state
+    entity_id: switch.only_for_power
+    from: ~
+condition:
+  - alias: "Switch is off"
+    condition: state
+    entity_id: switch.only_for_power
+    state: "off"
+action:
+  - alias: "Turn switch on"
+    service: switch.turn_on
+    target:
+      entity_id: switch.only_for_power

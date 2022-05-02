@@ -1,0 +1,38 @@
+type: custom:stack-in-card
+mode: vertical
+cards:
+  - type: custom:mushroom-template-card
+    primary: Speelhoek
+    icon: mdi:toy-brick
+    icon_color: blue
+    layout: horizontal
+    entity: light.groep_speelhoek
+    tap_action:
+      action: navigate
+      navigation_path: speelhoek
+    style: |
+      ha-card {
+        background: none;
+        box-shadow: none;
+      }
+  - type: custom:vertical-stack-in-card
+    horizontal: true
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.groep_speelhoek
+        layout: vertical
+        icon: |-
+          {% if is_state('light.groep_speelhoek', 'on') %}
+            mdi:lightbulb-group
+          {% else %}
+            mdi:lightbulb-group-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('light.groep_speelhoek', 'on') %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }

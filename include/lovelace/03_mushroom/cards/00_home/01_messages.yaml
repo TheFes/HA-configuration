@@ -1,0 +1,63 @@
+type: horizontal-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Hallo, {{ user }} !
+    alignment: center
+    subtitle: >-
+      {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ]
+      %}
+
+      {%- set active = expand(sensors) | selectattr('state', 'in',
+      ['Vandaag', 'Morgen']) | map(attribute='entity_id') | join %}
+
+      {%- if active | count > 0 %}
+
+      🚮 {{ states(active) }}: {{ state_attr(active, 'friendly_name') }}
+
+      {%- endif %}
+
+      {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
+
+      {%- set time_set =
+      as_local(as_datetime(states('input_datetime.dishwasher_program')))
+      %} 
+
+      {%- if now() < time_set | as_local %}
+
+      {%- set seconds = (time_set - now()).seconds %}
+
+      {%- set hours = (seconds / 3600) | int %}
+
+      {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+
+      {%- set program = states('input_select.dishwasher_program') %}
+
+      {%- set extra = states('input_select.dishwasher_program_extra') %}
+
+      {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
+
+      {%- set program = program ~ extra %}
+
+      💦 Vaatwasser klaar rond {{
+      (states('input_datetime.dishwasher_program') |
+      as_datetime).strftime('%H:%M') }} ({{ program }})
+
+      {%- else %}
+
+      💦 Vaatwasser is nu elk moment klaar
+
+      {%- endif %}
+
+      {%- endif %}
+
+      {%- if is_state('sensor.wasmachine', 'on') %}
+
+      {%- set h, m, s =
+      states('sensor.wasmachine_remain_time').split(':') | map('int') %}
+
+      {%- set total = h * 3600 + m *60 %}
+
+      🧺 Wasmachine klaar rond {{ (now() + timedelta(seconds =
+      total)).strftime('%H:%M') }}
+
+      {%- endif %}

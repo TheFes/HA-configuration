@@ -1,0 +1,8 @@
+button:
+  - name: Update alles
+    unique_id: ee67de73-5c72-40d5-a7f1-dd68b23fc5f8
+    icon: mdi:arrow-up-bold-hexagon-outline
+    press:
+      - service: update.install
+        target:
+          entity_id: "{{ states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}"

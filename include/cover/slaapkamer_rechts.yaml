@@ -2,22 +2,36 @@ platform: template
 covers:
   slaapkamer_rechts_template:
     unique_id: 1eda2946-e054-4a2b-83bf-3fdeaf93484a
+    friendly_name: "Screens Slaapkamer Rechts"
     device_class: blind
-    availability_template: "{{ not states('cover.slaapkamer_rechts') in ['unknown', 'unavailable'] }}"
-    friendly_name: "Screen Slaapkamer Rechts"
     position_template: >
-      {{ 100 - state_attr('cover.slaapkamer_rechts', 'current_position') | float(0) }}
+      {% set s = state_attr('cover.slaapkamer_rechts', 'current_position') %}
+      {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: >
+      {% set s = ['unknown', 'unavailable'] %}
+      {{ not states('cover.slaapkamer_rechts') in s }}
     open_cover:
-      service: cover.close_cover
-      entity_id: cover.slaapkamer_rechts
+      - service: >
+          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: cover.slaapkamer_rechts
     close_cover:
-      service: cover.open_cover
-      entity_id: cover.slaapkamer_rechts
+      - service: >
+          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: cover.slaapkamer_rechts
     stop_cover:
-      service: cover.stop_cover
-      entity_id: cover.slaapkamer_rechts
+      - service: cover.stop_cover
+        target:
+          entity_id: cover.slaapkamer_rechts
     set_cover_position:
-      service: cover.set_cover_position
-      entity_id: cover.slaapkamer_rechts
-      data:
-        position: "{{ 100 - position }}"
+      - service: cover.set_cover_position
+        target:
+          entity_id: cover.slaapkamer_rechts
+        data:
+          position: >
+            {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+            {{ 100 - position if i else position }}

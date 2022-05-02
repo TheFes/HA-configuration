@@ -2,22 +2,36 @@ platform: template
 covers:
   slaapkamer_links_template:
     unique_id: 9fb1001e-76e9-45e7-a75f-a4927fd86989
+    friendly_name: "Screens Slaapkamer Links"
     device_class: blind
-    availability_template: "{{ not states('cover.slaapkamer_links') in ['unknown', 'unavailable'] }}"
-    friendly_name: "Screen Slaapkamer Links"
     position_template: >
-      {{ 100 - state_attr('cover.slaapkamer_links', 'current_position') | float(0) }}
+      {% set s = state_attr('cover.slaapkamer_links', 'current_position') %}
+      {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: >
+      {% set s = ['unknown', 'unavailable'] %}
+      {{ not states('cover.slaapkamer_links') in s }}
     open_cover:
-      service: cover.close_cover
-      entity_id: cover.slaapkamer_links
+      - service: >
+          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: cover.slaapkamer_links
     close_cover:
-      service: cover.open_cover
-      entity_id: cover.slaapkamer_links
+      - service: >
+          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: cover.slaapkamer_links
     stop_cover:
-      service: cover.stop_cover
-      entity_id: cover.slaapkamer_links
+      - service: cover.stop_cover
+        target:
+          entity_id: cover.slaapkamer_links
     set_cover_position:
-      service: cover.set_cover_position
-      entity_id: cover.slaapkamer_links
-      data:
-        position: "{{ 100 - position }}"
+      - service: cover.set_cover_position
+        target:
+          entity_id: cover.slaapkamer_links
+        data:
+          position: >
+            {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+            {{ 100 - position if i else position }}

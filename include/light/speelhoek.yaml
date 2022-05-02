@@ -4,11 +4,11 @@ lights:
     unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
     friendly_name: "Speelhoek Template"
     level_template: "{{ [ 1, ((state_attr('light.speelhoek', 'brightness') | int(0)- 255*0.145)/0.855) | round ] | max }}"
-    value_template: "{{ states('light.speelhoek') }}"
+    value_template: "{{ is_state('light.speelhoek', 'on') }}"
     temperature_template: "{{ [ 153, state_attr('light.speelhoek', 'color_temp') | int(0)] | max }}"
     min_mireds_template: "{{ state_attr('light.speelhoek', 'min_mireds') | int(153) }}"
     max_mireds_template: "{{ state_attr('light.speelhoek', 'max_mireds') | int(370) }}"
-    availability_template: "{{ not is_state('light.speelhoek', 'unavailable') }}"
+    availability_template: "{{ not states('light.speelhoek') in ['unavailable', 'unknown'] }}"
     turn_on:
       service: light.turn_on
       entity_id: light.speelhoek
