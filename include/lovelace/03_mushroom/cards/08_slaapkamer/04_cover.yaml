@@ -1,0 +1,32 @@
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Screens
+  - type: custom:mushroom-cover-card
+    entity: cover.slaapkamer
+    show_position_control: true
+    show_buttons_control: true
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        command: popup
+        title: Screens Slaapkamer
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:mushroom-entity-card
+              entity: input_boolean.cover_slaapkamer_invert
+              tap_action:
+                action: toggle
+            - type: custom:mushroom-cover-card
+              entity: cover.slaapkamer_links_template
+              show_position_control: true
+              show_buttons_control: true
+            - type: custom:mushroom-cover-card
+              entity: cover.slaapkamer_midden_template
+              show_position_control: true
+              show_buttons_control: true
+            - type: custom:mushroom-cover-card
+              entity: cover.slaapkamer_rechts_template
+              show_position_control: true
+              show_buttons_control: true

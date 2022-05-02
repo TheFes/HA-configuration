@@ -1,0 +1,152 @@
+type: custom:stack-in-card
+mode: vertical
+cards:
+  - type: custom:mushroom-template-card
+    primary: Keuken/Eettafel
+    icon: mdi:countertop
+    icon_color: blue
+    layout: horizontal
+    entity: light.groep_keuken
+    tap_action:
+      action: navigate
+      navigation_path: keuken
+    style: |
+      ha-card {
+        background: none;
+        box-shadow: none;
+      }
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.groep_keuken
+        layout: vertical
+        icon: |-
+          {% if is_state('light.groep_keuken', 'on') %}
+            mdi:lightbulb-group
+          {% else %}
+            mdi:lightbulb-group-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('light.groep_keuken', 'on') %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }
+      - type: custom:mushroom-template-card
+        entity: switch.groep_keuken
+        layout: vertical
+        icon: |-
+          {% if is_state('switch.groep_keuken', 'on') %}
+            mdi:toggle-switch-variant
+          {% else %}
+            mdi:toggle-switch-variant-off
+          {% endif %}
+        icon_color: |-
+          {% if is_state('switch.groep_keuken', 'on') %}
+            yellow
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }
+      - type: custom:mushroom-template-card
+        entity: sensor.extractor_hood_status
+        layout: vertical
+        icon: >-
+          {% if not states('sensor.extractor_hood_status') in
+          ['Inactief', 'Plug uit'] %}
+            mdi:pot-steam
+          {% else %}
+            mdi:pot-steam-outline
+          {% endif %}
+        icon_color: >-
+          {% if not states('sensor.extractor_hood_status') in
+          ['Inactief', 'Plug uit'] %}
+            yellow
+          {% elif is_state('sensor.extractor_hood_status', 'Plug
+          uit') %}
+            red
+          {% endif %}
+        style: |
+          ha-card {
+            background: none;
+            box-shadow: none;
+          }
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Afzuigkap
+            card:
+              type: entities
+              entities:
+                - entity: sensor.extractor_hood_status
+                - entity: switch.afzuigkap
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.dishwasher_active
+            state: "on"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          icon: mdi:dishwasher
+          icon_color: yellow
+          style: |
+            ha-card {
+              background: none;
+              box-shadow: none;
+            }
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Vaatwasser
+              card:
+                type: custom:vertical-stack-in-card
+                cards:
+                  - type: markdown
+                    content: >
+                      {%- set time_set =
+                      states('input_datetime.dishwasher_program') |
+                      as_datetime %} {%- if now() < time_set |
+                      as_local %}
+                        {%- set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
+                      {%- set hours = (seconds / 3600) | int %}
+                        {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+                        {%- set program = states('input_select.dishwasher_program') %}
+                        {%- set extra = states('input_select.dishwasher_program_extra') %}
+                        {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
+                        {%- set program = program ~ extra %}
+                        De vaatwasser zou rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} klaar moeten zijn (gebaseerd op het {{ program }} programma)
+                        Dat is nog {{ hours ~ ' uur' ~ ' en ' if hours != 0 }}{{ minutes }} {{ 'minuut' if minutes == 1 else 'minuten' }}.
+                      {%- else %}
+                        De vaatwasser zou eigenlijk al klaar moeten zijn, heel even geduld nog dus
+                      {%- endif %}
+                  - type: entities
+                    entities:
+                      - entity: input_select.dishwasher_program
+                      - entity: input_select.dishwasher_program_extra
+      - type: conditional
+        conditions:
+          - entity: media_player.keuken_hub
+            state_not: "off"
+          - entity: media_player.keuken_hub
+            state_not: "idle"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          entity: media_player.keuken_hub
+          icon: mdi:cast
+          icon_color: >-
+            {% if is_state('media_player.keuken_hub', 'playing') %}
+              yellow
+            {% endif %}
+          style: |
+            ha-card {
+              background: none;
+              box-shadow: none;
+            }

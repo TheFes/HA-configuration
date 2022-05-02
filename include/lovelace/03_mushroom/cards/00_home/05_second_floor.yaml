@@ -1,0 +1,96 @@
+square: false
+columns: 2
+title: Zolder
+type: grid
+cards:
+  - type: custom:vertical-stack-in-card
+    card_mod:
+      style: |
+        ha-card {
+          border: 0px;
+          background: none;
+          box-shadow: none;
+        }
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Zolder
+        icon: mdi:home-floor-2
+        icon_color: blue
+        layout: horizontal
+        entity: light.groep_tuin
+        secondary: >-
+          {{ states('sensor.zolder_temp') }}°C
+        tap_action:
+          action: navigate
+          navigation_path: zolder
+        card_mod:
+          style: |
+            ha-card {
+              border: 0px;
+              background: none;
+              box-shadow: none;
+            }
+      - type: custom:vertical-stack-in-card
+        horizontal: true
+        cards:
+          - type: custom:mushroom-template-card
+            entity: light.groep_zolder
+            layout: vertical
+            icon: |-
+              {% if is_state('light.groep_zolder', 'on') %}
+                mdi:lightbulb-group
+              {% else %}
+                mdi:lightbulb-group-off
+              {% endif %}
+            icon_color: |-
+              {% if is_state('light.groep_zolder', 'on') %}
+                yellow
+              {% endif %}
+            card_mod:
+              style: |
+                ha-card {
+                  border: 0px;
+                  background: none;
+                  box-shadow: none;
+                }
+          - type: custom:mushroom-template-card
+            entity: switch.groep_zolder
+            layout: vertical
+            icon: |-
+              {% if is_state('switch.groep_zolder', 'on') %}
+                mdi:toggle-switch-variant
+              {% else %}
+                mdi:toggle-switch-variant-off
+              {% endif %}
+            icon_color: |-
+              {% if is_state('switch.groep_zolder', 'on') %}
+                yellow
+              {% endif %}
+            card_mod:
+              style: |
+                ha-card {
+                  border: 0px;
+                  background: none;
+                  box-shadow: none;
+                }
+          - type: conditional
+            conditions:
+              - entity: media_player.groep_zolder
+                state_not: "off"
+              - entity: media_player.groep_zolder
+                state_not: "idle"
+            card:
+              type: custom:mushroom-template-card
+              layout: vertical
+              entity: media_player.groep_zolder
+              icon: mdi:cast
+              icon_color: >-
+                {% set s = expand('media_player.groep_zolder') | map(attribute='state') | list %}
+                {% if 'playing' in s %}
+                  yellow
+                {% endif %}
+              style: |
+                ha-card {
+                  background: none;
+                  box-shadow: none;
+                }
