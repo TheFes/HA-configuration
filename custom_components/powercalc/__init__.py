@@ -30,9 +30,11 @@ from .const import (
     CONF_ENABLE_AUTODISCOVERY,
     CONF_ENERGY_INTEGRATION_METHOD,
     CONF_ENERGY_SENSOR_CATEGORY,
+    CONF_ENERGY_SENSOR_FRIENDLY_NAMING,
     CONF_ENERGY_SENSOR_NAMING,
     CONF_ENERGY_SENSOR_PRECISION,
     CONF_POWER_SENSOR_CATEGORY,
+    CONF_POWER_SENSOR_FRIENDLY_NAMING,
     CONF_POWER_SENSOR_NAMING,
     CONF_POWER_SENSOR_PRECISION,
     CONF_UTILITY_METER_OFFSET,
@@ -74,10 +76,16 @@ CONFIG_SCHEMA = vol.Schema(
                         CONF_POWER_SENSOR_NAMING, default=DEFAULT_POWER_NAME_PATTERN
                     ): validate_name_pattern,
                     vol.Optional(
+                        CONF_POWER_SENSOR_FRIENDLY_NAMING
+                    ): validate_name_pattern,
+                    vol.Optional(
                         CONF_POWER_SENSOR_CATEGORY, default=DEFAULT_ENTITY_CATEGORY
                     ): vol.In(ENTITY_CATEGORIES),
                     vol.Optional(
                         CONF_ENERGY_SENSOR_NAMING, default=DEFAULT_ENERGY_NAME_PATTERN
+                    ): validate_name_pattern,
+                    vol.Optional(
+                        CONF_ENERGY_SENSOR_FRIENDLY_NAMING
                     ): validate_name_pattern,
                     vol.Optional(
                         CONF_ENERGY_SENSOR_CATEGORY, default=DEFAULT_ENTITY_CATEGORY
@@ -220,7 +228,7 @@ async def create_domain_groups(
     hass: HomeAssistantType, global_config: dict, domains: list[str]
 ):
     """Create group sensors aggregating all power sensors from given domains"""
-    component = EntityComponent(_LOGGER, SENSOR_DOMAIN, hass)
+    sensor_component = hass.data[SENSOR_DOMAIN]
     sensor_config = global_config.copy()
     _LOGGER.debug(f"Setting up domain based group sensors..")
     for domain in domains:
@@ -235,5 +243,5 @@ async def create_domain_groups(
         entities = await create_group_sensors(
             group_name, sensor_config, domain_entities, hass
         )
-        await component.async_add_entities(entities)
+        await sensor_component.async_add_entities(entities)
     return []
