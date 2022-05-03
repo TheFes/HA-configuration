@@ -9,6 +9,32 @@ cards:
     tap_action:
       action: toggle
   - type: custom:mushroom-entity-card
+    entity: switch.bureau_martijn_2
+    name: Server
+    icon: mdi:server
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        command: popup
+        title: Passcode
+        card:
+          type: vertical-stack
+          cards:
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcod/numpad.yaml
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcod/code.yaml
+            - type: custom:mushroom-template-card
+              icon: mdi:send
+              layout: vertical
+              icon_color: >-
+                {% set p = states('input_text.passcode') %}
+                {{ 'blue' if p | count == 4 }}
+              tap_action:
+                action: call-service
+                service: script.passcode
+                service_data:
+                  action: toggle
+                  what: server
+  - type: custom:mushroom-entity-card
     entity: switch.bureau_marleen
     icon: mdi:human-female
     tap_action:

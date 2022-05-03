@@ -1,0 +1,52 @@
+square: true
+columns: 4
+type: grid
+cards:
+  - type: custom:mushroom-template-card
+    icon: >-
+      {% set p = states('input_text.passcode') %}
+      {{ 'mdi:circle' if p | count > 0 else 'mdi:circle-small' }}
+    layout: vertical
+    icon_color: |-
+      {% set p = states('input_text.passcode') %}
+      {% if p | count == 4 %}
+        {{ states('input_select.passcode_color') }}
+      {% else %}
+        {{ 'blue' if p | count > 0 }}
+      {% endif %}
+  - type: custom:mushroom-template-card
+    icon: >-
+      {% set p = states('input_text.passcode') %}
+      {{ 'mdi:circle' if p | count > 1 else 'mdi:circle-small' }}
+    layout: vertical
+    icon_color: >-
+      {% set p = states('input_text.passcode') %}
+      {% if p | count == 4 %}
+        {{ states('input_select.passcode_color') }}
+      {% else %}
+        {{ 'blue' if p | count > 1 }}
+      {% endif %}
+  - type: custom:mushroom-template-card
+    icon: >-
+      {% set p = states('input_text.passcode') %}
+      {{ 'mdi:circle' if p | count > 2 else 'mdi:circle-small' }}
+    layout: vertical
+    icon_color: >-
+      {% set p = states('input_text.passcode') %}
+      {% if p | count == 4 %}
+        {{ states('input_select.passcode_color') }}
+      {% else %}
+        {{ 'blue' if p | count > 2 }}
+      {% endif %}
+  - type: custom:mushroom-template-card
+    icon: >-
+      {% set p = states('input_text.passcode') %}
+      {{ 'mdi:circle' if p | count > 3 else 'mdi:circle-small' }}
+    layout: vertical
+    icon_color: >-
+      {% set p = states('input_text.passcode') %}
+      {% if p | count == 4 %}
+        {{ states('input_select.passcode_color') }}
+      {% else %}
+        {{ 'blue' if p | count > 3 }}
+      {% endif %}
