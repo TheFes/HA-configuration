@@ -3,18 +3,37 @@ title: Schakelaars
 square: false
 columns: 2
 cards:
-  - type: custom:mushroom-entity-card
-    entity: switch.waterkoker
-    icon: mdi:kettle
-    tap_action:
-      action: toggle
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.espresso
-    icon: mdi:coffee-maker
+    primary: Espressomachine
+    secondary: >-
+      {{ 'Aan' if is_state('switch.espresso', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.espresso_power') ~ ' W') if is_state('switch.espresso', 'on') }}
+    icon: >-
+      {{ 'mdi:coffee' if is_state('switch.espresso', 'on') else 'mdi:coffee-off' }}
+    icon_color: >-
+      {{ 'blue' if is_state('switch.espresso', 'on') }}
+  - type: custom:mushroom-template-card
+    entity: switch.waterkoker
+    primary: Waterkoker
+    secondary: >-
+      {{ 'Aan' if is_state('switch.waterkoker', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.waterkoker_power') ~ ' W') if is_state('switch.waterkoker', 'on') }}
+    icon: >-
+      {{ 'mdi:kettle-steam' if is_state('switch.waterkoker', 'on') else 'mdi:kettle-off' }}
+    icon_color: >-
+      {{ 'blue' if is_state('switch.waterkoker', 'on') }}
     tap_action:
       action: toggle
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.afzuigkap
-    icon: mdi:pot-steam
+    primary: Afzuigkap
+    secondary: >-
+      {{ states('sensor.extractor_hood_status') if is_state('switch.afzuigkap', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.afzuigkap_power') ~ ' W') if is_state('switch.afzuigkap', 'on') }}
+    icon: >-
+      {{ 'mdi:pot-steam' if is_state('sensor.extractor_hood_status', 'Afzuigen') else 'mdi:pot-steam-outline' }}
+    icon_color: >-
+      {{ 'blue' if is_state('switch.afzuigkap', 'on') }}
     tap_action:
       action: toggle

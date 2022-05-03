@@ -11,6 +11,6 @@ cards:
       {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state('sensor.wasmachine', 'on') }}
     icon: mdi:washing-machine
     entity: sensor.wasmachine
-    tap_action:
-      action: toggle
     icon_color: "{{ 'blue' if is_state('sensor.wasmachine', 'on') }}"
+    tap_action:
+      action: more_info

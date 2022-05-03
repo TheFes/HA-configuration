@@ -3,15 +3,38 @@ title: Schakelaars
 square: false
 columns: 2
 cards:
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.bureau_martijn
+    primary: Bureau Martijn
+    secondary: >-
+      {{ 'Aan' if is_state('switch.bureau_martijn', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
     icon: mdi:human-male
+    icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
     tap_action:
       action: toggle
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_2
-    name: Server
-    icon: mdi:server
+    primary: Bureau Martijn II
+    secondary: >-
+      {{ 'Aan' if is_state('switch.bureau_martijn_2', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
+    icon: mdi:human-male-male
+    icon_color: "{{ 'blue' if is_state('switch.bureau_martijn_2', 'on') }}"
+    tap_action:
+      action: toggle
+  - type: custom:mushroom-template-card
+    entity: switch.server
+    primary: Server
+    secondary: >-
+      {{ 'Aan' if is_state('switch.server', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.server_power') ~ ' W') if is_state('switch.server', 'on') }}
+    icon: >-
+      {{ 
+        'mdi:server' if is_state('switch.server', 'on')
+        else 'mdi:server-off'
+      }}
+    icon_color: "{{ 'blue' if is_state('switch.server', 'on') }}"
     tap_action:
       action: fire-dom-event
       browser_mod:
@@ -34,18 +57,49 @@ cards:
                 service_data:
                   action: toggle
                   what: server
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.bureau_marleen
+    primary: Bureau Marleen
+    secondary: >-
+      {{ 'Aan' if is_state('switch.bureau_marleen', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_marleen_power') ~ ' W') if is_state('switch.bureau_marleen', 'on') }}
     icon: mdi:human-female
+    icon_color: "{{ 'blue' if is_state('switch.bureau_marleen', 'on') }}"
     tap_action:
       action: toggle
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.wasmachine
-    icon: mdi:washing-machine
+    primary: Wasmachine
+    secondary: >-
+      {{ 'Aan' if is_state('switch.wasmachine', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.wasmachine_power') ~ ' W') if is_state('switch.wasmachine', 'on') }}
+    icon: >-
+      {%- if is_state('binary_sensor.wasmachine_error_state', 'on') %}
+        mdi:washing-machine-alert
+      {%- elif is_state('switch.wasmachine', 'on') %}
+        mdi:washing-machine
+      {%- else %}
+        mdi:washing-machine-off
+      {%- endif %}
+    icon_color: >-
+      {%- if is_state('binary_sensor.wasmachine_error_state', 'on') %}
+        red
+      {%- elif is_state('switch.wasmachine', 'on') %}
+        blue
+      {%- endif %}
     tap_action:
       action: toggle
-  - type: custom:mushroom-entity-card
+  - type: custom:mushroom-template-card
     entity: switch.droger
-    icon: mdi:tumble-dryer
+    primary: Droger
+    secondary: >-
+      {{ 'Aan' if is_state('switch.droger', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.droger_power') ~ ' W') if is_state('switch.droger', 'on') }}
+    icon: >-
+      {{ 
+        'mdi:tumble-dryer' if is_state('switch.droger', 'on')
+        else 'mdi:tumble-dryer-off'
+      }}
+    icon_color: "{{ 'blue' if is_state('switch.droger', 'on') }}"
     tap_action:
       action: toggle

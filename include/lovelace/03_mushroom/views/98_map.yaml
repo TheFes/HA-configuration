@@ -4,7 +4,12 @@ path: kaart
 cards:
   - type: custom:mushroom-chips-card
     chips:
-      - type: back
+      - type: template
+        icon: mdi:home
+        tap_action:
+          action: navigate
+          navigation_path: home
+    alignment: end
   - type: map
     entities:
       - entity: zone.werk_martijn

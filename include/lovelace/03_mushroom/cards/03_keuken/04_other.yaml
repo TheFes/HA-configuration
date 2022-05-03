@@ -1,0 +1,18 @@
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Overig
+  - type: grid
+    square: true
+    columns: 2
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Koelkast
+        secondary: "{{ states('sensor.koelkast_power') }} W"
+        icon: mdi:fridge
+        icon_color: "{{ 'blue' if is_state('switch.ventilatie', 'on') }}"
+      - type: custom:mushroom-template-card
+        primary: Vaatwasser
+        secondary: "{{ states('sensor.vaatwasser_power') }} W"
+        icon: mdi:dishwasher
+        icon_color: "{{ 'blue' if is_state('switch.ketel', 'on') }}"

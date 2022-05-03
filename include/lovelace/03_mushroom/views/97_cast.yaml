@@ -1,7 +1,14 @@
 icon: "mdi:cast"
 path: cast
 cards:
-  # Status media players
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: template
+        icon: mdi:home
+        tap_action:
+          action: navigate
+          navigation_path: home
+    alignment: end
   - type: custom:auto-entities
     card:
       type: entities
