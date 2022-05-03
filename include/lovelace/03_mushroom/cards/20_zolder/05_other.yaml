@@ -7,8 +7,8 @@ cards:
       {{ 'Uit' if is_state('sensor.wasmachine', 'off') else
       state_attr('sensor.wasmachine', 'current_course')}}
     secondary: >-
-      {{ state_attr('sensor.wasmachine', 'remain_time') if
-      is_state('sensor.wasmachine', 'on') }}
+      {% set h, m, s = state_attr('sensor.wasmachine', 'remain_time').split(':') | map('int') %}
+      {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state('sensor.wasmachine', 'on') }}
     icon: mdi:washing-machine
     entity: sensor.wasmachine
     tap_action:
