@@ -1,11 +1,16 @@
 type: vertical-stack
 cards:
   - type: custom:mushroom-title-card
-    title: Stofzuiger
-  - type: custom:mushroom-vacuum-card
-    entity: vacuum.rockrobo_vacuum_v1
-    commands:
-      - return_home
-      - locate
-      - start_pause
-      - stop
+    title: Wasmachine
+  - type: custom:mushroom-template-card
+    primary: >-
+      {{ 'Uit' if is_state('sensor.wasmachine', 'off') else
+      state_attr('sensor.wasmachine', 'current_course')}}
+    secondary: >-
+      {{ state_attr('sensor.wasmachine', 'remain_time') if
+      is_state('sensor.wasmachine', 'on') }}
+    icon: mdi:washing-machine
+    entity: sensor.wasmachine
+    tap_action:
+      action: toggle
+    icon_color: "{{ 'blue' if is_state('sensor.wasmachine', 'on') }}"
