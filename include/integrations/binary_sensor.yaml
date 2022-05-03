@@ -53,3 +53,8 @@ binary_sensor:
     country: NL
     workdays: [mon, tue, thu, fri]
     excludes: [wed, sat, sun, holiday]
+  - platform: ping
+    host: 192.168.2.4
+    name: "Server"
+    count: 2
+    scan_interval: 5
