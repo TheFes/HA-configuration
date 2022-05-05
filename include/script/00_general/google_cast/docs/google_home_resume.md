@@ -16,7 +16,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
-### Version 2.4.0 - 4 May 2022
+### Version 2.4.0 - 5 May 2022
 #### 🔴 BREAKING
 * Due to implemented changes introduced in 2022.5 this version is now required for the script
 #### 🌟 Improvements

@@ -16,7 +16,7 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.4.0 - 4 May 2022
+### Version 1.4.0 - 5 May 2022
 #### 🔴 BREAKING
 * Due to implemented changes introduced in 2022.5 this version is now required for the script
 #### 🌟 Improvements

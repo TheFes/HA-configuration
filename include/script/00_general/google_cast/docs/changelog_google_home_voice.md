@@ -2,7 +2,7 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
-### Version 1.4.0 - 4 May 2022
+### Version 1.4.0 - 5 May 2022
 #### 🔴 BREAKING
 * Due to implemented changes introduced in 2022.5 this version is now required for the script
 #### 🌟 Improvements
