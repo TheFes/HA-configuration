@@ -5,8 +5,7 @@ sensor:
       {%- set zone = this.attributes.get('zone') %}
       {%- if zone == 'not_home' %}
         {%- set activity = this.attributes.get('activity') %}
-        {%- set type = this.attributes.get('phone_type') %}
-        {%- set activities = state_attr('sensor.location_helper', type) | default({}, true) %}
+        {%- set activities = state_attr('sensor.location_helper', 'activities') | default({}, true) %}
         {{ activities.get(activity, '❌🏡') }}
       {%- elif zone != 'home' %}
         {%- set zones = state_attr('sensor.location_helper', 'zones') | default({}, true) %}
@@ -21,7 +20,6 @@ sensor:
       zone: "{{ states('person.marleen') }}"
       wifi: "{{ states('sensor.de_buurvrouw_bssid') }}"
       acivity: "{{ states('sensor.nog_invullen') }}"
-      phone_type: apple
 
   - unique_id: 11fde20f-113c-4d69-9995-e4a7ca5dd45d
     name: Location phone Martijn
@@ -31,7 +29,6 @@ sensor:
       zone: "{{ states('person.martijn') }}"
       wifi: "{{ states('sensor.pixel_5_wifi_bssid') }}"
       acivity: "{{ states('sensor.pixel_5_gedetecteerde_activiteit') }}"
-      phone_type: android
 
   - unique_id: bc50c512-e5f0-4404-bbc0-bd5248e60587
     name: Location Helper
@@ -39,9 +36,26 @@ sensor:
     icon: mdi:map
     attributes:
       floors: >
-        {{ { '2c:3a:fd:bf:2c:fb': '🏡2️⃣', '2c:3a:fd:df:6d:a5': '🏡1️⃣', '3c:a6:2f:f9:ee:c3': '🏡0️⃣', '2c:91:ab:e6:1b:7c' : '🏡0️⃣' } }}
-      apple: >
-        {{ { 'Cycling': '🚴‍♀️', 'Automotive': '🚗', 'Walking': '🚶‍♀️', 'Running': '🏃‍♀️' } }}
-      android: >
-        {{ { 'on_bicycle': '🚴‍♂️', 'in_vehicle': '🚗', 'on_foot': '🚶‍♂️', 'walking': '🚶‍♂️', 'running': '🏃‍♂️' } }}
+        {{
+          {
+            "2c:3a:fd:bf:2c:fb": "🏡2️⃣",
+            "2c:3a:fd:df:6d:a5": "🏡1️⃣",
+            "3c:a6:2f:f9:ee:c3": "🏡0️⃣",
+            "2c:91:ab:e6:1b:7c": "🏡0️⃣"
+          }
+        }}
+      activities: >
+        {{ 
+          {
+            "Cycling": "🚴‍♀️",
+            "on_bicycle": "🚴‍♂️",
+            "Automotive": "🚗",
+            "in_vehicle": "🚗",
+            "Walking": "🚶‍♀️",
+            "on_foot": "🚶‍♂️",
+            "walking": "🚶‍♂️",
+            "Running": "🏃‍♀️",
+            "running": "🏃‍♂️"
+          }
+        }}
       zones: !secret zone_mapper
