@@ -1,0 +1,44 @@
+id: 641a39e0-ccb2-4f85-9e66-442e1c5b1b5e
+trigger:
+  - platform: homeassistant
+    event: start
+    id: start
+  - platform: homeassistant
+    event: shutdown
+    id: shutdown
+action:
+  - choose:
+      - conditions:
+          - alias: "Shutdown"
+            condition: trigger
+            id: shutdown
+          - alias: "Desk Marleen off"
+            condition: state
+            entity_id: switch.bureau_marleen
+            state: "off"
+        sequence:
+          - alias: "Switch on"
+            service: switch.turn_on
+            target:
+              entity_id: switch.bureau_marleen
+          - alias: "Input boolean on"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.printer
+      - conditions:
+          - alias: "Start"
+            condition: trigger
+            id: start
+          - alias: "Input boolean on"
+            condition: state
+            entity_id: input_boolean.printer
+            state: "on"
+        sequence:
+          - alias: "Switch off"
+            service: switch.turn_off
+            target:
+              entity_id: switch.bureau_marleen
+          - alias: "Input boolean of"
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.printer
