@@ -31,14 +31,22 @@ cards:
         entity: cover.slaapkamer
         layout: vertical
         icon: >-
-          {% if is_state('cover.slaapkamer', 'open') %}
+          {% if is_state('cover.slaapkamer', 'opening') %}
+            mdi:arrow-collapse-up
+          {% elif is_state('cover.slaapkamer', 'closing') %}
+            mdi:arrow-collapse-down
+          {% elif is_state_attr('cover.slaapkamer', 'current_position', 100) %}
             mdi:blinds-open
           {% else %}
             mdi:blinds
           {% endif %}
         icon_color: >-
-          {% if is_state('cover.slaapkamer', 'closed') %}
+          {% if states('cover.slaapkamer') in [ 'opening', 'closing' ] %}
+            green
+          {% elif is_state_attr('cover.slaapkamer', 'current_position', 0) %}
             yellow
+          {% elif not is_state_attr('cover.slaapkamer', 'current_position', 100) %}
+            orange
           {% endif %}
       - type: custom:mushroom-template-card
         entity: vacuum.rockrobo_vacuum_v1

@@ -3,9 +3,15 @@ passcode:
   icon: mdi:circle
   variables:
     toggle:
+      pc:
+        passcode: !secret passcode_pc
+        entity: switch.computer_zolder
+      bureau_martijn:
+        passcode: !secret passcode_pc
+        entity: switch.bureau_martijn_template
       server:
         passcode: !secret passcode_server
-        entity: switch.bureau_martijn_2
+        entity: switch.shutdown_server
   sequence:
     - alias: "action"
       choose:

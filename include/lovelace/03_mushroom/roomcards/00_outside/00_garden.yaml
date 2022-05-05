@@ -1,0 +1,51 @@
+type: custom:vertical-stack-in-card
+cards:
+  - type: custom:mushroom-template-card
+    primary: Tuin
+    icon: mdi:tree
+    icon_color: blue
+    layout: horizontal
+    entity: light.groep_tuin
+    secondary: >-
+      {{ state_attr('weather.climacell_daily', 'temperature') }}°C 
+      | {{ states('sensor.br_irradiance') | int }} W/m²
+    tap_action:
+      action: navigate
+      navigation_path: tuin
+  - type: custom:vertical-stack-in-card
+    horizontal: true
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.groep_tuin
+        layout: vertical
+        icon: >-
+          {% if is_state('light.groep_tuin', 'on') %}
+            mdi:lightbulb-group
+          {% else %}
+            mdi:lightbulb-group-off
+          {% endif %}
+        icon_color: >-
+          {% if is_state('light.groep_tuin', 'on') %}
+            yellow
+          {% endif %}
+      - type: custom:mushroom-template-card
+        entity: cover.veranda
+        layout: vertical
+        icon: >-
+          {% if is_state('cover.veranda', 'opening') %}
+            mdi:arrow-expand-horizontal
+          {% elif is_state('cover.veranda', 'closing') %}
+            mdi:arrow-collapse-horizontal
+          {% elif is_state('cover.veranda', 'closed') %}
+            mdi:storefront-outline
+          {% else %}
+            mdi:storefront
+          {% endif %}
+        icon_color: >-
+          {% if states('cover.veranda') in ['opening', 'closing'] %}
+            green
+          {% elif is_state_attr('cover.veranda', 'current_position', 100) %}
+            yellow
+          {% elif not is_state_attr('cover.veranda', 'current_position', 0) %}
+            orange
+          {% endif %}

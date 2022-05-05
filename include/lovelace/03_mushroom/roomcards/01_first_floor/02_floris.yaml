@@ -32,16 +32,22 @@ cards:
         entity: cover.floris
         layout: vertical
         icon: >-
-          {% if is_state('cover.floris_tahoma', 'closed') %}
+          {% if is_state('cover.floris_tahoma', 'opening') %}
+            mdi:arrow-collapse-up
+          {% elif is_state('cover.floris_tahoma', 'closing') %}
+            mdi:arrow-collapse-down
+          {% elif is_state_attr('cover.floris_tahoma', 'current_position', 100) %}
             mdi:blinds-open
           {% else %}
             mdi:blinds
           {% endif %}
         icon_color: >-
-          {% if is_state('cover.floris_tahoma', 'open') %}
-            yellow
-          {% elif states('cover.floris_tahoma') in [ 'opening', 'closing' ] %}
+          {% if states('cover.floris_tahoma') in [ 'opening', 'closing' ] %}
             green
+          {% elif is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
+            yellow
+          {% elif not is_state_attr('cover.floris_tahoma', 'current_position', 100) %}
+            orange
           {% endif %}
       - type: conditional
         conditions:
