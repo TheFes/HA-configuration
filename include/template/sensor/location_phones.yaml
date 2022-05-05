@@ -1,42 +1,47 @@
 sensor:
   - unique_id: 16bc681e-f85f-4f43-91a0-96da3664bc66
     name: Location phone Marleen
-    state: >-
-      {%- if is_state('person.marleen', 'not_home') %}
-        Niet thuis
-      {%- elif not is_state('person.marleen', 'home') %}
-        {{ states('person.marleen') }}
-      {%- elif is_state('sensor.de_buurvrouw_bssid', '2c:3a:fd:bf:2c:fb') %}
-        Zolder
-      {%- elif is_state('sensor.de_buurvrouw_bssid', '2c:3a:fd:df:6d:a5') %}
-        Eerste verdieping
-      {%- 
-        elif is_state('sensor.de_buurvrouw_bssid', '3c:a6:2f:f9:ee:c3') 
-        or is_state('sensor.de_buurvrouw_bssid', '2c:91:ab:e6:1b:7c') 
-      %}
-        Beneden
+    state: &value_template >-
+      {%- set zone = this.attributes.get('zone') %}
+      {%- if zone == 'not_home' %}
+        {%- set activity = this.attributes.get('activity') %}
+        {%- set type = this.attributes.get('phone_type') %}
+        {%- set activities = state_attr('sensor.location_helper', type) | default({}, true) %}
+        {{ activities.get(activity, '❌🏡') }}
+      {%- elif zone != 'home' %}
+        {%- set zones = state_attr('sensor.location_helper', 'zones') | default({}, true) %}
+        {{ zones.get(zone, '❓') }}
       {%- else %}
-        Thuis
+        {%- set wifi = this.attributes.get('wifi') %}
+        {%- set floors = state_attr('sensor.location_helper', 'floors') | default({}, true) %}
+        {{ floors.get(wifi, '🏡') }}
       {%- endif %}
     picture: "/api/image/serve/e261093701adc6a0bd34e9c96b5feacb/512x512"
+    attributes:
+      zone: "{{ states('person.marleen') }}"
+      wifi: "{{ states('sensor.de_buurvrouw_bssid') }}"
+      acivity: "{{ states('sensor.nog_invullen') }}"
+      phone_type: apple
 
   - unique_id: 11fde20f-113c-4d69-9995-e4a7ca5dd45d
     name: Location phone Martijn
-    state: >-
-      {%- if is_state('person.martijn', 'not_home') %}
-        Niet thuis
-      {%- elif not is_state('person.martijn', 'home') %}
-        {{ states('person.martijn') }}
-      {%- elif is_state('sensor.pixel_5_wifi_bssid', '2c:3a:fd:bf:2c:fb') %}
-        Zolder
-      {%- elif is_state('sensor.pixel_5_wifi_bssid', '2c:3a:fd:df:6d:a5') %}
-        Eerste verdieping
-      {%- 
-        elif is_state('sensor.pixel_5_wifi_bssid', '3c:a6:2f:f9:ee:c3') 
-        or is_state('sensor.pixel_5_wifi_bssid', '2c:91:ab:e6:1b:7c') 
-      %}
-        Beneden
-      {%- else %}
-        Thuis
-      {%- endif %}
+    state: *value_template
     picture: "/api/image/serve/7dce8363a8fd22c90115bbada5ff395a/512x512"
+    attributes:
+      zone: "{{ states('person.martijn') }}"
+      wifi: "{{ states('sensor.pixel_5_wifi_bssid') }}"
+      acivity: "{{ states('sensor.pixel_5_gedetecteerde_activiteit') }}"
+      phone_type: android
+
+  - unique_id: bc50c512-e5f0-4404-bbc0-bd5248e60587
+    name: Location Helper
+    state: Helper
+    icon: mdi:map
+    attributes:
+      floors: >
+        {{ { '2c:3a:fd:bf:2c:fb': '🏡2️⃣', '2c:3a:fd:df:6d:a5': '🏡1️⃣', '3c:a6:2f:f9:ee:c3': '🏡0️⃣', '2c:91:ab:e6:1b:7c' : '🏡0️⃣' } }}
+      apple: >
+        {{ { 'Cycling': '🚴‍♀️', 'Automotive': '🚗', 'Walking': '🚶‍♀️', 'Running': '🏃‍♀️' } }}
+      android: >
+        {{ { 'on_bicycle': '🚴‍♂️', 'in_vehicle': '🚗', 'on_foot': '🚶‍♂️', 'walking': '🚶‍♂️', 'running': '🏃‍♂️' } }}
+      zones: !secret zone_mapper
