@@ -12,6 +12,12 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
+### Version 0.5.0 - 4 May 2022
+#### 🔴 BREAKING
+* Due to implemented changes introduced in 2022.5 this version is now required for the script
+#### 🌟 Improvements
+* Code review and implementation of new script actions introduced in HA 2022.5
+
 ### Version 0.4.1/0.4.2 - 22 March 2022
 #### 🌟 Improvements
 * Added a update of Spotify entities before data is stored, so the most recent data is used

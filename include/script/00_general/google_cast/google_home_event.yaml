@@ -45,7 +45,7 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.4.2
+        version: 0.5.0
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
@@ -209,32 +209,27 @@ google_home_event:
               event_data:
                 resume_data: "{{ resume_data }}"
             - alias: "Persistant backup of player_data"
-              choose:
-                - conditions: "{{ notify is defined and iif(notify) }}"
-                  sequence:
-                    - service: "{{ notify }}"
-                      data:
-                        message: >
-                          {%- set data = { 'resume_data': resume_data } %}
-                          '{{ (data | string).replace("'","|").replace('|', '"') }}'
-                    - service: command_line.reload
+              if: "{{ notify is defined and iif(notify) }}"
+              then:
+                - service: "{{ notify }}"
+                  data:
+                    message: >
+                      {%- set data = { 'resume_data': resume_data } %}
+                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                - service: command_line.reload
             - alias: "Interrupt YouTube music if needed"
-              choose:
-                - conditions:
-                    - alias: "Anything playing"
-                      condition: template
-                      value_template: "{{ ytube_music_data | count > 0 }}"
-                  sequence:
-                    - service: ytube_music_player.call_method
-                      data:
-                        entity_id: >
-                          {{
-                            ytube_music_data
-                                      | rejectattr('target', 'in', target_list if target is defined else integration_entities('cast'))
-                                      | map(attribute='player')
-                                      | list
-                          }}
-                        command: interrupt_start
+              if: "{{ ytube_music_data | count > 0 }}"
+              then:
+                - service: ytube_music_player.call_method
+                  data:
+                    entity_id: >
+                      {{
+                        ytube_music_data
+                                  | rejectattr('target', 'in', target_list if target is defined else integration_entities('cast'))
+                                  | map(attribute='player')
+                                  | list
+                      }}
+                    command: interrupt_start
             - service: media_player.turn_off
               target:
                 entity_id: "{{ integration_entities('cast') | select('in', target_list) | list if target is defined else integration_entities('cast') }}"
@@ -256,28 +251,20 @@ google_home_event:
                   %}
                   {{ player_list | select('in', target_list) | list if target is defined else player_list }}
             - alias: "Anything to resume?"
-              choose:
-                - conditions:
-                    - alias: "Anything playing"
-                      condition: template
-                      value_template: "{{ players_to_resume | count > 0 }}"
-                  sequence:
-                    - alias: "Resume players"
-                      repeat:
-                        count: "{{ players_to_resume | count }}"
-                        sequence:
-                          - alias: "Start perform resume script"
-                            service: script.turn_on
-                            target:
-                              entity_id: script.google_home_resume
-                            data:
-                              variables:
-                                player_data: "{{ player_data }}"
-                                spotify_data: "{{ spotify_data }}"
-                                ytube_music_data: "{{ ytube_music_data }}"
-                                players_to_resume: "{{ players_to_resume }}"
-                                action: []
-                                event_script: true
+              if: "{{ players_to_resume | count > 0 }}"
+              then:
+                - alias: "Resume players"
+                  service: script.turn_on
+                  target:
+                    entity_id: script.google_home_resume
+                  data:
+                    variables:
+                      player_data: "{{ player_data }}"
+                      spotify_data: "{{ spotify_data }}"
+                      ytube_music_data: "{{ ytube_music_data }}"
+                      players_to_resume: "{{ players_to_resume }}"
+                      action: []
+                      event_script: true
             - variables:
                 resume_data: >
                   {{ state_attr(sensor, 'resume_data') | rejectattr('resume_id', 'eq', resume_id) | list }}
@@ -285,12 +272,11 @@ google_home_event:
               event_data:
                 resume_data: "{{ resume_data }}"
             - alias: "Persistant backup of player_data"
-              choose:
-                - conditions: "{{ notify is defined and iif(notify) }}"
-                  sequence:
-                    - service: "{{ notify }}"
-                      data:
-                        message: >
-                          {%- set data = { 'resume_data': resume_data } %}
-                          '{{ (data | string).replace("'","|").replace('|', '"') }}'
-                    - service: command_line.reload
+              if: "{{ notify is defined and iif(notify) }}"
+              then:
+                - service: "{{ notify }}"
+                  data:
+                    message: >
+                      {%- set data = { 'resume_data': resume_data } %}
+                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                - service: command_line.reload

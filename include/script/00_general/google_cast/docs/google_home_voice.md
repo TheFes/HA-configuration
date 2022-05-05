@@ -16,13 +16,13 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.3.6 - 8 April 2022
-#### ✨ New features
-* Support for `extra` variables in service calls added. This is a new feature of the Google Home Resume script. Version 2.0.0 or higher of the Google Home Resume script is required for this. For more information see [here](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#how-to-use-the-script-19)
-
-### Version 1.3.5 - 2 April 2022
+### Version 1.4.0 - 4 May 2022
+#### 🔴 BREAKING
+* Due to implemented changes introduced in 2022.5 this version is now required for the script
 #### 🌟 Improvements
-* Ambient sound will now be stopped after the data from the media_player is stored
+* Code review and implementation of new script actions introduced in HA 2022.5
+#### 🐛 Bug fixes
+* Bug fix in case target replacement was used (Ambient sound would not be stopped)
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
