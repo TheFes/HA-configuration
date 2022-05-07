@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.4.1 - 7 May 2022
+#### 🐛 Bug fixes
+* Fix for restore in case there were non playing entities
+
 ### Version 2.4.0 - 5 May 2022
 #### 🔴 BREAKING
 * Due to implemented changes introduced in 2022.5 this version is now required for the script

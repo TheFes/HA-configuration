@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.4.0
+        version: 2.4.1
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -127,7 +127,8 @@ google_home_resume:
               and primary_spotcast in accounts
               )
           }}
-        ytube_music_entities: "{{ integration_entities('ytube_music_player') }}"
+        ytube_music_entities: >
+          {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
         target_list: >
           {%- if target_list is defined %}
             {{ target_list }}
@@ -620,7 +621,7 @@ google_home_resume:
             entity_id: "{{ target_no_volume }}"
         - wait_template: >
             {{ expand(target_no_volume) | selectattr('state', 'eq', 'off') | list | count == 0 }}
-          timeout: "00:00:01"
+          timeout: "00:00:03"
     - alias: Add volume for players which were off
       variables:
         player_data: >
@@ -629,7 +630,7 @@ google_home_resume:
             {%- for entity in player_data %}
               {%- if entity.state == 'off' and entity.entity_id in target_not_playing %}
                 {%- set volume = state_attr(entity.entity_id, 'volume_level') %}
-                {%- set volume = volume if volume | is_number else default_restore_volume %}
+                {%- set volume = volume if volume | is_number else default_volume_level %}
                 {%- set add_volume = dict(volume_level = volume) %}
                 {%- set ns.info = ns.info + [ dict(entity, **add_volume) ] %}
               {%- else %}
