@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.4.1
+        version: 2.4.2
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -651,10 +651,10 @@ google_home_resume:
             command: interrupt_start
     - alias: "Perform service calls defined in action"
       repeat:
-        count: "{{ service_calls | count }}"
+        for_each: "{{ service_calls }}"
         sequence:
           - variables:
-              service_call: "{{ service_calls[repeat.index -1] }}"
+              service_call: "{{ repeat.item }}"
               target: >
                 {% set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
@@ -805,53 +805,52 @@ google_home_resume:
                 event_script: "{{ event_script }}"
                 resume: "{{ repeat.item in players_to_resume }}"
     - alias: "Resume ytube players which are a target"
-      choose:
-        - conditions: >
-            {{ ytube_music_data | selectattr('target', 'in', players_to_resume) | list | count > 0 }}
-          sequence:
-            - variables:
-                player_ytube: >
-                  {{
-                    ytube_music_data
-                              | rejectattr('target', 'in', players_to_resume)
-                              | map(attribute='player')
-                              | list
-                  }}
-                target_ytube: >
-                  {%- set y = ytube_music_data
-                              | rejectattr('target', 'in', players_to_resume)
-                              | map(attribute='target')
-                              | list
-                  %}
-                  {%- set members = player_data | selectattr('entity_id', 'in', y) | sum('members', []) %}
-                  {{ (y + members) | reject('in', speaker_group_list) | unique | list }}
-            - service: ytube_music_player.call_method
-              data:
-                entity_id: "{{ player_ytube }}"
-                command: interrupt_resume
-            - alias: "Set right position for ytube_music"
-              repeat:
-                for_each: "{{ player_ytube }}"
-                sequence:
-                  - variables:
-                      player: "{{ ytube_music_data | selectattr('player', 'eq', repeat.item) | join }}"
-                  - service: script.turn_on
-                    target:
-                      entity_id: script.google_home_resume_ytube_seek
-                    data:
-                      variables:
-                        player_data: "{{ player_data }}"
-                        player: "{{ player }}"
-                        target_ytube: "{{ target_ytube }}"
-            - alias: "Remove entity from group"
-              service: group.set
-              data:
-                object_id: resume_active_ghresume_{{ context.id }}
-                name: "Entities currently active with Google Home Resume script"
-                icon: mdi:autorenew
-                entities: >
-                  {%- set current = state_attr('group.resume_active', 'entity_id') %}
-                  {{ iif(current == none, [], current) | reject('in', player_ytube) | list }}
+      if: >
+        {{ ytube_music_data | selectattr('target', 'in', players_to_resume) | list | count > 0 }}
+      then:
+        - variables:
+            player_ytube: >
+              {{
+                ytube_music_data
+                          | rejectattr('target', 'in', players_to_resume)
+                          | map(attribute='player')
+                          | list
+              }}
+            target_ytube: >
+              {%- set y = ytube_music_data
+                          | rejectattr('target', 'in', players_to_resume)
+                          | map(attribute='target')
+                          | list
+              %}
+              {%- set members = player_data | selectattr('entity_id', 'in', y) | sum('members', []) %}
+              {{ (y + members) | reject('in', speaker_group_list) | unique | list }}
+        - service: ytube_music_player.call_method
+          data:
+            entity_id: "{{ player_ytube }}"
+            command: interrupt_resume
+        - alias: "Set right position for ytube_music"
+          repeat:
+            for_each: "{{ player_ytube }}"
+            sequence:
+              - variables:
+                  player: "{{ ytube_music_data | selectattr('player', 'eq', repeat.item) | join }}"
+              - service: script.turn_on
+                target:
+                  entity_id: script.google_home_resume_ytube_seek
+                data:
+                  variables:
+                    player_data: "{{ player_data }}"
+                    player: "{{ player }}"
+                    target_ytube: "{{ target_ytube }}"
+        - alias: "Remove entity from group"
+          service: group.set
+          data:
+            object_id: resume_active_ghresume_{{ context.id }}
+            name: "Entities currently active with Google Home Resume script"
+            icon: mdi:autorenew
+            entities: >
+              {%- set current = state_attr('group.resume_active', 'entity_id') %}
+              {{ iif(current == none, [], current) | reject('in', player_ytube) | list }}
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
@@ -862,6 +861,7 @@ google_home_resume:
         {{ 
           states.script | selectattr('entity_id', 'search', 'script.google_home_resume')
                         | rejectattr('entity_id', 'eq', this.entity_id)
+                        | selectattr('attributes.current', 'defined')
                         | map(attribute='attributes.current')
                         | sum == 0
         }}
