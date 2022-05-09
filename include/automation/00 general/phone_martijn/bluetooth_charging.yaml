@@ -2,11 +2,11 @@ id: d219003e-150b-49fc-8b9b-e627af61d560
 alias: "00 📱 Turn off bluetooth during night"
 trigger:
   - platform: state
-    entity_id: sensor.pixel_5_type_oplader
+    entity_id: sensor.pixel_5_charger_type
     to: "wireless"
     id: "off"
   - platform: state
-    entity_id: sensor.pixel_5_type_oplader
+    entity_id: sensor.pixel_5_charger_type
     from: "wireless"
     id: "on"
   - platform: time
@@ -24,7 +24,7 @@ action:
             before: "06:00:00"
           - alias: "Wireless charging"
             condition: state
-            entity_id: sensor.pixel_5_type_oplader
+            entity_id: sensor.pixel_5_charger_type
             state: "wireless"
         sequence:
           - alias: "Bluetooth off"

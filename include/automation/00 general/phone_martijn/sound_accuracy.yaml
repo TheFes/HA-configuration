@@ -11,13 +11,13 @@ trigger:
     from: home
     id: "away"
   - platform: state
-    entity_id: sensor.pixel_5_gedetecteerde_activiteit
+    entity_id: sensor.pixel_5_detected_activity
     to:
       - "on_bicycle"
       - "in_vehicle"
     id: "on_the_move"
   - platform: state
-    entity_id: sensor.pixel_5_gedetecteerde_activiteit
+    entity_id: sensor.pixel_5_detected_activity
     from:
       - "on_bicycle"
       - "in_vehicle"
