@@ -45,7 +45,7 @@ sensor:
     attributes:
       zone: "{{ states('person.martijn') }}"
       wifi: "{{ states('sensor.pixel_5_wifi_bssid') }}"
-      acivity: "{{ states('sensor.pixel_5_gedetecteerde_activiteit') }}"
+      acivity: "{{ states('sensor.pixel_5_detected_activity') }}"
 
   - unique_id: a240cb3f-d607-4047-95cc-9201c3cadeb7
     name: Zone Mapper

@@ -7,13 +7,16 @@ switches:
         target:
           entity_id: switch.bureau_martijn
     turn_off:
-      - if: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
+      - variables:
+          pc_on: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
+      - if: "{{ pc_on }}"
         then:
           - service: hassio.addon_stdin
             data:
               addon: core_rpc_shutdown
               input: computer_zolder
       - wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
+      - delay: "{{ 30 if pc_on else 0 }}"
       - service: switch.turn_off
         target:
           entity_id: switch.bureau_martijn
