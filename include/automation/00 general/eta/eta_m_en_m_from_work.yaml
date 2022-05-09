@@ -11,6 +11,12 @@ trigger:
     entity_id: person.martijn
     from: "Fujifilm"
     to: "not_home"
+  - platform: state
+    entity_id:
+      - person.martijn
+      - person.marleen
+    to: "home"
+    id: "home"
 variables:
   name: "{{ trigger.to_state.entity_id | replace('person.', '') }}"
   notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_5' }}"
@@ -23,13 +29,28 @@ variables:
       {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
     {%- endif %}
 action:
-  - alias: "Send notification to phone"
-    service: "{{ notify }}"
-    data:
-      title: "{{ name | capitalize }} is onderweg"
-      message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
-      data:
-        channel: ETA
-        ttl: 0
-        priority: high
-        notification_icon: mdi:car
+  - if: "{{ trigger.id == 'home' }}"
+    then:
+      - alias: "Set input_text"
+        service: input_text.set_value
+        target:
+          entity_id: "input_text.eta_{{ name }}"
+        data:
+          value: ""
+    else:
+      - alias: "Send notification to phone"
+        service: "{{ notify }}"
+        data:
+          title: "{{ name | capitalize }} is onderweg"
+          message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
+          data:
+            channel: ETA
+            ttl: 0
+            priority: high
+            notification_icon: mdi:car
+      - alias: "Set input_text"
+        service: input_text.set_value
+        target:
+          entity_id: "input_text.eta_{{ name }}"
+        data:
+          value: "🚗 ETA {{ name | capitalize }}: {{ eta }}"
