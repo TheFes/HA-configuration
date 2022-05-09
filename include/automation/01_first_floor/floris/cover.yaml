@@ -15,11 +15,16 @@ trigger:
     at: "18:00:00"
     id: open
 action:
-  - if: "{{ trigger.id != open }}"
+  - if: "{{ trigger.id != 'open' }}"
     then:
       - alias: "Warm day"
         condition: template
         value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
+      - alias: "Sun not rising"
+        condition: state
+        entity_id: sun.sun
+        attribute: rising
+        state: false
       - alias: "Sunny or partly cloudy"
         condition: template
         value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"

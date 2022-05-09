@@ -16,7 +16,7 @@ trigger:
     to: "below_horizon"
     id: open
 action:
-  - if: "{{ trigger.id != open }}"
+  - if: "{{ trigger.id != 'open' }}"
     then:
       - alias: "Warm day"
         condition: template
@@ -32,10 +32,6 @@ action:
         condition: numeric_state
         entity_id: sensor.slaapkamer_temp
         above: 20
-      - alias: "Light inside"
-        condition: state
-        entity_id: binary_sensor.slaapkamer_light_inside
-        state: "on"
       - if:
           - alias: "Cleaning time"
             condition: time
