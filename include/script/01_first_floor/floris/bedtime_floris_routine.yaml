@@ -4,33 +4,17 @@ bedtime_floris_routine:
     - alias: "Light on"
       service: light.turn_on
       target:
-        entity_id: light.floris_template
-    - alias: "Wait until player is idle"
-      wait_template: "{{ states('media_player.floris_mini') in [ 'idle', 'off'] }}"
-    - alias: "Play bedtime songs"
-      service: spotcast.start
-      data:
-        entity_id: media_player.floris_mini
-        account: floris
-        uri: spotify:artist:4lZvaAA1Gi2vrGLusUrEBV
-        shuffle: true
-        force_playback: true
-    - alias: "Wait until player is playing"
-      wait_template: "{{ state_attr('media_player.floris_mini', 'app_name') == 'Spotify' }}"
-    - alias: "Increase voulume media player"
-      service: media_player.volume_set
-      target:
-        entity_id: media_player.floris_mini
-      data:
-        volume_level: 0.35
+        entity_id:
+          - light.floris_template
+          - light.floris_leeslamp
     - alias: "Wait until light is turned off"
       wait_for_trigger:
         - platform: state
           entity_id: light.floris
           to: "off"
           from: "on"
-    - alias: "Turn off music"
-      service: media_player.turn_off
+    - alias: "Turn reading light"
+      service: light.turn_off
       target:
-        entity_id: media_player.floris_mini
+        entity_id: light.floris_leeslamp
   mode: restart
