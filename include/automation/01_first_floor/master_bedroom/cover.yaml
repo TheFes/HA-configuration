@@ -1,0 +1,68 @@
+id: dd78d7db-7bd2-48ce-9543-64ee16d98732
+alias: "F0Z 😎 Open cover when needed"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.trend_slaapkamer_temp
+    to: "on"
+  - platform: template
+    value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
+  - platform: template
+    value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+  - platform: numeric_state
+    entity_id: sensor.slaapkamer_temp
+    above: 20
+  - platform: state
+    entity_id: sun.sun
+    to: "below_horizon"
+    id: open
+action:
+  - if: "{{ trigger.id != open }}"
+    then:
+      - alias: "Warm day"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
+      - alias: "Sunny or partly cloudy"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+      - alias: "Temperature rising"
+        condition: state
+        entity_id: binary_sensor.trend_slaapkamer_temp
+        state: "on"
+      - alias: "Warm inside"
+        condition: numeric_state
+        entity_id: sensor.slaapkamer_temp
+        above: 20
+      - alias: "Light inside"
+        condition: state
+        entity_id: binary_sensor.slaapkamer_light_inside
+        state: "on"
+      - if:
+          - alias: "Cleaning time"
+            condition: time
+            after: " 08:30:00"
+            before: " 11:00:00"
+            weekday:
+              - "thu"
+        then:
+          - alias: "Close left and right cover"
+            service: cover.close_cover
+            target:
+              entity_id:
+                - cover.slaapkamer_links_template
+                - cover.slaapkamer_rechts_template
+          - alias: "Set middle cover to 50%"
+            service: cover.set_cover_position
+            target:
+              entity_id: cover.slaapkamer_midden_template
+            data:
+              position: 50
+        else:
+          - alias: "Close cover"
+            service: cover.close_cover
+            target:
+              entity_id: cover.slaapkamer
+    else:
+      - alias: "Open cover"
+        service: cover.open_cover
+        target:
+          entity_id: cover.slaapkamer

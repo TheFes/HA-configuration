@@ -1,0 +1,42 @@
+id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
+alias: "F0Z 😎 Open cover when needed"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.trend_pepijn_temp
+    to: "on"
+  - platform: template
+    value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
+  - platform: template
+    value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+  - platform: numeric_state
+    entity_id: sensor.pepijn_temp
+    above: 20
+  - platform: time
+    at: "18:00:00"
+    id: open
+action:
+  - if: "{{ trigger.id != open }}"
+    then:
+      - alias: "Warm day"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
+      - alias: "Sunny or partly cloudy"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+      - alias: "Temperature rising"
+        condition: state
+        entity_id: binary_sensor.trend_pepijn_temp
+        state: "on"
+      - alias: "Warm inside"
+        condition: numeric_state
+        entity_id: sensor.pepijn_temp
+        above: 20
+      - alias: "Close cover"
+        service: cover.close_cover
+        target:
+          entity_id: cover.pepijn
+    else:
+      - alias: "Open cover"
+        service: cover.open_cover
+        target:
+          entity_id: cover.pepijn
