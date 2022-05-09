@@ -25,6 +25,20 @@ binary_sensor:
           - ON for at most 1s
           - OFF for at most 1s
           - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${device_name}
+                click_type: triple
+          - switch.toggle: shelly_relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
           - OFF for at least 0.2s
         then:
           - if:
