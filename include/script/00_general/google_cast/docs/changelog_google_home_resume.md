@@ -8,7 +8,7 @@
 
 ### Version 2.4.2 - 8 May 2022
 #### 🌟 Improvements
-* Changes some more service calls to the new 2022.5 versions
+* Changed some more service calls to the new 2022.5 versions
 #### 🐛 Bug fixes
 * Fix error caused by orphan helper script which restored the state of non playing entites before 2.4.0
 
