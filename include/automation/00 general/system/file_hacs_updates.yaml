@@ -1,0 +1,69 @@
+id: 9d731a57-843d-452e-96f1-a35469df2d86
+alias: "00 🔧 Update HACS log"
+trigger:
+  - platform: state
+    entity_id: sensor.hacs_installed
+    id: update
+  - platform: time
+    at: "00:00:00"
+    id: all
+action:
+  - if: "{{ trigger.id == 'all' }}"
+    then:
+      - alias: "All integrations"
+        service: notify.hacs_installed
+        data:
+          message: |
+            {%- set h = state_attr('sensor.hacs_installed', 'installed') %}
+            Update:
+            ## ALL ##
+            Total number: {{ states('sensor.hacs_installed') | int }}
+            {%- for i in h %}
+              * Name: {{ i.name }}
+                URL: {{ i.url }}
+                Version: {{ i.version }}
+            {%- endfor %}
+    else:
+      - variables:
+          sf: "{{ trigger.from_state.state | int}}"
+          st: "{{ trigger.to_state.state | int }}"
+          i_f: "{{ trigger.from_state.attributes.installed }}"
+          i_t: "{{ trigger.to_state.attributes.installed }}"
+      - alias: "Which message"
+        choose:
+          - conditions: "{{ st > sf }}"
+            sequence:
+              - alias: "Something added"
+                service: notify.hacs_installed
+                data:
+                  message: |
+                    {% set i = i_t | reject('in', i_f) | list %}
+                    Update:
+                    ## REMOVED ##
+                      * Name: {{ i[0].name }}
+                        URL: {{ i[0].url }}
+                        Version: {{ i[0].version }}
+          - conditions: "{{ st < sf }}"
+            sequence:
+              - alias: "Something removed"
+                service: notify.hacs_installed
+                data:
+                  message: |
+                    {% set i = i_f | reject('in', i_t) | list %}
+                    Update:
+                    ## REMOVED ##
+                      * Name: {{ i[0].name }}
+                        URL: {{ i[0].url }}
+                        Version: {{ i[0].version }}
+        default:
+          - alias: "Something changed"
+            service: notify.hacs_installed
+            data:
+              message: |
+                {% set i = i_f | reject('in', i_t) | list %}
+                Update:
+                ## VERSION CHANGE ##
+                  * Name: {{ i[0].name }}
+                    URL: {{ i[0].url }}
+                    From: {{ i[0].version }}
+                    To: {{ i_t | selectattr('name', 'eq', i[0].name) | map(attribute='version') | join }}
