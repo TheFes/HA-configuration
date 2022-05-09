@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.4.2
+        version: 2.4.3
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -896,6 +896,8 @@ google_home_resume_perform_resume:
           )
         }}
       timeout: "00:00:30"
+    - variables:
+        state_changed: "{{ wait.completed }}"
     - alias: "Add entity to the restore active group"
       service: group.set
       data:
@@ -907,6 +909,19 @@ google_home_resume_perform_resume:
           {%- set current = state_attr(g, 'entity_id') %}
           {%- set current = [] if current == none else current | list %}
           {{ ( current + [ player.entity_id ] ) | unique | list }}
+    - alias: "Wait until player is idle again, and all other scripts are finished"
+      wait_template: >
+        {%- set current = expand(states.group
+                            | selectattr('entity_id', 'search', 'group.resume_script_target_')
+                            | rejectattr('entity_id', 'search', context)
+                            | map(attribute='entity_id')
+                            | list) | map(attribute='entity_id') | list
+        %}
+        {%- set checklist = [player.entity_id] + player.members %}
+        {{
+          expand(checklist) | rejectattr('state', 'in', ['idle', 'off']) | list | count == 0
+          and current | select('eq', player.entity_id) | list | count == 0
+        }}
     - alias: "Restore volume in case volume has changed"
       if: >
         {{ player.volume_level | round(2, default=0) != state_attr(player.entity_id, 'volume_level') | round(2, default=0) }}
@@ -934,7 +949,7 @@ google_home_resume_perform_resume:
           target:
             entity_id: "{{ player.entity_id }}"
     - alias: "Resume needed?"
-      if: "{{ wait.completed and resume }}"
+      if: "{{ state_changed and resume }}"
       then:
         - alias: "Set variables"
           variables:
@@ -953,19 +968,6 @@ google_home_resume_perform_resume:
                 and player.media_content_id.startswith('http')
                 and not player.entity_id in y
               }}
-        - alias: "Wait until player is idle again, and all other scripts are finished"
-          wait_template: >
-            {%- set current = expand(states.group
-                                | selectattr('entity_id', 'search', 'group.resume_script_target_')
-                                | rejectattr('entity_id', 'search', context)
-                                | map(attribute='entity_id')
-                                | list) | map(attribute='entity_id') | list
-            %}
-            {%- set checklist = [player.entity_id] + player.members %}
-            {{
-              expand(checklist) | rejectattr('state', 'in', ['idle', 'off']) | list | count == 0
-              and current | select('eq', player.entity_id) | list | count == 0
-            }}
         - alias: "Resume playing"
           choose:
             - alias: "YouTube?"

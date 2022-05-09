@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.4.3 - 9 May 2022
+#### 🐛 Bug fixes
+* Volume restore and turning off players with screen which were not playing was performed too soon
+
 ### Version 2.4.2 - 8 May 2022
 #### 🌟 Improvements
 * Changes some more service calls to the new 2022.5 versions
