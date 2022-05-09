@@ -17,6 +17,8 @@ trigger:
     entity_id: light.zolder_bol
     from: "on"
     to: "off"
+  - platform: homeassistant
+    event: start
 condition:
   - alias: "Computer Marleen off?"
     condition: state
