@@ -4,25 +4,44 @@ square: false
 columns: 2
 cards:
   - type: custom:mushroom-template-card
-    entity: switch.bureau_martijn
-    primary: Bureau Martijn
+    entity: switch.bureau_martijn_template
+    primary: Bureau Martijn (PC)
     secondary: >-
       {{ 'Aan' if is_state('switch.bureau_martijn', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
     icon: mdi:human-male
     icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
     tap_action:
-      action: toggle
+      action: fire-dom-event
+      browser_mod:
+        command: popup
+        title: Passcode
+        card:
+          type: vertical-stack
+          cards:
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/numpad-pc.yaml
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_2
-    primary: Bureau Martijn II
+    primary: Bureau Martijn (Netwerk)
     secondary: >-
       {{ 'Aan' if is_state('switch.bureau_martijn_2', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
     icon: mdi:human-male-male
     icon_color: "{{ 'blue' if is_state('switch.bureau_martijn_2', 'on') }}"
     tap_action:
-      action: toggle
+      action: fire-dom-event
+      browser_mod:
+        command: popup
+        title: Passcode
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:mushroom-title-card
+              title: "Let op: Als deze schakelaar uit staat, heeft de server geen internet meer!"
+              alignment: center
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/numpad-bm2.yaml
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
@@ -43,20 +62,8 @@ cards:
         card:
           type: vertical-stack
           cards:
-            - !include /config/include/lovelace/03_mushroom/cards/general/passcod/numpad.yaml
-            - !include /config/include/lovelace/03_mushroom/cards/general/passcod/code.yaml
-            - type: custom:mushroom-template-card
-              icon: mdi:send
-              layout: vertical
-              icon_color: >-
-                {% set p = states('input_text.passcode') %}
-                {{ 'blue' if p | count == 4 }}
-              tap_action:
-                action: call-service
-                service: script.passcode
-                service_data:
-                  action: toggle
-                  what: server
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/numpad-server.yaml
+            - !include /config/include/lovelace/03_mushroom/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.bureau_marleen
     primary: Bureau Marleen

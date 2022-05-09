@@ -18,7 +18,15 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state('binary_sensor.computer_zolder', 'on') }}"
         tap_action:
-          action: toggle
+          action: fire-dom-event
+          browser_mod:
+            command: popup
+            title: Passcode
+            card:
+              type: vertical-stack
+              cards:
+                - !include /config/include/lovelace/03_mushroom/cards/general/passcode/numpad-pc.yaml
+                - !include /config/include/lovelace/03_mushroom/cards/general/passcode/code.yaml
       - type: custom:mushroom-template-card
         primary: iMac
         icon: mdi:desktop-mac

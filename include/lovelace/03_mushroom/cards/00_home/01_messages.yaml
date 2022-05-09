@@ -33,3 +33,9 @@ cards:
         {%- set total = h * 3600 + m *60 %}
         🧺 Wasmachine klaar rond {{ (now() + timedelta(seconds = total)).strftime('%H:%M') }}
       {%- endif %}
+      {%- if iif(states('input_text.eta_martijn')) %}
+        {{ states('input_text.eta_martijn') }}
+      {%- endif %}
+      {%- if iif(states('input_text.eta_marleen')) %}
+        {{ states('input_text.eta_marleen') }}
+      {%- endif %}
