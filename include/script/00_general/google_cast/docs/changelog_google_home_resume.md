@@ -3,6 +3,8 @@
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
 ### Version 2.4.3 - 9 May 2022
+#### 🌟 Improvements
+* Add `continue_on_error: true` to service calls provided in `action`
 #### 🐛 Bug fixes
 * Volume restore and turning off players with screen which were not playing was performed too soon
 

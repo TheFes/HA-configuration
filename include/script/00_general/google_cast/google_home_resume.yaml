@@ -758,6 +758,7 @@ google_home_resume:
                         large_text: "{{ extra.screen_tts.get('large_text', '') }}"
                         small_text: "{{ extra.screen_tts.get('small_text', '') }}"
                         picture_url: "{{ extra.screen_tts.get('picture_url', '') }}"
+                    continue_on_error: true
           - service: "{{ service_call.service }}"
             target: >
               {%- if screen and tts %}
@@ -768,6 +769,7 @@ google_home_resume:
                 {{ target }}
               {%- endif %}
             data: "{{ data }}"
+            continue_on_error: true
           - alias: "Wait until targets are playing and idle again if needed"
             if: "{{ wait_set }}"
             then:
