@@ -1,6 +1,7 @@
 sensor:
   unique_id: 0cf831e0-bd64-44cb-867e-31835d77f062
   name: HACS installed
+  icon: mdi:robot
   state: >
     {{ expand(integration_entities('hacs'))
         | selectattr('attributes.installed_version', 'defined')

@@ -1,5 +1,7 @@
 id: 9d731a57-843d-452e-96f1-a35469df2d86
 alias: "00 🔧 Update HACS log"
+mode: queued
+max: 50
 trigger:
   - platform: state
     entity_id: sensor.hacs_installed
@@ -56,14 +58,18 @@ action:
                         URL: {{ i[0].url }}
                         Version: {{ i[0].version }}
         default:
-          - alias: "Something changed"
-            service: notify.hacs_installed
-            data:
-              message: |
-                {% set i = i_f | reject('in', i_t) | list %}
-                Update:
-                ## VERSION CHANGE ##
-                  * Name: {{ i[0].name }}
-                    URL: {{ i[0].url }}
-                    From: {{ i[0].version }}
-                    To: {{ i_t | selectattr('name', 'eq', i[0].name) | map(attribute='version') | join }}
+          - if: >
+              {% set i = i_f | reject('in', i_t) | list %}
+              {{ i[0].version != i_t | selectattr('name', 'eq', i[0].name) | map(attribute='version') | join }}
+            then:
+              - alias: "Something changed"
+                service: notify.hacs_installed
+                data:
+                  message: |
+                    {% set i = i_f | reject('in', i_t) | list %}
+                    Update:
+                    ## VERSION CHANGE ##
+                      * Name: {{ i[0].name }}
+                        URL: {{ i[0].url }}
+                        From: {{ i[0].version }}
+                        To: {{ i_t | selectattr('name', 'eq', i[0].name) | map(attribute='version') | join }}
