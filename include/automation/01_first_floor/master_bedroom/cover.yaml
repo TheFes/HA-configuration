@@ -7,7 +7,7 @@ trigger:
   - platform: template
     value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
   - platform: template
-    value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+    value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partlycloudy'] }}"
   - platform: numeric_state
     entity_id: sensor.slaapkamer_temp
     above: 20
@@ -23,7 +23,14 @@ action:
         value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
       - alias: "Sunny or partly cloudy"
         condition: template
-        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+        value_template: >
+          {{
+            'sunny' in state_attr('weather.climacell_hourly', 'forecast')[0:1] | map(attribute='condition') | list
+            or 'partlycloudy' in state_attr('weather.climacell_hourly', 'forecast')[0:1] | map(attribute='condition') | list
+          }}
+      - alias: "No rain upcoming"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].precipitation == 0 }}"
       - alias: "Temperature rising"
         condition: state
         entity_id: binary_sensor.trend_slaapkamer_temp
@@ -40,6 +47,9 @@ action:
             weekday:
               - "thu"
         then:
+          - alias: "Screens not already correctly set"
+            condition: template
+            value_template: "{{ not (16 > state_attr('cover.slaapkamer', 'current_position') > 17) }}"
           - alias: "Close left and right cover"
             service: cover.close_cover
             target:
@@ -53,11 +63,17 @@ action:
             data:
               position: 50
         else:
+          - alias: "Screen (partly) open"
+            condition: template
+            value_template: "{{ state_attr('cover.slaapkamer', 'current_position') != 0 }}"
           - alias: "Close cover"
             service: cover.close_cover
             target:
               entity_id: cover.slaapkamer
     else:
+      - alias: "Screen not completely open"
+        condition: template
+        value_template: "{{ state_attr('cover.slaapkamer', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:

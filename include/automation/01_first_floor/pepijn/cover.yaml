@@ -1,18 +1,15 @@
-id: dd78d7db-7bd2-48ce-9543-64ee16d98732
-alias: "F1P 😎 Open cover Pepijn when needed"
+id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
+alias: "F1F 😎 Open cover Floris when needed"
 trigger:
   - platform: state
-    entity_id: binary_sensor.floris_light_inside
-    to: "on"
-  - platform: state
-    entity_id: binary_sensor.trend_floris_temp
+    entity_id: binary_sensor.trend_pepijn_temp
     to: "on"
   - platform: template
     value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
   - platform: template
     value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
   - platform: numeric_state
-    entity_id: sensor.floris_temp
+    entity_id: sensor.pepijn_temp
     above: 20
   - platform: time
     at: "18:00:00"
@@ -23,32 +20,41 @@ action:
       - alias: "Warm day"
         condition: template
         value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature > 18 }}"
-      - alias: "Sun not rising"
+      - alias: "Sun rising"
         condition: state
         entity_id: sun.sun
         attribute: rising
-        state: false
+        state: true
       - alias: "Sunny or partly cloudy"
         condition: template
-        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+        value_template: >
+          {{
+            'sunny' in state_attr('weather.climacell_hourly', 'forecast')[0:1] | map(attribute='condition') | list
+            or 'partlycloudy' in state_attr('weather.climacell_hourly', 'forecast')[0:1] | map(attribute='condition') | list
+          }}
+      - alias: "No rain upcoming"
+        condition: template
+        value_template: "{{ state_attr('weather.climacell_hourly', 'forecast')[0].precipitation == 0 }}"
       - alias: "Temperature rising"
         condition: state
-        entity_id: binary_sensor.trend_floris_temp
+        entity_id: binary_sensor.trend_pepijn_temp
         state: "on"
       - alias: "Warm inside"
         condition: numeric_state
-        entity_id: sensor.floris_temp
+        entity_id: sensor.pepijn_temp
         above: 20
-      - alias: "Light inside"
-        condition: state
-        entity_id: binary_sensor.floris_light_inside
-        state: "on"
+      - alias: "Screen (partly) open"
+        condition: template
+        value_template: "{{ state_attr('cover.pepijn', 'current_position') != 0 }}"
       - alias: "Close cover"
         service: cover.close_cover
         target:
-          entity_id: cover.floris
+          entity_id: cover.pepijn
     else:
+      - alias: "Screen not completely open"
+        condition: template
+        value_template: "{{ state_attr('cover.pepijn', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:
-          entity_id: cover.floris
+          entity_id: cover.pepijn
