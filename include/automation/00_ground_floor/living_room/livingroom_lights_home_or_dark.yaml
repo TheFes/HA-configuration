@@ -78,26 +78,24 @@ action:
               - light.tv_lamp
               - light.keukenspotjes
               - light.speelhoek
+              - light.fotoboek
           - alias: "TV on, bedtime children or holiday mode"
             choose:
               - conditions:
-                  - condition: or
-                    conditions:
-                      - condition: and
-                        conditions:
-                          - condition: not
-                            conditions:
-                              - alias: "TV aan?"
-                                condition: state
-                                entity_id: media_player.nvidia_shield
-                                state: "off"
-                          - alias: "After bedtime?"
-                            condition: time
-                            after: "19:15:00"
+                  - or:
                       - alias: "Holiday mode on?"
                         condition: state
                         entity_id: sensor.house_mode
                         state: "Vakantie"
+                      - and:
+                          - alias: "After bedtime?"
+                            condition: time
+                            after: "19:15:00"
+                          - not:
+                              - alias: "TV aan?"
+                                condition: state
+                                entity_id: media_player.nvidia_shield
+                                state: "off"
                 sequence:
                   - alias: "Dim some lights"
                     service: light.turn_on
