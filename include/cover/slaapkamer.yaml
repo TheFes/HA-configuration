@@ -11,6 +11,8 @@ covers:
         expand(covers) | map(attribute='state') | select('in', s) | list | count == 0
       }}
     device_class: blind
+    value_template: "{{ states('sensor.cover_slaapkamer') if states('sensor.cover_slaapkamer') in [ 'opening', 'closing'] else true }}"
+    icon_template: "{{ state_attr('sensor.cover_slaapkamer', 'icon') }}"
     friendly_name: "Screens Slaapkamer"
     position_template: >
       {%- set covers = 
