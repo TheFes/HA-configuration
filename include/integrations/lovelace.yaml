@@ -31,6 +31,8 @@ lovelace:
       type: module
     - url: /hacsfiles/kiosk-mode/kiosk-mode.js
       type: module
+    - url: /hacsfiles/lovelace-layout-card/layout-card.js
+      type: module
   dashboards:
     lovelace-admin:
       mode: yaml
@@ -42,7 +44,7 @@ lovelace:
     mushroom-phone:
       mode: yaml
       filename: /config/ui-lovelace-mushroom.yaml
-      title: Phones
-      icon: mdi:mushroom
+      title: Backup
+      icon: mdi:cloud-upload
       show_in_sidebar: true
-      require_admin: false
+      require_admin: true

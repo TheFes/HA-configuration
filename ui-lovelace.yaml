@@ -1,2 +1,15 @@
+kiosk_mode:
+  admin_settings:
+    hide_header: true
+    hide_menu_button: true
+  non_admin_settings:
+    kiosk: true
+  entity_settings:
+    - entity:
+        input_boolean.hide_header: "on"
+      hide_header: true
+    - entity:
+        input_boolean.hide_header: "off"
+      hide_header: false
 views: !include_dir_list /config/include/lovelace/01_general/views/
 button_card_templates: !include_dir_merge_named /config/include/lovelace/button_templates/
