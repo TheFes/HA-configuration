@@ -11,8 +11,7 @@ The script itself relies on the other script, so make sure that script is runnin
 
 # Requirements
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
-* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
-* The [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and all its [prerequisites](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#prerequisites-10)
+* The [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and all its [prerequisites](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#prerequisites-10) in case you want to resume what was playing afterwards.
 
 
 # Most recent change
@@ -76,8 +75,6 @@ Variables in service call for the script:
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml) on my Github config, so I don have to maintain it in two places
 
 # Explanation of variables in the script
-
-Only `check_for_title` is mandatory. Resuming Spotify won't work properly without `default_spotcast`.
 
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
