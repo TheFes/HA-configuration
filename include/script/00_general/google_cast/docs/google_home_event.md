@@ -12,6 +12,11 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Possible a lot of bug fixing and improvements after other people start using it :)
 
 # Most recent changes
+### Version 0.6.0 - 16 May 2022
+#### ✨: New features
+* Added an optional setting `ignore` which can be used to prevent entities/devices/areas from being resumed.
+* Additional setting `also_stop` to provide media players which should also be stopped when the date is stored. Useful if you use the script when you eg leave home, and want to turn off the TV and soundbar as well.
+
 ### Version 0.5.0 - 4 May 2022
 #### 🔴 BREAKING
 * Due to implemented changes introduced in 2022.5 this version is now required for the script
@@ -131,7 +136,6 @@ There are no required variables, but if you use Google Home speaker groups and p
 | --- | --- | --- | --- |
 |sensor||`binary_sensor.resume_data`|The name of the template binary sensor you created for this script|
 |notify||`notify.resume_data`|The notify service created with the file integration for storing the data. Leave empty or remove this line in case you didn't integrate that.
-|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L40-L60)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group. You can copy/paste the list of your Google Home Resume Script.|
 
 # How to start the script
 There are 5 fields which can be set while running the script.
@@ -147,6 +151,8 @@ The `remove_data` deletes all data from the binary sensor and file when set to t
 |target|No|The targets which should be stored or resumed|
 |resume|No|`false` to store data `true` to resume (default is `false`, so data storage) |
 |resume_id|No|A identifier to match the resume action with (default is `not provided`)|
+|ignore|No|Entities/devices and/or areas which should not be resumed|
+|also_stop|No|Entities/devices/areas for which `media_player` entities should also be stopped on data store|
 |resume_volume|No|Volume to be used when resuming the speakers, needs to be provided when storing the data. (default is current volume of speaker)
 |remove_data|No|Set to `true` to remove all data from the binary_sensor and file (default is `false`)|
 
@@ -177,6 +183,8 @@ action:
             data:
               target:
                 area_id: 'living_room'
+              reject_list:
+                - media_player.tv
               resume: true
               resume_id: resume_when_home
 ```

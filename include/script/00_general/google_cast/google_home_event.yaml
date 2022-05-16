@@ -28,6 +28,23 @@ google_home_event:
             domain: media_player
           device:
             integration: cast
+    ignore:
+      description: "Enter the cast devices to be ignored during store and resume (default is none)"
+      required: false
+      selector:
+        target:
+          entity:
+            integration: cast
+            domain: media_player
+          device:
+            integration: cast
+    also_stop:
+      description: "Enter the media_players which should also be turned off after storing the data (default is none)"
+      required: false
+      selector:
+        target:
+          entity:
+            domain: media_player
     resume_volume:
       description: "Volume to be used then resuming the speaker, should be set while storing the data. Eiter use a number between 0 and 1 or 1 and 100 (%)"
       required: false
@@ -45,12 +62,43 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.5.0
+        version: 0.6.0
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
           {%- if resume_volume is defined and iif(resume_volume) %}
             {{ [1, resume_volume / 100] | min if resume_volume > 1 else resume_volume }}
+          {%- endif %}
+        ignore_list: >
+          {# determine entities of cast integraton #}
+            {%- set cast_entities = integration_entities('cast') %}
+          {# create target lists #}
+          {%- if ignore is defined %}
+            {# create lists based on target input #}
+              {%- set area_list = ignore.get('area_id', []) %}
+              {%- set area_list = area_list.replace(' ' , '').split(',') if area_list is string else area_list %}
+              {%- set device_list = ignore.get('device_id', [])%}
+              {%- set device_list = device_list.replace(' ' , '').split(',') if device_list is string else device_list %}
+              {%- set entity_list = ignore.get('entity_id', []) %}
+              {%- set entity_list = entity_list.replace(' ' , '').split(',') if entity_list is string else entity_list %}
+            {# determine cast entities of areas #}
+              {%- set ns = namespace(area_cast = []) %}
+              {%- for area in area_list %}
+                {%- set ns.area_cast = ns.area_cast + area_entities(area) %}
+              {%- endfor %}
+              {%- set area_cast = ns.area_cast | select('in', cast_entities) | list %}
+            {# determine cast entities of devices #}
+              {%- set ns = namespace(device_cast = []) %}
+              {%- for device in device_list %}
+                {%- set ns.device_cast = ns.device_cast + device_entities(device) %}
+              {%- endfor %}
+              {%- set device_cast = ns.device_cast | select('in', cast_entities) | list %}
+            {# determine cast entities of all entities #}
+              {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
+          {# create list with all entities #}
+            {{ (area_cast + device_cast + entity_cast) | unique | list }}
+          {%- else %}
+            []
           {%- endif %}
         target_list: >
           {# determine entities of cast integraton #}
@@ -79,10 +127,12 @@ google_home_event:
             {# determine cast entities of all entities #}
               {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
           {# create list with all entities #}
-            {{ (area_cast + device_cast + entity_cast) | unique | list }}
+            {% set target_list = (area_cast + device_cast + entity_cast) | unique | list %}
           {%- else %}
-            []
+            {% set target_list = integration_entities('cast') %}
           {%- endif %}
+          {{ target_list | reject('in', ignore_list) | list }}
+        all: "{{ target_list == integration_entities('cast') }}"
     - alias: "Store or resume or remove data"
       choose:
         - conditions: "{{ remove_data if remove_data is defined else false }}"
@@ -123,7 +173,8 @@ google_home_event:
                       {%- set general = dict(
                                               data_source = 'event_script',
                                               entity_id = entity.entity_id,
-                                              state = entity.state
+                                              state = entity.state,
+                                              target = iif(entity.entity_id in target_list,'target', 'no_target')
                                               )
                       %}
                       {%- if entity.attributes.app_name == 'Spotify' %}
@@ -180,7 +231,7 @@ google_home_event:
                       %}
                     {%- endif %}
                   {%- endfor %}
-                  {{ ns.info | selectattr('target', 'in', target_list) | list if target is defined else ns.info }}
+                  {{ ns.info | selectattr('target', 'in', target_list) | list if not all else ns.info }}
                 spotify_data: >
                   {%- set entities = expand(integration_entities('spotify')) %}
                   {%- set ns = namespace(info=[]) %}
@@ -197,7 +248,7 @@ google_home_event:
                     {%- endif %}
                   {%- endfor %}
                   {%- set target_friendly = expand(target_list) | map(attribute='attributes.friendly_name') | list %}
-                  {{ ns.info | selectattr('source', 'in', target_friendly) | list if target is defined else ns.info }}
+                  {{ ns.info | selectattr('source', 'in', target_friendly) | list if not all else ns.info }}
                 resume_data_new:
                   - resume_id: "{{ resume_id }}"
                     player_data: "{{ player_data }}"
@@ -225,14 +276,42 @@ google_home_event:
                     entity_id: >
                       {{
                         ytube_music_data
-                                  | rejectattr('target', 'in', target_list if target is defined else integration_entities('cast'))
+                                  | rejectattr('target', 'in', target_list)
                                   | map(attribute='player')
                                   | list
                       }}
                     command: interrupt_start
+            - variables:
+                also_stop_list: >
+                  {# create also_stop lists #}
+                  {%- if also_stop is defined %}
+                    {# create lists based on target input #}
+                      {%- set area_list = also_stop.get('area_id', []) %}
+                      {%- set area_list = area_list.replace(' ' , '').split(',') if area_list is string else area_list %}
+                      {%- set device_list = also_stop.get('device_id', [])%}
+                      {%- set device_list = device_list.replace(' ' , '').split(',') if device_list is string else device_list %}
+                      {%- set entity_list = also_stop.get('entity_id', []) %}
+                      {%- set entity_list = entity_list.replace(' ' , '').split(',') if entity_list is string else entity_list %}
+                    {# determine cast entities of areas #}
+                      {%- set ns = namespace(area_cast = []) %}
+                      {%- for area in area_list %}
+                        {%- set ns.area_cast = ns.area_cast + area_entities(area) %}
+                      {%- endfor %}
+                      {%- set area_list = ns.area_cast | select('match', '^media_player') | list %}
+                    {# determine cast entities of devices #}
+                      {%- set ns = namespace(device_cast = []) %}
+                      {%- for device in device_list %}
+                        {%- set ns.device_cast = ns.device_cast + device_entities(device) %}
+                      {%- endfor %}
+                      {%- set device_list = ns.device_cast | select('match', '^media_player') | list %}
+                  {# create list with all entities #}
+                    {{ (area_list + device_list + entity_list) | unique | list }}
+                  {%- else %}
+                    []
+                  {%- endif %}
             - service: media_player.turn_off
               target:
-                entity_id: "{{ integration_entities('cast') | select('in', target_list) | list if target is defined else integration_entities('cast') }}"
+                entity_id: "{{ (integration_entities('cast') | select('in', target_list) | list + also_stop_list) | unique | list }}"
         - conditions: "{{ resume if resume is defined else false }}"
           sequence:
             - variables:
@@ -247,9 +326,9 @@ google_home_event:
                                         | selectattr('target', 'eq', 'target')
                                         | selectattr('state', 'eq', 'playing')
                                         | map(attribute='entity_id')
-                                        | list 
+                                        | list
                   %}
-                  {{ player_list | select('in', target_list) | list if target is defined else player_list }}
+                  {{ player_list | select('in', target_list) | list}}
             - alias: "Anything to resume?"
               if: "{{ players_to_resume | count > 0 }}"
               then:
