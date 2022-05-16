@@ -16,28 +16,10 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
-### Version 2.4.3 - 9 May 2022
+# Most recent change
+### Version 2.4.4 - 16 May 2022
 #### 🌟 Improvements
-* Add `continue_on_error: true` to service calls provided in `action`
-#### 🐛 Bug fixes
-* Volume restore and turning off players with screen which were not playing was performed too soon
-
-### Version 2.4.2 - 8 May 2022
-#### 🌟 Improvements
-* Changed some more service calls to the new 2022.5 versions
-#### 🐛 Bug fixes
-* Fix error caused by orphan helper script which restored the state of non playing entites before 2.4.0
-
-### Version 2.4.1 - 7 May 2022
-#### 🐛 Bug fixes
-* Fix for restore in case there were non playing entities
-
-### Version 2.4.0 - 5 May 2022
-#### 🔴 BREAKING
-* Due to implemented changes introduced in 2022.5 this version is now required for the script
-#### 🌟 Improvements
-* Merged the Perform Resume and Restore Non Playing devices helper scripts into one script
-* Code review and implementation of new script actions introduced in HA 2022.5
+* Script now also correctly recognizes Google Cast devices when using a Home Assistant speaker group as target. It will expand the group and check the group members for cast entities.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 

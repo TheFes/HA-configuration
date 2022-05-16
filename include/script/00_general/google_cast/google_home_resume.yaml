@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.4.3
+        version: 2.4.4
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -237,22 +237,25 @@ google_home_resume:
                 %}
                 {% set area_list = area_list + (s + t + d + e + se) | reject('eq', '') | list %}
             {# create entity list based on device/area input #}
-              {# determine cast entities of areas #}
-                {%- set ns = namespace(area_cast = []) %}
+              {# determine entities of areas #}
+                {%- set ns = namespace(area = []) %}
                 {%- for area in area_list %}
-                  {%- set ns.area_cast = ns.area_cast + area_entities(area) | select('in', cast_entities) | list %}
+                  {%- set ns.area = ns.area + area_entities(area) | list %}
                 {%- endfor %}
-                {%- set area_cast = ns.area_cast %}
-              {# determine cast entities of devices #}
-                {%- set ns = namespace(device_cast = []) %}
+                {%- set area_list = ns.area %}
+              {# determine entities of devices #}
+                {%- set ns = namespace(device = []) %}
                 {%- for device in device_list %}
-                  {%- set ns.device_cast = ns.device_cast + device_entities(device) | select('in', cast_entities) | list %}
+                  {%- set ns.device = ns.device + device_entities(device) | list %}
                 {%- endfor %}
-                {%- set device_cast = ns.device_cast %}
-              {# determine cast entities of all entities #}
-                {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
-            {# create list with all entities #}
-              {%- set total_list = (area_cast + device_cast + entity_cast) | unique | list %}
+                {%- set device_list = ns.device %}
+            {# create list with all cast entities #}
+              {%- set total_list = expand(area_list + device_list + entity_list)
+                                    | map(attribute='entity_id')
+                                    | select('in', cast_entities)
+                                    | unique
+                                    | list
+              %}
             {# avoid to target both complete speaker groups and single members #}
               {%- set target_group = total_list | select('in', speaker_group_list) | list %}
               {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
