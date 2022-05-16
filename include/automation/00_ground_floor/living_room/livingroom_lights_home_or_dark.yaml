@@ -60,6 +60,13 @@ action:
                   condition: state
                   entity_id: media_player.nvidia_shield
                   state: "off"
+          - alias: "Google Home Event script"
+            service: script.google_home_event
+            data:
+              resume_id: away
+              resume: true
+              ignore:
+                entity_id: media_player.shield
   - alias: "Dark inside and sun low"
     choose:
       - conditions:
