@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.4.5 - 20 May 2022
+#### 🌟 Improvements
+* Spotify songs will be resumed at the right position in the track
+
 ### Version 2.4.4 - 16 May 2022
 #### 🌟 Improvements
 * Script now also correctly recognizes Google Cast devices when using a Home Assistant speaker group as target. It will expand the group and check the group members for cast entities.

@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.4.4
+        version: 2.4.5
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -1015,6 +1015,15 @@ google_home_resume_perform_resume:
                   service: spotcast.start
                   data: >
                     {{ service_data if player.spotcast == 'primary_account' else dict(service_data, **account_data) }}
+                - alias: "Wait until song is playing"
+                  wait_template: >
+                    {{ is_state_attr(player.entity_id, 'app_name', 'Spotify') and iif(state_attr(player.entity_id, 'media_position')) }}
+                - alias: "Seek"
+                  service: media_player.media_seek
+                  target:
+                    entity_id: "{{ player.entity_id }}"
+                  data:
+                    seek_position: "{{ player.media_position }}"
             - alias: "Stream?"
               conditions: "{{ stream }}"
               sequence:

@@ -17,9 +17,9 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.4.4 - 16 May 2022
+### Version 2.4.5 - 20 May 2022
 #### 🌟 Improvements
-* Script now also correctly recognizes Google Cast devices when using a Home Assistant speaker group as target. It will expand the group and check the group members for cast entities.
+* Spotify songs will be resumed at the right position in the track
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
