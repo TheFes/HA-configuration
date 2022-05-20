@@ -10,7 +10,7 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.4.0
+        version: 1.5.0
     - alias: "Are there Spotify entities?"
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -175,14 +175,29 @@ google_home_voice:
               action: >
                 {%- set ns = namespace(action=[]) %}
                 {%- for item in service_calls %}
+                  {%- set data = item.get('data', {}) %}
+                  {%- set extra = item.get('extra', {}) %}
+                  {%- set service = item.service %}
+                  {%- if target_variable is defined and target_variable %}
+                    {%- if service == 'script.turn_on' %}
+                      {% set add = {'voice_target': target_list[0]} %}
+                      {% set var = dict(variables = dict(data.get('variables', {}), **add)) %}
+                      {% set data = dict(data, **var) %}
+                    {%- elif service.split('.')[0] == 'script' %}
+                      {% set add = { 'voice_target': target_list[0]} %}
+                      {% set data = dict(data, **add) %}
+                    {%- endif %}
+                    {%- set add = {'entity_id': target_list[0]} %}
+                    {%- set extra = dict(extra, **add) %}
+                  {%- endif %}
                   {%- set ns.action = ns.action + [
                                                     dict(
-                                                      service = item.service,
+                                                      service = service,
                                                       target = item.get('target', { 'entity_id' : target_list}),
-                                                      data = item.get('data', {}),
-                                                      extra = item.get('extra', {})
+                                                      data = data,
+                                                      extra = extra
                                                       )
-                                                  ] 
+                                                  ]
                   %}
                 {%- endfor %}
                 {{ ns.action }}
@@ -191,9 +206,27 @@ google_home_voice:
           repeat:
             for_each: "{{ service_calls }}"
             sequence:
+              - variables:
+                  data: >
+                    {%- set data = repeat.item.get('data', {}) %}
+                    {%- set service = repeat.item.service %}
+                    {%- if target_variable is defined and target_variable %}
+                      {%- if service == 'script.turn_on' %}
+                        {% set add = {'voice_target': target_list[0]} %}
+                        {% set var = dict(variables = dict(data.get('variables', {}), **add)) %}
+                        {{ dict(data, **var) }}
+                      {%- elif service.split('.')[0] == 'script' %}
+                        {% set add = { 'voice_target': target_list[0]} %}
+                        {{ dict(data, **add) }}
+                      {%- else %}
+                        {{ data }}
+                      {%- endif %}
+                    {%- else %}
+                      {{ data }}
+                    {%- endif %}
               - service: "{{ repeat.item.service }}"
                 target: "{{ repeat.item.get('target', { 'entity_id': target_list}) }}"
-                data: "{{ repeat.item.get('data', {}) }}"
+                data: "{{ data }}"
     - alias: "Volume defined"
       if: "{{ volume is defined and iif(volume) }}"
       then:

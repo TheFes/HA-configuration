@@ -15,13 +15,9 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.4.0 - 5 May 2022
-#### 🔴 BREAKING
-* Due to implemented changes introduced in 2022.5 this version is now required for the script
-#### 🌟 Improvements
-* Code review and implementation of new script actions introduced in HA 2022.5
-#### 🐛 Bug fixes
-* Bug fix in case target replacement was used (Ambient sound would not be stopped)
+### Version 1.5.0 - 20 May 2022
+#### ✨ New feature
+* Added the `target_variable` option. When set to `true` it will add the variable `voice_target` to the service call containing the entity_id of the Google Home which was used to trigger the script. This can be used to use the entity in a script. It will only be added on script service calls. In case the Google Home Resume script is used as well, it will also add the entity_id under `extra`, so the resume script will recognize it as a target to be resumed.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
@@ -69,6 +65,7 @@ Variables in service call for the script:
 |action|Yes|The title of the ambient sound as shown in developer tools > states |
 |target_conversion|No|A list dictonary with target replacements when you send the voice command|
 |use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
+|target_variable|No|If set to `true` the entity_id of the Google Home will be added as the variable `voice_target` so it can be used in scripts, and added under `extra` so the Google Home Resume script will resume it.
 
 
 # And finally the script itself
