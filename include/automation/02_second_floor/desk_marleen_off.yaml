@@ -2,7 +2,7 @@ id: db9267c5-2f6a-4462-b1cb-d60f6b2476e4
 alias: "F2 📦 Plug desk Marleen off"
 trigger:
   - platform: state
-    entity_id: binary_sensor.imac_marleen
+    entity_id: binary_sensor.mbp_werk_marleen
     to: "off"
     for: "00:30:00"
   - platform: state
@@ -22,7 +22,7 @@ trigger:
 condition:
   - alias: "Computer Marleen off?"
     condition: state
-    entity_id: binary_sensor.imac_marleen
+    entity_id: binary_sensor.mbp_werk_marleen
     state: "off"
   - condition: not
     conditions:

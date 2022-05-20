@@ -4,7 +4,7 @@ cards:
     title: Computers
   - type: grid
     square: true
-    columns: 5
+    columns: 4
     cards:
       - type: custom:mushroom-template-card
         primary: Server
@@ -28,10 +28,10 @@ cards:
                 - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-pc.yaml
                 - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
       - type: custom:mushroom-template-card
-        primary: iMac
-        icon: mdi:desktop-mac
+        primary: Marleen
+        icon: mdi:laptop
         layout: vertical
-        icon_color: "{{ 'blue' if is_state('binary_sensor.imac_marleen', 'on') }}"
+        icon_color: "{{ 'blue' if is_state('binary_sensor.mbp_werk_marleen', 'on') }}"
       - type: custom:mushroom-template-card
         primary: Martijn
         icon: mdi:laptop
@@ -41,9 +41,3 @@ cards:
             'blue' if (is_state('binary_sensor.laptop_werk_martijn_lan', 'on')
             or is_state('binary_sensor.laptop_werk_martijn_wifi', 'on'))
           }}
-      - type: custom:mushroom-template-card
-        primary: Marleen
-        secondary: ""
-        icon: mdi:laptop
-        layout: vertical
-        icon_color: ""
