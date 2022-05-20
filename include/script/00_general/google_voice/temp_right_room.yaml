@@ -1,0 +1,19 @@
+temp_right_room:
+  alias: "00 🌡 Temperature for right room (Google Home)"
+  icon: mdi:thermometer
+  sequence:
+    - variables:
+        mapper:
+          media_player.zolder_mini_martijn: sensor.zolder_temp
+          media_player.zolder_mini_marleen: sensor.zolder_temp
+          media_player.pepijn_mini: sensor.pepijn_temp
+          media_player.floris_mini: sensor.floris_temp
+          media_player.slaapkamer_hub: sensor.slaapkamer_temp
+          media_player.woonkamer_mini: sensor.woonkamer_temp
+          media_player.keuken_hub: sensor.woonkamer_temp
+    - alias: "TTS with right room"
+      service: tts.google_cloud_say
+      target:
+        entity_id: "{{ voice_target }}"
+      data:
+        message: "Het is hier {{ states(mapper[voice_target]) }} graden"

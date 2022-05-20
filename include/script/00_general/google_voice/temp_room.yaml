@@ -1,0 +1,13 @@
+temp_room:
+  alias: "00 🌡 Temperature room (Google Home)"
+  icon: mdi:thermometer
+  sequence:
+    - alias: "Start voice script"
+      service: script.google_home_voice
+      data:
+        target_variable: true
+        target_extra: true
+        action:
+          - alias: "Start script"
+            service: script.temp_right_room
+            target: {}
