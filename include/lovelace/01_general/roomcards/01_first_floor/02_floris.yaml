@@ -49,6 +49,29 @@ cards:
           {% elif not is_state_attr('cover.floris_tahoma', 'current_position', 100) %}
             orange
           {% endif %}
+      - type: custom:mushroom-template-card
+        entity: cover.floriscurtain_curtain
+        layout: vertical
+        icon: >-
+          {% if is_state('cover.floriscurtain_curtain', 'opening') %}
+            mdi:arrow-collapse-right
+          {% elif is_state('cover.floriscurtain_curtain', 'closing') %}
+            mdi:arrow-collapse-left
+          {% elif is_state_attr('cover.floriscurtain_curtain', 'current_position', 100) %}
+            mdi:curtains
+          {% else %}
+            mdi:curtains-closed
+          {% endif %}
+        icon_color: >-
+          {% if states('cover.floriscurtain_curtain') in [ 'opening', 'closing' ] %}
+            green
+          {% elif is_state('cover.floriscurtain_curtain', 'unavailable') %}
+            red
+          {% elif is_state_attr('cover.floriscurtain_curtain', 'current_position', 0) %}
+            yellow
+          {% elif not is_state_attr('cover.floriscurtain_curtain', 'current_position', 100) %}
+            orange
+          {% endif %}
       - type: conditional
         conditions:
           - entity: media_player.floris_mini

@@ -17,4 +17,8 @@ bedtime_floris_routine:
       service: light.turn_off
       target:
         entity_id: light.floris_leeslamp
+    - alias: "Close curtain"
+      service: cover.close_cover
+      target:
+        entity_id: cover.floriscurtain_curtain
   mode: restart
