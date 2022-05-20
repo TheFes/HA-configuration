@@ -5,10 +5,9 @@ sensor:
       {%- set sensor = 'sensor.afvalwijzer_restgft' %}
       {%- set collection_date = as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() %}
       {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {%- if (collection_date - now().date()).days == 0 %}
-        Vandaag
-      {%- elif (collection_date - now().date()).days == 1 %}
-        Morgen
+      {%- set days_until = state_attr(sensor, 'days_until_collection_date') %}
+      {%- if days_until <= 1 %}
+        {{ ['Vandaag', 'Morgen'][days_until] }}
       {%- else %}
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
@@ -25,10 +24,9 @@ sensor:
       {%- set sensor = 'sensor.afvalwijzer_dhm' %}
       {%- set collection_date = as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() %}
       {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {%- if (collection_date - now().date()).days == 0 %}
-        Vandaag
-      {%- elif (collection_date - now().date()).days == 1 %}
-        Morgen
+      {%- set days_until = state_attr(sensor, 'days_until_collection_date') %}
+      {%- if days_until <= 1 %}
+        {{ ['Vandaag', 'Morgen'][days_until] }}
       {%- else %}
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
@@ -45,10 +43,9 @@ sensor:
       {%- set sensor = 'sensor.afvalwijzer_kerstbomen' %}
       {%- set collection_date = as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() %}
       {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
-      {%- if (collection_date - now().date()).days == 0 %}
-        Vandaag
-      {%- elif (collection_date - now().date()).days == 1 %}
-        Morgen
+      {%- set days_until = state_attr(sensor, 'days_until_collection_date') %}
+      {%- if days_until <= 1 %}
+        {{ ['Vandaag', 'Morgen'][days_until] }}
       {%- else %}
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
