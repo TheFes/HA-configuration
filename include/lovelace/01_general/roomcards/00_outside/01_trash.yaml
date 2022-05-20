@@ -1,6 +1,30 @@
 type: custom:vertical-stack-in-card
 cards:
-  - type: custom:mushroom-entity-card
-    entity: sensor.papier_en_pmd
-  - type: custom:mushroom-entity-card
-    entity: sensor.rest_en_gft
+  - type: conditional
+    conditions:
+      - entity: sensor.afvalwijzer_next_type
+        state: "restgft"
+    card:
+      type: custom:mushroom-entity-card
+      entity: sensor.rest_en_gft
+  - type: conditional
+    conditions:
+      - entity: sensor.afvalwijzer_next_type
+        state_not: "restgft"
+    card:
+      type: custom:mushroom-entity-card
+      entity: sensor.papier_en_pmd
+  - type: conditional
+    conditions:
+      - entity: sensor.afvalwijzer_next_type
+        state_not: "restgft"
+    card:
+      type: custom:mushroom-entity-card
+      entity: sensor.rest_en_gft
+  - type: conditional
+    conditions:
+      - entity: sensor.afvalwijzer_next_type
+        state: "restgft"
+    card:
+      type: custom:mushroom-entity-card
+      entity: sensor.papier_en_pmd
