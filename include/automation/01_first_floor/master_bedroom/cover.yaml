@@ -15,6 +15,12 @@ trigger:
     entity_id: sun.sun
     to: "below_horizon"
     id: open
+  - platform: time
+    at: "10:00:00"
+condition:
+  - alias: "After 10"
+    condition: time
+    after: " 10:00:00"
 action:
   - if: "{{ trigger.id != 'open' }}"
     then:
