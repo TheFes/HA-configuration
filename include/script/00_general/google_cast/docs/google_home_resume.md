@@ -17,11 +17,12 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.4.5 - 20 May 2022
+### Version 2.5.0 - 28 May 2022
 #### 🌟 Improvements
-* Spotify songs will be resumed at the right position in the track
-
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
+* Combined all helper scripts in one script (`script.google_home_resume_helper`)
+#### 🐛 Bug fixes
+* Fix for uppercase characters in context.id causing errors in creating groups
+* Fixed resume for the Ytube Music custom integration
 
 # Setup
 ## The script itself
@@ -145,9 +146,9 @@ In case something isn't working or you found a bug, a trace of the script will b
 1. Find the Google Home Resume script in the list.
 1. Click on the clock icon (with the arrow around it) next to the script.
 1. Press the download icon in the top right corner.
-1. Repeat for the Google Home Resume - Perform Resume and/or Google Home Resume - Restore non playing if the error is in that step.
+1. Repeat for the Google Home Resume - Helper Script if the error is in that step.
 
-In case you create the issue on GitHub you can upload the json files, in case you create the issue as a post here, you can copy the json files to a code sharing website like [codepile.net](https://www.codepile.net). Please create a different link for each json file.
+In case you create the issue on GitHub you can upload the json files, in case you create the issue as a post here, you can copy the json files to a code sharing website like [dpaste.org](https://www.dpaste.org). Please create a different link for each json file.
 
 # Why not a blueprint?
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
