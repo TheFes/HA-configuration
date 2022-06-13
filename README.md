@@ -11,3 +11,9 @@ Nothing fancy in the Dashboard section, just basic stuff
 
 What might of more interest:
 * [Google Home scripts](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+
+# Buy me a coffee
+If you think I deserve a coffe, please feel free to buy me one (I might spend it on another beverage though).
+In case you decide to do so, thanks a lot!
+
+<a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
