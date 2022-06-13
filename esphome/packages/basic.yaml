@@ -1,0 +1,38 @@
+# Enable Web server
+web_server:
+  port: 80
+
+# Sync time with Home Assistant.
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+text_sensor:
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name} ${device_type}
+  - platform: version
+    id: text_sensor_version
+    name: "${device_name} ESPHome Version"
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${device_name} ${device_type} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${device_name} ${device_type} WiFi Signal
+    update_interval: 60s
+
+# restart button
+button:
+  - platform: restart
+    name: Restart $device_name
+
+# safe mode switch
+switch:
+  - platform: safe_mode
+    name: use_safe_mode

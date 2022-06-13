@@ -2,10 +2,22 @@ substitutions:
   device_name: BLE Slaapkamer
   device_type: BLE
   ip: 192.168.2.86
+  # for curtain
+  sbcmb: SwitchBot Curtain Floris
+  sbcmb_nospace: sb_curtain_floris
+  device_id: curtain_floris_ble
+  mac: !secret mac_curtain_floris
+
+esp32:
+  board: lolin32_lite
+  framework:
+    type: arduino
 
 esphome:
-  name: ble_slaapkamer
-  platform: esp32
-  board: lolin32_lite
+  name: ble-slaapkamer
 
-<<: !include common/tmpl_ble.yaml
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  scale: !include packages/scale.yaml
+  curtain: !include packages/curtain.yaml
