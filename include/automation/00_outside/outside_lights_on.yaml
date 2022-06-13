@@ -17,10 +17,10 @@ trigger:
       - "00:00"
       - "06:30"
 action:
-  - alias: "Midnigh, morning or evening?"
+  - alias: "Midnight, morning or evening?"
     choose:
       - conditions:
-          - alias: "Middernacht?"
+          - alias: "Midnight?"
             condition: time
             before: " 00:15:00"
         sequence:
@@ -42,7 +42,7 @@ action:
               entity_id:
                 - light.groep_buiten
       - conditions:
-          - alias: "After susnet"
+          - alias: "After sunset"
             condition: state
             entity_id: sun.sun
             state: "below_horizon"
