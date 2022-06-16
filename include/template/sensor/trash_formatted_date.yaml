@@ -12,7 +12,7 @@ sensor:
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
     icon: mdi:trash-can
-    availability: "{{ not states('sensor.afvalwijzer_restgft') in [ 'unknown', 'unavailable' ] }}"
+    availability: "{{ not states('sensor.afvalwijzer_restgft') in [ 'unknown', 'unavailable', 'Geen' ] }}"
     attributes:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_restgft' %}
@@ -31,7 +31,7 @@ sensor:
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
     icon: mdi:trash-can-outline
-    availability: "{{ not states('sensor.afvalwijzer_dhm') in [ 'unknown', 'unavailable' ] }}"
+    availability: "{{ not states('sensor.afvalwijzer_dhm') in [ 'unknown', 'unavailable', 'Geen' ] }}"
     attributes:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_dhm' %}
@@ -50,7 +50,7 @@ sensor:
         {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
       {%- endif %}
     icon: mdi:pine-tree
-    availability: "{{ not states('sensor.afvalwijzer_kerstbomen') in [ 'unknown', 'unavailable' ] }}"
+    availability: "{{ not states('sensor.afvalwijzer_kerstbomen') in [ 'unknown', 'unavailable', 'Geen' ] }}"
     attributes:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_kerstbomen' %}

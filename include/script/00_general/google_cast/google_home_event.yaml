@@ -62,7 +62,7 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.6.0
+        version: 0.6.1
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
@@ -143,29 +143,25 @@ google_home_event:
               event_data:
                 resume_data: "{{ resume_data }}"
             - alias: "Persistant backup of player_data"
-              choose:
-                - conditions: "{{ notify is defined and iif(notify) }}"
-                  sequence:
-                    - service: "{{ notify }}"
-                      data:
-                        message: >
-                          {%- set data = { 'resume_data': resume_data } %}
-                          '{{ (data | string).replace("'","|").replace('|', '"') }}'
-            - alias: "Command line restore needed"
-              choose:
-                - conditions: "{{ notify is defined and iif(notify) }}"
-                  sequence:
-                    - service: command_line.reload
+              if: "{{ notify is defined and iif(notify) }}"
+              then:
+                - service: "{{ notify }}"
+                  data:
+                    message: >
+                      {%- set data = { 'resume_data': resume_data } %}
+                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                - service: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.resume_data
         - conditions: "{{ not resume if resume is defined else true }}"
           sequence:
             - alias: "Are there Spotify entities?"
-              choose:
-                - conditions: "{{ integration_entities('spotify') | count > 0 }}"
-                  sequence:
-                    - alias: "Update Spotify entities"
-                      service: homeassistant.update_entity
-                      target:
-                        entity_id: "{{ integration_entities('spotify') }}"
+              if: "{{ integration_entities('spotify') | count > 0 }}"
+              then:
+                - alias: "Update Spotify entities"
+                  service: homeassistant.update_entity
+                  target:
+                    entity_id: "{{ integration_entities('spotify') }}"
             - variables:
                 player_data: >
                   {%- set ns = namespace(info=[]) %}
@@ -267,7 +263,9 @@ google_home_event:
                     message: >
                       {%- set data = { 'resume_data': resume_data } %}
                       '{{ (data | string).replace("'","|").replace('|', '"') }}'
-                - service: command_line.reload
+                - service: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.resume_data
             - alias: "Interrupt YouTube music if needed"
               if: "{{ ytube_music_data | count > 0 }}"
               then:
@@ -358,4 +356,6 @@ google_home_event:
                     message: >
                       {%- set data = { 'resume_data': resume_data } %}
                       '{{ (data | string).replace("'","|").replace('|', '"') }}'
-                - service: command_line.reload
+                - service: homeassistant.update_entity
+                  target:
+                    entity_id: sensor.resume_data
