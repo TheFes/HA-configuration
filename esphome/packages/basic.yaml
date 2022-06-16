@@ -2,37 +2,68 @@
 web_server:
   port: 80
 
-# Sync time with Home Assistant.
+#Sync time
 time:
   - platform: homeassistant
-    id: homeassistant_time
+    id: time_homeassistant
+    timezone: "Europe/Amsterdam"
+    on_time_sync:
+      - component.update: sensor_uptime_timestamp
+
+  - platform: sntp
+    id: time_sntp
+    timezone: "Europe/Amsterdam"
 
 text_sensor:
-  # Expose WiFi information as sensors.
+  - platform: version
+    hide_timestamp: true
+    name: "${device_name} ${device_type} ESPHome Version"
+    entity_category: diagnostic
   - platform: wifi_info
     ip_address:
-      name: ${device_name} ${device_type}
-  - platform: version
-    id: text_sensor_version
-    name: "${device_name} ESPHome Version"
+      name: "${device_name} ${device_type} IP Address"
+      icon: mdi:wifi
+      entity_category: diagnostic
+    ssid:
+      name: "${device_name} ${device_type} Connected SSID"
+      icon: mdi:wifi-strength-2
+      entity_category: diagnostic
 
 # Sensors with general information.
 sensor:
   # Uptime sensor.
   - platform: uptime
-    name: ${device_name} ${device_type} Uptime
+    id: sensor_uptime
+    internal: true
+  - platform: template
+    id: sensor_uptime_timestamp
+    name: "${device_name} ${device_type} Uptime"
+    device_class: "timestamp"
+    accuracy_decimals: 0
+    update_interval: never
+    lambda: |-
+      static float timestamp = (
+        id(time_homeassistant).utcnow().timestamp - id(sensor_uptime).state
+      );
+      return timestamp;
 
   # WiFi Signal sensor.
   - platform: wifi_signal
     name: ${device_name} ${device_type} WiFi Signal
+    icon: mdi:wifi-strength-2
     update_interval: 60s
 
 # restart button
 button:
   - platform: restart
-    name: Restart $device_name
+    name: "${device_name} ${device_type} Restart"
 
 # safe mode switch
 switch:
   - platform: safe_mode
-    name: use_safe_mode
+    name: "${device_name} ${device_type} Safe Mode"
+
+binary_sensor:
+  - platform: status
+    name: ${device_name} ${device_type} Status
+    entity_category: diagnostic

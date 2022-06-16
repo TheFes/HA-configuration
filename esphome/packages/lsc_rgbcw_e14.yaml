@@ -1,5 +1,3 @@
-<<: !include tmpl_wifi_sensors.yaml
-
 sm2135:
   data_pin: GPIO12
   clock_pin: GPIO14
@@ -51,7 +49,3 @@ light:
       - random:
           transition_length: 100ms
           update_interval: 150ms
-
-button:
-  - platform: restart
-    name: "${device_name} ${device_type} Restart"

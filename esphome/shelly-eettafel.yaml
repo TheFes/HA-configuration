@@ -1,0 +1,16 @@
+substitutions:
+  device_name: Eettafel
+  device_type: Shelly1
+  device_lower: eettafel
+  ip: 192.168.2.14
+
+esphome:
+  name: shelly-eettafel
+  
+esp8266:
+  board: esp01_1m
+
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  switch: !include packages/shelly1_detached_multi.yaml

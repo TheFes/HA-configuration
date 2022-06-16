@@ -1,0 +1,64 @@
+# Status LED of ESP
+status_led:
+  pin: D3
+
+# I²C Bus
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+
+output:
+  - platform: esp8266_pwm
+    id: output_led_green
+    pin: D4
+
+light:
+  - platform: monochromatic
+    id: light_led_green
+    output: output_led_green
+
+sensor:
+  - platform: pulse_meter
+    id: sensor_pulse_meter
+    name: "${device_name} Current Usage"
+    icon: "mdi:water-pump"
+    unit_of_measurement: "L/min"
+    timeout: 2min
+    accuracy_decimals: 1
+    total:
+      id: sensor_pulse_meter_total
+      name: "${device_name} Total Consumption"
+      icon: "mdi:cube-outline"
+      unit_of_measurement: "M3"
+      accuracy_decimals: 3
+      filters:
+        - multiply: 0.001
+    pin: D5
+    on_value:
+      then:
+        - light.turn_on:
+            id: light_led_green
+            flash_length: 1s
+  - platform: shtcx
+    temperature:
+      id: sensor_temperature
+      name: "${device_name} Temperature"
+    humidity:
+      id: sensor_humidity
+      name: "${device_name} Humidity"
+    update_interval: 600s
+
+text_sensor:
+  # IP address #
+  - platform: template
+    id: text_sensor_watermeterkit_version
+    name: "${device_name} Version"
+    update_interval: 5h
+    lambda: |-
+      return {"${watermeterkit_version}"};
+  - platform: template
+    id: text_sensor_watermeterkit_model
+    name: "${device_name} Model"
+    update_interval: 5h
+    lambda: |-
+      return {"${watermeterkit_model}"};

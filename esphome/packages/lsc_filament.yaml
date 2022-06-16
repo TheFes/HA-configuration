@@ -1,5 +1,3 @@
-<<: !include tmpl_wifi_sensors.yaml
-
 output:
   - platform: esp8266_pwm
     id: output_warm_white
@@ -24,11 +22,3 @@ light:
           update_interval: 0.5s
       - pulse:
           name: "Slow Pulse"
-
-button:
-  - platform: restart
-    name: "${device_name} ${device_type} Restart"
-
-binary_sensor:
-  - platform: status
-    name: ${device_name} ${device_type} Status

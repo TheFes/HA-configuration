@@ -1,15 +1,9 @@
-<<: !include tmpl_wifi_sensors.yaml
-
 switch:
   - platform: gpio
     name: Shelly1 ${device_name}
     pin: GPIO4
     id: shelly_relay
     restore_mode: restore_default_off
-
-button:
-  - platform: restart
-    name: "${device_name} ${device_type} Restart"
 
 binary_sensor:
   - platform: gpio
@@ -105,7 +99,3 @@ text_sensor:
     entity_id: light.${device_lower}
     id: light_status
     internal: true
-  # Expose WiFi information as sensors.
-  - platform: wifi_info
-    ip_address:
-      name: ${device_name} ${device_type} IP

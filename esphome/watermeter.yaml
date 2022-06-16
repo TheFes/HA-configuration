@@ -1,200 +1,21 @@
-# Water Meter
-#
-# The blue LED tells the device is powered on (built-in on the Wemos D1 mini).
-# The green LED blinks when a pulse is measures (each liter of water used).
-# The red LED shows if there is a problem:
-# - Blinks slow (once a second): Connection disrupted
-# - Blinks fast: ESPHome has an error settings up
-# - Off: All fine!
-#
-
-#Name of device
 substitutions:
-  device_name: water_meter
-  device_type: "" # !! MANUAL CHANGE!! added manually for wifi settings
-  friendly_name: Water meter
-  time_timezone: "Europe/Amsterdam"
+  device_name: Watermeter
+  device_type: ''
+  device_lower: watermeter
   watermeterkit_version: "1.2"
   watermeterkit_model: "model-a"
   ip: 192.168.2.45
 
-#Set up ESPHome
 esphome:
   name: watermeter
-  platform: ESP8266
-  board: d1_mini
-  
   project:
     name: dwainscheeren.watermeterkit
     version: "${watermeterkit_version}"
 
-#WiFi Settings 
-# !!MANUAL CHANGE!! (includes wifi, captive portal, logger, api, ota)
-<<: !include common/tmpl_wifi_sensors.yaml 
+esp8266:
+  board: d1_mini
 
-# !!MANUAL CHANGE!! Enable Web server
-web_server:
-  port: 80
-
-# !!MANUAL CHANGE!! commented out, included in include
-#wifi:
-#  # Enable fallback hotspot (captive portal) in case wifi connection fails
-#  ap:
-#    ssid: "Water meter Installation"
-#    password: "watermeter"
-#
-##Enable fallback if WiFi is not found
-#captive_portal:
-#
-## Enable logging
-#logger:
-#
-## Enable Home Assistant API
-#api:
-#
-## Enable over the air updates
-#ota:
-
-# Status LED of ESP
-status_led:
-  pin: D3
-
-# Switch to restart the watermeter
-button:
-  - platform: restart
-    id: switch_restart
-    name: "${friendly_name} Restart"
-    
-# Time for uptime
-time:
-  - platform: homeassistant
-    id: time_homeassistant
-    timezone: "${time_timezone}"
-    on_time_sync:
-      - component.update: sensor_uptime_timestamp
-      
-  - platform: sntp
-    id: time_sntp
-    timezone: "${time_timezone}"
-    
-# I²C Bus
-#
-# This component sets up the I²C bus for the ESP8266.
-#
-# https://esphome.io/components/i2c.html
-#
-i2c:
-  sda: GPIO4
-  scl: GPIO5
-  
-  
-output:
-  - platform: esp8266_pwm
-    id: output_led_green
-    pin: D4
-
-light:
-  - platform: monochromatic
-    id: light_led_green
-    output: output_led_green
-  
-sensor:
-  #Wifi signal
-  - platform: wifi_signal
-    name: "${friendly_name} WiFi Signal"
-    update_interval: 300s
-    id: sensor_wifi_signal
-  # Uptime Sensor
-  #
-  # The uptime sensor allows you to track the time the ESP has stayed up for in
-  # seconds. Time rollovers are automatically handled.
-  #
-  # https://esphome.io/components/sensor/uptime.html
-  #
-  #
-  # WARNING! DO NOT USE THIS SENSOR IN HOME ASSISTANT!
-  #
-  # I see many of you using this sensor in Home Assistant, but please, don't.
-  # There is no need to have an update of the uptime, just send the timestamp
-  # of when the device started ONCE. It will have the same effect and saves
-  # you system tons of processing and recording.
-  #
-  - platform: uptime
-    id: sensor_uptime
-  # Uptime Timestamp Sensor
-  #
-  # This sensor is an alternative for the uptime sensor, which only sends the
-  # startup timestamp of the device ONCE! Instead of sending updates to
-  # Home Assistant constantly.
-  #
-  # This saves you tons of updates to be processed and, if recorded/stored in the
-  # Home Assistant database, many many less rows.
-  #
-  # This sensor can be triggered manually and will only update the status once!
-  #
-  - platform: template
-    id: sensor_uptime_timestamp
-    name: "${friendly_name} Uptime"
-    device_class: "timestamp"
-    accuracy_decimals: 0
-    update_interval: never
-    lambda: |-
-      static float timestamp = (
-        id(time_homeassistant).utcnow().timestamp - id(sensor_uptime).state
-      );
-      return timestamp;
-  - platform: pulse_meter
-    id: sensor_pulse_meter
-    name: "${friendly_name} Current Usage"
-    icon: "mdi:water-pump"
-    unit_of_measurement: "L/min"
-    timeout: 2min
-    accuracy_decimals: 1
-    total:
-      id: sensor_pulse_meter_total
-      name: "${friendly_name} Total Consumption"
-      icon: "mdi:cube-outline"
-      unit_of_measurement: "M3"
-      accuracy_decimals: 3
-      filters:
-        - multiply: 0.001
-    pin: D5
-    on_value:
-      then:
-        - light.turn_on:
-            id: light_led_green
-            flash_length: 1s
-  - platform: shtcx
-    temperature:
-      id: sensor_temperature
-      name: "${friendly_name} Temperature"
-    humidity:
-      id: sensor_humidity
-      name: "${friendly_name} Humidity"
-    update_interval: 600s
-    
-text_sensor:
-  # IP address #
-  - platform: wifi_info
-    ip_address:
-      name: "${friendly_name} IP address"
-      icon: "mdi:network-outline"
-    ssid:
-      name: "${friendly_name} Connected SSID"
-    bssid:
-      name: "${friendly_name} Connected BSSID"
-  - platform: version
-    id: text_sensor_version
-    name: "${friendly_name} ESPHome Version"
-  - platform: template
-    id: text_sensor_watermeterkit_version
-    name: "${friendly_name} Version"
-    update_interval: 5h
-    lambda: |-
-      return {"${watermeterkit_version}"};
-  - platform: template
-    id: text_sensor_watermeterkit_model
-    name: "${friendly_name} Model"
-    update_interval: 5h
-    lambda: |-
-      return {"${watermeterkit_model}"};
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  switch: !include packages/watermeter.yaml

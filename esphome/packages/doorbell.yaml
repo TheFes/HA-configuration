@@ -1,0 +1,61 @@
+# Global to store the on/off state of the chime
+globals:
+  - id: chime
+    type: bool
+    restore_value: true
+    initial_value: "true"
+
+# expose switches
+switch:
+  # Switch to turn on/off the chime.
+  - platform: gpio
+    id: relay
+    inverted: true
+    name: ${device_name} Chime
+    pin: GPIO0
+
+  # Switch to turn on/off chime when
+  # doorbell button is pushed.
+  #
+  # It creates a "virtual" switch based
+  # on a global variable.
+  - platform: template
+    name: ${device_name} Chime Active
+    id: chime_active
+    restore_state: false
+    turn_on_action:
+      - globals.set:
+          id: chime
+          value: "true"
+    turn_off_action:
+      - globals.set:
+          id: chime
+          value: "false"
+    lambda: |-
+      return id(chime);
+# Binary sensor representing the
+# Doorbell button push.
+binary_sensor:
+  - platform: gpio
+    id: doorbell_press
+    name: ${device_name} Button
+    pin:
+      # Connected to GPIO on the ESP-01S.
+      number: GPIO2
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      # Small filter, to debounce the button press.
+      - delayed_on: 25ms
+      - delayed_off: 25ms
+    on_press:
+      # Only turn on the chime when it is active.
+      then:
+        if:
+          condition:
+            - switch.is_on: chime_active
+          then:
+            - switch.turn_on: relay
+    on_release:
+      # On release, turn of the chime.
+      - switch.turn_off: relay

@@ -1,10 +1,10 @@
 substitutions:
-  device_name: doorbell
-  device_type: ''
-  ip: 192.168.2.44
+  device_name: Pepijn
+  device_type: Light
+  ip: 192.168.2.35
 
 esphome:
-  name: doorbell
+  name: light-pepijn
   
 esp8266:
   board: esp01_1m
@@ -12,4 +12,4 @@ esp8266:
 packages:
   minimal: !include packages/minimal.yaml
   basic: !include packages/basic.yaml
-  doorbell: !include packages/doorbell.yaml
+  light: !include packages/lsc_filament.yaml
