@@ -2,9 +2,18 @@ recorder:
   db_url: !secret mariadb_url
   purge_keep_days: 5
   exclude:
+    entities:
+      - sensor.location_phone_marleen
+      - sensor.location_phone_martijn
     domains:
       - updater
       - scene
       - weblink
       - calendar
       - camera
+      - weather
+      - button
+    entity_globs:
+      - sensor.bm_*
+      - light.bm_*
+      - media_player.bm_*

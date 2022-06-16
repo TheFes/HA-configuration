@@ -4,7 +4,7 @@ lights:
     unique_id: 72bae41e-6235-4ace-b4b1-12dfdec05800
     friendly_name: "Zolder Bol Template"
     level_template: "{{ state_attr('light.zolder_bol', 'brightness') | default(0, True) }}"
-    value_template: "{{ 'off' if is_state('switch.bureau_marleen', 'off') else states('light.zolder_bol') }}"
+    value_template: "{{ false if is_state('switch.bureau_marleen', 'off') else is_state('light.zolder_bol', 'on') }}"
     temperature_template: "{{ state_attr('light.zolder_bol', 'color_temp') | default(140, True) }}"
     min_mireds_template: "{{ state_attr('light.zolder_bol', 'min_mireds') | int(140) }}"
     max_mireds_template: "{{ state_attr('light.zolder_bol', 'max_mireds') | int(650) }}"
