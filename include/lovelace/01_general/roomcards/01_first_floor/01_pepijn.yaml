@@ -62,4 +62,6 @@ cards:
           icon_color: >-
             {% if is_state('media_player.pepijn_mini', 'playing') %}
               yellow
+            {% elif is_state('media_player.pepijn_mini', 'unavailable') %}
+              red
             {% endif %}

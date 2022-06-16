@@ -54,4 +54,6 @@ cards:
             {% set s = expand('media_player.groep_zolder') | map(attribute='state') | list %}
             {% if 'playing' in s %}
               yellow
+            {% elif is_state('media_player.groep_zolder', 'unavailable') %}
+              red
             {% endif %}

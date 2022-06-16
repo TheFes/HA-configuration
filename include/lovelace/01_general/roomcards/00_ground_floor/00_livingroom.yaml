@@ -63,6 +63,8 @@ cards:
             state_not: "off"
           - entity: media_player.woonkamer_mini
             state_not: "idle"
+          - entity: switch.tv_meubel
+            state_not: "off"
         card:
           type: custom:mushroom-template-card
           layout: vertical
@@ -71,4 +73,6 @@ cards:
           icon_color: >-
             {% if is_state('media_player.woonkamer_mini', 'playing') %}
               yellow
+            {% elif is_state('media_player.woonkamer_mini', 'unavailable') %}
+              red
             {% endif %}

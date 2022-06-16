@@ -50,26 +50,26 @@ cards:
             orange
           {% endif %}
       - type: custom:mushroom-template-card
-        entity: cover.floriscurtain_curtain
+        entity: cover.switchbot_curtain_floris
         layout: vertical
         icon: >-
-          {% if is_state('cover.floriscurtain_curtain', 'opening') %}
+          {% if is_state('cover.switchbot_curtain_floris', 'opening') %}
             mdi:arrow-collapse-right
-          {% elif is_state('cover.floriscurtain_curtain', 'closing') %}
+          {% elif is_state('cover.switchbot_curtain_floris', 'closing') %}
             mdi:arrow-collapse-left
-          {% elif is_state_attr('cover.floriscurtain_curtain', 'current_position', 100) %}
+          {% elif is_state_attr('cover.switchbot_curtain_floris', 'current_position', 100) %}
             mdi:curtains
           {% else %}
             mdi:curtains-closed
           {% endif %}
         icon_color: >-
-          {% if states('cover.floriscurtain_curtain') in [ 'opening', 'closing' ] %}
+          {% if states('cover.switchbot_curtain_floris') in [ 'opening', 'closing' ] %}
             green
-          {% elif is_state('cover.floriscurtain_curtain', 'unavailable') %}
+          {% elif is_state('cover.switchbot_curtain_floris', 'unavailable') %}
             red
-          {% elif is_state_attr('cover.floriscurtain_curtain', 'current_position', 0) %}
+          {% elif is_state_attr('cover.switchbot_curtain_floris', 'current_position', 0) %}
             yellow
-          {% elif not is_state_attr('cover.floriscurtain_curtain', 'current_position', 100) %}
+          {% elif not is_state_attr('cover.switchbot_curtain_floris', 'current_position', 100) %}
             orange
           {% endif %}
       - type: conditional
@@ -86,4 +86,6 @@ cards:
           icon_color: >-
             {% if is_state('media_player.floris_mini', 'playing') %}
               yellow
+            {% elif is_state('media_player.floris_mini', 'unavailable') %}
+              red
             {% endif %}

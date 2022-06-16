@@ -85,4 +85,6 @@ cards:
           icon_color: >-
             {% if is_state('media_player.slaapkamer_hub', 'playing') %}
               yellow
+            {% elif is_state('media_player.slaapkamer_hub', 'unavailable') %}
+              red
             {% endif %}
