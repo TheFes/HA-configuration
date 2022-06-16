@@ -20,7 +20,7 @@ trigger:
 condition:
   - alias: "After 10"
     condition: time
-    after: " 10:00:00"
+    after: " 11:00:00"
 action:
   - if: "{{ trigger.id != 'open' }}"
     then:
@@ -61,11 +61,12 @@ action:
             target:
               entity_id:
                 - cover.slaapkamer_links_template
+                - cover.slaapkamer_midden_template
                 - cover.slaapkamer_rechts_template
           - alias: "Set middle cover to 50%"
             service: cover.set_cover_position
             target:
-              entity_id: cover.slaapkamer_midden_template
+              entity_id: cover.slaapkamer_links_template
             data:
               position: 50
         else:
