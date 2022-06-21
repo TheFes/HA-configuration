@@ -7,8 +7,7 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.floris_temp') }}°C | 
-      {{ states('sensor.floris_lux') | int }} lx
+      {{ states('sensor.floris_temp') }}°C
     tap_action:
       action: navigate
       navigation_path: floris
@@ -30,23 +29,25 @@ cards:
           {% endif %}
       - type: custom:mushroom-template-card
         entity: cover.floris
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.floris', 'unavailable')}}"
+        badge_color: red
         layout: vertical
         icon: >-
-          {% if is_state('cover.floris_tahoma', 'opening') %}
+          {% if is_state('cover.floris_tahoma', 'opening') and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
             mdi:arrow-collapse-up
-          {% elif is_state('cover.floris_tahoma', 'closing') %}
+          {% elif is_state('cover.floris_tahoma', 'closing') and not is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
             mdi:arrow-collapse-down
-          {% elif is_state_attr('cover.floris_tahoma', 'current_position', 100) %}
-            mdi:blinds-open
-          {% else %}
+          {% elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
             mdi:blinds
+          {% else %}
+            mdi:blinds-open
           {% endif %}
         icon_color: >-
-          {% if states('cover.floris_tahoma') in [ 'opening', 'closing' ] %}
+          {% if states('cover.floris_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
             green
           {% elif is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
             yellow
-          {% elif not is_state_attr('cover.floris_tahoma', 'current_position', 100) %}
+          {% elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
             orange
           {% endif %}
       - type: custom:mushroom-template-card

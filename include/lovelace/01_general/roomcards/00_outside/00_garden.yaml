@@ -30,6 +30,8 @@ cards:
           {% endif %}
       - type: custom:mushroom-template-card
         entity: cover.veranda
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.veranda', 'unavailable')}}"
+        badge_color: red
         layout: vertical
         icon: >-
           {% if is_state('cover.veranda', 'opening') %}
@@ -46,6 +48,6 @@ cards:
             green
           {% elif is_state_attr('cover.veranda', 'current_position', 100) %}
             yellow
-          {% elif not is_state_attr('cover.veranda', 'current_position', 0) %}
+          {% elif state_attr('cover.veranda', 'current_position') | int(0) > 0 %}
             orange
           {% endif %}

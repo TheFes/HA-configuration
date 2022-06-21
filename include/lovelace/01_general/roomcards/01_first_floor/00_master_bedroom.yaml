@@ -30,13 +30,15 @@ cards:
       - type: custom:mushroom-template-card
         entity: cover.slaapkamer
         layout: vertical
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.slaapkamer', 'unavailable')}}"
+        badge_color: red
         icon: "{{ state_attr('cover.slaapkamer', 'icon') }}"
         icon_color: >-
           {% if states('cover.slaapkamer') in [ 'opening', 'closing' ] %}
             green
           {% elif is_state_attr('cover.slaapkamer', 'current_position', 0) %}
             yellow
-          {% elif not is_state_attr('cover.slaapkamer', 'current_position', 100) %}
+          {% elif state_attr('cover.slaapkamer', 'current_position') | int(100) < 100 %}
             orange
           {% endif %}
       - type: custom:mushroom-template-card

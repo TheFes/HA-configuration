@@ -5,6 +5,8 @@ cards:
     primary: WC
     icon: mdi:toilet
     icon_color: blue
+    badge_icon: "{{ 'mdi:motion-sensor' if is_state('binary_sensor.motion_wc', 'on') }}"
+    badge_color: "{{ 'yellow' if is_state('binary_sensor.motion_wc', 'on') }}"
     layout: horizontal
     secondary: >-
       {{ states('sensor.motion_wc_temperature') }}°C | {{
@@ -26,17 +28,5 @@ cards:
           {% endif %}
         icon_color: >-
           {% if is_state('light.wc', 'on') %}
-            yellow
-          {% endif %}
-      - type: custom:mushroom-template-card
-        layout: vertical
-        icon: >-
-          {% if is_state('binary_sensor.motion_wc', 'on') %}
-            mdi:motion-sensor
-          {% else %}
-            mdi:motion-sensor-off
-          {% endif %}
-        icon_color: >-
-          {% if is_state('binary_sensor.motion_wc', 'on') %}
             yellow
           {% endif %}
