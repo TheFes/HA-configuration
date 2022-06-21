@@ -46,6 +46,7 @@ sensor:
         id(time_homeassistant).utcnow().timestamp - id(sensor_uptime).state
       );
       return timestamp;
+    entity_category: diagnostic
 
   # WiFi Signal sensor.
   - platform: wifi_signal
