@@ -20,7 +20,11 @@ trigger:
 condition:
   - alias: "After 10"
     condition: time
-    after: " 11:00:00"
+    after: "10:00:00"
+  - alias: "After sunrise"
+    condition: state
+    entity_id: sun.sun
+    state: "above_horizon"
 action:
   - if: "{{ trigger.id != 'open' }}"
     then:

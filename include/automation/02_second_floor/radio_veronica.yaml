@@ -17,7 +17,7 @@ action:
       - conditions:
           - alias: "Time for Radio Veronica"
             condition: template
-            value_template: "{{ trigger.id == 'veronica' }}"
+            value_template: "{{ now() < today_at('16:00') }}"
           - alias: "Radio 2 playing"
             condition: template
             value_template: >
@@ -44,7 +44,7 @@ action:
       - conditions:
           - alias: "And switch back"
             condition: template
-            value_template: "{{ trigger.id == 'radio_2' }}"
+            value_template: "{{ now() >= today_at('16:00') }}"
           - alias: "Veronica playing"
             condition: template
             value_template: >

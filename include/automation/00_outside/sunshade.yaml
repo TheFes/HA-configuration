@@ -14,6 +14,9 @@ trigger:
   - platform: numeric_state
     entity_id: sensor.woonkamer_temp
     above: 20
+  - platform: time
+    at: "16:00:00"
+    id: "close"
 action:
   - if: "{{ state_attr('sun.sun', 'rising') }}"
     then:
@@ -35,7 +38,8 @@ action:
         service: cover.open_cover
         target:
           entity_id: cover.veranda
-    else:
+  - if: "{{ trigger.id = 'close' }}"
+    then:
       - alias: "Close cover"
         service: cover.close_cover
         target:

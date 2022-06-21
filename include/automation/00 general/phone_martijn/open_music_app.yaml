@@ -7,52 +7,44 @@ trigger:
     attribute: connected_paired_devices
 variables:
   bt_added: >
-    {%- set bt_old_list = 
-      (
-        trigger.from_state.attributes.connected_paired_devices 
-          | replace('[', '')
-          | replace(']', '')
-      ).split(',') %}
-    {%- set bt_new_list =
-      (
-        trigger.to_state.attributes.connected_paired_devices 
-          | replace('[', '')
-          | replace(']', '')
-      ).split(',') %}
+    {%- set bt_old_list = trigger.from_state.attributes.connected_paired_devices %}
+    {%- set bt_new_list = trigger.to_state.attributes.connected_paired_devices %}
     {{ 
       bt_new_list
-        | reject('in', bt_old_list) 
-        | join
+        | reject('in', bt_old_list)
+        | list
+        | last
     }}
   headphones:
     - 60:AB:D2:3C:85:66
     - E0:67:81:01:F7:D3
     - E8:07:BF:13:99:AB
-condition: "{{ bt_added in headphones }}"
 action:
-  - alias: "Send notification to select right app"
-    service: notify.mobile_app_pixel_5
-    data:
-      title: Muziekje?
-      message: Wat wil je luisteren
-      data:
-        tag: "music_choose"
-        ttl: 0
-        priority: high
-        notification_icon: mdi:music
-        actions:
-          - action: "URI"
-            title: "Spotify"
-            uri: "app://com.spotify.music"
-          - action: "URI"
-            title: "YT Music"
-            uri: "app://com.google.android.apps.youtube.music"
-          - action: "URI"
-            title: "TuneIn"
-            uri: "app://tunein.player"
-  - delay:
-      minutes: 10
-  - alias: "Remove notification after 10 minutes"
+  - if: "{{ bt_added in headphones }}"
+    then:
+      - alias: "Send notification to select right app"
+        service: notify.mobile_app_pixel_5
+        data:
+          title: Muziekje?
+          message: Wat wil je luisteren
+          data:
+            tag: "music_choose"
+            ttl: 0
+            priority: high
+            notification_icon: mdi:music
+            actions:
+              - action: "URI"
+                title: "Spotify"
+                uri: "app://com.spotify.music"
+              - action: "URI"
+                title: "YT Music"
+                uri: "app://com.google.android.apps.youtube.music"
+              - action: "URI"
+                title: "TuneIn"
+                uri: "app://tunein.player"
+      - delay:
+          minutes: 10
+  - alias: "Remove notification"
     service: notify.mobile_app_pixel_5
     data:
       message: "clear_notification"
