@@ -1,9 +1,6 @@
 !.gitignore
 !*.md
 !LICENSE
-www/*
-!www/community
-!manifest.json
 
 # Ignore Folders
 .vscode
@@ -13,12 +10,13 @@ www/*
 tts
 image
 custom_components/*/*
-!custom_components/*/manifest.json
-
-
-
-# test folders
+files
 zz_test
+www/*
+
+# Add these anyway
+!custom_components/*/manifest.json
+!www/community
 
 # Ignore Extensions
 *.db
@@ -35,9 +33,6 @@ ip_bans.yaml
 secrets.yaml
 known_devices.yaml
 include/lovelace/02_admin/04_lab.yaml
-include/lovelace/02_admin/05_mushroom.yaml
-frigate.yml
-google_calendars.yaml
 .google.token
 watchman_report.txt
-include/files/resume_data.txt
+google_calendars.yaml
