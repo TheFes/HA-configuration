@@ -38,7 +38,7 @@ action:
         service: cover.open_cover
         target:
           entity_id: cover.veranda
-  - if: "{{ trigger.id = 'close' }}"
+  - if: "{{ trigger.id == 'close' }}"
     then:
       - alias: "Close cover"
         service: cover.close_cover
