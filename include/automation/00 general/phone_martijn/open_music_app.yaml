@@ -12,8 +12,7 @@ variables:
     {{ 
       bt_new_list
         | reject('in', bt_old_list)
-        | list
-        | last
+        | join
     }}
   headphones:
     - 60:AB:D2:3C:85:66
