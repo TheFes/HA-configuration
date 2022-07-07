@@ -10,7 +10,7 @@ remote_vol_up:
         volume_level: "{{ [0.2, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.01] | min | round(2) }}"
 
 remote_vol_down:
-  alias: "F0L 📺 Volume down"
+  alias: "F0L - Volume down"
   icon: mdi:volume-minus
   sequence:
     - alias: "Volume Down"
@@ -21,7 +21,7 @@ remote_vol_down:
         volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.01] | max | round(2) }}"
 
 remote_vol_mute:
-  alias: "F0L 📺 Volume mute"
+  alias: "F0L - Volume mute"
   icon: mdi:volume-mute
   sequence:
     - alias: "Volume Mute"
