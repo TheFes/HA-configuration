@@ -1,0 +1,56 @@
+washing_machine_switch:
+  alias: "F2 📦 Failsafe to prevent accidentally turning off the switch for the washing machine"
+  icon: mdi:washing-machine-alert
+  sequence:
+    - if:
+        - alias: "Washing machine on"
+          condition: state
+          entity_id: sensor.wasmachine
+          state: "on"
+      then:
+        - service: browser_mod.popup
+          data:
+            deviceID: "{{ deviceID }}"
+            hide_header: true
+            card:
+              type: custom:vertical-stack-in-card
+              cards:
+                - type: markdown
+                  content: |
+                    De wasmachine staat aan, weet je zeker dat hij de schakelaar uit moet?
+                - type: grid
+                  square: false
+                  columns: 2
+                  cards:
+                    - type: custom:mushroom-template-card
+                      icon: mdi:check
+                      primary: Ja
+                      tap_action:
+                        action: call-service
+                        service: switch.turn_off
+                        service_data:
+                          entity_id: switch.wasmachine
+                    - type: custom:mushroom-template-card
+                      icon: mdi:cancel
+                      primary: Nee
+                      tap_action:
+                        action: call-service
+                        service: browser_mod.close_popup
+                        service_data:
+                          deviceID: "{{ deviceID }}"
+        - wait_for_trigger:
+            - platform: state
+              entity_id: switch.wasmachine
+              to: "off"
+            - platform: event
+              event_type: call_service
+              event_data:
+                domain: browser_mod
+                service: close_popup
+        - service: browser_mod.close_popup
+          data:
+            deviceID: "{{ deviceID }}"
+      else:
+        - service: switch.toggle
+          target:
+            entity_id: switch.wasmachine
