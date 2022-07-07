@@ -31,13 +31,15 @@ action:
             service: notify.mobile_app_pixel_5
             data:
               message: command_bluetooth
-              title: turn_off
+              data:
+                command: turn_off
           - delay: 0.5
           - alias: "DND on"
             service: notify.mobile_app_pixel_5
             data:
               message: command_dnd
-              title: priority_only
+              data:
+                command: priority_only
       - conditions:
           - condition: trigger
             id: "on"
@@ -46,10 +48,12 @@ action:
             service: notify.mobile_app_pixel_5
             data:
               message: command_bluetooth
-              title: turn_on
+              data:
+                command: turn_on
           - delay: 0.5
           - alias: "DND off"
             service: notify.mobile_app_pixel_5
             data:
               message: command_dnd
-              title: "off"
+              data:
+                command: "off"
