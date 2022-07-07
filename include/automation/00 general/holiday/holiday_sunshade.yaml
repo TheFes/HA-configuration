@@ -22,13 +22,13 @@ action:
             id: screen_open
           - alias: "Warm day?"
             condition: template
-            value_template: "{{ state_attr('weather.climacell_daily', 'forecast')[0].temperature >= 22 }}"
+            value_template: "{{ state_attr('weather.tomorrow_io_daily', 'forecast')[0].temperature >= 22 }}"
           - alias: "Sunny day?"
             condition: template
             value_template: >
               {{ 
-                state_attr('weather.climacell_daily', 'forecast')[0].condition == 'partly_cloudy' 
-                or state_attr('weather.climacell_daily', 'forecast')[0].condition =='sunny' 
+                state_attr('weather.tomorrow_io_daily', 'forecast')[0].condition == 'partly_cloudy' 
+                or state_attr('weather.tomorrow_io_daily', 'forecast')[0].condition =='sunny' 
               }}
         sequence:
           - alias: "Random delay"

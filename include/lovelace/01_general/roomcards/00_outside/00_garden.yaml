@@ -7,7 +7,7 @@ cards:
     layout: horizontal
     entity: light.groep_tuin
     secondary: >-
-      {{ state_attr('weather.climacell_daily', 'temperature') }}°C 
+      {{ state_attr('weather.tomorrow_io_daily', 'temperature') }}°C 
       | {{ states('sensor.br_irradiance') | int }} W/m²
     tap_action:
       action: navigate
