@@ -1,5 +1,5 @@
 id: 83b1b77c-bda8-4fd3-abef-f37650e2524b
-alias: "00 🔧 Select theme based on sun"
+alias: "00 - Select theme based on sun"
 initial_state: "on"
 trigger:
   - platform: homeassistant
@@ -14,5 +14,5 @@ trigger:
 action:
   - service: frontend.set_theme
     data:
-      name: "Google Theme"
+      name: "Mushroom"
       mode: "{{ 'light' if is_state('sun.sun', 'above_horizon') else 'dark' }}"
