@@ -6,6 +6,8 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_template
     primary: Bureau Martijn (PC)
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.bureau_martijn', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
@@ -24,6 +26,8 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_2
     primary: Bureau Martijn (Netwerk)
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn_2', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.bureau_martijn_2', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
@@ -45,6 +49,8 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.server', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.server', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.server_power') ~ ' W') if is_state('switch.server', 'on') }}
@@ -67,6 +73,8 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.bureau_marleen
     primary: Bureau Marleen
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_marleen', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.bureau_marleen', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.bureau_marleen_power') ~ ' W') if is_state('switch.bureau_marleen', 'on') }}
@@ -77,6 +85,8 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.wasmachine
     primary: Wasmachine
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.wasmachine', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.wasmachine', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.wasmachine_power') ~ ' W') if is_state('switch.wasmachine', 'on') }}
@@ -95,10 +105,17 @@ cards:
         blue
       {%- endif %}
     tap_action:
-      action: toggle
+      action: fire-dom-event
+      browser_mod:
+        command: call-service
+        service: script.washing_machine_switch
+        service_data:
+          deviceID: this
   - type: custom:mushroom-template-card
     entity: switch.droger
     primary: Droger
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.droger', 'unavailable') }}"
+    badge_color: red
     secondary: >-
       {{ 'Aan' if is_state('switch.droger', 'on') else 'Uit' }}
       {{ (' | ' ~ states('sensor.droger_power') ~ ' W') if is_state('switch.droger', 'on') }}

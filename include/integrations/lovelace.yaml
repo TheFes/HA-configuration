@@ -3,8 +3,6 @@ lovelace:
   resources:
     - url: /hacsfiles/lovelace-slider-entity-row/slider-entity-row.js
       type: module
-    - url: /hacsfiles/harmony-card/harmony-card.js
-      type: module
     - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
       type: module
     - url: /hacsfiles/lovelace-xiaomi-vacuum-map-card/xiaomi-vacuum-map-card.js
@@ -29,9 +27,11 @@ lovelace:
       type: module
     - url: /hacsfiles/lovelace-mushroom/mushroom.js
       type: module
-    - url: /local/community/kiosk-mode/kiosk-mode.js
+    - url: /hacsfiles/kiosk-mode/kiosk-mode.js
       type: module
     - url: /hacsfiles/lovelace-layout-card/layout-card.js
+      type: module
+    - url: /hacsfiles/tv-card/tv-card.js
       type: module
   dashboards:
     lovelace-admin:
@@ -39,12 +39,5 @@ lovelace:
       filename: /config/ui-lovelace-admin.yaml
       title: Admin
       icon: mdi:tools
-      show_in_sidebar: true
-      require_admin: true
-    mushroom-phone:
-      mode: yaml
-      filename: /config/ui-lovelace-mushroom.yaml
-      title: Backup
-      icon: mdi:cloud-upload
       show_in_sidebar: true
       require_admin: true

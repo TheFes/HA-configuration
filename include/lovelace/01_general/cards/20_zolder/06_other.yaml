@@ -9,10 +9,14 @@ cards:
       - type: custom:mushroom-template-card
         primary: Ventilatie
         secondary: "{{ states('sensor.ventilatie_power') }} W"
+        badge_icon: "{{ 'mdi:alert' if is_state('switch.ventilatie', 'unavailable') }}"
+        badge_color: red
         icon: mdi:hvac
         icon_color: "{{ 'blue' if is_state('switch.ventilatie', 'on') }}"
       - type: custom:mushroom-template-card
         primary: Ketel
         secondary: "{{ states('sensor.ketel_power') }} W"
+        badge_icon: "{{ 'mdi:alert' if is_state('switch.ketel', 'unavailable') }}"
+        badge_color: red
         icon: mdi:water-boiler
         icon_color: "{{ 'blue' if is_state('switch.ketel', 'on') }}"
