@@ -102,60 +102,8 @@ chips:
       action: fire-dom-event
       browser_mod:
         command: popup
-        title: Verstuur TTS bericht
-        card:
-          type: vertical-stack
-          cards:
-            - type: entities
-              entities:
-                - entity: input_text.tts_message
-                  name: Bericht
-                - entity: input_boolean.tts_volume
-                  name: Volume wijzigen?
-                - type: conditional
-                  conditions:
-                    - entity: input_boolean.tts_volume
-                      state: "on"
-                  row:
-                    entity: input_number.tts_volume
-                    name: Volume voor bericht
-            - type: entities
-              title: "Versturen aan:"
-              entities:
-                - entity: input_select.dropdown_google_say
-                  name: "Kies waar het bericht naar verstuurd moet worden"
-            - type: conditional
-              conditions:
-                - entity: input_select.dropdown_google_say
-                  state: "Geavanceerd kiezen"
-              card:
-                type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_boolean.huis_groep
-                    name: Hele huis
-                  - entity: input_boolean.beneden_groep
-                    name: Beneden
-                  - entity: input_boolean.boven_groep
-                    name: Boven (eerste verdieping en zolder)
-                  - entity: input_boolean.zolder_mini_martijn
-                    name: Zolder Martijn
-                  - entity: input_boolean.zolder_mini_marleen
-                    name: Zolder Marleen
-                  - entity: input_boolean.slaapkamer_hub
-                    name: Slaapkamer Hub
-                  - entity: input_boolean.pepijn_mini
-                    name: Pepijn Mini
-                  - entity: input_boolean.floris_mini
-                    name: Floris Mini
-                  - entity: input_boolean.keuken_hub
-                    name: Keuken Hub
-                  - entity: input_boolean.woonkamer_mini
-                    name: Woonkamer Mini
-            - type: entities
-              entities:
-                - entity: script.google_say_dashboard
-                  name: Verstuur bericht
+        hide_header: true
+        card: !include /config/include/lovelace/cards/send_tts.yaml
   - type: template
     icon: mdi:webcam
     tap_action:

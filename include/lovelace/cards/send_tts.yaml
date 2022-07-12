@@ -1,0 +1,117 @@
+type: vertical-stack
+cards:
+  - type: entities
+    title: Google Home bericht
+    entities:
+      - entity: input_text.tts_message
+        name: Bericht
+      - entity: input_boolean.tts_volume
+        name: Volume wijzigen?
+      - type: conditional
+        conditions:
+          - entity: input_boolean.tts_volume
+            state: "on"
+        row:
+          entity: input_number.tts_volume
+          name: Volume voor bericht
+  - type: grid
+    square: false
+    columns: 4
+    title: "Versturen aan:"
+    cards:
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.huis_groep
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.zolder_groep
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.boven_groep
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.beneden_groep
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.zolder_mini_martijn
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.zolder_mini_marleen
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.slaapkamer_hub
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.pepijn_mini
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.floris_mini
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.keuken_hub
+        tap_action:
+          action: toggle
+      - type: custom:mushroom-template-card
+        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        entity: input_boolean.woonkamer_mini
+        tap_action:
+          action: toggle
+  - type: custom:mushroom-template-card
+    primary: Verstuur TTS
+    icon: mdi:send
+    layout: vertical
+    icon_color: "{{ 'blue' if is_state('group.tts_selection', 'on') else states('input_text.tts_icon_color') }}"
+    tap_action:
+      action: call-service
+      service: script.google_say_dashboard
