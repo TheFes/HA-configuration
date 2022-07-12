@@ -2,6 +2,10 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 1.5.1 - 12 July 2022
+#### 🐛 Bug fixes
+* Template fix to prevent errors on missing attributes when creating the data variables
+
 ### Version 1.5.0 - 20 May 2022
 #### ✨ New feature
 * Added the `target_variable` option. When set to `true` it will add the variable `voice_target` to the service call containing the entity_id of the Google Home which was used to trigger the script. This can be used to use the entity in a script. It will only be added on script service calls. In case the Google Home Resume script is used as well, it will also add the entity_id under `extra`, so the resume script will recognize it as a target to be resumed.

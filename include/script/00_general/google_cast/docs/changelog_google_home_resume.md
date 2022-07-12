@@ -2,13 +2,16 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.5.1 - 12 July 2022
+#### 🐛 Bug fixes
+* Template fix to prevent errors on missing attributes when creating the data variables
+
 ### Version 2.5.0 - 28 May 2022
 #### 🌟 Improvements
 * Combined all helper scripts in one script (`script.google_home_resume_helper`)
 #### 🐛 Bug fixes
 * Fix for uppercase characters in context.id causing errors in creating groups
 * Fixed resume for the Ytube Music custom integration
-
 
 ### Version 2.4.5 - 20 May 2022
 #### 🌟 Improvements

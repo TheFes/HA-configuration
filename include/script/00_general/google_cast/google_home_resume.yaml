@@ -67,7 +67,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.5.0
+        version: 2.5.1
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -323,7 +323,7 @@ google_home_resume:
                                         state = entity.state
                                         )
                 %}
-                {%- if entity.attributes.app_name == 'Spotify' %}
+                {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
                   {%- set additional = dict(
                                             app_name = 'Spotify',
                                             volume_level = entity.attributes.volume_level,
@@ -332,7 +332,7 @@ google_home_resume:
                                                               + entity.attributes.get('media_position', 0)
                                             )
                   %}
-                {%- elif entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
                   {%- set additional = dict(
                                             app_name = entity.attributes.app_name,
                                             volume_level = entity.attributes.volume_level,

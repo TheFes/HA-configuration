@@ -10,7 +10,7 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.5.0
+        version: 1.5.1
     - alias: "Are there Spotify entities?"
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -38,7 +38,7 @@ google_home_voice:
                                       state = entity.state
                                       )
               %}
-              {%- if entity.attributes.app_name == 'Spotify' %}
+              {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
                 {%- set additional = dict(
                                           app_name = 'Spotify',
                                           volume_level = entity.attributes.volume_level,
@@ -47,7 +47,7 @@ google_home_voice:
                                                             + entity.attributes.get('media_position', 0)
                                           )
                 %}
-              {%- elif entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+              {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
                 {%- set additional = dict(
                                           app_name = entity.attributes.app_name,
                                           volume_level = entity.attributes.volume_level,

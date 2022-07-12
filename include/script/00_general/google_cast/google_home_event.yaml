@@ -62,7 +62,7 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.6.1
+        version: 0.6.2
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
@@ -149,7 +149,7 @@ google_home_event:
                   data:
                     message: >
                       {%- set data = { 'resume_data': resume_data } %}
-                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                      '{{ data | tojson }}'
                 - service: homeassistant.update_entity
                   target:
                     entity_id: sensor.resume_data
@@ -173,7 +173,7 @@ google_home_event:
                                               target = iif(entity.entity_id in target_list,'target', 'no_target')
                                               )
                       %}
-                      {%- if entity.attributes.app_name == 'Spotify' %}
+                      {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
                         {%- set additional = dict(
                                                   app_name = 'Spotify',
                                                   volume_level = entity.attributes.volume_level,
@@ -182,7 +182,7 @@ google_home_event:
                                                                     + entity.attributes.get('media_position', 0)
                                                   )
                         %}
-                      {%- elif entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                      {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
                         {%- set additional = dict(
                                                   app_name = entity.attributes.app_name,
                                                   volume_level = entity.attributes.volume_level,
@@ -262,7 +262,7 @@ google_home_event:
                   data:
                     message: >
                       {%- set data = { 'resume_data': resume_data } %}
-                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                      '{{ data | tojson }}'
                 - service: homeassistant.update_entity
                   target:
                     entity_id: sensor.resume_data
@@ -355,7 +355,7 @@ google_home_event:
                   data:
                     message: >
                       {%- set data = { 'resume_data': resume_data } %}
-                      '{{ (data | string).replace("'","|").replace('|', '"') }}'
+                      '{{ data | tojson }}'
                 - service: homeassistant.update_entity
                   target:
                     entity_id: sensor.resume_data

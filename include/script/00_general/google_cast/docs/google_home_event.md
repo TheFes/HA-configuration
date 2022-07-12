@@ -8,8 +8,9 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
 * The Google Home Resume script
 
-# To Do
-* Possible a lot of bug fixing and improvements after other people start using it :)
+### Version 0.6.1 - 12 July 2022
+#### 🐛 Bug fixes
+* Template fix to prevent errors on missing attributes when creating the data variables
 
 # Most recent changes
 ### Version 0.6.0 - 16 May 2022
