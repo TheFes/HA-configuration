@@ -117,12 +117,12 @@ google_home_resume:
         speaker_groups: "{{ speaker_groups if (speaker_groups is defined and speaker_groups) else { 'no group': [ 'no members' ] } }}"
         cast_entities: "{{ integration_entities('cast') }}"
         spotify_entities: "{{ integration_entities('spotify') }}"
-        mass_entities: "{{ integration_entities('mass') }}"
+        mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
         mass_playing: "{{ expand(mass_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
         cast_mass_playing: >
           {%- set ns = namespace(cast=[]) %}
           {%- for entity in mass_playing %}
-            {% set ns.cast = ns.cast + [entity.entity_id | replace('mass_', '') ] %}
+            {% set ns.cast = ns.cast + [entity | replace('mass_', '') ] %}
           {%- endfor %}
           {{ ns.cast }}
         primary_spotcast_check: >
