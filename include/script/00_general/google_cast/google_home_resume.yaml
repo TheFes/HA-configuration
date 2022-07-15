@@ -117,6 +117,14 @@ google_home_resume:
         speaker_groups: "{{ speaker_groups if (speaker_groups is defined and speaker_groups) else { 'no group': [ 'no members' ] } }}"
         cast_entities: "{{ integration_entities('cast') }}"
         spotify_entities: "{{ integration_entities('spotify') }}"
+        mass_entities: "{{ integration_entities('mass') }}"
+        mass_playing: "{{ expand(mass_entites) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
+        cast_mass_playing: >
+          {%- set ns = namespace(cast=[]) %}
+          {%- for entity in mass_playing %}
+            {% set ns.cast = ns.cast + [entity.entity_id | replace('mass_', '') ] %}
+          {%- endfor %}
+          {{ ns.cast }}
         primary_spotcast_check: >
           {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
           {{
@@ -498,6 +506,7 @@ google_home_resume:
               {{
                 (target_playing + speaker_groups_resume + single_resume_list)
                   | reject('in', reject_list + resume_active + resume_action_false)
+                  | reject('in', cast_mass_playing)
                   | unique
                   | list
               }}
@@ -651,8 +660,6 @@ google_home_resume:
                 {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                 {{ dict(s, **dict(t, **dict(d))) }}
-              data: >
-                {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
               extra: >
                 {%- set extra =
                           dict(service_call.get('extra', {}).items()
@@ -700,6 +707,7 @@ google_home_resume:
                   {{ (a + d + e) | unique | list }}
               media_entities: "{{ expand(target_entities) | selectattr('domain', 'eq', 'media_player') | map(attribute='entity_id') | list }}"
               cast_target: "{{ media_entities | select('in', cast_entities) | list }}"
+              mass: "{{ cast_target | select('in', cast_mass_playing) | list | count > 0 }}"
               screen: >
                 {%- set members = player_data 
                                     | selectattr('entity_id', 'in', cast_target)
@@ -716,6 +724,9 @@ google_home_resume:
                   and extra.screen_tts is defined
                   and dummy_player is defined and iif(dummy_player)
                 }}
+              data: >
+                {% set data = dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) %}
+                {{ dict(data, **dict(announce = true)) if mass and service == 'media_player.play_media' else data }}
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
@@ -753,6 +764,15 @@ google_home_resume:
                     continue_on_error: true
           - service: "{{ service_call.service }}"
             target: >
+              {%- if mass %}
+                {%- set ns = namespace(ctom = []) %}
+                {%- for entity in target_entities %}
+                  {%- set e = entity | replace('.', '.mass_') if entity in cast_mass_playing else entity %}
+                  {%- set ns.ctom = ns.ctom + [ e] %}
+                {%- endfor %}
+                {%- set target = ns.ctom %}
+                {%- set media_entities = target | select('match', '^media_player') | list %}
+              {%- endif %}
               {%- if screen and tts %}
                 {{ dict(entity_id = dummy_player) }}
               {%- elif tts and iif(target.get('area_id', '')) %}
@@ -1067,6 +1087,7 @@ google_home_resume_helper:
           data:
             media_content_id: "{{ wait.trigger.event.data.service_data.media_content_id }}"
             media_content_type: "music"
+            announce: true
             extra:
               metadata:
                 metadataType: 3
