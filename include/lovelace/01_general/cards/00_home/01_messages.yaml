@@ -3,7 +3,17 @@ view_layout:
   grid-area: messages
 cards:
   - type: custom:mushroom-title-card
-    title: Hallo, {{ user }} !
+    title: >-
+      {%- if now() < today_at('06:00') %}
+        {%- set greeting = 'Goedenacht' %}
+      {%- elif now() < today_at('12:00') %}
+        {%- set greeting = 'Goedemorgen' %}
+      {%- elif now() < today_at('18:00') %}
+        {%- set greeting = 'Goedemiddag' %}
+      {%- else %}
+        {%- set greeting = 'Goedenavond' %}
+      {%- endif %}
+      {{ greeting }} {{ user }}!
     alignment: center
     subtitle: >-
       {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
