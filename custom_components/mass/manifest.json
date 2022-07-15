@@ -1,0 +1,23 @@
+{
+  "domain": "mass",
+  "name": "Music Assistant",
+  "version": "2022.7.0b7",
+  "documentation": "https://github.com/music-assistant/hass-music-assistant",
+  "issue_tracker": "https://github.com/music-assistant/hass-music-assistant/issues",
+  "requirements": [
+    "music-assistant==1.6.6"
+  ],
+  "codeowners": [
+    "@marcelveldt"
+  ],
+  "dependencies": [
+    "http",
+    "panel_custom"
+  ],
+  "after_dependencies": [
+    "media_source", "media_player", "cast"
+  ],
+  "config_flow": true,
+  "iot_class": "local_push",
+  "loggers": ["music_assistant"]
+}
