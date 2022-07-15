@@ -770,7 +770,7 @@ google_home_resume:
                   {%- set e = entity | replace('.', '.mass_') if entity in cast_mass_playing else entity %}
                   {%- set ns.ctom = ns.ctom + [ e] %}
                 {%- endfor %}
-                {%- set target = ns.ctom %}
+                {%- set target_entities = ns.ctom %}
                 {%- set media_entities = target | select('match', '^media_player') | list %}
               {%- endif %}
               {%- if screen and tts %}
@@ -778,7 +778,7 @@ google_home_resume:
               {%- elif tts and iif(target.get('area_id', '')) %}
                 {{ dict(entity_id = media_entities) }}
               {%- else %}
-                {{ target }}
+                {{ dict(entity_id = target_entities) if mass else target }}
               {%- endif %}
             data: "{{ data }}"
             continue_on_error: true
