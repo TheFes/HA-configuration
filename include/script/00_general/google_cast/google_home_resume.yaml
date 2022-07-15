@@ -118,7 +118,7 @@ google_home_resume:
         cast_entities: "{{ integration_entities('cast') }}"
         spotify_entities: "{{ integration_entities('spotify') }}"
         mass_entities: "{{ integration_entities('mass') }}"
-        mass_playing: "{{ expand(mass_entites) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
+        mass_playing: "{{ expand(mass_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
         cast_mass_playing: >
           {%- set ns = namespace(cast=[]) %}
           {%- for entity in mass_playing %}
