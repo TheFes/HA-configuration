@@ -1,9 +1,10 @@
 id: buienaradar_screens
 alias: "F1 - Screens up with upcoming rain"
 trigger:
-  - platform: numeric_state
-    entity_id: sensor.br_precipitation_forecast_total
-    above: 0
+  - platform: state
+    entity_id: binary_sensor.rain
+    to: "on"
+    for: "00:00:10"
   - platform: homeassistant
     event: start
   - platform: event
@@ -14,9 +15,9 @@ variables:
     - cover.pepijn
     - cover.slaapkamer
   down_entity_id: >
-    {{ 
-      expand(screens) | rejectattr('state', 'in', ['unavailable', 'unknown', none]) 
-                      | rejectattr('attributes.current_position', 'eq', 100.0)  
+    {{
+      expand(screens) | rejectattr('state', 'in', ['unavailable', 'unknown', none])
+                      | rejectattr('attributes.current_position', 'eq', 100.0)
                       | map(attribute='entity_id') 
                       | list 
     }}
@@ -28,8 +29,7 @@ variables:
                       | list 
     }}
 condition:
-  - condition: or
-    conditions:
+  - or:
       - alias: "Screens open?"
         condition: template
         value_template: "{{ screens_down | count > 0 }}"
@@ -37,9 +37,10 @@ condition:
         condition: template
         value_template: "{{ screens_unavailable | count > 0 }}"
   - alias: "Rain?"
-    condition: numeric_state
-    entity_id: sensor.br_precipitation_forecast_total
-    above: 0
+    condition: state
+    entity_id: binary_sensor.rain
+    state: "on"
+    for: "00:00:10"
 action:
   - alias: "Open screens"
     choose:

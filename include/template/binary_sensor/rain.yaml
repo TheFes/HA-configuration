@@ -1,0 +1,5 @@
+binary_sensor:
+  - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
+    name: "Rain"
+    state: "{{ states('sensor.br_precipitation_forecast_total') | float > 0 }}"
+    availability: "{{ states('sensor.br_precipitation_forecast_total') | is_number }}"
