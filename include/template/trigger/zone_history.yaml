@@ -13,29 +13,29 @@ sensor:
       {% endif %}
     attributes:
       last_arrival: >
-        {%- set arrived = trigger.to_state.attributes.person
-                            | reject('in', trigger.from_state.attributes.person)
+        {%- set arrived = trigger.to_state.attributes.persons
+                            | reject('in', trigger.from_state.attributes.persons)
                             | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('last_arrival', dict(person = 'no one yet', at = now().isoformat())) %}
         {{ dict(person = arrived, at = now().isoformat()) if iif(arrived) else previous }}
       last_departure: >
-        {%- set left = trigger.from_state.attributes.person
-                          | reject('in', trigger.to_state.attributes.person)
+        {%- set left = trigger.from_state.attributes.persons
+                          | reject('in', trigger.to_state.attributes.persons)
                           | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('last_departure', dict(person = 'no one yet', at = now().isoformat())) %}
         {{ dict(person = left, at = now().isoformat()) if iif(left) else previous }}
       arrival_history: >
-        {%- set arrived = trigger.to_state.attributes.person
-                            | reject('in', trigger.from_state.attributes.person)
+        {%- set arrived = trigger.to_state.attributes.persons
+                            | reject('in', trigger.from_state.attributes.persons)
                             | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
         {{ [ this.attributes.last_arrival ] + previous[-9:] if iif(arrived) else previous }}
       departure_history: >
-        {%- set left = trigger.from_state.attributes.person
-                          | reject('in', trigger.to_state.attributes.person)
+        {%- set left = trigger.from_state.attributes.persons
+                          | reject('in', trigger.to_state.attributes.persons)
                           | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
