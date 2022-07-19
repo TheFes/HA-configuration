@@ -17,14 +17,14 @@ sensor:
                             | reject('in', trigger.from_state.attributes.person)
                             | join(', ')
         %}
-        {%- set previous = this.get('attributes', {}).get('arrived', dict(person = 'no one yet', at = now().isoformat())) %}
+        {%- set previous = this.get('attributes', {}).get('last_arrival', dict(person = 'no one yet', at = now().isoformat())) %}
         {{ dict(person = arrived, at = now().isoformat()) if iif(arrived) else previous }}
       last_departure: >
         {%- set left = trigger.from_state.attributes.person
                           | reject('in', trigger.to_state.attributes.person)
                           | join(', ')
         %}
-        {%- set previous = this.get('attributes', {}).get('left', dict(person = 'no one yet', at = now().isoformat())) %}
+        {%- set previous = this.get('attributes', {}).get('last_departure', dict(person = 'no one yet', at = now().isoformat())) %}
         {{ dict(person = left, at = now().isoformat()) if iif(left) else previous }}
       arrival_history: >
         {%- set arrived = trigger.to_state.attributes.person
