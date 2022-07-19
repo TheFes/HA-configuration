@@ -1,0 +1,42 @@
+trigger:
+  - platform: state
+    entity_id: zone.home
+sensor:
+  - name: Home person history
+    unique_id: a3f7d94b-a356-42c8-8661-e59da760507f
+    state: "{{ trigger.to_state.state }}"
+    icon: >
+      {% if trigger.to_state.state | float(0) > 0 %}
+        mdi:home
+      {% else %}
+        mdi:home-outline
+      {% endif %}
+    attributes:
+      last_arrival: >
+        {%- set arrived = trigger.to_state.attributes.person
+                            | reject('in', trigger.from_state.attributes.person)
+                            | join(', ')
+        %}
+        {%- set previous = this.get('attributes', {}).get('arrived', dict(person = 'no one yet', at = now().isoformat())) %}
+        {{ dict(person = arrived, at = now().isoformat()) if iif(arrived) else previous }}
+      last_departure: >
+        {%- set left = trigger.from_state.attributes.person
+                          | reject('in', trigger.to_state.attributes.person)
+                          | join(', ')
+        %}
+        {%- set previous = this.get('attributes', {}).get('left', dict(person = 'no one yet', at = now().isoformat())) %}
+        {{ dict(person = left, at = now().isoformat()) if iif(left) else previous }}
+      arrival_history: >
+        {%- set arrived = trigger.to_state.attributes.person
+                            | reject('in', trigger.from_state.attributes.person)
+                            | join(', ')
+        %}
+        {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
+        {{ [ this.attributes.last_arrival ] + previous[-9:] if iif(arrived) else previous }}
+      departure_history: >
+        {%- set left = trigger.from_state.attributes.person
+                          | reject('in', trigger.to_state.attributes.person)
+                          | join(', ')
+        %}
+        {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
+        {{ [ this.attributes.last_arrival ] + previous[-9:] if iif(left) else previous }}
