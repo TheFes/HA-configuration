@@ -39,4 +39,4 @@ sensor:
                           | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
-        {{ [ this.attributes.last_arrival ] + previous[-9:] if iif(left) else previous }}
+        {{ [ this.attributes.last_departure ] + previous[-9:] if iif(left) else previous }}
