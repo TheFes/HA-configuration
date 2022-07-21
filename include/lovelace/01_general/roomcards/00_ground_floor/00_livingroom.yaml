@@ -7,8 +7,8 @@ cards:
     layout: horizontal
     entity: light.groep_woonkamer
     secondary: >-
-      {{ states('sensor.woonkamer_temp') }}°C | 
-      {{states('sensor.licht_woonkamer') | int }} lx
+      {{ states('sensor.woonkamer_temp') ~ '°C | ' if states('sensor.woonkamer_temp') | is_number }}
+      {{ states('sensor.licht_woonkamer') | int ~ ' lx' if states('sensor.licht_woonkamer') | is_number }}
     tap_action:
       action: navigate
       navigation_path: woonkamer

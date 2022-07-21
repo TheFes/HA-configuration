@@ -6,7 +6,7 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.zolder_temp') }}°C
+      {{ states('sensor.zolder_temp') ~ '°C' if states('sensor.zolder_temp') | is_number }}
     tap_action:
       action: navigate
       navigation_path: zolder

@@ -6,7 +6,7 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.slaapkamer_temp') }}°C
+      {{ states('sensor.slaapkamer_temp') ~ '°C' if states('sensor.slaapkamer_temp') | is_number }}
     tap_action:
       action: navigate
       navigation_path: slaapkamer

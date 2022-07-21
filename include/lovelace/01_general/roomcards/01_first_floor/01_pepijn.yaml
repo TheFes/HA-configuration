@@ -6,8 +6,8 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.pepijn_temp') }}°C | 
-      {{ states('sensor.pepijn_lux') | int }} lx
+      {{ states('sensor.pepijn_temp') ~ '°C | ' if states('sensor.pepijn_temp') | is_number }}
+      {{ states('sensor.pepijn_lux') | int ~ ' lx' if states('sensor.pepijn_lux') | is_number }}
     tap_action:
       action: navigate
       navigation_path: pepijn

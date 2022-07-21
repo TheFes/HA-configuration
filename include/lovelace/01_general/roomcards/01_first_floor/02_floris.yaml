@@ -6,7 +6,7 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.floris_temp') }}°C
+      {{ states('sensor.floris_temp') ~ '°C' if states('sensor.floris_temp') | is_number }}
     tap_action:
       action: navigate
       navigation_path: floris
