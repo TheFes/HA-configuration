@@ -10,7 +10,7 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.5.1
+        version: 1.5.2
     - alias: "Are there Spotify entities?"
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -128,7 +128,7 @@ google_home_voice:
     - variables:
         target: >
           {{
-            expand(states.media_player)
+            expand(integration_entities('cast'))
               | selectattr('attributes.media_title', 'eq', check_for_title)
               | map(attribute='entity_id')
               | join

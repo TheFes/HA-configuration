@@ -2,6 +2,10 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 1.5.2 - 21 July 2022
+#### 🐛 Bug fixes
+* Template to define target was not working in case Music Assistant is installed. Both the normal entity and the MASS entity would be seen as playing the ambient sound. The template now only uses cast entities.
+
 ### Version 1.5.1 - 12 July 2022
 #### 🐛 Bug fixes
 * Template fix to prevent errors on missing attributes when creating the data variables
