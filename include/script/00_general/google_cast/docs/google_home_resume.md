@@ -3,7 +3,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 **Note:** Only service calls are supported, but you can call a script in a service call, so other actions can be performed by calling a script.
 
 # This script supports
-* Resuming of TuneIn, Spotify, YouTube (only for players with screen) YouTube music (only if custom integration is used) and generic streams after any actions which interrupted the audio
+* Resuming of TuneIn, Spotify, YouTube (only for players with screen) YouTube music (only if custom integration is used), Music Assistant, Google Podcast and generic streams after any actions which interrupted the audio
 * Resuming an entire speaker group after a single group member has been interrupted
 * Resuming of individual group members after the speaker group has performed an action
 
@@ -17,9 +17,12 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.5.1 - 12 July 2022
+### Version 2.6.0 - 21 July 2022
+#### ✨ New features
+* Music playing via Music Assistant will be resumed by sending the TTS or media which interrupts the stream to the MA entity with `announce: true`. I will change this to creating a snapshot and resuming the snapshot in the future, so I can also support resume of Music Assistant with the Google Home Voice and Google Home Event script.
+* Google Podcasts will be resumed by taking the url of the stream and sending that via `media_player.play_media`. Do note that Google Podcasts won't know this happened, which might cause it to resume at a previous podcast when you issue a voice command.
 #### 🐛 Bug fixes
-* Template fix to prevent errors on missing attributes when creating the data variables
+* Template fix: the template to gather the player data was referring to `app_name` even if it was not defined.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
