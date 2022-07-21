@@ -120,11 +120,13 @@ google_home_resume:
         mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
         mass_playing: "{{ expand(mass_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
         cast_mass_playing: >
-          {%- set ns = namespace(cast=[]) %}
-          {%- for entity in mass_playing %}
-            {% set ns.cast = ns.cast + [entity | replace('mass_', '') ] %}
-          {%- endfor %}
-          {{ ns.cast }}
+          {{
+            expand(integration_entities('cast'))
+              | selectattr('attributes.media_title', 'defined')
+              | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
+              | map(attribute='entity_id')
+              | list
+          }}
         primary_spotcast_check: >
           {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
           {{
@@ -350,6 +352,20 @@ google_home_resume:
                                                               + entity.attributes.get('media_position', 0)
                                             )
                   %}
+                {%- elif entity.attributes.app_name is defined and entity.attributes.app_name == 'Google Podcasts' %}
+                  {%- set additional = dict(
+                                            app_name = entity.attributes.app_name,
+                                            volume_level = entity.attributes.volume_level,
+                                            media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content'),
+                                            media_title = entity.attributes.get('media_title', 'no title'),
+                                            media_artist = 'Google Podcasts',
+                                            media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                            entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                            media_position =  as_timestamp(now()) | round(2)
+                                                              - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                              + entity.attributes.get('media_position', 0)
+                                            )
+                  %}
                 {%- elif entity.state == 'playing' %}
                   {%- set additional = dict(
                                             app_name = entity.attributes.app_name,
@@ -385,7 +401,7 @@ google_home_resume:
             %}
             {%- set type = iif(members,'group',iif(screen,'screen','no screen')) %}
             {%- set additional =  dict(members = members, type = type) %}
-            {%- if entity.app_name == 'Spotify' %}
+            {%- if entity.app_name is defined and entity.app_name == 'Spotify' %}
               {%- set list_check = [ entity.entity_id ] + members %}
               {%- set names_check = expand(list_check) | map(attribute='name') | list %}
               {%- set primary_spotcast = primary_spotcast 
@@ -930,6 +946,8 @@ google_home_resume_helper:
                   {{ player.app_name == 'Spotify' }}
                 youtube: >
                   {{ player.app_name in ['YouTube', 'YouTube Music'] }}
+                podcast: >
+                  {{ player.app_name == 'Google Podcasts' }}
                 stream: >
                   {%- set y = ytube_music_data
                               | rejectattr('target', 'in', players_to_resume)
@@ -1004,6 +1022,40 @@ google_home_resume_helper:
                     - alias: "Wait until song is playing"
                       wait_template: >
                         {{ is_state_attr(player.entity_id, 'app_name', 'Spotify') and iif(state_attr(player.entity_id, 'media_position')) }}
+                    - alias: "Seek"
+                      service: media_player.media_seek
+                      target:
+                        entity_id: "{{ player.entity_id }}"
+                      data:
+                        seek_position: "{{ player.media_position }}"
+                - alias: "Google Podcast?"
+                  conditions: "{{ podcast }}"
+                  sequence:
+                    - variables:
+                        picture_url: "{{ player.fixed_picture if player.fixed_picture is defined else player.entity_picture }}"
+                        metadata:
+                          metadataType: 3
+                          title: "{{ player.media_title }}"
+                          artist: "{{ player.media_artist }}"
+                        picture:
+                          images:
+                            - url: "{{ picture_url }}"
+                    - alias: "Resume stream"
+                      service: media_player.play_media
+                      target:
+                        entity_id: "{{ player.entity_id }}"
+                      data:
+                        media_content_id: "{{ player.media_content_id }}"
+                        media_content_type: "{{ player.media_content_type }}"
+                        extra:
+                          metadata: >
+                            {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
+                    - alias: "Wait until media_content_id is available"
+                      wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
+                    - alias: "Play (avoids long delay)"
+                      service: media_player.media_play
+                      target:
+                        entity_id: "{{ player.entity_id }}"
                     - alias: "Seek"
                       service: media_player.media_seek
                       target:
