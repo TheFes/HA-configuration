@@ -112,18 +112,18 @@ weather:
         {% set forecasts = (expand(entities) | map(attribute='attributes.forecast')| list) | sum(start=[]) | selectattr('datetime', 'eq', d) | list %}
         {% set call = forecasts | selectattr('condition', 'defined') | map(attribute='condition') | list %}
         {% set c = call | max %}
-        {% set call = call | unique | list if call | unique | list | count > 1 else none %}
+        {% set call = call | unique | list if call | unique | list | count > 1 else 'nan' %}
         {% set pp = forecasts | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list %}
-        {% set pp = pp | average | round(1) if pp else none %}
+        {% set pp = pp | average | round(1) if pp else 'nan' %}
         {% set wb = forecasts | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list %}
-        {% set wb = wb | average | round(1) if wb else none %}
+        {% set wb = wb | average | round(1) if wb else 'nan' %}
         {% set t = forecasts | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) %}
         {% set ws = forecasts | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list %}
-        {% set ws = ws | average | round(1) if ws else none %}
+        {% set ws = ws | average | round(1) if ws else 'nan' %}
         {% set p = forecasts | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list %}
-        {% set p = p | average | round(1) if p else none %}
+        {% set p = p | average | round(1) if p else 'nan' %}
         {% set f = dict(datetime = d, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p) %}
-        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | selectattr('1')) ] %}
+        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] %}
       {% endfor %}
       {{ ns.forecast }}
   - platform: template
@@ -212,17 +212,17 @@ weather:
         {% set forecasts = (expand(entities) | map(attribute='attributes.forecast')| list) | sum(start=[]) | selectattr('datetime', 'eq', d) | list %}
         {% set call = forecasts | selectattr('condition', 'defined') | map(attribute='condition') | list %}
         {% set c = call | max %}
-        {% set call = call | unique | list if call | unique | list | count > 1 else none %}
+        {% set call = call | unique | list if call | unique | list | count > 1 else 'nan' %}
         {% set pp = forecasts | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list %}
-        {% set pp = pp | average | round(1) if pp else none %}
+        {% set pp = pp | average | round(1) if pp else 'nan' %}
         {% set wb = forecasts | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list %}
-        {% set wb = wb | average | round(1) if wb else none %}
+        {% set wb = wb | average | round(1) if wb else 'nan' %}
         {% set t = forecasts | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) %}
         {% set ws = forecasts | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list %}
-        {% set ws = ws | average | round(1) if ws else none %}
+        {% set ws = ws | average | round(1) if ws else 'nan' %}
         {% set p = forecasts | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list %}
-        {% set p = p | average | round(1) if p else none %}
+        {% set p = p | average | round(1) if p else 'nan' %}
         {% set f = dict(datetime = d, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p) %}
-        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | selectattr('1')) ] %}
+        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] %}
       {% endfor %}
       {{ ns.forecast }}
