@@ -276,6 +276,7 @@ weather:
         {%- set wb = ns.f | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list -%}
         {%- set wb = wb | average | round(1) if wb else 'nan' -%}
         {%- set t = ns.f | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) -%}
+        {%- set tl = ns.f | selectattr('temperature', 'defined') | map(attribute='templow') | list | average | round(1) -%}
         {%- set ws = ns.f | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list -%}
         {%- set ws = ws | average | round(1) if ws else 'nan' -%}
         {%- set p = ns.f | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list -%}
@@ -290,7 +291,7 @@ weather:
         {%- endfor -%}
         {%- set a = ns.a -%}
         {%- set ns.a = [] -%}
-        {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
+        {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, templow = tl, wind_speed = ws, precipitation = p, entities = a) -%}
         {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
         {%- set ns.f = [] -%}
         {%- set ns.most_common = {'item':none,'count':none} -%}
