@@ -27,7 +27,7 @@ action:
             data:
               timestamp: "{{ (now() | as_timestamp + (3.5 * 3600)) | int }}"
       - conditions:
-          - alias: "Dishwasher active"
+          - alias: "Dishwasher not active"
             condition: state
             entity_id: binary_sensor.dishwasher_active
             state: "off"

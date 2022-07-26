@@ -17,6 +17,7 @@ trigger:
     entity_id:
       - input_select.dishwasher_program
       - input_select.dishwasher_program_extra
+      - input_number.dishwasher_delayed_start
     from: ~
     id: "program_change"
 variables:
@@ -58,7 +59,7 @@ action:
   - alias: "Select action"
     choose:
       - conditions:
-          - alias: "Change in input_select"
+          - alias: "Change in input_select or delay"
             condition: trigger
             id: "program_change"
           - alias: "Dishwasher on"
@@ -68,21 +69,27 @@ action:
         sequence:
           - variables:
               triggered_by_extra: "{{ 'extra' in trigger.entity_id }}"
+              triggered_by_delay: "{{ trigger.entity_id == 'input_number.dishwasher_delayed_start' }}"
               program_old: >
-                {{ states('input_select.dishwasher_program') if triggered_by_extra else trigger.from_state.state }}
+                {{ states('input_select.dishwasher_program') if triggered_by_extra or triggered_by_delay else trigger.from_state.state }}
               extra_old: >
                 {{ trigger.from_state.state if triggered_by_extra else states('input_select.dishwasher_program_extra') }}
+              delayed_start_old: >
+                {{ trigger.from_state.state if triggered_by_delay else states('input_number.dishwasher_delayed_start') | int }}
               program: "{{ states('input_select.dishwasher_program') }}"
               extra: "{{ states('input_select.dishwasher_program_extra') }}"
+              delayed_start: "{{ states('input_number.dishwasher_delayed_start') }}"
               seconds_old: >
                 {{ 
                   programs[program_old][extra_old].hours * 3600
                   + programs[program_old][extra_old].minutes * 60
+                  + delayed_start_old * 3600
                 }}
               seconds_new: >
                 {{ 
                   programs[program][extra].hours * 3600
                   + programs[program][extra].minutes * 60
+                  + delayed_start * 3600
                 }}
           - alias: "Set timer (input_datetime)"
             service: input_datetime.set_datetime
@@ -92,6 +99,15 @@ action:
               timestamp: >
                 {{
                   states('input_datetime.dishwasher_program') | as_timestamp - seconds_old + seconds_new
+                }}
+          - alias: "Set timer delay (input_datetime)"
+            service: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.dishwasher_delay
+            data:
+              timestamp: >
+                {{
+                  states('input_datetime.dishwasher_delay') | as_timestamp - seconds_old + seconds_new
                 }}
       - conditions:
           - alias: "Dishwasher started"
@@ -115,6 +131,12 @@ action:
               entity_id: input_datetime.dishwasher_program
             data:
               timestamp: "{{ now() | as_timestamp | int + seconds }}"
+          - alias: "Set timer (input_datetime)"
+            service: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.dishwasher_delay
+            data:
+              timestamp: "{{ now() | as_timestamp | int + states('input_number.dishwasher_delayed_start') | int(0) * 3600 }}"
       - conditions:
           - alias: "Dishwasher finished"
             condition: trigger
@@ -123,7 +145,9 @@ action:
           - alias: "Timer off"
             service: input_datetime.set_datetime
             target:
-              entity_id: input_datetime.dishwasher_program
+              entity_id:
+                - input_datetime.dishwasher_program
+                - input_datetime.dishwasher_delay
             data:
               timestamp: "{{ now() | as_timestamp | int }}"
           - service: input_select.select_option
@@ -136,6 +160,11 @@ action:
               entity_id: input_select.dishwasher_program_extra
             data:
               option: Normaal
+          - service: input_number.set_value
+            target:
+              entity_id: input_number.dishwasher_delayed_start
+            data:
+              value: 0
           - alias: "Notification"
             service: notify.all_phones
             data:
