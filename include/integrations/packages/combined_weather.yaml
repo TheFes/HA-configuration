@@ -29,7 +29,14 @@ weather:
           | map(attribute='state')
           | list
       %}
-      {{ v | max if v else none }}
+      {% set ns = namespace(most_common={'item':none,'count':none}) %}
+      {% for item in v | unique %}
+        {% set cnt = v | select('eq', item) | list | length %}
+        {% if loop.first or cnt > ns.most_common.count %}
+          {% set ns.most_common = {'item':item,'count':cnt} %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.most_common.item if ns.most_common.item else none }}
     temperature_template: >
       {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
           | rejectattr('entity_id', 'search', 'hourly')
@@ -105,12 +112,11 @@ weather:
     forecast_template: >
       {%- set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'hourly') | list -%}
       {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort -%}
-      {%- set ns = namespace(d=[]) -%}
+      {%- set ns = namespace(d=[], forecast=[], a=[], f=[], most_common={'item':none,'count':none}) -%}
       {%- for d in datetimes -%}
         {%- set ns.d = ns.d + [as_local(as_datetime(d)).isoformat() ] -%}
       {%- endfor -%}
       {%- set datetimes = ns.d | unique | sort -%}
-      {%- set ns = namespace(forecast=[], a=[], f=[]) -%}
       {%- for d in datetimes -%}
         {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[])  -%}
         {%- for f in forecasts -%}
@@ -119,7 +125,13 @@ weather:
           {%- endif -%}
         {%- endfor -%}
         {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
-        {%- set c = call | max -%}
+        {% for item in call | unique %}
+          {% set cnt = call | select('eq', item) | list | length %}
+          {% if loop.first or cnt > ns.most_common.count %}
+            {% set ns.most_common = {'item':item,'count':cnt} %}
+          {% endif %}
+        {% endfor %}
+        {%- set c = ns.most_common.item -%}
         {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
         {%- set pp = ns.f | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list -%}
         {%- set pp = pp | average | round(1) if pp else 'nan' -%}
@@ -143,6 +155,7 @@ weather:
         {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
         {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
         {%- set ns.f = [] -%}
+        {%- set ns.most_common = {'item':none,'count':none} -%}
       {%- endfor -%}
       {{ ns.forecast }}
   - platform: template
@@ -154,7 +167,14 @@ weather:
           | map(attribute='state')
           | list
       %}
-      {{ v | max if v else none }}
+      {% set ns = namespace(most_common={'item':none,'count':none}) %}
+      {% for item in v | unique %}
+        {% set cnt = v | select('eq', item) | list | length %}
+        {% if loop.first or cnt > ns.most_common.count %}
+          {% set ns.most_common = {'item':item,'count':cnt} %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.most_common.item if ns.most_common.item else none }}
     temperature_template: >
       {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
           | rejectattr('entity_id', 'search', 'daily')
@@ -228,12 +248,11 @@ weather:
     forecast_template: >
       {%- set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'daily') | list -%}
       {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort -%}
-      {%- set ns = namespace(d=[]) -%}
+      {%- set ns = namespace(d=[], forecast=[], a=[], f=[], most_common={'item':none,'count':none}) -%}
       {%- for d in datetimes -%}
         {%- set ns.d = ns.d + [as_local(as_datetime(d)).date() | string ] -%}
       {%- endfor -%}
       {%- set datetimes = ns.d | unique | sort -%}
-      {%- set ns = namespace(forecast=[], a=[], f=[]) -%}
       {%- for d in datetimes -%}
         {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[]) -%}
         {%- for f in forecasts -%}
@@ -242,7 +261,13 @@ weather:
           {%- endif -%}
         {%- endfor -%}
         {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
-        {%- set c = call | max -%}
+        {% for item in call | unique %}
+          {% set cnt = call | select('eq', item) | list | length %}
+          {% if loop.first or cnt > ns.most_common.count %}
+            {% set ns.most_common = {'item':item,'count':cnt} %}
+          {% endif %}
+        {% endfor %}
+        {%- set c = ns.most_common.item -%}
         {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
         {%- set pp = ns.f | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list -%}
         {%- set pp = pp | average | round(1) if pp else 'nan' -%}
@@ -266,5 +291,6 @@ weather:
         {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
         {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
         {%- set ns.f = [] -%}
+        {%- set ns.most_common = {'item':none,'count':none} -%}
       {%- endfor -%}
       {{ ns.forecast }}
