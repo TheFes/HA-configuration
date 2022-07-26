@@ -1,6 +1,8 @@
 # template sensor which creates a list of all entities which should be used by the combined weather entiteis
 # the combined weather entities rely on the naming of the other weather entities. Daily weather entities should
-# have 'daily' in the name, hourly weather entities should have 'hourly' in the entity_id
+# have 'daily' in the entity_id, hourly weather entities should have 'hourly' in the entity_id
+# Important: leave the unique_id as it is, it's just a randomly generated UUID and has no function in the frontend.
+# If you change it, and after that update the code and use a different unique_id, the weather entities might not work anymore
 
 template:
   - sensor:
