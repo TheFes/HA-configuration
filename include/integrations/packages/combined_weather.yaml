@@ -6,15 +6,9 @@ template:
   - sensor:
       - unique_id: 06bc9cf3-c40c-4dc0-b1c3-304989133ac2
         name: Weather entities
+        icon: mdi:weather-cloudy
         state: >
-          {{
-            states.weather
-              | rejectattr('state', 'in', [ 'unavailable', 'unknown'])
-              | map(attribute='entity_id')
-              | reject('search', 'combined')
-              | list
-              | count
-          }}
+          {{ this.attributes.get('entities', []) | count }}
         attributes:
           entities: >
             {{
@@ -30,199 +24,247 @@ weather:
     name: Combined Hourly
     unique_id: 89eb83a1-dfd7-4dfa-b640-5f7a02be1bf5
     condition_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | map(attribute='state')
           | list
-          | max
-      }}
+      %}
+      {{ v | max if v else none }}
     temperature_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.temperature', 'defined')
+          | selectattr('attributes.temperature_unit', 'defined')
+          | selectattr('attributes.temperature_unit', 'eq', this.attributes.get('temperature_unit'))
           | map(attribute='attributes.temperature')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     humidity_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.humidity', 'defined')
           | map(attribute='attributes.humidity')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     pressure_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.pressure', 'defined')
           | map(attribute='attributes.pressure')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     wind_bearing_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.wind_bearing', 'defined')
           | map(attribute='attributes.wind_bearing')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     wind_speed_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.wind_speed', 'defined')
           | map(attribute='attributes.wind_speed')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     visibility_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'hourly')
           | selectattr('attributes.visibility', 'defined')
           | map(attribute='attributes.visibility')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     ozone_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
-          | selectattr('attributes.ozone', 'defined')
-          | map(attribute='attributes.ozone')
-          | list
-          | average
-          | round(1)
-      }}
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+                      | rejectattr('entity_id', 'search', 'hourly')
+                      | selectattr('attributes.ozone', 'defined')
+                      | map(attribute='attributes.ozone')
+                      | list
+      %}
+      {{ v | average | round(1) if v else none }}
     temperature_unit: "°C"
     pressure_unit: "hPa"
     wind_speed_unit: "km/h"
     visibility_unit: "km"
     precipitation_unit: "mm"
+    attribution_template: >
+      {% set entities =
+        state_attr('sensor.weather_entities', 'entities')
+          | reject('search', 'daily')
+          | list
+      %}
+      {%- if entities %}
+        Entities used: {{ (entities[:-1] | join(', ') ~ ' and ' ~ entities[-1]) if entities | count > 1 else entities[0] }}
+      {%- endif %}
     forecast_template: >
-      {% set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'hourly') | list %}
-      {% set datetimes = (expand(entities) | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort %}
-      {% set ns = namespace(forecast=[]) %}
-      {% for d in datetimes %}
-        {% set forecasts = (expand(entities) | map(attribute='attributes.forecast')| list) | sum(start=[]) | selectattr('datetime', 'eq', d) | list %}
-        {% set call = forecasts | selectattr('condition', 'defined') | map(attribute='condition') | list %}
-        {% set c = call | max %}
-        {% set call = call | unique | list if call | unique | list | count > 1 else 'nan' %}
-        {% set pp = forecasts | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list %}
-        {% set pp = pp | average | round(1) if pp else 'nan' %}
-        {% set wb = forecasts | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list %}
-        {% set wb = wb | average | round(1) if wb else 'nan' %}
-        {% set t = forecasts | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) %}
-        {% set ws = forecasts | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list %}
-        {% set ws = ws | average | round(1) if ws else 'nan' %}
-        {% set p = forecasts | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list %}
-        {% set p = p | average | round(1) if p else 'nan' %}
-        {% set f = dict(datetime = d, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p) %}
-        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] %}
-      {% endfor %}
+      {%- set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'hourly') | list -%}
+      {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort -%}
+      {%- set ns = namespace(d=[]) -%}
+      {%- for d in datetimes -%}
+        {%- set ns.d = ns.d + [as_local(as_datetime(d)).isoformat() ] -%}
+      {%- endfor -%}
+      {%- set datetimes = ns.d | unique | sort -%}
+      {%- set ns = namespace(forecast=[], a=[], f=[]) -%}
+      {%- for d in datetimes -%}
+        {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[])  -%}
+        {%- for f in forecasts -%}
+          {%- if as_datetime(d) == as_datetime(f.datetime) -%}
+              {%- set ns.f = ns.f + [f] -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
+        {%- set c = call | max -%}
+        {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
+        {%- set pp = ns.f | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list -%}
+        {%- set pp = pp | average | round(1) if pp else 'nan' -%}
+        {%- set wb = ns.f | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list -%}
+        {%- set wb = wb | average | round(1) if wb else 'nan' -%}
+        {%- set t = ns.f | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) -%}
+        {%- set ws = ns.f | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list -%}
+        {%- set ws = ws | average | round(1) if ws else 'nan' -%}
+        {%- set p = ns.f | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list -%}
+        {%- set p = p | average | round(1) if p else 'nan' -%}
+        {%- set date = as_local(as_datetime(d)).isoformat() -%}
+        {%- for e in expand(entities) -%}
+          {%- for f in e.attributes.forecast -%}
+            {%- if as_datetime(f.datetime) == as_datetime(d) -%}
+              {%- set ns.a = ns.a + [ e.entity_id ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+        {%- set a = ns.a -%}
+        {%- set ns.a = [] -%}
+        {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
+        {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
+        {%- set ns.f = [] -%}
+      {%- endfor -%}
       {{ ns.forecast }}
   - platform: template
     name: Combined Daily
     unique_id: 698875b1-9bf7-45f0-8000-3683710759cb
     condition_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | map(attribute='state')
           | list
-          | max
-      }}
+      %}
+      {{ v | max if v else none }}
     temperature_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.temperature', 'defined')
           | map(attribute='attributes.temperature')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     humidity_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.humidity', 'defined')
           | map(attribute='attributes.humidity')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     pressure_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.pressure', 'defined')
           | map(attribute='attributes.pressure')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     wind_bearing_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.wind_bearing', 'defined')
           | map(attribute='attributes.wind_bearing')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     wind_speed_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.wind_speed', 'defined')
           | map(attribute='attributes.wind_speed')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     visibility_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'search', 'daily')
           | selectattr('attributes.visibility', 'defined')
           | map(attribute='attributes.visibility')
           | list
-          | average
-          | round(1)
-      }}
+      %}
+      {{ v | average | round(1) if v else none }}
     ozone_template: >
-      {{
-        expand(state_attr('sensor.weather_entities', 'entities'))
-          | selectattr('attributes.ozone', 'defined')
-          | map(attribute='attributes.ozone')
-          | list
-          | average
-          | round(1)
-      }}
+      {% set v = expand(state_attr('sensor.weather_entities', 'entities'))
+                      | rejectattr('entity_id', 'search', 'daily')
+                      | selectattr('attributes.ozone', 'defined')
+                      | map(attribute='attributes.ozone')
+                      | list
+      %}
+      {{ v | average | round(1) if v else none }}
     temperature_unit: "°C"
     pressure_unit: "hPa"
     wind_speed_unit: "km/h"
     visibility_unit: "km"
     precipitation_unit: "mm"
+    attribution_template: >
+      {% set entities =
+        state_attr('sensor.weather_entities', 'entities')
+          | reject('search', 'hourly')
+          | list
+      %}
+      {%- if entities %}
+        Entities used: {{ (entities[:-1] | join(', ') ~ ' and ' ~ entities[-1]) if entities | count > 1 else entities[0] }}
+      {%- endif %}
     forecast_template: >
-      {% set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'daily') | list %}
-      {% set datetimes = (expand(entities) | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort %}
-      {% set ns = namespace(forecast=[]) %}
-      {% for d in datetimes %}
-        {% set forecasts = (expand(entities) | map(attribute='attributes.forecast')| list) | sum(start=[]) | selectattr('datetime', 'eq', d) | list %}
-        {% set call = forecasts | selectattr('condition', 'defined') | map(attribute='condition') | list %}
-        {% set c = call | max %}
-        {% set call = call | unique | list if call | unique | list | count > 1 else 'nan' %}
-        {% set pp = forecasts | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list %}
-        {% set pp = pp | average | round(1) if pp else 'nan' %}
-        {% set wb = forecasts | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list %}
-        {% set wb = wb | average | round(1) if wb else 'nan' %}
-        {% set t = forecasts | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) %}
-        {% set ws = forecasts | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list %}
-        {% set ws = ws | average | round(1) if ws else 'nan' %}
-        {% set p = forecasts | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list %}
-        {% set p = p | average | round(1) if p else 'nan' %}
-        {% set f = dict(datetime = d, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p) %}
-        {% set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] %}
-      {% endfor %}
+      {%- set entities = state_attr('sensor.weather_entities', 'entities') | select('search', 'daily') | list -%}
+      {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | unique | sort -%}
+      {%- set ns = namespace(d=[]) -%}
+      {%- for d in datetimes -%}
+        {%- set ns.d = ns.d + [as_local(as_datetime(d)).date() | string ] -%}
+      {%- endfor -%}
+      {%- set datetimes = ns.d | unique | sort -%}
+      {%- set ns = namespace(forecast=[], a=[], f=[]) -%}
+      {%- for d in datetimes -%}
+        {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[]) -%}
+        {%- for f in forecasts -%}
+          {%- if d == as_datetime(f.datetime).date() | string -%}
+              {%- set ns.f = ns.f + [f] -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
+        {%- set c = call | max -%}
+        {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
+        {%- set pp = ns.f | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | list -%}
+        {%- set pp = pp | average | round(1) if pp else 'nan' -%}
+        {%- set wb = ns.f | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | list -%}
+        {%- set wb = wb | average | round(1) if wb else 'nan' -%}
+        {%- set t = ns.f | selectattr('temperature', 'defined') | map(attribute='temperature') | list | average | round(1) -%}
+        {%- set ws = ns.f | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | list -%}
+        {%- set ws = ws | average | round(1) if ws else 'nan' -%}
+        {%- set p = ns.f | selectattr('precipitation', 'defined') | map(attribute='precipitation') | map('float', default=0) | list -%}
+        {%- set p = p | average | round(1) if p else 'nan' -%}
+        {%- set date = as_local(as_datetime(d)).isoformat() -%}
+        {%- for e in expand(entities) -%}
+          {%- for f in e.attributes.forecast -%}
+            {%- if as_datetime(f.datetime).date() | string == d -%}
+              {%- set ns.a = ns.a + [ e.entity_id ] -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+        {%- set a = ns.a -%}
+        {%- set ns.a = [] -%}
+        {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
+        {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
+        {%- set ns.f = [] -%}
+      {%- endfor -%}
       {{ ns.forecast }}
