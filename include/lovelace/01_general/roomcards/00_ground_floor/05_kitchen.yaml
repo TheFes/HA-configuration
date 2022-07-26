@@ -85,9 +85,10 @@ cards:
                   - type: markdown
                     content: >
                       {%- set time_set =
-                      states('input_datetime.dishwasher_program') |
-                      as_datetime %} {%- if now() < time_set |
-                      as_local %}
+                      states('input_datetime.dishwasher_program')
+                        | as_datetime %} {%- if now() < time_set
+                        | as_local
+                      %}
                         {%- set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
                       {%- set hours = (seconds / 3600) | int %}
                         {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
@@ -95,6 +96,8 @@ cards:
                         {%- set extra = states('input_select.dishwasher_program_extra') %}
                         {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
                         {%- set program = program ~ extra %}
+                        {%- if states('input_number.dishwasher_delayed_start') | int > 0 %}
+                        Er is een vertraagde start ingesteld, de vaatwasser begint om {{ (states('input_datetime.dishwasher_delay') | as_datetime).strftime('%H:%M') }}
                         De vaatwasser zou rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} klaar moeten zijn (gebaseerd op het {{ program }} programma)
                         Dat is nog {{ hours ~ ' uur' ~ ' en ' if hours != 0 }}{{ minutes }} {{ 'minuut' if minutes == 1 else 'minuten' }}.
                       {%- else %}
@@ -104,6 +107,7 @@ cards:
                     entities:
                       - entity: input_select.dishwasher_program
                       - entity: input_select.dishwasher_program_extra
+                      - entity: input_number.dishwasher_delayed_start
       - type: conditional
         conditions:
           - entity: media_player.keuken_hub

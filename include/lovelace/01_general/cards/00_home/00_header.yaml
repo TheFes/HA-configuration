@@ -1,180 +1,335 @@
-type: custom:mushroom-chips-card
+type: vertical-stack
 view_layout:
   grid-area: header
-chips:
-  - type: entity
-    entity: sensor.location_phone_martijn
-    name: Martijn
-    show_state: false
-    use_entity_picture: true
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Martijn
-        card:
-          type: custom:more-info-card
-          entity: person.martijn
-    double_tap_action:
-      action: navigate
-      navigation_path: kaart
-    hold_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Weegschaal Martijn
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:body-miscale-card
-              entity: bodymiscale.martijn
-              image: /local/pictures/miscale2.jpg
-              name: Martijn
-              model: true
-              show_name: true
-              show_state: true
-              show_attributes: true
-              show_toolbar: true
-              show_body: true
-              show_states: true
-              show_buttons: true
-              body:
-                body_type: false
-            - type: statistics-graph
-              days_to_show: 365
-              stat_types:
-                - mean
-              entities:
-                - entity: sensor.weight_martijn
-                  name: Gewicht (kg)
-                - entity: sensor.water_martijn
-                  name: Water (%)
-  - type: entity
-    entity: sensor.location_phone_marleen
-    name: Marleen
-    use_entity_picture: true
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Marleen
-        card:
-          type: custom:more-info-card
-          entity: person.marleen
-    double_tap_action:
-      action: navigate
-      navigation_path: kaart
-    hold_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Weegschaal Marleen
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:body-miscale-card
-              entity: bodymiscale.marleen
-              image: /local/pictures/miscale2.jpg
-              name: Marleen
-              model: true
-              show_name: true
-              show_state: true
-              show_attributes: true
-              show_toolbar: true
-              show_body: true
-              show_states: true
-              show_buttons: true
-              body:
-                body_type: false
-            - type: statistics-graph
-              days_to_show: 365
-              stat_types:
-                - mean
-              entities:
-                - entity: sensor.weight_marleen
-                  name: Gewicht (kg)
-                - entity: sensor.water_marleen
-                  name: Water (%)
-  - type: template
-    icon: mdi:text-to-speech
-    hold_action:
-      action: navigate
-      navigation_path: cast
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        hide_header: true
-        card: !include /config/include/lovelace/cards/send_tts.yaml
-  - type: template
-    icon: mdi:webcam
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Camera
-        card:
-          type: vertical-stack
-          cards:
-            - type: picture-entity
-              aspect_ratio: 50%
-              camera_view: live
-              entity: camera.floriscam
-              show_name: false
-              show_state: false
-            - type: picture-entity
-              aspect_ratio: 50%
-              camera_view: live
-              entity: camera.pepijncam
-              show_name: false
-              show_state: false
-  - type: entity
-    entity: sensor.house_mode
-    use_entity_picture: false
-    content_info: none
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Huis Modus
-        card:
-          type: entities
-          entities:
-            - entity: sensor.house_mode
-            - entity: input_boolean.vakantie
-              name: Vakantie
-            - entity: input_boolean.gast
-              name: Gast
-  - type: template
-    icon: >
-      {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
-      {{ 'mdi:numeric-' ~ n ~ '-box' }}
-    icon_color: >
-      {%- if is_state('binary_sensor.updates_available', 'on') %}
-        yellow
-      {%- else %}
-        disable
-      {%- endif %}
-    tap_action:
-      action: fire-dom-event
-      browser_mod:
-        command: popup
-        title: Updates
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: >-
-                {%- set s = states.update | selectattr('state', 'eq', 'on') | list | count %}
-                Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
-            - type: "custom:auto-entities"
+cards:
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.updates_available
+        state: "on"
+    card:
+      type: custom:mushroom-chips-card
+      chips:
+        - type: entity
+          entity: sensor.location_phone_martijn
+          name: Martijn
+          show_state: false
+          use_entity_picture: true
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Martijn
+              card:
+                type: custom:more-info-card
+                entity: person.martijn
+          double_tap_action:
+            action: navigate
+            navigation_path: kaart
+          hold_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Weegschaal Martijn
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:body-miscale-card
+                    entity: bodymiscale.martijn
+                    image: /local/pictures/miscale2.jpg
+                    name: Martijn
+                    model: true
+                    show_name: true
+                    show_state: true
+                    show_attributes: true
+                    show_toolbar: true
+                    show_body: true
+                    show_states: true
+                    show_buttons: true
+                    body:
+                      body_type: false
+                  - type: statistics-graph
+                    days_to_show: 365
+                    stat_types:
+                      - mean
+                    entities:
+                      - entity: sensor.weight_martijn
+                        name: Gewicht (kg)
+                      - entity: sensor.water_martijn
+                        name: Water (%)
+        - type: entity
+          entity: sensor.location_phone_marleen
+          name: Marleen
+          use_entity_picture: true
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Marleen
+              card:
+                type: custom:more-info-card
+                entity: person.marleen
+          double_tap_action:
+            action: navigate
+            navigation_path: kaart
+          hold_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Weegschaal Marleen
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:body-miscale-card
+                    entity: bodymiscale.marleen
+                    image: /local/pictures/miscale2.jpg
+                    name: Marleen
+                    model: true
+                    show_name: true
+                    show_state: true
+                    show_attributes: true
+                    show_toolbar: true
+                    show_body: true
+                    show_states: true
+                    show_buttons: true
+                    body:
+                      body_type: false
+                  - type: statistics-graph
+                    days_to_show: 365
+                    stat_types:
+                      - mean
+                    entities:
+                      - entity: sensor.weight_marleen
+                        name: Gewicht (kg)
+                      - entity: sensor.water_marleen
+                        name: Water (%)
+        - type: template
+          icon: mdi:text-to-speech
+          hold_action:
+            action: navigate
+            navigation_path: cast
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              hide_header: true
+              card: !include /config/include/lovelace/cards/send_tts.yaml
+        - type: template
+          icon: mdi:webcam
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Camera
+              card:
+                type: vertical-stack
+                cards:
+                  - type: picture-entity
+                    aspect_ratio: 50%
+                    camera_view: live
+                    entity: camera.floriscam
+                    show_name: false
+                    show_state: false
+                  - type: picture-entity
+                    aspect_ratio: 50%
+                    camera_view: live
+                    entity: camera.pepijncam
+                    show_name: false
+                    show_state: false
+        - type: entity
+          entity: sensor.house_mode
+          use_entity_picture: false
+          content_info: none
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Huis Modus
               card:
                 type: entities
-                show_header_toggle: false
-              filter:
-                template: >
-                  {{
-                    states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list
-                    + ([ 'button.update_alles' ] if is_state('binary_sensor.updates_available', 'on') else [])
-                  }}
-alignment: center
+                entities:
+                  - entity: sensor.house_mode
+                  - entity: input_boolean.vakantie
+                    name: Vakantie
+                  - entity: input_boolean.gast
+                    name: Gast
+        - type: template
+          icon: >
+            {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
+            {{ 'mdi:numeric-' ~ n ~ '-box' }}
+          icon_color: yellow
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Updates
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:mushroom-title-card
+                    title: >-
+                      {%- set s = states.update | selectattr('state', 'eq', 'on') | list | count %}
+                      Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
+                  - type: "custom:auto-entities"
+                    card:
+                      type: entities
+                      show_header_toggle: false
+                    filter:
+                      template: >
+                        {{
+                          states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list
+                          + ([ 'button.update_alles' ] if is_state('binary_sensor.updates_available', 'on') else [])
+                        }}
+      alignment: center
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.updates_available
+        state_not: "on"
+    card:
+      type: custom:mushroom-chips-card
+      view_layout:
+        grid-area: header
+      chips:
+        - type: entity
+          entity: sensor.location_phone_martijn
+          name: Martijn
+          show_state: false
+          use_entity_picture: true
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Martijn
+              card:
+                type: custom:more-info-card
+                entity: person.martijn
+          double_tap_action:
+            action: navigate
+            navigation_path: kaart
+          hold_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Weegschaal Martijn
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:body-miscale-card
+                    entity: bodymiscale.martijn
+                    image: /local/pictures/miscale2.jpg
+                    name: Martijn
+                    model: true
+                    show_name: true
+                    show_state: true
+                    show_attributes: true
+                    show_toolbar: true
+                    show_body: true
+                    show_states: true
+                    show_buttons: true
+                    body:
+                      body_type: false
+                  - type: statistics-graph
+                    days_to_show: 365
+                    stat_types:
+                      - mean
+                    entities:
+                      - entity: sensor.weight_martijn
+                        name: Gewicht (kg)
+                      - entity: sensor.water_martijn
+                        name: Water (%)
+        - type: entity
+          entity: sensor.location_phone_marleen
+          name: Marleen
+          use_entity_picture: true
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Marleen
+              card:
+                type: custom:more-info-card
+                entity: person.marleen
+          double_tap_action:
+            action: navigate
+            navigation_path: kaart
+          hold_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Weegschaal Marleen
+              card:
+                type: vertical-stack
+                cards:
+                  - type: custom:body-miscale-card
+                    entity: bodymiscale.marleen
+                    image: /local/pictures/miscale2.jpg
+                    name: Marleen
+                    model: true
+                    show_name: true
+                    show_state: true
+                    show_attributes: true
+                    show_toolbar: true
+                    show_body: true
+                    show_states: true
+                    show_buttons: true
+                    body:
+                      body_type: false
+                  - type: statistics-graph
+                    days_to_show: 365
+                    stat_types:
+                      - mean
+                    entities:
+                      - entity: sensor.weight_marleen
+                        name: Gewicht (kg)
+                      - entity: sensor.water_marleen
+                        name: Water (%)
+        - type: template
+          icon: mdi:text-to-speech
+          hold_action:
+            action: navigate
+            navigation_path: cast
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              hide_header: true
+              card: !include /config/include/lovelace/cards/send_tts.yaml
+        - type: template
+          icon: mdi:webcam
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Camera
+              card:
+                type: vertical-stack
+                cards:
+                  - type: picture-entity
+                    aspect_ratio: 50%
+                    camera_view: live
+                    entity: camera.floriscam
+                    show_name: false
+                    show_state: false
+                  - type: picture-entity
+                    aspect_ratio: 50%
+                    camera_view: live
+                    entity: camera.pepijncam
+                    show_name: false
+                    show_state: false
+        - type: entity
+          entity: sensor.house_mode
+          use_entity_picture: false
+          content_info: none
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              command: popup
+              title: Huis Modus
+              card:
+                type: entities
+                entities:
+                  - entity: sensor.house_mode
+                  - entity: input_boolean.vakantie
+                    name: Vakantie
+                  - entity: input_boolean.gast
+                    name: Gast
+      alignment: center
