@@ -8,8 +8,8 @@ cards:
     entity: light.groep_tuin
     secondary: >-
       {{
-        state_attr('weather.tomorrow_io_daily', 'temperature') ~ '°C | '
-        if state_attr('weather.tomorrow_io_daily', 'temperature') | is_number
+        state_attr('weather.combined_daily', 'temperature') ~ '°C | '
+        if state_attr('weather.combined_daily', 'temperature') | is_number
       }}
       {{ states('sensor.br_irradiance') | int ~ ' W/m²' if states('sensor.br_irradiance') | is_number }}
     tap_action:

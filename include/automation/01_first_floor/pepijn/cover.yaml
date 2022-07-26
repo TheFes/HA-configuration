@@ -8,9 +8,9 @@ trigger:
     entity_id: binary_sensor.trend_pepijn_temp
     to: "on"
   - platform: template
-    value_template: "{{ state_attr('weather.tomorrow_io_daily', 'forecast')[0].temperature > 18 }}"
+    value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
   - platform: template
-    value_template: "{{ state_attr('weather.tomorrow_io_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] }}"
+    value_template: "{{ state_attr('weather.combined_hourly', 'forecast')[0].condition in [ 'sunny', 'partlycloudy'] if state_attr('weather.combined_daily', 'forecast') else false }}"
   - platform: numeric_state
     entity_id: sensor.pepijn_temp
     above: 20
@@ -22,22 +22,23 @@ action:
     then:
       - alias: "Warm day"
         condition: template
-        value_template: "{{ state_attr('weather.tomorrow_io_daily', 'forecast')[0].temperature > 18 }}"
+        value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
+      - alias: "Sunny or partly cloudy"
+        condition: template
+        value_template: >
+          {{
+            ('sunny' in state_attr('weather.combined_hourly', 'forecast')[0:1] | map(attribute='condition') | list
+            or 'partlycloudy' in state_attr('weather.combined_hourly', 'forecast')[0:1] | map(attribute='condition') | list)
+            if state_attr('weather.combined_hourly', 'forecast') else false 
+          }}
+      - alias: "No rain upcoming"
+        condition: template
+        value_template: "{{ state_attr('weather.combined_hourly', 'forecast')[0].precipitation == 0 if state_attr('weather.combined_daily', 'forecast') else false }}"
       - alias: "Sun rising"
         condition: state
         entity_id: sun.sun
         attribute: rising
         state: true
-      - alias: "Sunny or partly cloudy"
-        condition: template
-        value_template: >
-          {{
-            'sunny' in state_attr('weather.tomorrow_io_hourly', 'forecast')[0:1] | map(attribute='condition') | list
-            or 'partlycloudy' in state_attr('weather.tomorrow_io_hourly', 'forecast')[0:1] | map(attribute='condition') | list
-          }}
-      - alias: "No rain upcoming"
-        condition: template
-        value_template: "{{ state_attr('weather.tomorrow_io_hourly', 'forecast')[0].precipitation == 0 }}"
       - alias: "Temperature rising"
         condition: state
         entity_id: binary_sensor.trend_pepijn_temp
