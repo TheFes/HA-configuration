@@ -32,11 +32,11 @@ sensor:
                             | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
-        {{ [ this.attributes.last_arrival ] + previous[-9:] if iif(arrived) else previous }}
+        {{ [ this.attributes.last_arrival ] + previous[:9] if iif(arrived) else previous }}
       departure_history: >
         {%- set left = trigger.from_state.attributes.persons
                           | reject('in', trigger.to_state.attributes.persons)
                           | join(', ')
         %}
         {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
-        {{ [ this.attributes.last_departure ] + previous[-9:] if iif(left) else previous }}
+        {{ [ this.attributes.last_departure ] + previous[:9] if iif(left) else previous }}
