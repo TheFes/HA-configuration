@@ -15,7 +15,7 @@ chips:
     icon: mdi:lightning-bolt
     content: >-
       {{ ((states('sensor.power_consumption') | float -
-      states('sensor.power_production') | float) * 1000) | round }} W
+      states('sensor.power_production') | float(0)) * 1000) | round }} W
     icon_color: yellow
     tap_action:
       action: navigate
