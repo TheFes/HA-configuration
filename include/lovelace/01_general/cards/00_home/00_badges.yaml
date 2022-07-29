@@ -1,25 +1,50 @@
-type: custom:mushroom-chips-card
+type: custom:state-switch
 view_layout:
   grid-area: badges
-alignment: center
-chips:
-  - type: menu
-  - type: weather
-    entity: weather.combined_daily
-    show_conditions: false
-    show_temperature: true
-    tap_action:
-      action: navigate
-      navigation_path: weer
-  - type: template
-    icon: mdi:lightning-bolt
-    content: >-
-      {{ ((states('sensor.power_consumption') | float -
-      states('sensor.electricity_meter_power_production') | float(0)) * 1000) | round }} W
-    icon_color: yellow
-    tap_action:
-      action: navigate
-      navigation_path: /energy
-  - type: entity
-    entity: sensor.water_meter_current_usage
-    icon_color: blue
+entity: group
+states:
+  admin:
+    type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+      - type: menu
+      - type: weather
+        entity: weather.combined_daily
+        show_conditions: false
+        show_temperature: true
+        tap_action:
+          action: navigate
+          navigation_path: weer
+      - type: template
+        icon: mdi:lightning-bolt
+        content: >-
+          {{ ((states('sensor.power_consumption') | float(0) -
+          states('sensor.electricity_meter_power_production') | float(0)) * 1000) | round }} W
+        icon_color: yellow
+        tap_action:
+          action: navigate
+          navigation_path: /energy
+      - type: entity
+        entity: sensor.water_meter_current_usage
+        icon_color: blue
+  user:
+    type: custom:mushroom-chips-card
+    alignment: center
+    chips:
+      - type: weather
+        entity: weather.combined_daily
+        show_conditions: false
+        show_temperature: true
+        tap_action:
+          action: navigate
+          navigation_path: weer
+      - type: template
+        icon: mdi:lightning-bolt
+        content: >-
+          {{ ((states('sensor.power_consumption') | float(0) -
+          states('sensor.electricity_meter_power_production') | float(0)) * 1000) | round }} W
+        icon_color: yellow
+      - type: entity
+        entity: sensor.water_meter_current_usage
+        icon_color: blue
+
