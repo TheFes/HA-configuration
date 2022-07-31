@@ -42,6 +42,7 @@ template:
             {%- set reject = this.attributes.get('no_forecast', []) + this.attributes.get('hourly', []) -%}
             {{ expand(this.attributes.get('entities', []))
                           | rejectattr('entity_id', 'in', reject)
+                          | selectattr('attributes.forecast')
                           | map(attribute='entity_id')
                           | list
             }}
@@ -70,6 +71,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.temperature', 'defined')
           | map(attribute='attributes.temperature')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -78,6 +80,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.humidity', 'defined')
           | map(attribute='attributes.humidity')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -86,6 +89,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.pressure', 'defined')
           | map(attribute='attributes.pressure')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -94,6 +98,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.wind_bearing', 'defined')
           | map(attribute='attributes.wind_bearing')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -102,6 +107,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.wind_speed', 'defined')
           | map(attribute='attributes.wind_speed')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -110,6 +116,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.visibility', 'defined')
           | map(attribute='attributes.visibility')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -118,6 +125,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'daily'))
           | selectattr('attributes.ozone', 'defined')
           | map(attribute='attributes.ozone')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -208,6 +216,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.temperature', 'defined')
           | map(attribute='attributes.temperature')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -216,6 +225,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.humidity', 'defined')
           | map(attribute='attributes.humidity')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -224,6 +234,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.pressure', 'defined')
           | map(attribute='attributes.pressure')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -232,6 +243,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.wind_bearing', 'defined')
           | map(attribute='attributes.wind_bearing')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -240,6 +252,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.wind_speed', 'defined')
           | map(attribute='attributes.wind_speed')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -248,6 +261,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.visibility', 'defined')
           | map(attribute='attributes.visibility')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
@@ -256,6 +270,7 @@ weather:
           | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', 'hourly'))
           | selectattr('attributes.ozone', 'defined')
           | map(attribute='attributes.ozone')
+          | select('is_number')
           | list
       -%}
       {{ v | average | round(1) if v else none }}
