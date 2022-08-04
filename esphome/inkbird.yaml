@@ -1,0 +1,26 @@
+substitutions:
+  device_name: Inkbird
+  device_type: BLE
+  ip: 192.168.2.92
+  mac_inkbird: "D3:6D:00:00:11:2C"
+
+esp32:
+  board: lolin32_lite
+  framework:
+    type: arduino
+
+esphome:
+  name: inkbird
+  on_boot:
+    priority: -10
+    then:
+      - lambda: |-
+          {
+            id(ble_sensor_1).publish_state(false);
+            id(ble_sensor_2).publish_state(false);
+          }
+
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  inkbird: !include packages/inkbird.yaml

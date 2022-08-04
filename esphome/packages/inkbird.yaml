@@ -1,0 +1,68 @@
+script:
+  - id: timer
+    then:
+      - delay: 60s
+      - lambda: |-
+          {
+            id(ble_sensor_1).publish_state(false);
+            id(ble_sensor_2).publish_state(false);
+          }
+
+esp32_ble_tracker:
+  on_ble_advertise:
+    - mac_address: ${mac_inkbird}
+      then:
+        - script.stop: timer
+        - lambda: |-
+            if (x.get_name() != "xBBQ") return;
+
+            ESP_LOGI("ble_adv", "New BLE device");
+            ESP_LOGI("ble_adv", "  address: %s", x.address_str().c_str());
+            ESP_LOGI("ble_adv", "  name: %s", x.get_name().c_str());
+            ESP_LOGI("ble_adv", "  Advertised service UUIDs:");
+
+            for (auto uuid : x.get_service_uuids()) {
+              ESP_LOGI("ble_adv", "    - %s", uuid.to_string().c_str());
+            }
+
+            ESP_LOGI("ble_adv", "  Advertised service data:");
+
+            for (auto data : x.get_service_datas()) {
+              ESP_LOGI("ble_adv", "    - %s: (length %i)", data.uuid.to_string().c_str(), data.data.size());
+            }
+
+            ESP_LOGI("ble_adv", "  Advertised manufacturer data:");
+
+            for (auto data : x.get_manufacturer_datas()) {
+              ESP_LOGI("ble_adv", "    - %s: (%s)", data.uuid.to_string().c_str(), format_hex_pretty(data.data).c_str());
+
+              int probe0 = (data.data[9] << 8) + data.data[8];
+              int probe1 = (data.data[11] << 8) + data.data[10];
+
+              ESP_LOGI("ble_data", "    - %f %f", probe0 / 10.0, probe1 / 10.0);
+
+              if (probe0 < 60000) {
+                id(ble_sensor_1).publish_state(probe0 / 10.0);
+              } else {
+                id(ble_sensor_1).publish_state(0);
+              }
+
+              if (probe1 < 60000) {
+                id(ble_sensor_2).publish_state(probe1 / 10.0);
+              } else {
+                id(ble_sensor_2).publish_state(0);
+              }
+            }
+        - script.execute: timer
+
+sensor:
+  - platform: template
+    name: "iBBQ Temperature Probe 1"
+    id: ble_sensor_1
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+  - platform: template
+    name: "iBBQ Temperature Probe 2"
+    id: ble_sensor_2
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
