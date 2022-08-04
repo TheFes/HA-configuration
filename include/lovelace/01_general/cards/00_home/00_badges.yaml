@@ -15,11 +15,8 @@ states:
         tap_action:
           action: navigate
           navigation_path: weer
-      - type: template
-        icon: mdi:lightning-bolt
-        content: >-
-          {{ ((states('sensor.power_consumption') | float(0) -
-          states('sensor.electricity_meter_power_production') | float(0)) * 1000) | round }} W
+      - type: entity
+        entity: sensor.net_power
         icon_color: yellow
         tap_action:
           action: navigate
@@ -27,6 +24,15 @@ states:
       - type: entity
         entity: sensor.watermeter_current_usage
         icon_color: blue
+        tap_action:
+          action: none
+        double_tap_action:
+          action: call-service
+          service: input_boolean.toggle
+          data: {}
+          target:
+            entity_id: input_boolean.hide_header
+
   user:
     type: custom:mushroom-chips-card
     alignment: center
@@ -38,13 +44,13 @@ states:
         tap_action:
           action: navigate
           navigation_path: weer
-      - type: template
-        icon: mdi:lightning-bolt
-        content: >-
-          {{ ((states('sensor.power_consumption') | float(0) -
-          states('sensor.electricity_meter_power_production') | float(0)) * 1000) | round }} W
+      - type: entity
+        entity: sensor.net_power
         icon_color: yellow
+        tap_action:
+          action: none
       - type: entity
         entity: sensor.watermeter_current_usage
         icon_color: blue
-
+        tap_action:
+          action: none
