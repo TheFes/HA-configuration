@@ -2,6 +2,12 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 1.7.0 - 04 August 2022
+#### ✨ New feature
+* Support for Google Home Resume automation for easy resume without the need to call the script manually.
+#### 🌟 Improvements
+* Music Assistant resume now uses the snapshot function
+
 ### Version 2.6.0 - 21 July 2022
 #### ✨ New features
 * Music playing via Music Assistant will be resumed by sending the TTS or media which interrupts the stream to the MA entity with `announce: true`. I will change this to creating a snapshot and resuming the snapshot in the future, so I can also support resume of Music Assistant with the Google Home Voice and Google Home Event script.

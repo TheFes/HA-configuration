@@ -2,7 +2,7 @@
 # for more details: https://community.home-assistant.io/t/script-to-send-tts-to-the-right-google-home-based-on-voice-commands/346885
 #
 google_home_voice:
-  alias: "00 - TTS for Google Home based on voice command"
+  alias: "00 - Google Home Voice"
   icon: mdi:cast-audio
   mode: single
   max_exceeded: silent
@@ -10,7 +10,7 @@ google_home_voice:
     check_for_title: "Witte ruis"
   sequence:
     - variables:
-        version: 1.5.2
+        version: 1.6.0
     - alias: "Are there Spotify entities?"
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -29,6 +29,16 @@ google_home_voice:
           {{ ns.service }}
         no_service_count: >
           {{ action | reject('in', service_calls) | list | count }}
+        mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
+        cast_mass_playing: >
+          {{
+            expand(integration_entities('cast'))
+              | selectattr('attributes.media_title', 'defined')
+              | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
+              | map(attribute='entity_id')
+              | list
+          }}
+        mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
         player_data: >
           {%- set ns = namespace(info=[]) %}
           {%- for entity in expand(integration_entities('cast')) %}
@@ -38,6 +48,14 @@ google_home_voice:
                                       state = entity.state
                                       )
               %}
+              {%- if mass_entities | count > 0 %}
+                {%- set mass_data = dict(
+                                          mass_playing = entity.entity_id in cast_mass_playing,
+                                          mass_sync = entity.entity_id | replace('.', '.mass_')
+                                        )
+                %}
+                {%- set general = dict(general, **mass_data) %}
+              {%- endif %}
               {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
                 {%- set additional = dict(
                                           app_name = 'Spotify',
@@ -109,6 +127,16 @@ google_home_voice:
             %}
           {%- endfor %}
           {{ ns.info }}
+    - alias: "Create snapshot of active Music Assistant entities"
+      repeat:
+        for_each: "{{ mass_playing }}"
+        sequence:
+          - alias: "Create snapshot"
+            service: mass.queue_command
+            target:
+              entity_id: "{{ repeat.item }}"
+            data:
+              command: snapshot_create
     - alias: "Interrupt YouTube music if needed"
       if: "{{ ytube_music_data | count > 0 }}"
       then:
@@ -172,6 +200,7 @@ google_home_voice:
               player_data: "{{ player_data }}"
               spotify_data: "{{ spotify_data }}"
               ytube_music_data: "{{ ytube_music_data }}"
+              cast_mass_playing: "{{ cast_mass_playing }}"
               action: >
                 {%- set ns = namespace(action=[]) %}
                 {%- for item in service_calls %}

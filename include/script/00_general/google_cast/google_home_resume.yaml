@@ -41,6 +41,9 @@ google_home_resume:
       Radio Veronica:
         picture: "http://192.168.2.3:8123/local/pictures/radio/radio_veronica.png"
         title: "WE. LOVE. MUSIC."
+      Willy:
+        picture: "http://192.168.2.3:8123/local/pictures/radio/willy.png"
+        title: "MUSIC MATTERS"
     speaker_groups:
       media_player.huis_groep:
         - media_player.keuken_hub
@@ -67,7 +70,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.6.0
+        version: 2.7.0
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -92,17 +95,18 @@ google_home_resume:
     - alias: "Create variables based on action section"
       variables:
         event_script: "{{ event_script if event_script is defined else false }}"
+        automation: "{{ automation if automation is defined else false }}"
         service_calls: >
           {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list }}
         no_service_count: >
           {{ iif(action is mapping,[ action ], action) | count - service_calls | count }}
     - alias: "Wrong actions provided"
       choose:
-        - conditions: "{{ (not event_script) and service_calls | count == 0 }}"
+        - conditions: "{{ (not (event_script or automation)) and service_calls | count == 0 }}"
           sequence:
             - stop: "There were no service calls defined, no actions are performed. The script script has been aborted."
               error: true
-        - conditions: "{{ (not event_script) and no_service_count > 0 }}"
+        - conditions: "{{ (not (event_script or automation)) and no_service_count > 0 }}"
           sequence:
             - service: system_log.write
               data:
@@ -112,21 +116,25 @@ google_home_resume:
                   {{ no_service_count }} out of {{ service_calls | count }} actions were not performed because they are not service calls.
     - alias: "Set variables to be used in the script"
       variables:
-        start_time: "{{ now() }}"
+        start_time: "{{ start_time if start_time is defined else now() }}"
         speaker_group_list: "{{ speaker_groups.keys() | list if (speaker_groups is defined and speaker_groups) else [] }}"
         speaker_groups: "{{ speaker_groups if (speaker_groups is defined and speaker_groups) else { 'no group': [ 'no members' ] } }}"
         cast_entities: "{{ integration_entities('cast') }}"
         spotify_entities: "{{ integration_entities('spotify') }}"
         mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
-        mass_playing: "{{ expand(mass_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
         cast_mass_playing: >
-          {{
-            expand(integration_entities('cast'))
-              | selectattr('attributes.media_title', 'defined')
-              | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
-              | map(attribute='entity_id')
-              | list
-          }}
+          {%- if cast_mass_playing is defined %}
+            {{ cast_mass_playing }}
+          {%- else %}
+            {{
+              expand(integration_entities('cast'))
+                | selectattr('attributes.media_title', 'defined')
+                | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
+                | map(attribute='entity_id')
+                | list
+            }}
+          {%- endif %}
+        mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
         primary_spotcast_check: >
           {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
           {{
@@ -259,13 +267,21 @@ google_home_resume:
                   {%- set ns.device = ns.device + device_entities(device) | list %}
                 {%- endfor %}
                 {%- set device_list = ns.device %}
-            {# create list with all cast entities #}
+            {# create list with all cast and mass entities #}
               {%- set total_list = expand(area_list + device_list + entity_list)
                                     | map(attribute='entity_id')
-                                    | select('in', cast_entities)
+                                    | select('in', cast_entities + mass_entities)
                                     | unique
                                     | list
               %}
+            {# replace mass entities with cast entities #}
+              {%- if mass_entities | count > 0 and total_list | select('search', '.mass_') | list | count > 0%}
+                {%- set ns = namespace(no_mass = []) %}
+                {% for item in total_list %}
+                  {%- set ns.no_mass = ns.no_mass + ( [item] if item in cast_entities else [ item | replace('.mass_', '.') ] ) %}
+                {%- endfor %}
+                {%- set tota_list = ns.no_mass | select('in', cast_entities) | unique | list %}
+              {%- endif %}
             {# avoid to target both complete speaker groups and single members #}
               {%- set target_group = total_list | select('in', speaker_group_list) | list %}
               {%- set target_single = total_list | reject('in', speaker_group_list) | list %}
@@ -333,6 +349,14 @@ google_home_resume:
                                         state = entity.state
                                         )
                 %}
+                {%- if mass_entities | count > 0 %}
+                  {%- set mass_data = dict(
+                                            mass_playing = entity.entity_id in cast_mass_playing,
+                                            mass_sync = entity.entity_id | replace('.', '.mass_')
+                                          )
+                  %}
+                  {%- set general = dict(general, **mass_data) %}
+                {%- endif %}
                 {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
                   {%- set additional = dict(
                                             app_name = 'Spotify',
@@ -421,12 +445,16 @@ google_home_resume:
               {%- set add_spotcast =  dict(spotcast = spotcast) %}
               {%- set additional = dict(additional, **add_spotcast) %}
             {%- elif entity.state == 'playing'
-                      and fixed_picture is defined
-                      and iif(fixed_picture)
-                      and entity.media_artist in fixed_picture.keys() | list
+                      and radio_data is defined
+                      and iif(radio_data)
+                      and entity.media_artist in radio_data.keys() | list
             %}
-              {%- set add_picture = dict(fixed_picture = fixed_picture[entity.media_artist]) %}
-              {%- set additional = dict(additional, **add_picture) %}
+              {%- set add_radio_data = dict(
+                                            entity_picture = radio_data[entity.media_artist].picture,
+                                            media_title = radio_data[entity.media_artist].title
+                                            )
+              %}
+              {%- set additional = dict(additional, **add_radio_data) %}
             {%- endif %}
             {%- set ns.info = ns.info + [ dict(entity, **additional) ] %}
           {%- endfor %}
@@ -522,7 +550,6 @@ google_home_resume:
               {{
                 (target_playing + speaker_groups_resume + single_resume_list)
                   | reject('in', reject_list + resume_active + resume_action_false)
-                  | reject('in', cast_mass_playing)
                   | unique
                   | list
               }}
@@ -665,6 +692,17 @@ google_home_resume:
             entity_id: >
               {{ ytube_music_data | selectattr('target', 'in', players_to_resume) | map(attribute='player') | list }}
             command: interrupt_start
+    - alias: "Create Music Assistant snapshots if needed"
+      if: "{{ mass_playing | count > 0 }}"
+      then:
+        - repeat:
+            for_each: "{{ mass_playing }}"
+            sequence:
+              - service: mass.queue_command
+                data:
+                  command: snapshot_create
+                target:
+                  entity_id: "{{ repeat.item }}"
     - alias: "Perform service calls defined in action"
       repeat:
         for_each: "{{ service_calls }}"
@@ -723,7 +761,6 @@ google_home_resume:
                   {{ (a + d + e) | unique | list }}
               media_entities: "{{ expand(target_entities) | selectattr('domain', 'eq', 'media_player') | map(attribute='entity_id') | list }}"
               cast_target: "{{ media_entities | select('in', cast_entities) | list }}"
-              mass: "{{ cast_target | select('in', cast_mass_playing) | list | count > 0 }}"
               screen: >
                 {%- set members = player_data 
                                     | selectattr('entity_id', 'in', cast_target)
@@ -741,12 +778,17 @@ google_home_resume:
                   and dummy_player is defined and iif(dummy_player)
                 }}
               data: >
-                {% set data = dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) %}
-                {{ dict(data, **dict(announce = true)) if mass and service == 'media_player.play_media' else data }}
+                {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
                 sequence:
+                  - alias: "Stop all targets which are playing"
+                    service: media_player.media_stop
+                    target:
+                      entity_id: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
+                  - alias: "Wait until they are all stopped"
+                    wait_template: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | list | count == 0 }}"
                   - alias: "Apply TTS volume"
                     service: media_player.volume_set
                     target:
@@ -780,13 +822,14 @@ google_home_resume:
                     continue_on_error: true
           - service: "{{ service_call.service }}"
             target: >
+              {%- set mass = target_entities | select('in', mass_playing) | list | count > 0 %}
               {%- if mass %}
-                {%- set ns = namespace(ctom = []) %}
+                {%- set ns = namespace(no_mass = []) %}
                 {%- for entity in target_entities %}
-                  {%- set e = entity | replace('.', '.mass_') if entity in cast_mass_playing else entity %}
-                  {%- set ns.ctom = ns.ctom + [ e] %}
+                  {%- set e = entity | replace('.mass_', '.') if entity in mass_playing else entity %}
+                  {%- set ns.no_mass = ns.no_mass + [ e ] %}
                 {%- endfor %}
-                {%- set target_entities = ns.ctom %}
+                {%- set target_entities = ns.target_no_mass %}
                 {%- set media_entities = target | select('match', '^media_player') | list %}
               {%- endif %}
               {%- if screen and tts %}
@@ -959,8 +1002,17 @@ google_home_resume_helper:
                     and player.media_content_id.startswith('http')
                     and not player.entity_id in y
                   }}
+                mass: "{{ player.mass_playing }}"
             - alias: "Resume playing"
               choose:
+                - alias: "Music Assistant?"
+                  conditions: "{{ mass }}"
+                  sequence:
+                    - service: mass.queue_command
+                      data:
+                        command: snapshot_restore
+                      target:
+                        entity_id: "{{ player.mass_sync }}"
                 - alias: "Ytube Music?"
                   conditions: "{{ ytube_music }}"
                   sequence:
@@ -1066,7 +1118,7 @@ google_home_resume_helper:
                   conditions: "{{ stream }}"
                   sequence:
                     - variables:
-                        picture_url: "{{ player.fixed_picture if player.fixed_picture is defined else player.entity_picture }}"
+                        picture_url: "{{ player.entity_picture }}"
                         metadata:
                           metadataType: 3
                           title: "{{ player.media_title }}"
