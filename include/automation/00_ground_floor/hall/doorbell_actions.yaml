@@ -35,6 +35,10 @@ variables:
         | reject('in', hue + esphome)
         | list
     }}
+condition:
+  - alias: "Prevent running too much"
+    condition: template
+    value_template: "{{ (now() - this.attributes.last_triggered).total_seconds() > 30 }}"
 action:
   - alias: "Notification for phones"
     service: notify.all_phones
@@ -178,5 +182,3 @@ action:
             service: scene.turn_on
             target:
               entity_id: scene.before
-  - alias: "Delay to avoid too much blinking"
-    delay: 10
