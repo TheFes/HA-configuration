@@ -52,6 +52,13 @@ cards:
       - type: custom:mushroom-template-card
         entity: cover.switchbot_curtain_floris
         layout: vertical
+        badge_icon: >
+          {% if is_state('cover.switchbot_curtain_floris', 'unavailable') %}
+            mdi:alert
+          {% elif states('sensor.switchbot_curtain_floris_battery') | float(100) < 20 %}
+            mdi:battery-alert
+          {% endif %}
+        badge_color: red
         icon: >-
           {% if is_state('cover.switchbot_curtain_floris', 'opening') %}
             mdi:arrow-collapse-right
@@ -65,11 +72,9 @@ cards:
         icon_color: >-
           {% if states('cover.switchbot_curtain_floris') in [ 'opening', 'closing' ] %}
             green
-          {% elif is_state('cover.switchbot_curtain_floris', 'unavailable') %}
-            red
           {% elif is_state_attr('cover.switchbot_curtain_floris', 'current_position', 0) %}
             yellow
-          {% elif not is_state_attr('cover.switchbot_curtain_floris', 'current_position', 100) %}
+          {% elif state_attr('cover.switchbot_curtain_floris', 'current_position') | int(100) < 100 %}
             orange
           {% endif %}
       - type: conditional
