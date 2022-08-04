@@ -17,12 +17,11 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.6.0 - 21 July 2022
-#### ✨ New features
-* Music playing via Music Assistant will be resumed by sending the TTS or media which interrupts the stream to the MA entity with `announce: true`. I will change this to creating a snapshot and resuming the snapshot in the future, so I can also support resume of Music Assistant with the Google Home Voice and Google Home Event script.
-* Google Podcasts will be resumed by taking the url of the stream and sending that via `media_player.play_media`. Do note that Google Podcasts won't know this happened, which might cause it to resume at a previous podcast when you issue a voice command.
-#### 🐛 Bug fixes
-* Template fix: the template to gather the player data was referring to `app_name` even if it was not defined.
+### Version 1.7.0 - 04 August 2022
+#### ✨ New feature
+* Support for Google Home Resume automation for easy resume without the need to call the script manually.
+#### 🌟 Improvements
+* Music Assistant resume now uses the snapshot function
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -30,8 +29,30 @@ Older changes can be found [here](https://github.com/TheFes/HA-configuration/blo
 ## The script itself
 [Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
 
-Add this script to `scripts.yaml` by copying the contents of the link below, and pasting it in `scripts.yaml`. Don't use the GUI, use a file editor (add-on).
+Place it in your `scripts.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
 Change the variables described below to match your setup.
+
+### Explanation of variables in the script
+There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
+
+|Variable|Default|Example|Description|
+| --- | --- | --- | --- |
+|players_screen||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L32-L35)|Enter a list of cast devices with a screen. Do not use a comma seperated string here.|
+|primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
+|radio_data||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L43)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
+|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
+|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
+|dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
+
+## The automation for automatic resuem (✨ NEW in v1.7.0)
+[Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
+In version 1.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
+
+Place it in your `automations.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
+
+Change the variable `announce_volume` (on line 43) to your needs, the volume set there (value between 0 and 1) will be used for the volume of the TTS message or other content played using the `media_player.play_media` service call. There is only one generic setting here, if you want to use a different volume for different targets or messages/content, you need to call the script manually.
+
+If set up like described above, the script will be automatically called for TTS messages, and when you use the `media_player.play_media` service call with `announce: true` enabled. If `announce` is not set, or set to `announce: false` the script will not be used. The TTS service call will do this automatically.
 
 ## Spotify specific settings
 * In case you only have one Spotify account set up in Home Assistant, there are no additional settings needed besides intalling the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
@@ -85,20 +106,6 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 ## Google Home Speaker groups
 * If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
-
-
-
-# Explanation of variables in the script
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
-
-|Variable|Default|Example|Description|
-| --- | --- | --- | --- |
-|players_screen||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L32-L35)|Enter a list of cast devices with a screen. Do not use a comma seperated string here.|
-|primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
-|radio_data||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L43)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
-|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
-|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
-|dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 
 # How to use the script
 This script only contains the code to resume after the interruption, it doesn't contain any standard actions (like sending a TTS or playing an MP3 file)
