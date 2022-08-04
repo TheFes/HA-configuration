@@ -15,9 +15,9 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.5.2 - 21 July 2022
-#### 🐛 Bug fixes
-* Template to define target was not working in case Music Assistant is installed. Both the normal entity and the MASS entity would be seen as playing the ambient sound. The template now only uses cast entities.
+### Verstion 1.6.0 - 04 August 2022
+#### ✨ New feature
+* Support for Music Assistant resume
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 

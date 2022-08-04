@@ -4,7 +4,7 @@
 
 ### Verstion 1.6.0 - 04 August 2022
 #### ✨ New feature
-* Support for Music Assitant resume
+* Support for Music Assistant resume
 
 ### Version 1.5.2 - 21 July 2022
 #### 🐛 Bug fixes
