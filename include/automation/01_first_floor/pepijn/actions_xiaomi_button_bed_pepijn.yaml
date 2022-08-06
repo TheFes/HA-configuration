@@ -72,7 +72,9 @@ action:
             default:
               - service: light.toggle
                 target:
-                  entity_id: light.nijntje
+                  entity_id: 
+                    - light.nijntje
+                    - light.bed_pepijn
       - conditions:
           - alias: "Long"
             condition: template
