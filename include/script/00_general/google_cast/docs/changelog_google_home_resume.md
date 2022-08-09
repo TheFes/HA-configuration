@@ -2,7 +2,11 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
-### Version 1.7.0 - 04 August 2022
+### Version 2.7.1 - 9 August 2022
+#### 🐛 Bug fixes
+* Template fixes to avoid log warnings about missing variables
+
+### Version 2.7.0 - 24 August 2022
 #### ✨ New feature
 * Support for Google Home Resume automation for easy resume without the need to call the script manually.
 #### 🌟 Improvements

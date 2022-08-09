@@ -70,7 +70,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.7.0
+        version: 2.7.1
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -97,9 +97,9 @@ google_home_resume:
         event_script: "{{ event_script if event_script is defined else false }}"
         automation: "{{ automation if automation is defined else false }}"
         service_calls: >
-          {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list }}
+          {{ iif(action is mapping,[ action ], action) | selectattr('service', 'defined') | list if action is defined and action else [] }}
         no_service_count: >
-          {{ iif(action is mapping,[ action ], action) | count - service_calls | count }}
+          {{ iif(action is mapping,[ action ], action) | count - service_calls | count if action is defined and action else [] }}
     - alias: "Wrong actions provided"
       choose:
         - conditions: "{{ (not (event_script or automation)) and service_calls | count == 0 }}"
@@ -1002,7 +1002,7 @@ google_home_resume_helper:
                     and player.media_content_id.startswith('http')
                     and not player.entity_id in y
                   }}
-                mass: "{{ player.mass_playing }}"
+                mass: "{{ player.mass_playing if player.mass_playing is defined else false }}"
             - alias: "Resume playing"
               choose:
                 - alias: "Music Assistant?"
