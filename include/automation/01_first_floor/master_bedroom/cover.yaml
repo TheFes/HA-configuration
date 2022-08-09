@@ -21,13 +21,13 @@ condition:
   - alias: "After 10"
     condition: time
     after: "10:00:00"
-  - alias: "After sunrise"
-    condition: state
-    entity_id: sun.sun
-    state: "above_horizon"
 action:
   - if: "{{ trigger.id != 'open' }}"
     then:
+      - alias: "After sunrise"
+        condition: state
+        entity_id: sun.sun
+        state: "above_horizon"
       - alias: "Warm day"
         condition: template
         value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
