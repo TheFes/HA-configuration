@@ -31,10 +31,10 @@ text_sensor:
 
 # Sensors with general information.
 sensor:
-  # Uptime sensor.
+  # Uptime sensor (internal only).
   - platform: uptime
     id: sensor_uptime
-    internal: true
+  # Uptime timestamp
   - platform: template
     id: sensor_uptime_timestamp
     name: "${device_name} ${device_type} Uptime"
