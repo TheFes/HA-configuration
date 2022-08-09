@@ -42,7 +42,7 @@ There are no required variables, but if you use Google Home speaker groups and p
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 
-## The automation for automatic resuem (✨ NEW in v1.7.0)
+## The automation for automatic resume (✨ NEW in v1.7.0)
 [Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
 In version 1.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
 
