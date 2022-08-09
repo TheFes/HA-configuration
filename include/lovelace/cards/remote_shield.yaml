@@ -53,7 +53,7 @@ cards:
             - background: var(--secondary-background-color-alpha)
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "UP"
         template: icon_button
@@ -76,7 +76,7 @@ cards:
             - background: var(--secondary-background-color-alpha)
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "LEFT"
         template: icon_button
@@ -85,7 +85,7 @@ cards:
         name: Ok
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "CENTER"
         template: icon_button
@@ -99,7 +99,7 @@ cards:
             - background: var(--secondary-background-color-alpha)
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "RIGHT"
         template: icon_button
@@ -110,7 +110,7 @@ cards:
         icon: mdi:step-backward
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "BACK"
         template: menu_button
@@ -123,7 +123,7 @@ cards:
             - background: var(--secondary-background-color-alpha)
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "DOWN"
         template: icon_button
@@ -133,7 +133,7 @@ cards:
         icon: mdi:circle
         tap_action:
           service: androidtv.adb_command
-          service_data:
+          data:
             entity_id: media_player.nvidia_shield
             command: "HOME"
         template: menu_button

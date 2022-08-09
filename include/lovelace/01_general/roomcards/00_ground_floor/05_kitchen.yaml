@@ -9,7 +9,8 @@ cards:
     tap_action:
       action: navigate
       navigation_path: keuken
-  - type: horizontal-stack
+  - type: custom:vertical-stack-in-card
+    horizontal: true
     cards:
       - type: custom:mushroom-template-card
         entity: light.groep_keuken
@@ -58,13 +59,14 @@ cards:
         tap_action:
           action: fire-dom-event
           browser_mod:
-            command: popup
-            title: Afzuigkap
-            card:
-              type: entities
-              entities:
-                - entity: sensor.extractor_hood_status
-                - entity: switch.afzuigkap
+            service: browser_mod.popup
+            data:
+              title: Afzuigkap
+              content:
+                type: entities
+                entities:
+                  - entity: sensor.extractor_hood_status
+                  - entity: switch.afzuigkap
       - type: conditional
         conditions:
           - entity: binary_sensor.dishwasher_active
@@ -77,37 +79,38 @@ cards:
           tap_action:
             action: fire-dom-event
             browser_mod:
-              command: popup
-              title: Vaatwasser
-              card:
-                type: custom:vertical-stack-in-card
-                cards:
-                  - type: markdown
-                    content: >
-                      {%- set time_set =
-                      states('input_datetime.dishwasher_program')
-                        | as_datetime %} {%- if now() < time_set
-                        | as_local
-                      %}
-                        {%- set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
-                      {%- set hours = (seconds / 3600) | int %}
-                        {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
-                        {%- set program = states('input_select.dishwasher_program') %}
-                        {%- set extra = states('input_select.dishwasher_program_extra') %}
-                        {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
-                        {%- set program = program ~ extra %}
-                        {%- if states('input_number.dishwasher_delayed_start') | int > 0 %}
-                        Er is een vertraagde start ingesteld, de vaatwasser begint om {{ (states('input_datetime.dishwasher_delay') | as_datetime).strftime('%H:%M') }}
-                        De vaatwasser zou rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} klaar moeten zijn (gebaseerd op het {{ program }} programma)
-                        Dat is nog {{ hours ~ ' uur' ~ ' en ' if hours != 0 }}{{ minutes }} {{ 'minuut' if minutes == 1 else 'minuten' }}.
-                      {%- else %}
-                        De vaatwasser zou eigenlijk al klaar moeten zijn, heel even geduld nog dus
-                      {%- endif %}
-                  - type: entities
-                    entities:
-                      - entity: input_select.dishwasher_program
-                      - entity: input_select.dishwasher_program_extra
-                      - entity: input_number.dishwasher_delayed_start
+              service: browser_mod.popup
+              data:
+                title: Vaatwasser
+                content:
+                  type: custom:vertical-stack-in-card
+                  cards:
+                    - type: markdown
+                      content: >
+                        {%- set time_set =
+                        states('input_datetime.dishwasher_program')
+                          | as_datetime %} {%- if now() < time_set
+                          | as_local
+                        %}
+                          {%- set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
+                        {%- set hours = (seconds / 3600) | int %}
+                          {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+                          {%- set program = states('input_select.dishwasher_program') %}
+                          {%- set extra = states('input_select.dishwasher_program_extra') %}
+                          {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
+                          {%- set program = program ~ extra %}
+                          {%- if states('input_number.dishwasher_delayed_start') | int > 0 %}
+                          Er is een vertraagde start ingesteld, de vaatwasser begint om {{ (states('input_datetime.dishwasher_delay') | as_datetime).strftime('%H:%M') }}
+                          De vaatwasser zou rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} klaar moeten zijn (gebaseerd op het {{ program }} programma)
+                          Dat is nog {{ hours ~ ' uur' ~ ' en ' if hours != 0 }}{{ minutes }} {{ 'minuut' if minutes == 1 else 'minuten' }}.
+                        {%- else %}
+                          De vaatwasser zou eigenlijk al klaar moeten zijn, heel even geduld nog dus
+                        {%- endif %}
+                    - type: entities
+                      entities:
+                        - entity: input_select.dishwasher_program
+                        - entity: input_select.dishwasher_program_extra
+                        - entity: input_number.dishwasher_delayed_start
       - type: conditional
         conditions:
           - entity: media_player.keuken_hub

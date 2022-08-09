@@ -16,13 +16,14 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        command: popup
-        title: Passcode
-        card:
-          type: vertical-stack
-          cards:
-            - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm.yaml
-            - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+        service: browser_mod.popup
+        data:
+          title: Passcode
+          content:
+            type: vertical-stack
+            cards:
+              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm.yaml
+              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_2
     primary: Bureau Martijn (Netwerk)
@@ -36,16 +37,17 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        command: popup
-        title: Passcode
-        card:
-          type: vertical-stack
-          cards:
-            - type: custom:mushroom-title-card
-              title: "Let op: Als deze schakelaar uit staat, heeft de server geen internet meer!"
-              alignment: center
-            - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm2.yaml
-            - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+        service: browser_mod.popup
+        data:
+          title: Passcode
+          content:
+            type: vertical-stack
+            cards:
+              - type: custom:mushroom-title-card
+                title: "Let op: Als deze schakelaar uit staat, heeft de server geen internet meer!"
+                alignment: center
+              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm2.yaml
+              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
@@ -63,13 +65,14 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        command: popup
-        title: Passcode
-        card:
-          type: vertical-stack
-          cards:
-            - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-server.yaml
-            - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+        service: browser_mod.popup
+        data:
+          title: Passcode
+          content:
+            type: vertical-stack
+            cards:
+              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-server.yaml
+              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
   - type: custom:mushroom-template-card
     entity: switch.bureau_marleen
     primary: Bureau Marleen
@@ -107,9 +110,8 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        command: call-service
         service: script.washing_machine_switch
-        service_data:
+        data:
           deviceID: this
   - type: custom:mushroom-template-card
     entity: switch.droger
