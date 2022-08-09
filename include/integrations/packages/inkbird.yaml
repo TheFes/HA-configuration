@@ -49,9 +49,9 @@ template:
           trend: >
             {%- set history = this.get('attributes', {}).get('history', []) %}
             {% if history | count == 3 %}
-              {% if history[0] > history[1] > history[3] %}
+              {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
-              {% elif history[0] > history[1] > history[3] %}
+              {% elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
                 down
               {% else %}
                 stable
@@ -105,9 +105,9 @@ template:
           trend: >
             {%- set history = this.get('attributes', {}).get('history', []) %}
             {% if history | count == 3 %}
-              {% if history[0] > history[1] > history[3] %}
+              {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
-              {% elif history[0] > history[1] > history[3] %}
+              {% elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
                 down
               {% else %}
                 stable
