@@ -6,6 +6,11 @@ trigger:
     at:
       - "08:00:00"
       - "09:00:00"
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "not_today"
+    id: "not_today"
 condition:
   - alias: "Monday?"
     condition: time
@@ -20,14 +25,35 @@ condition:
 action:
   - alias: "Action?"
     choose:
+      - conditions: "{{ trigger.id == 'not_today' }}"
+        sequence:
+          - alias: "Turn on input boolean"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.no_vacuum_today
       - conditions:
           - alias: "Na 9u?"
             condition: time
             after: "09:00:00"
+          - alias: "Input Boolean off"
+            condition: state
+            entity_id: input_boolean.no_vacuum_today
+            state: "off"
         sequence:
-          - service: vacuum.start
-            target:
-              entity_id: vacuum.rockrobo_vacuum_v1
+          - if:
+              - alias: "Input Boolean off"
+                condition: state
+                entity_id: input_boolean.no_vacuum_today
+                state: "off"
+            then:
+              - service: vacuum.start
+                target:
+                  entity_id: vacuum.rockrobo_vacuum_v1
+            else:
+              - alias: "Turn off input boolean"
+                service: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.no_vacuum_today
     default:
       - alias: "Notification to phones"
         service: notify.all_phones
@@ -39,3 +65,6 @@ action:
             ttl: 0
             priority: high
             notification_icon: mdi:robot-vacuum
+            actions:
+              - action: "not_today"
+                title: "Vandaag niet"

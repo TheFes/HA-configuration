@@ -12,27 +12,79 @@ trigger:
     entity_id: vacuum.rockrobo_vacuum_v1
     to: error
     id: error
+  - platform: time
+    at: "17:00:00"
+    id: time
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "empty_vacuum_bin"
+    id: "empty"
 action:
-  - variables:
-      title: >
-        {%- if trigger.id == 'docked' %}
-          Stofzuiger is klaar
-        {%- else %}
-          Probleem met stofzuiger
-        {%- endif %}
-      message: >
-        {%- if trigger.id == 'docked' %}
-          De stofzuiger is klaar en staat weer op z'n plek
-        {%- else %}
-          Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}
-        {%- endif %}
-  - alias: "Notification to phones"
-    service: notify.all_phones
-    data:
-      title: "{{ title }}"
-      message: "{{ message }}"
-      data:
-        channel: Vacuum
-        ttl: 0
-        priority: high
-        notification_icon: mdi:robot-vacuum
+  - choose:
+      - conditions: "{{ trigger.id in ['docked', 'error'] }}"
+        sequence:
+          - variables:
+              title: >
+                {%- if trigger.id == 'docked' %}
+                  Stofzuiger is klaar
+                {%- else %}
+                  Probleem met stofzuiger
+                {%- endif %}
+              message: >
+                {%- if trigger.id == 'docked' %}
+                  De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} in z'n bakkie.
+                {%- else %}
+                  Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}
+                {%- endif %}
+          - alias: "Notification to phones"
+            service: notify.all_phones
+            data:
+              title: "{{ title }}"
+              message: "{{ message }}"
+              data:
+                channel: Vacuum
+                ttl: 0
+                priority: high
+                notification_icon: mdi:robot-vacuum
+          - if: "{{ trigger.id == 'docked' }}"
+            then:
+              - alias: "Increase counter"
+                service: counter.increment
+                target:
+                  entity_id: counter.vacuum_dust_bin
+      - conditions:
+          - condition: trigger
+            id: time
+          - alias: "Bin full"
+            condition: numeric_state
+            entity_id: counter.vacuum_dust_bin
+            above: 2
+          - alias: "At home"
+            condition: state
+            entity_id: person.martijn
+            state: "home"
+          - alias: "Workday"
+            condition: state
+            entity_id: binary_sensor.workday_sensor
+            state: "on"
+        sequence:
+          - alias: "Notification to Martijn"
+            service: notify.mobile_app_pixel_5
+            data:
+              title: Bakje vol
+              message: Maak het bakje van de stofzuiger leeg!
+              data:
+                channel: Vacuum
+                ttl: 0
+                priority: high
+                notification_icon: mdi:robot-vacuum
+                actions:
+                  - action: "empty_vacuum_bin"
+                    title: "Done!"
+      - conditions: "{{ trigger.id == 'empty' }}"
+        sequence:
+          - alias: "Reset counter"
+            service: counter.reset
+            target:
+              entity_id: counter.vacuum_dust_bin
