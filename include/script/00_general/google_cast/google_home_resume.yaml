@@ -924,10 +924,17 @@ google_home_resume_helper:
                       | selectattr('state', 'eq', 'playing')
                       | list | count > 0
               )
+              or 'jpg' in state_attr(player.entity_id, 'media_content_id')
+              or 'png' in state_attr(player.entity_id, 'media_content_id')
             }}
           timeout: "00:00:30"
         - variables:
             state_changed: "{{ wait.completed }}"
+            image: >
+              {{
+                'jpg' in state_attr(player.entity_id, 'media_content_id')
+                or 'png' in state_attr(player.entity_id, 'media_content_id')
+              }}
         - alias: "Add entity to the restore active group"
           service: group.set
           data:
@@ -949,9 +956,13 @@ google_home_resume_helper:
             %}
             {%- set checklist = [player.entity_id] + player.members %}
             {{
-              expand(checklist) | rejectattr('state', 'in', ['idle', 'off']) | list | count == 0
+              expand(checklist) | rejectattr('state', 'in', ['idle', 'off', 'paused']) | list | count == 0
               and current | select('eq', player.entity_id) | list | count == 0
             }}
+        - if: "{{ image }}"
+          then:
+            - delay:
+                seconds: 20
         - alias: "Restore volume in case volume has changed"
           if: >
             {{ player.volume_level | round(2, default=0) != state_attr(player.entity_id, 'volume_level') | round(2, default=0) }}
