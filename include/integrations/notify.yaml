@@ -66,3 +66,7 @@ notify:
     recipient:
       - !secret gmail
     sender_name: !secret gmail_name
+  - platform: tts
+    name: tts_beneden
+    tts_service: tts.google_cloud_say
+    media_player: media_player.beneden_groep
