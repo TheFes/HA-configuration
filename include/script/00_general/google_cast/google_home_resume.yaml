@@ -70,7 +70,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.7.2b
+        version: 2.7.2b2
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -917,16 +917,22 @@ google_home_resume_helper:
         - alias: "State changed since script started?"
           wait_template: >
             {{
-              event_script or ytube_resume or
-              (
-                (states[player.entity_id].last_changed > as_datetime(start_time))
-                and expand([player.entity_id] + player.members)
-                      | selectattr('state', 'eq', 'playing')
-                      | list | count > 0
-              )
-              or 'jpg' in state_attr(player.entity_id, 'media_content_id')
-              or 'jpeg' in state_attr(player.entity_id, 'media_content_id')
-              or 'png' in state_attr(player.entity_id, 'media_content_id')
+              event_script
+              or ytube_resume 
+              or (
+                  (states[player.entity_id].last_changed > as_datetime(start_time))
+                  and expand([player.entity_id] + player.members)
+                        | selectattr('state', 'eq', 'playing')
+                        | list | count > 0
+                )
+              or (
+                  state_attr(player.entity_id, 'media_content_id') is not null
+                  and (
+                        'jpg' in state_attr(player.entity_id, 'media_content_id')
+                        or 'jpeg' in state_attr(player.entity_id, 'media_content_id')
+                        or 'png' in state_attr(player.entity_id, 'media_content_id')
+                      )
+                  )
             }}
           timeout: "00:00:30"
         - variables:
