@@ -67,6 +67,8 @@ google_home_resume:
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
     dummy_player: media_player.vlc_telnet
+    image_delay:
+      seconds: 20
   sequence:
     - alias: "Version number"
       variables:
@@ -591,6 +593,7 @@ google_home_resume:
                     resume: "{{ repeat.item in players_to_resume }}"
                     ytube_resume: true
                     action_type: resume
+                    image_delay: "{{ image_delay if image_delay is defined and image_delay else 20 }}"
     - alias: "Send log message about wrong wrong primary_spotcast"
       if: "{{ not primary_spotcast_check }}"
       then:
@@ -969,8 +972,7 @@ google_home_resume_helper:
             }}
         - if: "{{ image }}"
           then:
-            - delay:
-                seconds: 20
+            - delay: "{{ image_delay }}"
         - alias: "Restore volume in case volume has changed"
           if: >
             {{ player.volume_level | round(2, default=0) != state_attr(player.entity_id, 'volume_level') | round(2, default=0) }}
