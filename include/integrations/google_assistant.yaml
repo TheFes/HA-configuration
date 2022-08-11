@@ -4,315 +4,303 @@ google_assistant:
   report_state: true
   exposed_domains:
     - script
-  # entity_config:
-  #   # KERST
-  #   # switch.backup_02:
-  #   #   name: Kerstvaas
-  #   #   aliases:
-  #   #     - Vaas
-  #   #   room: Woonkamer
-  #   # switch.backup_01:
-  #   #   name: Kerstster
-  #   #   aliases:
-  #   #     - Ster
-  #   #   room: Keuken
-  #   # switch.bw_plug_19:
-  #   #   name: IJspegels
-  #   #   aliases:
-  #   #     - Pegels
-  #   #   room: Tuin
-  #   # switch.bw_plug_20:
-  #   #   name: Kerstboom
-  #   #   room: Keuken
-  #   # Slaapkamer Floris
-  #   cover.switchbot_curtain_floris:
-  #     name: Gordijn Floris
-  #     aliases:
-  #       - Gordijn
-  #     room: Slaapkamer Floris
-  #   light.floris_template:
-  #     name: Floris
-  #     aliases:
-  #       - Lamp Floris
-  #       - Floris
-  #     room: Slaapkamer Floris
-  #   cover.floris:
-  #     name: Floris
-  #     aliases:
-  #       - Screen Floris
-  #       - Floris Screen
-  #     room: Slaapkamer Floris
-  #   sensor.floris_temp:
-  #     name: Temperatuur Floris
-  #     aliases:
-  #       - Floris temperatuur
-  #       - Temperatuur Slaapkamer Floris
-  #     room: Slaapkamer Floris
-  #   # Eettafel
-  #   light.eettafel:
-  #     name: Eettafel
-  #     aliases:
-  #       - Lamp eettafel
-  #       - Eettafellamp
-  #       - Licht eettafel
-  #       - Eettafellicht
-  #     room: Eettafel
-  #   light.floris_leeslamp:
-  #     name: Leeslamp
-  #     room: Slaapkamer Floris
-  #     aliases:
-  #       - Floris Leeslamp
-  #       - Leeslammp Floris
-  #   # Hal
-  #   switch.doorbell_chime_active:
-  #     name: Deurbel
-  #     aliases:
-  #       - Bel
-  #     room: Hal
-  #   light.voordeur:
-  #     name: Voordeur
-  #     aliases:
-  #       - Lamp Voordeur
-  #       - Voordeurlamp
-  #       - Licht Voordeur
-  #       - Voordeurlicht
-  #       - Voordeur licht
-  #       - Voordeur lamp
-  #       - Lamp voor
-  #       - Licht voor
-  #     room: Hal
-  #   # Keuken
-  #   light.keuken:
-  #     name: Keuken Plafond
-  #     aliases:
-  #       - Keuken plafondlamp
-  #       - Keukenlamp
-  #       - Keuken lamp
-  #     room: Keuken
-  #   switch.afzuigkap:
-  #     name: Afzuigkap
-  #     room: Keuken
-  #   switch.espresso:
-  #     name: Espressomachine
-  #     aliases:
-  #       - Espresso machine
-  #       - Koffie
-  #       - Koffiezetapparaat
-  #     room: Keuken
-  #   switch.waterkoker:
-  #     name: Waterkoker
-  #     room: Keuken
-  #   light.keukenspotjes:
-  #     name: Keukenspotjes
-  #     room: Keuken
-  #     aliases:
-  #       - Keuken spotjes
-  #       - Spotjes keuken
-  #       - Spotjes keukenkastje
-  #   # Slaapkamer
-  #   light.slaapkamer_template:
-  #     name: Slaapkamer
-  #     room: Slaapkamer
-  #   cover.slaapkamer:
-  #     name: Slaapkamer
-  #     room: Slaapkamer
-  #     aliases:
-  #       - Screen slaapkamer
-  #       - Slaapkamer screen
-  #   sensor.slaapkamer_temp:
-  #     name: Temperatuur Slaapkamer
-  #     aliases:
-  #       - Slaapkamer temperatuur
-  #       - Temperatuur Slaapkamer
-  #     room: Slaapkamer
-  #   vacuum.rockrobo_vacuum_v1:
-  #     name: Stofzuiger
-  #     room: Slaapkamer
-  #   # Slaapkamer Pepijn
-  #   light.pepijn_template:
-  #     name: Pepijn
-  #     room: Slaapkamer Pepijn
-  #   light.nijntje:
-  #     name: Nijntje
-  #     room: Slaapkamer Pepijn
-  #   light.pepijn_leeslamp:
-  #     name: Leeslamp
-  #     room: Slaapkamer Pepijn
-  #     aliases:
-  #       - Pepijn Leeslamp
-  #       - Leeslammp Pepijn
-  #   cover.pepijn:
-  #     name: Pepijn
-  #     aliases:
-  #       - Screen Pepijn
-  #       - Pepijn Screen
-  #     room: Slaapkamer Pepijn
-  #   sensor.pepijn_temp:
-  #     name: Temperatuur Pepijn
-  #     aliases:
-  #       - Pepijn temperatuur
-  #       - Temperatuur Slaapkamer Pepijn
-  #     room: Slaapkamer Pepijn
-  #   # Speelhoek
-  #   light.speelhoek_template:
-  #     name: Speelhoek Sfeer
-  #     aliases:
-  #       - Lamp speelhoek
-  #       - Speelhoek Lamp
-  #     room: Speelhoek
-  #   light.speelhoek_tafel:
-  #     name: Speelhoek Tafel
-  #       - Tafel Speelhoek
-  #   light.fotoboek:
-  #     name: Fotoboek
-  #       - Kast Speelheok
-  #       - Fotoboek lamp
-  #       - Fotoboek licht
-  #       - Lamp Fotoboek
-  #       - Licht Fotoboek
-  #   # Trapkast
-  #   light.trapkast:
-  #     name: Trapkast
-  #     room: Trapkast
-  #   # Tuin
-  #   cover.veranda:
-  #     name: Zonwering Veranda
-  #     aliases:
-  #       - Zonwering
-  #       - Veranda Zonwering
-  #       - Zonwering overkapping
-  #       - Overkapping Zonwering
-  #     room: Tuin
-  #   light.veranda:
-  #     name: Spotjes Veranda
-  #     aliases:
-  #       - Veranda licht
-  #       - Licht veranda
-  #       - Veranda lamp
-  #       - Lamp veranda
-  #       - Overkapping licht
-  #       - Licht overkapping
-  #       - Overkapping lamp
-  #       - Lamp overkapping
-  #     room: Tuin
-  #   light.tuinlampjes:
-  #     name: Tuinlampjes
-  #     room: Tuin
-  #     aliases:
-  #       - Lampjes Tuin
-  #       - Tuin lampjes
-  #   # WC
-  #   light.wc:
-  #     name: WC
-  #     aliases:
-  #       - Lamp WC
-  #       - WC-lamp
-  #     room: WC
-  #   # Wookamer
-  #   light.booglamp:
-  #     name: Booglamp
-  #     room: Woonkamer
-  #   light.tv_lamp_template:
-  #     name: TV Lamp
-  #     room: Woonkamer
-  #     aliases:
-  #       - TV-lamp
-  #       - Televisie lamp
-  #       - Televisielamp
-  #       - Kerststal
-  #       - Stal
-  #   light.woonkamer_plafond:
-  #     name: Woonkamer Plafond
-  #     room: Woonkamer
-  #   media_player.nvidia_shield:
-  #     name: Android TV
-  #     room: Woonkamer
-  #     aliases:
-  #       - Shield
-  #   sensor.woonkamer_temp:
-  #     name: Temperatuur Woonkamer
-  #     aliases:
-  #       - Woonkamer temperatuur
-  #     room: Woonkamer
-  #   # Zolder
-  #   light.zolder_bol_template:
-  #     name: Bol
-  #     aliases:
-  #       - Zolder Bol
-  #       - Bol Zolder
-  #     room: Zolder
-  #   light.wasmachinelamp:
-  #     name: Wasmachine
-  #     aliases:
-  #       - Wasmachinelamp
-  #       - Wasmachine lamp
-  #       - Lamp Wasmachine
-  #       - Licht Wasmachine
-  #     room: Zolder
-  #   light.zolder:
-  #     name: Zolder
-  #     aliases:
-  #       - Zolder lamp
-  #       - Lamp Zolder
-  #       - Zolderlamp
-  #     room: Zolder
-  #   switch.droger:
-  #     name: Droger
-  #     room: Zolder
-  #   sensor.zolder_temp:
-  #     name: Temperatuur Zolder
-  #     aliases:
-  #       - Zolder temperatuur
-  #     room: Zolder
-  #   # Zone Algemeen
-  #   input_boolean.gast:
-  #     name: Gast Modus
-  #     aliases:
-  #       - Gast stand
-  #       - Gaststand
-  #       - Gast
-  #     room: Zone Algemeen
-  #   light.groep_beneden:
-  #     name: Beneden
-  #     aliases:
-  #       - Lampen Beneden
-  #       - Groep Beneden
-  #     room: Zone Algemeen
-  #   light.groep_eerste_verdieping:
-  #     name: Eerste Verdieping
-  #     aliases:
-  #       - Lampen Eerste Verdieping
-  #       - Groep Eerste Verdieping
-  #     room: Zone Algemeen
-  #   light.groep_zolder:
-  #     name: Zolder
-  #     aliases:
-  #       - Lampen Zolder
-  #       - Groep Zolder
-  #     room: Zone Algemeen
-  #   light.groep_huis:
-  #     name: Huis
-  #     aliases:
-  #       - Lampen Hele Huis
-  #       - Lampen Huis
-  #       - Groep Huis
-  #       - Groep Hele Huis
-  #     room: Zone Algemeen
-  #   light.groep_buiten:
-  #     name: Buiten
-  #     aliases:
-  #       - Lampen Buiten
-  #       - Groep Buiten
-  #     room: Zone Algemeen
-  #   input_boolean.floriscam_cast:
-  #     name: Camera Floris
-  #     room: Zone Algemeen
-  #     aliases:
-  #       - Camera Floris
-  #       - Floriscam
-  #   input_boolean.pepijncam_cast:
-  #     name: Camera Pepijn
-  #     room: Zone Algemeen
-  #     aliases:
-  #       - Camera Pepijn
-  #       - Pepijncam
+  entity_config:
+    # KERST
+    # switch.backup_02:
+    #   name: Kerstvaas
+    #   aliases:
+    #     - Vaas
+    #   room: Woonkamer
+    # switch.backup_01:
+    #   name: Kerstster
+    #   aliases:
+    #     - Ster
+    #   room: Keuken
+    # switch.bw_plug_19:
+    #   name: IJspegels
+    #   aliases:
+    #     - Pegels
+    #   room: Tuin
+    # switch.bw_plug_20:
+    #   name: Kerstboom
+    #   room: Keuken
+    # Slaapkamer Floris
+    cover.switchbot_curtain_floris:
+      name: Gordijn Floris
+      aliases:
+        - Gordijn
+      room: Slaapkamer Floris
+    light.floris_template:
+      name: Floris
+      aliases:
+        - Lamp Floris
+        - Floris
+      room: Slaapkamer Floris
+    cover.floris:
+      name: Floris
+      aliases:
+        - Screen Floris
+        - Floris Screen
+      room: Slaapkamer Floris
+    sensor.floris_temp:
+      name: Temperatuur Floris
+      aliases:
+        - Floris temperatuur
+        - Temperatuur Slaapkamer Floris
+      room: Slaapkamer Floris
+    # Eettafel
+    light.eettafel:
+      name: Eettafel
+      aliases:
+        - Lamp eettafel
+        - Eettafellamp
+        - Licht eettafel
+        - Eettafellicht
+      room: Eettafel
+    light.floris_leeslamp:
+      name: Leeslamp
+      room: Slaapkamer Floris
+      aliases:
+        - Floris Leeslamp
+        - Leeslammp Floris
+    # Hal
+    switch.doorbell_chime_active:
+      name: Deurbel
+      aliases:
+        - Bel
+      room: Hal
+    light.voordeur:
+      name: Voordeur
+      aliases:
+        - Lamp Voordeur
+        - Voordeurlamp
+        - Licht Voordeur
+        - Voordeurlicht
+        - Voordeur licht
+        - Voordeur lamp
+        - Lamp voor
+        - Licht voor
+      room: Hal
+    # Keuken
+    light.keuken:
+      name: Keuken Plafond
+      aliases:
+        - Keuken plafondlamp
+        - Keukenlamp
+        - Keuken lamp
+      room: Keuken
+    switch.afzuigkap:
+      name: Afzuigkap
+      room: Keuken
+    switch.espresso:
+      name: Espressomachine
+      aliases:
+        - Espresso machine
+        - Koffie
+        - Koffiezetapparaat
+      room: Keuken
+    switch.waterkoker:
+      name: Waterkoker
+      room: Keuken
+    light.keukenspotjes:
+      name: Keukenspotjes
+      room: Keuken
+      aliases:
+        - Keuken spotjes
+        - Spotjes keuken
+        - Spotjes keukenkastje
+    # Slaapkamer
+    light.slaapkamer_template:
+      name: Slaapkamer
+      room: Slaapkamer
+    cover.slaapkamer:
+      name: Slaapkamer
+      room: Slaapkamer
+      aliases:
+        - Screen slaapkamer
+        - Slaapkamer screen
+    sensor.slaapkamer_temp:
+      name: Temperatuur Slaapkamer
+      aliases:
+        - Slaapkamer temperatuur
+        - Temperatuur Slaapkamer
+      room: Slaapkamer
+    vacuum.rockrobo_vacuum_v1:
+      name: Stofzuiger
+      room: Slaapkamer
+    # Slaapkamer Pepijn
+    light.pepijn_template:
+      name: Pepijn
+      room: Slaapkamer Pepijn
+    light.nijntje:
+      name: Nijntje
+      room: Slaapkamer Pepijn
+    light.pepijn_leeslamp:
+      name: Leeslamp
+      room: Slaapkamer Pepijn
+      aliases:
+        - Pepijn Leeslamp
+        - Leeslammp Pepijn
+    cover.pepijn:
+      name: Pepijn
+      aliases:
+        - Screen Pepijn
+        - Pepijn Screen
+      room: Slaapkamer Pepijn
+    sensor.pepijn_temp:
+      name: Temperatuur Pepijn
+      aliases:
+        - Pepijn temperatuur
+        - Temperatuur Slaapkamer Pepijn
+      room: Slaapkamer Pepijn
+    # Speelhoek
+    light.speelhoek_template:
+      name: Speelhoek Sfeer
+      aliases:
+        - Lamp speelhoek
+        - Speelhoek Lamp
+      room: Speelhoek
+    light.speelhoek_tafel:
+      name: Speelhoek Tafel
+        - Tafel Speelhoek
+    light.fotoboek:
+      name: Fotoboek
+        - Kast Speelheok
+        - Fotoboek lamp
+        - Fotoboek licht
+        - Lamp Fotoboek
+        - Licht Fotoboek
+    # Trapkast
+    light.trapkast:
+      name: Trapkast
+      room: Trapkast
+    # Tuin
+    cover.veranda:
+      name: Zonwering Veranda
+      aliases:
+        - Zonwering
+        - Veranda Zonwering
+        - Zonwering overkapping
+        - Overkapping Zonwering
+      room: Tuin
+    light.veranda:
+      name: Spotjes Veranda
+      aliases:
+        - Veranda licht
+        - Licht veranda
+        - Veranda lamp
+        - Lamp veranda
+        - Overkapping licht
+        - Licht overkapping
+        - Overkapping lamp
+        - Lamp overkapping
+      room: Tuin
+    light.tuinlampjes:
+      name: Tuinlampjes
+      room: Tuin
+      aliases:
+        - Lampjes Tuin
+        - Tuin lampjes
+    # WC
+    light.wc:
+      name: WC
+      aliases:
+        - Lamp WC
+        - WC-lamp
+      room: WC
+    # Wookamer
+    light.booglamp:
+      name: Booglamp
+      room: Woonkamer
+    light.tv_lamp_template:
+      name: TV Lamp
+      room: Woonkamer
+      aliases:
+        - TV-lamp
+        - Televisie lamp
+        - Televisielamp
+        - Kerststal
+        - Stal
+    light.woonkamer_plafond:
+      name: Woonkamer Plafond
+      room: Woonkamer
+    media_player.nvidia_shield:
+      name: Android TV
+      room: Woonkamer
+      aliases:
+        - Shield
+    sensor.woonkamer_temp:
+      name: Temperatuur Woonkamer
+      aliases:
+        - Woonkamer temperatuur
+      room: Woonkamer
+    # Zolder
+    light.zolder_bol_template:
+      name: Bol
+      aliases:
+        - Zolder Bol
+        - Bol Zolder
+      room: Zolder
+    light.wasmachinelamp:
+      name: Wasmachine
+      aliases:
+        - Wasmachinelamp
+        - Wasmachine lamp
+        - Lamp Wasmachine
+        - Licht Wasmachine
+      room: Zolder
+    light.zolder:
+      name: Zolder
+      aliases:
+        - Zolder lamp
+        - Lamp Zolder
+        - Zolderlamp
+      room: Zolder
+    switch.droger:
+      name: Droger
+      room: Zolder
+    sensor.zolder_temp:
+      name: Temperatuur Zolder
+      aliases:
+        - Zolder temperatuur
+      room: Zolder
+    # Zone Algemeen
+    input_boolean.gast:
+      name: Gast Modus
+      aliases:
+        - Gast stand
+        - Gaststand
+        - Gast
+      room: Zone Algemeen
+    light.groep_beneden:
+      name: Beneden
+      aliases:
+        - Lampen Beneden
+        - Groep Beneden
+      room: Zone Algemeen
+    light.groep_eerste_verdieping:
+      name: Eerste Verdieping
+      aliases:
+        - Lampen Eerste Verdieping
+        - Groep Eerste Verdieping
+      room: Zone Algemeen
+    light.groep_zolder:
+      name: Zolder
+      aliases:
+        - Lampen Zolder
+        - Groep Zolder
+      room: Zone Algemeen
+    light.groep_huis:
+      name: Huis
+      aliases:
+        - Lampen Hele Huis
+        - Lampen Huis
+        - Groep Huis
+        - Groep Hele Huis
+      room: Zone Algemeen
+    light.groep_buiten:
+      name: Buiten
+      aliases:
+        - Lampen Buiten
+        - Groep Buiten
+      room: Zone Algemeen
