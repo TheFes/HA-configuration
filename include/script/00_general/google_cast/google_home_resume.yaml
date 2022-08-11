@@ -929,7 +929,7 @@ google_home_resume_helper:
                         | list | count > 0
                 )
               or (
-                  state_attr(player.entity_id, 'media_content_id') is not null
+                  state_attr(player.entity_id, 'media_content_id') is not none
                   and (
                         'jpg' in state_attr(player.entity_id, 'media_content_id')
                         or 'jpeg' in state_attr(player.entity_id, 'media_content_id')
