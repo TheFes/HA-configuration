@@ -2,7 +2,7 @@ type: custom:mushroom-title-card
 view_layout:
   grid-area: messages
 title: >-
-  {% if is_state('sensor.anniversary_' ~ user, '0') %}
+  {% if is_state('sensor.anniversary_' ~ user | lower, '0') %}
     🎉 Gefeliciteerd {{ user }}!! 🎉
   {%- elif now() < today_at('06:00') %}
     Goedenacht {{ user }}
@@ -15,12 +15,26 @@ title: >-
   {%- endif %}
 alignment: center
 subtitle: >-
-  {% for state in expand(integration_entities('anniversaries')) if state.state == '0' %}
-    🎈 Vandaag is {{ state.name }} jarig! ({{ state.attributes.current_years }} jaar) 🍰
-  {% endfor %}
-  {% for state in expand(integration_entities('anniversaries')) if state.state | int < 8 %}
-    🎈 {{ state.name }} is over {{ state.state }} dagen en wordt dan {{ state.attributes.current_years + 1 }} jaar! 🍰
-  {% endfor %}
+  {% set ns = namespace(a=[]) %}
+  {%- for item in expand(integration_entities('anniversaries')) %}
+    {%- set d_h = item.attributes.days_until_half_anniversary | default(999, true) %}
+    {%- set y = item.attributes.current_years | default(none, true) %}
+    {%- set ns.a = ns.a + [ dict(name=item.name, days=[item.state | int, d_h] | min, year=y, half= d_h < item.state | int)] %}
+  {%- endfor %}
+  {%- for item in ns.a | sort(attribute='days') -%}
+    {%- set n, d, y, h = item.name, item.days, item.year, item.half %}
+    {%- set fixed_icons = {
+                            'Eerste date': '💕',
+                            'Sinterklaas': '🎁'
+                          } %}
+    {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
+    {%- set icon = fixed_icons[n] | default(icons | random, true) %}
+    {%- if d == 0 %}
+      {{ icon }} Vandaag: {{ n }} {% if y is not none %}({{ y + (0.5 if h else 0)}} jaar){% endif %}
+    {%- elif d < 8 %}
+      {{ icon }} Over {{ d }} dag{{'en' if d > 1 }}: {{ n }} {% if y is not none %}({{ y + (1.5 if h else 1)}} jaar){% endif %}
+    {%- endif %}
+  {%- endfor %}
   {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
   {%- set active = expand(sensors)
                     | selectattr('state', 'in', ['Vandaag', 'Morgen'])
