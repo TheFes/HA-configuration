@@ -4,18 +4,25 @@ view_layout:
 cards:
   - type: custom:mushroom-title-card
     title: >-
-      {%- if now() < today_at('06:00') %}
-        {%- set greeting = 'Goedenacht' %}
+      {% if is_state('sensor.anniversary_' ~ user, '0') %}
+        🎉 Gefeliciteerd {{ user }}!! 🎉
+      {%- elif now() < today_at('06:00') %}
+        Goedenacht {{ user }}
       {%- elif now() < today_at('12:00') %}
-        {%- set greeting = 'Goedemorgen' %}
+        Goedemorgen {{ user }}
       {%- elif now() < today_at('18:00') %}
-        {%- set greeting = 'Goedemiddag' %}
+        Goedemiddag {{ user }}
       {%- else %}
-        {%- set greeting = 'Goedenavond' %}
+        Goedenavond {{ user }}
       {%- endif %}
-      {{ greeting }} {{ user }}!
     alignment: center
     subtitle: >-
+      {% for state in expand(integration_entities('anniversaries')) if state.state == '0' %}
+        🎈 Vandaag is {{ state.name }} jarig! ({{ state.attributes.current_years }} jaar) 🍰
+      {% endfor %}
+      {% for state in expand(integration_entities('anniversaries')) if state.state | int < 8 %}
+        🎈 {{ state.name }} is over {{ state.state }} dagen en wordt dan {{ state.attributes.current_years + 1 }} jaar! 🍰
+      {% endfor %}
       {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
       {%- set active = expand(sensors)
                         | selectattr('state', 'in', ['Vandaag', 'Morgen'])
