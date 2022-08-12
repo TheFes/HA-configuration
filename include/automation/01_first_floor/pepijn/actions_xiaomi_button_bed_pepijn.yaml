@@ -9,7 +9,7 @@ trigger:
       device_id: f448ab96c13a02e1e4ed6dc679d693c5
 action:
   - variables:
-      toggle: "{{ is_state('light.pepijn_leeslamp', 'on') or is_state('light.nijntje', 'on') }}"
+      toggle: "{{ is_state('light.pepijn_leeslamp', 'on') or is_state('light.groep_bed_pepijn', 'on') }}"
   - alias: "Which click type"
     choose:
       - conditions:
@@ -72,9 +72,7 @@ action:
             default:
               - service: light.toggle
                 target:
-                  entity_id: 
-                    - light.nijntje
-                    - light.bed_pepijn
+                  entity_id: light.groep_bed_pepijn
       - conditions:
           - alias: "Long"
             condition: template
