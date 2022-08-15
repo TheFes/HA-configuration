@@ -1,0 +1,63 @@
+trigger:
+  - platform: state
+    entity_id:
+      - sensor.weight_xiaomi_scale
+      - sensor.impedance_xiaomi_scale
+    not_to: "unavailable"
+sensor:
+  - unique_id: 8523c401-c2a0-48d9-9669-3fdbe51ba8c4
+    name: Weight Martijn
+    unit_of_measurement: kg
+    icon: mdi:weight-kilogram
+    state: >
+      {%-
+        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
+        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        and states('input_number.weight_martijn_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_martijn_max') | float
+      %}
+        {{ states('sensor.weight_xiaomi_scale') }}
+      {%- else %}
+        {{ this.state }}
+      {%- endif %}
+  - unique_id: 3948030c-3fe0-4be8-8851-87e6a198e334
+    name: Weight Marleen
+    icon: mdi:weight-kilogram
+    unit_of_measurement: kg
+    state: >
+      {%-
+        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
+        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        and states('input_number.weight_marleen_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_marleen_max') | float
+      %}
+        {{ states('sensor.weight_xiaomi_scale') }}
+      {%- else %}
+        {{ this.state }}
+      {%- endif %}
+  - unique_id: 5257e56d-f8bc-49c3-b46a-46f47a4065e0
+    name: Impedance Martijn
+    unit_of_measurement: ohm
+    icon: mdi:omega
+    state: >
+      {%-
+        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
+        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        and states('input_number.weight_martijn_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_martijn_max') | float
+      %}
+        {{ states('sensor.impedance_xiaomi_scale') }}
+      {%- else %}
+        {{ this.state }}
+      {%- endif %}
+  - unique_id: 3aa91cd3-c2b2-4910-be24-55f1fd379213
+    name: Impedance Marleen
+    unit_of_measurement: ohm
+    icon: mdi:omega
+    state: >
+      {%-
+        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
+        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        and states('input_number.weight_marleen_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_marleen_max') | float
+      %}
+        {{ states('sensor.impedance_xiaomi_scale') }}
+      {%- else %}
+        {{ this.state }}
+      {%- endif %}
