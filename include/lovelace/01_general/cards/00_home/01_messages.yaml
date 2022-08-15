@@ -14,59 +14,11 @@ title: >-
     Goedenavond {{ user }}
   {%- endif %}
 alignment: center
+# actual messages are taken from template sensor, to avoid that every template has to be rendered on dashboard reload
+# also prevents reloading all messages on changes which affect only one message
+# template sensor can be found here: https://github.com/TheFes/HA-configuration/tree/main/include/template/sensor/dashboard_messages.yaml
 subtitle: >-
-  {% set ns = namespace(a=[]) %}
-  {%- for item in expand(integration_entities('anniversaries')) %}
-    {%- set d_h = item.attributes.days_until_half_anniversary | default(999, true) %}
-    {%- set y = item.attributes.current_years | default(none, true) %}
-    {%- set ns.a = ns.a + [ dict(name=item.name, days=[item.state | int, d_h] | min, year=y, half= d_h < item.state | int)] %}
-  {%- endfor %}
-  {%- for item in ns.a | sort(attribute='days') -%}
-    {%- set n, d, y, h = item.name, item.days, item.year, item.half %}
-    {%- set fixed_icons = {
-                            'Eerste date': '💕',
-                            'Sinterklaas': '🎁'
-                          } %}
-    {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
-    {%- set icon = fixed_icons[n] | default(icons | random, true) %}
-    {%- if d == 0 %}
-      {{ icon }} Vandaag: {{ n }} {% if y is not none %}({{ y + (0.5 if h else 0)}} jaar){% endif %}
-    {%- elif d < 8 %}
-      {{ icon }} Over {{ d }} dag{{'en' if d > 1 }}: {{ n }} {% if y is not none %}({{ y + (1.5 if h else 1)}} jaar){% endif %}
-    {%- endif %}
-  {%- endfor %}
-  {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
-  {%- set active = expand(sensors)
-                    | selectattr('state', 'in', ['Vandaag', 'Morgen'])
-                    | map(attribute='entity_id')
-                    | join 
-  %}
-  {%- if active | count > 0 %}
-    🚮 {{ states(active) }}: {{ state_attr(active, 'friendly_name') }}
-  {%- endif %}
-  {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
-    {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %} 
-    {%- if now() < time_set | as_local %}
-      {%- set seconds = (time_set - now()).seconds %}
-      {%- set hours = (seconds / 3600) | int %}
-      {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
-      {%- set program = states('input_select.dishwasher_program') %}
-      {%- set extra = states('input_select.dishwasher_program_extra') %}
-      {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
-      {%- set program = program ~ extra %}
-      💦 Vaatwasser klaar rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} ({{ program }})
-    {%- else %}
-      💦 Vaatwasser is nu elk moment klaar
-    {%- endif %}
-  {%- endif %}
-  {%- if is_state('sensor.wasmachine', 'on') %}
-    {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
-    {%- set total = h * 3600 + m *60 %}
-    🧺 Wasmachine klaar rond {{ (now() + timedelta(seconds = total)).strftime('%H:%M') }}
-  {%- endif %}
-  {%- if iif(states('input_text.eta_martijn')) %}
-    {{ states('input_text.eta_martijn') }}
-  {%- endif %}
-  {%- if iif(states('input_text.eta_marleen')) %}
-    {{ states('input_text.eta_marleen') }}
-  {%- endif %}
+  {%- set ns = namespace(test=[]) %}
+  {%- for item in states.sensor.dashboard_messages.attributes.items() if item[1] and item[0] not in ['friendly_name', 'icon'] %}
+    {{ item[1] }}
+  {%- endfor -%}

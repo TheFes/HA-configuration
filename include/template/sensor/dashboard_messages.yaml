@@ -1,0 +1,77 @@
+sensor:
+  - unique_id: 7d7557d2-b6ea-40a5-81c4-c8cafb45f1c3
+    name: Dashboard Messages
+    state: >
+      {{
+        this.attributes.items() 
+          | rejectattr('0', 'in', ['icon', 'friendly_name'])
+          | selectattr('1')
+          | list
+          | count
+      }}
+    icon: mdi:text-box-search-outline
+    attributes:
+      anniversaries: >-
+        {%-set ns = namespace(a=[]) %}
+        {%- for item in expand(integration_entities('anniversaries')) %}
+          {%- set d_h = item.attributes.get('days_until_half_anniversary', 999) %}
+          {%- set h = d_h < item.state | int %}
+          {%- set d = [item.state | int, d_h] | min %}
+          {%- set y = item.attributes.get('current_years') %}
+          {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
+          {%- set ns.a = ns.a + [ dict(n=item.name, d=d, y=y, h=h)] %}
+        {%- endfor %}
+          {%- for item in ns.a | sort(attribute='d') -%}
+          {%- set n, d, y, h = item.n, item.d, item.y, item.h %}
+          {%- set fixed_icons = {
+                                  'Eerste date': '💕',
+                                  'Sinterklaas': '🎁'
+                                } %}
+          {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
+          {%- set icon = fixed_icons[n] | default(icons | random, true) %}
+          {%- if d == 0 %}
+            {{ icon }} Vandaag: {{ n }} {%-if y %}({{ y }} jaar){%-endif %}
+          {%- elif d < 14 %}
+            {{ icon }} Over {{ d }} dag{{'en' if d > 1 }}: {{ n }} {%-if y %}({{ y }} jaar){%-endif %}
+          {%- endif %}
+        {%- endfor %}
+      trash: >-
+        {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
+        {%- set active = expand(sensors)
+                          | selectattr('state', 'in', ['Vandaag', 'Morgen'])
+                          | map(attribute='entity_id')
+                          | join 
+        %}
+        {%- if active | count > 0 %}
+          🚮 {{ states(active) }}: {{ state_attr(active, 'friendly_name') }}
+        {%- endif %}
+      diswasher: >-
+        {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
+          {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %} 
+          {%- if now() < time_set | as_local %}
+            {%- set seconds = (time_set - now()).seconds %}
+            {%- set hours = (seconds / 3600) | int %}
+            {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+            {%- set program = states('input_select.dishwasher_program') %}
+            {%- set extra = states('input_select.dishwasher_program_extra') %}
+            {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
+            {%- set program = program ~ extra %}
+            💦 Vaatwasser klaar rond {{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }} ({{ program }})
+          {%- else %}
+            💦 Vaatwasser is nu elk moment klaar
+          {%- endif %}
+        {%- endif %}
+      washing_machine: >-
+        {%- if is_state('sensor.wasmachine', 'on') %}
+          {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
+          {%- set total = h * 3600 + m *60 %}
+          🧺 Wasmachine klaar rond {{ (now() + timedelta(seconds = total)).strftime('%H:%M') }}
+        {%- endif %}
+      eta_martijn: >-
+        {%- if iif(states('input_text.eta_martijn')) %}
+          {{ states('input_text.eta_martijn') }}
+        {%- endif %}
+      eta_marleen: >-
+        {%- if iif(states('input_text.eta_marleen')) %}
+          {{ states('input_text.eta_marleen') }}
+        {%- endif %}
