@@ -49,7 +49,7 @@ sensor:
         {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
           {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %} 
           {%- if now() < time_set | as_local %}
-            {%- set seconds = (time_set - now()).seconds %}
+            {%- set seconds = (time_set - now()).total_seconds() %}
             {%- set hours = (seconds / 3600) | int %}
             {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
             {%- set program = states('input_select.dishwasher_program') %}

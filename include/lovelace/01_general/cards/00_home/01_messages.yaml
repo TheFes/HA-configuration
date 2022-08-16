@@ -18,7 +18,9 @@ alignment: center
 # also prevents reloading all messages on changes which affect only one message
 # template sensor can be found here: https://github.com/TheFes/HA-configuration/tree/main/include/template/sensor/dashboard_messages.yaml
 subtitle: >-
-  {%- set ns = namespace(test=[]) %}
-  {%- for item in states.sensor.dashboard_messages.attributes.items() if item[1] and item[0] not in ['friendly_name', 'icon'] %}
-    {{ item[1] }}
-  {%- endfor -%}
+  {%- if states('sensor.dashboard_messages') | int(0) > 0 %}
+    {%- set ns = namespace(test=[]) %}
+    {%- for item in states.sensor.dashboard_messages.attributes.items() if item[1] and item[0] not in ['friendly_name', 'icon'] %}
+      {{ item[1] }}
+    {%- endfor -%}
+  {%- endif %}
