@@ -593,7 +593,6 @@ google_home_resume:
                     resume: "{{ repeat.item in players_to_resume }}"
                     ytube_resume: true
                     action_type: resume
-                    image_delay: "{{ image_delay if image_delay is defined and image_delay else 20 }}"
     - alias: "Send log message about wrong wrong primary_spotcast"
       if: "{{ not primary_spotcast_check }}"
       then:
@@ -882,6 +881,7 @@ google_home_resume:
                 resume: "{{ repeat.item in players_to_resume }}"
                 ytube_resume: false
                 action_type: resume
+                image_delay: "{{ image_delay if image_delay is defined and image_delay else 20 }}"
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
@@ -942,9 +942,12 @@ google_home_resume_helper:
             state_changed: "{{ wait.completed }}"
             image: >
               {{
-                'jpg' in state_attr(player.entity_id, 'media_content_id')
-                or 'jpeg' in state_attr(player.entity_id, 'media_content_id')
-                or 'png' in state_attr(player.entity_id, 'media_content_id')
+                state_attr(player.entity_id, 'media_content_id') is not none
+                and (
+                      'jpg' in state_attr(player.entity_id, 'media_content_id')
+                      or 'jpeg' in state_attr(player.entity_id, 'media_content_id')
+                      or 'png' in state_attr(player.entity_id, 'media_content_id')
+                    )
               }}
         - alias: "Add entity to the restore active group"
           service: group.set
