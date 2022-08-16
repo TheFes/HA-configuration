@@ -11,8 +11,8 @@ sensor:
     icon: mdi:weight-kilogram
     state: >
       {%-
-        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
-        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        if now() - states.sensor.weight_xiaomi_scale.last_changed < timedelta(seconds=3)
+        and now() - states.sensor.impedance_xiaomi_scale.last_changed < timedelta(seconds=3)
         and states('input_number.weight_martijn_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_martijn_max') | float
       %}
         {{ states('sensor.weight_xiaomi_scale') }}
@@ -25,8 +25,8 @@ sensor:
     unit_of_measurement: kg
     state: >
       {%-
-        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
-        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        if now() - states.sensor.weight_xiaomi_scale.last_changed < timedelta(seconds=3)
+        and now() - states.sensor.impedance_xiaomi_scale.last_changed < timedelta(seconds=3)
         and states('input_number.weight_marleen_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_marleen_max') | float
       %}
         {{ states('sensor.weight_xiaomi_scale') }}
@@ -39,8 +39,8 @@ sensor:
     icon: mdi:omega
     state: >
       {%-
-        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
-        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        if now() - states.sensor.weight_xiaomi_scale.last_changed < timedelta(seconds=3)
+        and now() - states.sensor.impedance_xiaomi_scale.last_changed < timedelta(seconds=3)
         and states('input_number.weight_martijn_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_martijn_max') | float
       %}
         {{ states('sensor.impedance_xiaomi_scale') }}
@@ -53,8 +53,8 @@ sensor:
     icon: mdi:omega
     state: >
       {%-
-        if (now() - states.sensor.weight_xiaomi_scale.last_changed).total_seconds() < 3
-        and (now() - states.sensor.impedance_xiaomi_scale.last_changed).total_seconds() < 3
+        if now() - states.sensor.weight_xiaomi_scale.last_changed < timedelta(seconds=3)
+        and now() - states.sensor.impedance_xiaomi_scale.last_changed < timedelta(seconds=3)
         and states('input_number.weight_marleen_min') | float < states('sensor.weight_xiaomi_scale') | float <= states('input_number.weight_marleen_max') | float
       %}
         {{ states('sensor.impedance_xiaomi_scale') }}
