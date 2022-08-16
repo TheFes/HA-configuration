@@ -5,16 +5,9 @@ template:
   # probe 1
   - trigger:
       - platform: state
-        entity_id: sensor.ibbq_temperature_probe_1
+        entity_id: sensor.ble_temperature_probe_1
         from: ~
         id: state
-      - platform: state
-        entity_id: sensor.ibbq_temperature_probe_1
-        to:
-          - "0"
-          - "unavailable"
-        for: "00:10:00"
-        id: unavailable
       - platform: time_pattern
         minutes: "/1"
         id: time
@@ -22,32 +15,29 @@ template:
       - name: Inkbird Probe 1
         unique_id: 2cf2b064-9115-4603-a079-ca78702db172
         state: >
-          {% if (trigger.id == 'time' and this.state == 'unavailable')
-            or trigger.id == 'unavailable'
-          %}
-            unavailable
-          {% elif trigger.id == 'state' %}
-            {% if trigger.to_state.state | int(0) == 0 %}
-              {{ this.state }}
-            {% else %}
-              {{ trigger.to_state.state }}
-            {% endif %}
+          {% if trigger.id == 'state' %}
+            {{ trigger.to_state.state }}
           {% else %}
-            {{ states('sensor.ibbq_temperature_probe_2') }}
+            {{ this.state }}
           {% endif %}
         icon: mdi:thermometer
         unit_of_measurement: "°C"
+        availability: >
+          {{
+            states('sensor.ble_temperature_probe_1') not in ['unavailable, unknown']
+            and now() - states.sensor.ble_temperature_probe_1.last_updated < timedelta(minutes=10)
+          }}
         attributes:
           history: >
             {%- set previous = this.get('attributes', {}).get('history', []) %}
-            {% set state = states('sensor.ibbq_temperature_probe_2') | int(0) %}
+            {% set state = states('sensor.ble_temperature_probe_1') | float(0) %}
             {% if state > 0 %}
               {{ [ state ] + (previous[:2] if previous else []) }}
             {% else %}
               {{ previous }}
             {% endif %}
           trend: >
-            {%- set history = this.get('attributes', {}).get('history', []) %}
+            {%- set history = state_attr('sensor.inkbird_probe_1', 'history') | default([], true) %}
             {% if history | count == 3 %}
               {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
@@ -62,15 +52,9 @@ template:
   # probe 2
   - trigger:
       - platform: state
-        entity_id: sensor.ibbq_temperature_probe_2
+        entity_id: sensor.ble_temperature_probe_2
         from: ~
-      - platform: state
-        entity_id: sensor.ibbq_temperature_probe_2
-        to:
-          - "0"
-          - "unavailable"
-        for: "00:10:00"
-        id: unavailable
+        id: state
       - platform: time_pattern
         minutes: "/1"
         id: time
@@ -78,32 +62,29 @@ template:
       - name: Inkbird Probe 2
         unique_id: 0b0e5c49-6ff6-448b-9444-af80ddf633c9
         state: >
-          {% if (trigger.id == 'time' and this.state == 'unavailable')
-            or trigger.id == 'unavailable'
-          %}
-            unavailable
-          {% elif trigger.id == 'state' %}
-            {% if trigger.to_state.state | int(0) == 0 %}
-              {{ this.state }}
-            {% else %}
-              {{ trigger.to_state.state }}
-            {% endif %}
+          {% if trigger.id == 'state' %}
+            {{ trigger.to_state.state }}
           {% else %}
-            {{ states('sensor.ibbq_temperature_probe_2') }}
+            {{ this.state }}
           {% endif %}
         icon: mdi:thermometer
         unit_of_measurement: "°C"
+        availability: >
+          {{
+            states('sensor.ble_temperature_probe_2') not in ['unavailable, unknown']
+            and now() - states.sensor.ble_temperature_probe_2.last_updated < timedelta(minutes=10)
+          }}
         attributes:
           history: >
             {%- set previous = this.get('attributes', {}).get('history', []) %}
-            {% set state = states('sensor.ibbq_temperature_probe_2') | int(0) %}
+            {% set state = states('sensor.ble_temperature_probe_2') | float(0) %}
             {% if state > 0 %}
               {{ [ state ] + (previous[:2] if previous else []) }}
             {% else %}
               {{ previous }}
             {% endif %}
           trend: >
-            {%- set history = this.get('attributes', {}).get('history', []) %}
+            {%- set history = state_attr('sensor.inkbird_probe_2', 'history') | default([], true) %}
             {% if history | count == 3 %}
               {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
