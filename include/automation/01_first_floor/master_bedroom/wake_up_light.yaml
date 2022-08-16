@@ -6,10 +6,12 @@ trigger:
   - platform: template
     value_template: >
       {%- if not states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
+        {% set alarm = as_local(as_datetime(states('sensor.slaapkamer_hub_alarms'))) %}
+        {% set start_offset = states('input_number.wakeup_start') | int(0) %}
+        {% set alarm_start = alarm - timedelta(minutes=start_offset) %}
         {{ 
-              now() >= 
-              (as_datetime(states('sensor.slaapkamer_hub_alarms'))
-                - timedelta(minutes = states('input_number.wakeup_start')|int))
+              now().date == alarm.date()
+              and now().strftime('%H:%M') == alarm_start.strftime('%H:%M')
         }}
       {%- endif %}
 condition:
@@ -21,9 +23,6 @@ condition:
     condition: state
     entity_id: input_boolean.wakeup_enabled
     state: "on"
-  - alias: "Home Assistant uptime > 5 minutes"
-    condition: template
-    value_template: "{{ (now() - as_datetime(states('sensor.home_assistant_uptime'))).seconds / 60 > 5 }}"
 action:
   - alias: "Light on dimmed"
     service: light.turn_on
