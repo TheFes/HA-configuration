@@ -21,6 +21,12 @@ trigger:
       action: "empty_vacuum_bin"
     id: "empty"
 action:
+  - if: "{{ trigger.id == 'docked' }}"
+    then:
+      - alias: "Increase counter"
+        service: counter.increment
+        target:
+          entity_id: counter.vacuum_dust_bin
   - choose:
       - conditions: "{{ trigger.id in ['docked', 'error'] }}"
         sequence:
@@ -33,7 +39,7 @@ action:
                 {%- endif %}
               message: >
                 {%- if trigger.id == 'docked' %}
-                  De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} in z'n bakkie.
+                  De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} ladingen in z'n bakkie.
                 {%- else %}
                   Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.rockrobo_vacuum_v1', 'error') }}
                 {%- endif %}
@@ -47,12 +53,6 @@ action:
                 ttl: 0
                 priority: high
                 notification_icon: mdi:robot-vacuum
-          - if: "{{ trigger.id == 'docked' }}"
-            then:
-              - alias: "Increase counter"
-                service: counter.increment
-                target:
-                  entity_id: counter.vacuum_dust_bin
       - conditions:
           - condition: trigger
             id: time
