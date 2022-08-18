@@ -17,9 +17,9 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.7.1 - 9 August 2022
-#### 🐛 Bug fixes
-* Template fixes to avoid log warnings about missing variables
+### Version 2.8.0 - 18 August 2022
+#### ✨ New features
+* Resume after sending an image (eg a camera snapshot after somebody rang the doorbell) using `media_player.play_media` is now supported (also in the automation added in v2.7.0). While sending the image, the speaker is not in state `playing` so there is a new variable added to define a delay after which the resume will be started. The default is 20 seconds (if not provided).
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -41,8 +41,9 @@ There are no required variables, but if you use Google Home speaker groups and p
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
+|image_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
 
-## The automation for automatic resume (✨ NEW in v1.7.0)
+## The automation for automatic resume (✨ NEW in v2.7.0)
 [Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
 In version 1.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
 
