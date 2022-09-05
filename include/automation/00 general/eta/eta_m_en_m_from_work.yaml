@@ -12,6 +12,14 @@ trigger:
     from: "Fujifilm"
     to: "not_home"
   - platform: state
+    entity_id: person.marleen
+    to: "TRN"
+    id: "work"
+  - platform: state
+    entity_id: person.martijn
+    to: "Fujifilm"
+    id: "work"
+  - platform: state
     entity_id:
       - person.martijn
       - person.marleen
@@ -29,7 +37,7 @@ variables:
       {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
     {%- endif %}
 action:
-  - if: "{{ trigger.id == 'home' }}"
+  - if: "{{ trigger.id == 'home' or trigger.id == 'work' }}"
     then:
       - alias: "Set input_text"
         service: input_text.set_value
