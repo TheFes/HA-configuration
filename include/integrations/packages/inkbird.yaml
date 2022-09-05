@@ -106,7 +106,7 @@ template:
         state: >-
           {% set state = states('sensor.inkbird_probe_1') | int(0) %}
           {% set min = states('input_number.probe_1_min') | int(0) %}
-          {% set max = states('input_number.probe_1_min') | int(0) %}
+          {% set max = states('input_number.probe_1_max') | int(0) %}
           {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
           {{
             ((state < min and trend != 'up')
@@ -117,7 +117,7 @@ template:
         icon: >
           {% set state = states('sensor.inkbird_probe_1') | int(0) %}
           {% set min = states('input_number.probe_1_min') | int(0) %}
-          {% set max = states('input_number.probe_1_min') | int(0) %}
+          {% set max = states('input_number.probe_1_max') | int(0) %}
           {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
           {% if state < min and trend != 'up' %}
             mdi:grill-outline
