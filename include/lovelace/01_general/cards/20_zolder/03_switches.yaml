@@ -16,14 +16,13 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: browser_mod.popup
+        service: script.confirmation_popup
         data:
-          title: Passcode
-          content:
-            type: vertical-stack
-            cards:
-              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm.yaml
-              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+          browser_id: THIS
+          toggle_entity: switch.bureau_martijn
+          passcode: !secret passcode_pc
+          on_state: "on"
+          popup_type: code
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_2
     primary: Bureau Martijn (Netwerk)
@@ -37,17 +36,14 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: browser_mod.popup
+        service: script.confirmation_popup
         data:
-          title: Passcode
-          content:
-            type: vertical-stack
-            cards:
-              - type: custom:mushroom-title-card
-                title: "Let op: Als deze schakelaar uit staat, heeft de server geen internet meer!"
-                alignment: center
-              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-bm2.yaml
-              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+          browser_id: THIS
+          toggle_entity: switch.bureau_martijn_2
+          passcode: !secret passcode_pc
+          on_state: "on"
+          popup_type: code
+          message: "Let op, als deze schakelaar uit staat, heeft de server geen internet meer"
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
@@ -65,14 +61,13 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: browser_mod.popup
+        service: script.confirmation_popup
         data:
-          title: Passcode
-          content:
-            type: vertical-stack
-            cards:
-              - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-server.yaml
-              - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+          browser_id: THIS
+          toggle_entity: switch.server
+          passcode: !secret passcode_server
+          on_state: "on"
+          popup_type: code
   - type: custom:mushroom-template-card
     entity: switch.bureau_marleen
     primary: Bureau Marleen
@@ -110,9 +105,14 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: script.washing_machine_switch
+        service: script.confirmation_popup
         data:
-          deviceID: this
+          browser_id: THIS
+          toggle_entity: switch.wasmachine
+          check_entity: sensor.wasmachine
+          on_state: "on"
+          popup_type: confirmation
+          message: "De wasmachine staat aan, weet je zeker dat deze schakelaar uit mag?"
   - type: custom:mushroom-template-card
     entity: switch.droger
     primary: Droger
@@ -128,4 +128,13 @@ cards:
       }}
     icon_color: "{{ 'blue' if is_state('switch.droger', 'on') }}"
     tap_action:
-      action: toggle
+      action: fire-dom-event
+      browser_mod:
+        service: script.confirmation_popup
+        data:
+          browser_id: THIS
+          toggle_entity: switch.droger
+          check_entity: sensor.droger_power
+          on_state: "above 50"
+          popup_type: confirmation
+          message: "De droger staat aan, weet je zeker dat deze schakelaar uit mag?"

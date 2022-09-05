@@ -1,0 +1,346 @@
+confirmation_popup:
+  alias: "00 - Confirmation popup"
+  icon: mdi:circle
+  mode: parallel
+  fields:
+    toggle_entity:
+      description: "entity to be toggled"
+      required: true
+      selector:
+        text:
+          type: text
+    popup_type:
+      description: "code or confirmation"
+      required: true
+      selector:
+        text:
+          type: text
+    passcode:
+      description: "4 digit numeric pincode to be used in combination with code popup type"
+      required: false
+      selector:
+        text:
+          type: password
+    message:
+      description: "message to be used for confirmation popup or additional information for passcode"
+      required: false
+      selector:
+        text:
+          type: text
+    check_entity:
+      description: "entity for which the state should be checked, if not provided, toggle_entity will be used"
+      required: false
+      selector:
+        text:
+          type: text
+    on_state:
+      description: "state on which the popup should appear, use 'all' for all states, use above <number> or below <number> for a numeric state check"
+      required: true
+      selector:
+        text:
+          type: text
+    browser_id:
+      description: "device_id for the popup"
+      required: true
+      selector:
+        text:
+          type: text
+  sequence:
+    - variables:
+        check_entity: "{{ check_entity or toggle_entity }}"
+    - if: >
+        {% if 'above' in on_state %}
+          {{ states(check_entity) | float(0) > on_state.split(' ')[1] | float(0) }}
+        {% elif 'below' in on_state %}
+          {{ states(check_entity) | float(0) < on_state.split(' ')[1] | float(0) }}
+        {% else %}
+          {{ on_state == 'all' or states(check_entity) == on_state }}
+        {% endif %}
+      then:
+        - choose:
+            - conditions: "{{ popup_type == 'code' }}"
+              sequence:
+                - alias: "popup"
+                  service: browser_mod.popup
+                  data:
+                    title: Passcode
+                    browser_id: "{{ browser_id }}"
+                    content:
+                      type: vertical-stack
+                      cards:
+                        - type: markdown
+                          content: "{{ message if message is defined and message else 'Voer code in:' }}"
+                        - type: grid
+                          square: false
+                          columns: 3
+                          cards:
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-1
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 1
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-2
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 2
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-3
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 3
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-4
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 4
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-5
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 5
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-6
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 6
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-7
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 7
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-8
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 8
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-9
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 9
+                            - type: custom:mushroom-template-card
+                              icon: mdi:backspace
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: back
+                            - type: custom:mushroom-template-card
+                              icon: mdi:numeric-0
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: 0
+                            - type: custom:mushroom-template-card
+                              icon: mdi:lock-reset
+                              layout: vertical
+                              tap_action:
+                                action: call-service
+                                service: script.passcode_input
+                                data:
+                                  number: reset
+                        - type: grid
+                          square: true
+                          columns: 4
+                          cards:
+                            - type: custom:mushroom-template-card
+                              icon: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {{ 'mdi:circle' if p | count > 0 else 'mdi:circle-small' }}
+                                {% endraw %}
+                              layout: vertical
+                              icon_color: |-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {% if p | count == 4 %}
+                                    {{ states('input_select.passcode_color') }}
+                                  {% else %}
+                                    {{ 'blue' if p | count > 0 }}
+                                  {% endif %}
+                                {% endraw %}
+                            - type: custom:mushroom-template-card
+                              icon: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {{ 'mdi:circle' if p | count > 1 else 'mdi:circle-small' }}
+                                {% endraw %}
+                              layout: vertical
+                              icon_color: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {% if p | count == 4 %}
+                                    {{ states('input_select.passcode_color') }}
+                                  {% else %}
+                                    {{ 'blue' if p | count > 1 }}
+                                  {% endif %}
+                                {% endraw %}
+                            - type: custom:mushroom-template-card
+                              icon: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {{ 'mdi:circle' if p | count > 2 else 'mdi:circle-small' }}
+                                {% endraw %}
+                              layout: vertical
+                              icon_color: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {% if p | count == 4 %}
+                                    {{ states('input_select.passcode_color') }}
+                                  {% else %}
+                                    {{ 'blue' if p | count > 2 }}
+                                  {% endif %}
+                                {% endraw %}
+                            - type: custom:mushroom-template-card
+                              icon: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {{ 'mdi:circle' if p | count > 3 else 'mdi:circle-small' }}
+                                {% endraw %}
+                              layout: vertical
+                              icon_color: >-
+                                {% raw %}
+                                  {% set p = states('input_text.passcode') %}
+                                  {% if p | count == 4 %}
+                                    {{ states('input_select.passcode_color') }}
+                                  {% else %}
+                                    {{ 'blue' if p | count > 3 }}
+                                  {% endif %}
+                                {% endraw %}
+                - variables:
+                    current_state: "{{ states(toggle_entity) }}"
+                - repeat:
+                    sequence:
+                      - wait_template: "{{ states('input_text.passcode') | count == 4 }}"
+                      - delay: 0.25
+                      - if: "{{ states('input_text.passcode') | int(0) == passcode | int(1) }}"
+                        then:
+                          - alias: "Green"
+                            service: input_select.select_option
+                            target:
+                              entity_id: input_select.passcode_color
+                            data:
+                              option: green
+                          - delay: 0.5
+                          - alias: "Close popup"
+                            service: browser_mod.close_popup
+                          - alias: "Remove pass"
+                            service: input_text.set_value
+                            target:
+                              entity_id: input_text.passcode
+                            data:
+                              value: ""
+                          - alias: "Toggle"
+                            service: homeassistant.toggle
+                            target:
+                              entity_id: "{{ toggle_entity }}"
+                          - alias: "Blue"
+                            service: input_select.select_option
+                            target:
+                              entity_id: input_select.passcode_color
+                            data:
+                              option: blue
+                        else:
+                          - alias: "Red"
+                            service: input_select.select_option
+                            target:
+                              entity_id: input_select.passcode_color
+                            data:
+                              option: red
+                          - delay: 0.5
+                          - alias: "Remove pass"
+                            service: input_text.set_value
+                            target:
+                              entity_id: input_text.passcode
+                            data:
+                              value: ""
+                          - alias: "Blue"
+                            service: input_select.select_option
+                            target:
+                              entity_id: input_select.passcode_color
+                            data:
+                              option: blue
+                      - delay: 0.25
+                    until: "{{ not is_state(toggle_entity, current_state) }}"
+        - choose:
+            - conditions: "{{ popup_type == 'confirmation' }}"
+              sequence:
+                - variables:
+                    current_state: "{{ states(toggle_entity) }}"
+                - alias: "popup"
+                  service: browser_mod.popup
+                  data:
+                    title: Bevestig schakelen
+                    browser_id: "{{ browser_id }}"
+                    content:
+                      type: custom:vertical-stack-in-card
+                      cards:
+                        - type: markdown
+                          content: "{{ message }}"
+                        - type: grid
+                          square: false
+                          columns: 2
+                          cards:
+                            - type: custom:mushroom-template-card
+                              icon: mdi:check
+                              primary: Ja
+                              tap_action:
+                                action: call-service
+                                service: homeassistant.toggle
+                                service_data:
+                                  entity_id: "{{ toggle_entity }}"
+                            - type: custom:mushroom-template-card
+                              icon: mdi:cancel
+                              primary: Nee
+                              tap_action:
+                                action: call-service
+                                service: browser_mod.close_popup
+                                service_data:
+                                  browser_id: "{{ browser_id }}"
+                - wait_for_trigger:
+                    - platform: template
+                      value_template: "{{ not is_state(toggle_entity, current_state) }}"
+                    - platform: event
+                      event_type: call_service
+                      event_data:
+                        domain: browser_mod
+                        service: close_popup
+                - service: browser_mod.close_popup
+                  data:
+                    browser_id: "{{ browser_id }}"
+      else:
+        - alias: "Toggle"
+          service: homeassistant.toggle
+          target:
+            entity_id: "{{ toggle_entity }}"
