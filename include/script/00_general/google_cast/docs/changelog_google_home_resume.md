@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.8.1 - 5 September 2022
+#### 🌟 Improvements
+* Small template improvement for YouTube resume
+
 ### Version 2.8.0 - 18 August 2022
 #### ✨ New features
 * Resume after sending an image (eg a camera snapshot after somebody rang the doorbell) using `media_player.play_media` is now supported (also in the automation added in v2.7.0). While sending the image, the speaker is not in state `playing` so there is a new variable added to define a delay after which the resume will be started. The default is 20 seconds (if not provided).

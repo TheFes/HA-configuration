@@ -72,7 +72,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.8.0
+        version: 2.8.1
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -781,16 +781,16 @@ google_home_resume:
                 }}
               data: >
                 {{ dict(service_call.get('data', {}).items() | rejectattr('0', 'in', ['entity_id', 'area_id', 'device_id', 'script_extra']) | list) }}
+          - alias: "Stop all targets which are playing"
+            service: media_player.media_stop
+            target:
+              entity_id: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
+          - alias: "Wait until they are all stopped"
+            wait_template: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | list | count == 0 }}"
           - alias: "Set volume to TTS volume if set"
             choose:
               - conditions: "{{ volume_set }}"
                 sequence:
-                  - alias: "Stop all targets which are playing"
-                    service: media_player.media_stop
-                    target:
-                      entity_id: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list }}"
-                  - alias: "Wait until they are all stopped"
-                    wait_template: "{{ expand(media_entities) | selectattr('state', 'eq', 'playing') | list | count == 0 }}"
                   - alias: "Apply TTS volume"
                     service: media_player.volume_set
                     target:
@@ -1064,11 +1064,7 @@ google_home_resume_helper:
                         entity_id: "{{ player.entity_id }}"
                       data:
                         media_content_type: cast
-                        media_content_id: '
-                          {
-                          "app_name": "youtube",
-                          "media_id": "{{ player.media_content_id }}"
-                          }'
+                        media_content_id: '{{ dict(app_name="youtube", media_id=player.media_content_id) | to_json }}'
                     - alias: "Wait until video is playing"
                       wait_template: >
                         {{
