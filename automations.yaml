@@ -1,4 +1,4 @@
-- alias: "00 - Google Home Automatic Resume"
+- alias: 00 - Google Home Automatic Resume
   id: 417395bc-bd64-40a3-b20a-9062d426a01f
   mode: parallel
   max_exceeded: silent
@@ -26,36 +26,28 @@
           {{ trigger.event.data.service_data.entity_id | reject('in', active) | list }}
   condition:
     - condition: template
-      value_template: >-
-        {{
-          trigger.event.data.service_data.announce is defined
-          and trigger.event.data.service_data.announce
-        }}
+      value_template:
+        "{{\n  trigger.event.data.service_data.announce is defined\n  and
+        trigger.event.data.service_data.announce\n}}"
     - condition: template
-      value_template: >-
-        {{
-          entities
-            | select('in', integration_entities('cast') + integration_entities('mass'))
-            | list
-            | count > 0
-        }}
+      value_template: "{{ entities | select('in', integration_entities('cast') + integration_entities('mass')) | list | count > 0 }}"
   variables:
     announce_volume: 0.4
   action:
     - alias: Variable for version number
       variables:
         version: 0.1.0
-    - alias: "Are there Spotify entities?"
+    - alias: Are there Spotify entities?
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
-        - alias: "Update Spotify entities"
+        - alias: Update Spotify entities
           service: homeassistant.update_entity
           target:
             entity_id: "{{ integration_entities('spotify') }}"
-    - alias: "Set variables to be used in the script"
+    - alias: Set variables to be used in the script
       variables:
         start_time: "{{ now() }}"
-        cast_mass_playing: >
+        cast_mass_playing: |
           {{
             expand(integration_entities('cast'))
               | selectattr('attributes.media_title', 'defined')
@@ -63,58 +55,60 @@
               | map(attribute='entity_id')
               | list
           }}
-        mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
+        mass_playing: >
+          {{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') |
+          select() | list }}
         player_data: >
           {%- set ns = namespace(info=[]) %}
           {%- for entity in expand(integration_entities('cast')) %}
-              {%- set general = dict(
-                                      data_source = 'automation',
-                                      entity_id = entity.entity_id,
-                                      state = entity.state
+            {%- set general = dict(
+                                    data_source = 'automation',
+                                    entity_id = entity.entity_id,
+                                    state = entity.state
+                                    )
+            %}
+            {%- if mass_entities | count > 0 %}
+              {%- set mass_data = dict(
+                                        mass_playing = entity.entity_id in cast_mass_playing,
+                                        mass_sync = entity.entity_id | replace('.', '.mass_')
                                       )
               %}
-              {%- if mass_entities | count > 0 %}
-                {%- set mass_data = dict(
-                                          mass_playing = entity.entity_id in cast_mass_playing,
-                                          mass_sync = entity.entity_id | replace('.', '.mass_')
+              {%- set general = dict(general, **mass_data) %}
+            {%- endif %}
+            {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
+              {%- set additional = dict(
+                                        app_name = 'Spotify',
+                                        volume_level = entity.attributes.volume_level,
+                                        media_position =  as_timestamp(now()) | round(2)
+                                                          - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                          + entity.attributes.get('media_position', 0)
                                         )
-                %}
-                {%- set general = dict(general, **mass_data) %}
-              {%- endif %}
-              {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
-                {%- set additional = dict(
-                                          app_name = 'Spotify',
-                                          volume_level = entity.attributes.volume_level,
-                                          media_position =  as_timestamp(now()) | round(2)
-                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                            + entity.attributes.get('media_position', 0)
-                                          )
-                %}
-              {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
-                {%- set additional = dict(
-                                          app_name = entity.attributes.app_name,
-                                          volume_level = entity.attributes.volume_level,
-                                          media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                          media_position =  as_timestamp(now()) | round(2)
-                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                            + entity.attributes.get('media_position', 0)
-                                          )
-                %}
-              {%- elif entity.state == 'playing' %}
-                {%- set additional = dict(
-                                          app_name = entity.attributes.app_name,
-                                          volume_level = entity.attributes.volume_level,
-                                          media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                          media_title = entity.attributes.get('media_title', 'no title'),
-                                          media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                          media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                          entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                          media_position =  as_timestamp(now()) | round(2)
-                                                            - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                            + entity.attributes.get('media_position', 0)
-                                          )
-                %}
-              {%- endif %}
+              %}
+            {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+              {%- set additional = dict(
+                                        app_name = entity.attributes.app_name,
+                                        volume_level = entity.attributes.volume_level,
+                                        media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                        media_position =  as_timestamp(now()) | round(2)
+                                                          - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                          + entity.attributes.get('media_position', 0)
+                                        )
+              %}
+            {%- elif entity.state == 'playing' %}
+              {%- set additional = dict(
+                                        app_name = entity.attributes.app_name,
+                                        volume_level = entity.attributes.volume_level,
+                                        media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                        media_title = entity.attributes.get('media_title', 'no title'),
+                                        media_artist = entity.attributes.get('media_artist', 'no artist'),
+                                        media_content_type = entity.attributes.get('media_content_type', 'no type'),
+                                        entity_picture = entity.attributes.get('entity_picture', 'no pic'),
+                                        media_position =  as_timestamp(now()) | round(2)
+                                                          - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                          + entity.attributes.get('media_position', 0)
+                                        )
+              %}
+            {%- endif %}
             {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
           {%- endfor %}
           {{ ns.info }}
@@ -140,8 +134,7 @@
           {%- set entities = expand(integration_entities('spotify'))
                               | selectattr('state', 'eq', 'playing')
           %}
-          {%- set ns = namespace(info=[]) %}
-          {%- for entity in entities %}
+          {%- set ns = namespace(info=[]) %} {%- for entity in entities %}
             {%- set ns.info = ns.info + [
                                           dict(
                                                 entity_id = entity.entity_id, 
@@ -158,11 +151,11 @@
               | select('in', entities)
               | list
           }}
-    - alias: "Create snapshot of active Music Assistant entities"
+    - alias: Create snapshot of active Music Assistant entities
       repeat:
         for_each: "{{ mass_playing }}"
         sequence:
-          - alias: "Create snapshot"
+          - alias: Create snapshot
             service: mass.queue_command
             target:
               entity_id: "{{ repeat.item }}"
@@ -171,20 +164,20 @@
     - if: "{{ announce_volume is defined and iif(announce_volume) }}"
       then:
         - wait_template: "{{ is_state(entities|first, 'idle') }}"
-        - alias: "Set volume for announcement"
+        - alias: Set volume for announcement
           service: media_player.volume_set
           target:
             entity_id: "{{ entities }}"
           data:
             volume_level: "{{ announce_volume }}"
-    - alias: "Interrupt YouTube music if needed"
+    - alias: Interrupt YouTube music if needed
       if: "{{ ytube_music_data | count > 0 }}"
       then:
         - service: ytube_music_player.call_method
           data:
             entity_id: "{{ ytube_music_data | selectattr('target', 'in', target_list) | map(attribute='player') | list }}"
             command: interrupt_start
-    - alias: "Send actions using Google Home Resume script"
+    - alias: Send actions using Google Home Resume script
       service: script.turn_on
       target:
         entity_id: script.google_home_resume
