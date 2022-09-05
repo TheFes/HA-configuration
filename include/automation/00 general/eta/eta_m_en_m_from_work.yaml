@@ -12,32 +12,24 @@ trigger:
     from: "Fujifilm"
     to: "not_home"
   - platform: state
-    entity_id: person.marleen
-    to: "TRN"
-    id: "work"
-  - platform: state
-    entity_id: person.martijn
-    to: "Fujifilm"
-    id: "work"
-  - platform: state
     entity_id:
       - person.martijn
       - person.marleen
-    to: "home"
-    id: "home"
+    to:
+      - "home"
+      - "TRN"
+      - "Fujifilm"
+    id: "reset"
 variables:
-  name: "{{ trigger.to_state.entity_id | replace('person.', '') }}"
+  name: "{{ states[trigger.entity_id].object_id }}"
   notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_5' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
-  sensor: "{{ 'sensor.' + name + '_naar_huis' }}"
+  sensor: "sensor.{{ name }}_naar_huis"
   eta: >
-    {%- if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' %}
-      {{ (as_timestamp(now()) + 60 * 40 | float) | timestamp_custom('%H:%M') }}
-    {%- else %}
-      {{ (as_timestamp(now()) + 60 * states(sensor) | float) | timestamp_custom('%H:%M') }}
-    {%- endif %}
+    {% set delta = 40 if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' else states(sensor) | float %}
+    {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
 action:
-  - if: "{{ trigger.id == 'home' or trigger.id == 'work' }}"
+  - if: "{{ trigger.id == 'reset' }}"
     then:
       - alias: "Set input_text"
         service: input_text.set_value
