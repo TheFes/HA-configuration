@@ -20,14 +20,13 @@ cards:
         tap_action:
           action: fire-dom-event
           browser_mod:
-            service: browser_mod.popup
+            service: script.confirmation_popup
             data:
-              title: Passcode
-              content:
-                type: vertical-stack
-                cards:
-                  - !include /config/include/lovelace/01_general/cards/general/passcode/numpad-pc.yaml
-                  - !include /config/include/lovelace/01_general/cards/general/passcode/code.yaml
+              browser_id: THIS
+              toggle_entity: switch.computer_zolder
+              passcode: !secret passcode_pc
+              on_state: "on"
+              popup_type: code
       - type: custom:mushroom-template-card
         primary: Marleen
         icon: mdi:laptop
