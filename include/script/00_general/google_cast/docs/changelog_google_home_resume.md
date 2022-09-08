@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.8.2 - 8 September 2022
+#### 🌟 Improvements
+* Make check for images no longer case senstitive (note the file extension of the image needs to be `jpg`, `jpeg` or `png`)
+
 ### Version 2.8.1 - 5 September 2022
 #### 🌟 Improvements
 * Small template improvement for YouTube resume

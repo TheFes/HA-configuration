@@ -17,9 +17,13 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.0 - 18 August 2022
-#### ✨ New features
-* Resume after sending an image (eg a camera snapshot after somebody rang the doorbell) using `media_player.play_media` is now supported (also in the automation added in v2.7.0). While sending the image, the speaker is not in state `playing` so there is a new variable added to define a delay after which the resume will be started. The default is 20 seconds (if not provided).
+### Version 2.8.2 - 8 September 2022
+#### 🌟 Improvements
+* Make check for images no longer case senstitive (note the file extension of the image needs to be `jpg`, `jpeg` or `png`)
+
+### Version 2.8.1 - 5 September 2022
+#### 🌟 Improvements
+* Small template improvement for YouTube resume
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
