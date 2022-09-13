@@ -3,10 +3,10 @@ trigger:
     entity_id: person.martijn
     id: state_change
   - platform: template
-    value_template: "{{ (as_timestamp(now()) - as_timestamp(states.person.martijn.last_changed)) / 60 > 10 }}"
+    value_template: "{{ now() - states.person.martijn.last_changed > timedelta(minutes=10) }}"
     id: recent_change
   - platform: template
-    value_template: "{{ (as_timestamp(now()) - as_timestamp(states.person.martijn.last_changed)) / 60 > (60 * 24) }}"
+    value_template: "{{ now() - states.person.martijn.last_changed > timedelta(hours=12) }}"
     id: extended_change
   - platform: homeassistant
     event: start
@@ -16,15 +16,15 @@ sensor:
   - name: House state Martijn
     unique_id: ddcf1fc6-fd1d-465f-90c3-82818290595d
     state: >
-      {%- set last_change_min = (as_timestamp(now()) - as_timestamp(states.person.martijn.last_changed)) / 60 %}
+      {%- set last_change_min = (now() - states.person.martijn.last_changed).total_seconds() / 60 %}
       {%- set person = 'person.martijn' %}
-      {%- if last_change_min > (60*12) and is_state(person, 'not_home') %}
+      {%- if last_change_min >= (60*12) and is_state(person, 'not_home') %}
         Al lang niet thuis
       {%- elif last_change_min > 10 and is_state(person, 'not_home') %}
         Niet thuis
       {%- 
         elif (last_change_min > 10 and is_state(person, 'home')) 
-        or (is_state(person, 'home') and is_state('sensor.house_state_martijn', 'Just Left'))
+        or (is_state(person, 'home') and this.state == 'Net weg'))
       %}
         Thuis
       {%- elif is_state(person, 'home') %}
@@ -35,3 +35,9 @@ sensor:
         {{ states(person) }}
       {%- endif %}
     icon: mdi:human-male
+    # translations:
+    # Al lang niet thuis > Away for a long period
+    # Niet htuis > Away
+    # Thuis > At home
+    # Net thuis > Just arrived at home
+    # Net weg > Just left
