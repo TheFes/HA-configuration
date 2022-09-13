@@ -15,10 +15,17 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - alias: "Toggle light"
-            service: light.toggle
-            target:
-              entity_id: light.slaapkamer_template
+          - if: "{{ is_state('light.groep_slaapkamer', 'on') }}"
+            then:
+              - alias: "Turn off all lights in room"
+                service: light.turn_off
+                target:
+                  entity_id: light.groep_slaapkamer
+            else:
+              - alias: "Turn on main light"
+                service: light.turn_on
+                target:
+                  entity_id: light.slaapkamer_template
       - conditions:
           - alias: "Double?"
             condition: template
@@ -48,4 +55,3 @@ action:
               entity_id: light.slaapkamer
             data:
               brightness_pct: 5
-              color_temp: 600

@@ -15,10 +15,17 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - alias: "Toggle template light"
-            service: light.toggle
-            target:
-              entity_id: light.pepijn_template
+          - if: "{{ is_state('light.groep_pepijn', 'on') }}"
+            then:
+              - alias: "Turn off all lights in room"
+                service: light.turn_off
+                target:
+                  entity_id: light.groep_pepijn
+            else:
+              - alias: "Turn on main light"
+                service: light.turn_on
+                target:
+                  entity_id: light.pepijn_template
       - conditions:
           - alias: "Double?"
             condition: template
