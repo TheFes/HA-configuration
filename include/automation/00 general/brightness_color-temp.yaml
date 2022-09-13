@@ -10,6 +10,7 @@ trigger:
       - light.floris_template
       - light.tv_lamp_template
       - light.speelhoek_template
+      - light.bedside_lamp_martijn
     attribute: brightness
 variables:
   hue: []
@@ -20,6 +21,7 @@ variables:
   min_ct: >
     {{ 380 if light in hue else state_attr(light, 'min_mireds') }}
   bright: "{{ state_attr(light, 'brightness') }}"
+  color_mode: "{{ state_attr(light, 'color_mode') | default('color_temp', true) }}"
 condition:
   - alias: "Light on?"
     condition: template
@@ -27,6 +29,9 @@ condition:
   - alias: "Already dimmed before?"
     condition: template
     value_template: "{{ not is_state(input_boolean_dimmed, 'off') }}"
+  - alias: "Light on color_temp mode?"
+    condition: template
+    value_template: "{{ color_mode == 'color_temp' }}"
 action:
   - alias: "Set colore temperature based on brightness"
     service: light.turn_on
