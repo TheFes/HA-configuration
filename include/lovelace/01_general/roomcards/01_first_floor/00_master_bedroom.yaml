@@ -14,16 +14,16 @@ cards:
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
-        entity: light.slaapkamer
+        entity: light.groep_slaapkamer
         layout: vertical
         icon: >-
-          {% if is_state('light.slaapkamer', 'on') %}
-            mdi:lightbulb
+          {% if is_state(entity, 'on') %}
+            mdi:lightbulb-group
           {% else %}
-            mdi:lightbulb-off
+            mdi:lightbulb-group-off
           {% endif %}
         icon_color: >-
-          {% if is_state('light.slaapkamer', 'on') %}
+          {% if is_state(entity, 'on') %}
             yellow
           {% endif %}
       - type: custom:mushroom-template-card

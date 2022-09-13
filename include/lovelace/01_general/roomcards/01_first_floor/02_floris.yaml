@@ -64,18 +64,16 @@ cards:
             mdi:arrow-collapse-right
           {% elif is_state('cover.switchbot_curtain_floris', 'closing') %}
             mdi:arrow-collapse-left
-          {% elif is_state_attr('cover.switchbot_curtain_floris', 'current_position', 100) %}
-            mdi:curtains
-          {% else %}
+          {% elif is_state('binary_sensor.curtain_floris_open', 'off') %}
             mdi:curtains-closed
+          {% else %}
+            mdi:curtains
           {% endif %}
         icon_color: >-
           {% if states('cover.switchbot_curtain_floris') in [ 'opening', 'closing' ] %}
             green
-          {% elif is_state_attr('cover.switchbot_curtain_floris', 'current_position', 0) %}
+          {% elif is_state('binary_sensor.curtain_floris_open', 'off') %}
             yellow
-          {% elif state_attr('cover.switchbot_curtain_floris', 'current_position') | int(100) < 100 %}
-            orange
           {% endif %}
       - type: conditional
         conditions:
