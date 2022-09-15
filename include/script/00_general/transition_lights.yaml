@@ -261,7 +261,7 @@ transition_lights_perform_transition:
                       {% set ct = dict(color_temp=(ct_start + repeat.index * ct_step) | round(0))
                           if ct_change and use_ct else {} %}
                       {{ dict(br, **ct) }}
-              - delay: "{{ delay }}"
+                  - delay: "{{ delay }}"
         - alias: "Remove light from group"
           service: group.set
           data:
