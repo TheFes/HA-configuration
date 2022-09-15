@@ -1,0 +1,281 @@
+transition_lights:
+  alias: "00 - Start transition light brightness and color_temp"
+  icon: mdi:ceiling-light
+  mode: parallel
+  max: 20
+  max_exceeded: silent
+  fields:
+    lights:
+      description: "Select the light(s)"
+      name: Lights
+      example: light.livingroom
+      required: true
+      selector:
+        entity:
+          domain: light
+          multiple: true
+    duration:
+      description: "Transition duration in seconds"
+      name: Duration
+      example: 120
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 3600
+          unit_of_measurement: sec
+    use_br:
+      description: "Use brightness for the transition"
+      name: Use brightness
+      default: true
+      required: false
+      selector:
+        boolean:
+    br_start:
+      description: "Start brightness of the transition (0-255) - Default is current value of the light - Use either value or percentage, not both"
+      name: Brightness start value
+      default: Current setting
+      example: 25
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 255
+    br_start_pct:
+      description: "Start brightness percentage of the transition (0 - 100%) - Default is current value of the light - Use either value or percentage, not both"
+      name: Brightness start percentage
+      default: Current setting
+      example: 10
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    br_end:
+      description: "End brightness of the transition (0-255) - Using 0 will turn the light off, use either value or percentage, not both"
+      name: Brightness end value
+      default: 255
+      example: 230
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 255
+    br_end_pct:
+      description: "End brightness percentage of the transition (0 - 100%) - Using 0 will turn the light off, use either value or percentage, not both"
+      name: Brightness end percentage
+      default: 100
+      example: 90
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    use_ct:
+      description: "Use color temperature for the transition (if the light supports it)"
+      name: Use color temperature
+      default: true
+      required: false
+      selector:
+        boolean:
+    ct_start:
+      description: "Start color_temp in mireds of the transition - Default is current value of the light"
+      name: Color temperature start
+      default: Current setting
+      example: 500
+      required: false
+      selector:
+        number:
+          min: 153
+          max: 500
+          unit_of_measurement: "mireds"
+    ct_end:
+      description: "End color_temp in mireds of the transition - Default is minimal value (coldest light)"
+      name: Color temparature end
+      default: Lowest value possible
+      example: 200
+      required: false
+      selector:
+        number:
+          min: 153
+          max: 500
+          unit_of_measurement: "mireds"
+    ct_start_pct:
+      description: "Start color_temp of the transition in % (0% is coldest, 100% is warmest) - Default is current value of the light"
+      name: Color temperature start percentage
+      default: Current setting
+      example: 90
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    ct_end_pct:
+      description: "End color_temp of the transition in % (0% is coldest, 100% is warmest)"
+      name: Color temparature end percentage
+      default: 0
+      example: 10
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    min_delay:
+      description: "Minimal delay in seconds between the transition steps, if set too low changes might not be processed correct"
+      name: Minimal delay
+      default: 0.5
+      example: 1
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 0.25
+          unit_of_measurement: "sec"
+  sequence:
+    - alias: Convert lights input to lists if it is a string
+      variables:
+        lights: "{{ (lights | replace(' ','')).split(',') if lights is string else lights }}"
+    - alias: "Start script to perform transition"
+      repeat:
+        for_each: "{{ lights }}"
+        sequence:
+          - service: script.turn_on
+            target:
+              entity_id: script.transition_lights_perform_transition
+            data:
+              variables:
+                light: "{{ repeat.item }}"
+                duration: "{{ duration }}"
+                br_start: "{{ br_start if br_start is defined else none }}"
+                br_start_pct: "{{ br_start_pct if br_start_pct is defined else none }}"
+                br_end: "{{ br_end if br_end is defined else none }}"
+                br_end_pct: "{{ br_end_pct if br_end_pct is defined else none }}"
+                ct_start: "{{ ct_start if ct_start is defined else none }}"
+                ct_end: "{{ ct_end if ct_end is defined else none }}"
+                ct_start_pct: "{{ ct_start_pct if ct_start_pct is defined else none }}"
+                ct_end_pct: "{{ ct_end_pct if ct_end_pct is defined else none }}"
+                min_delay: "{{ min_delay if min_delay is defined and min_delay is not none else 0.5 }}"
+                use_br: "{{ use_br if use_br is defined and use_br is not none else true }}"
+                use_ct: "{{ use_ct if use_ct is defined and use_ct is not none else true }}"
+
+transition_lights_perform_transition:
+  alias: "00 - Perform transition light brightness and color_temp (helper script)"
+  icon: mdi:ceiling-light
+  mode: parallel
+  max: 20
+  max_exceeded: silent
+  sequence:
+    - alias: "Remove group if this is the only instance of the script active"
+      if: "{{ state_attr(this.entity_id, 'current') == 1 }}"
+      then:
+        - alias: "Remove group"
+          service: group.remove
+          data:
+            object_id: transition_active
+    - alias: "Check if transition for this light is not already active"
+      if: >
+        {{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}
+      then:
+        - delay: "{{ 0.25 * (state_attr(this.entity_id, 'current') -1) }}"
+        - alias: "Add light to group"
+          service: group.set
+          data:
+            object_id: transition_active
+            name: Lights with transition active
+            icon: mdi:lightbulb
+            entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list + [light] }}"
+        - alias: "Set variables for initial turn_on service call"
+          variables:
+            br_start_set: "{{ br_start is not none or br_start_pct is not none }}"
+            br_start: "{{ br_start if br_start is not none else (br_start_pct | default(0, true) * 2.55) | round(0) }}"
+            ct_start_set: "{{ ct_start is not none or ct_start_pct is not none }}"
+            ct_min: "{{ state_attr(light, 'min_mireds') | default(0, true) }}"
+            ct_max: "{{ state_attr(light, 'max_mireds') | default(0, true) }}"
+            ct_diff: " {{ ct_max - ct_min }}"
+            ct_start: "{{ ct_start if ct_start is not none else (ct_min + (ct_start_pct | default(0, true)) / 100 * ct_diff) | round(0) }}"
+        - alias: "Turn on light with start settings"
+          service: light.turn_on
+          target:
+            entity_id: "{{ light }}"
+          data: >
+            {% set br = dict(brightness=br_start) if br_start_set else {} %}
+            {% set ct = dict(color_temp=ct_start) if ct_start_set else {} %}
+            {{ dict(br, **ct) }}
+        - alias: "Check if light is on"
+          wait_template: "{{ is_state(light, 'on') }}"
+        - alias: "Set variables for repeat"
+          variables:
+            br_start: "{{ br_start if br_start_set else state_attr(light, 'brightness') }}"
+        - variables:
+            br_end: >
+              {% set br_end_set = br_end is not none or br_end_pct is not none %}
+              {% set br_end = 255 if not br_end_set else br_end %}
+              {{ br_end if br_end is not none else (br_end_pct * 2.55) | round(0) }}
+        - variables:
+            ct_start: "{{ ct_start if cr_start_set else state_attr(light, 'color_temp') }}"
+        - variables:
+            ct_end: >
+              {% set ct_end_set = ct_end is not none or ct_end_pct is not none %}
+              {% set ct_end = state_attr(light, 'min_mireds') | default(0, true) if not ct_end_set else ct_end %}
+              {{ ct_end if ct_end is not none else (ct_min + ct_end_pct / 100 * ct_diff) | round(0) }}
+        - variables:
+            min_delay: "{{ min_delay if min_delay is not none else 0.5 }}"
+        - variables:
+            max_steps: "{{ duration / min_delay }}"
+        - variables:
+            br_change: "{{ br_end - br_start }}"
+        - variables:
+            ct_change: "{{ ct_end - ct_start if ct_end and ct_start else 0 }}"
+        - variables:
+            steps: "{{ [[br_change | abs, ct_change | abs] | max, max_steps] | min }}"
+        - variables:
+            br_step: "{{ (br_change / steps) }}"
+        - variables:
+            ct_step: "{{ (ct_change / steps) }}"
+        - variables:
+            delay: "{{ (duration / steps) | round(2) }}"
+        - alias: "Repeat until settings are reached"
+          repeat:
+            while:
+              - alias: "Only continue when light is still on"
+                condition: template
+                value_template: "{{ is_state(light, 'on') }}"
+              - alias: "Stop when number of steps is reached"
+                condition: template
+                value_template: "{{ repeat.index <= steps }}"
+            sequence:
+              - alias: "Check if step count is reached"
+                if: "{{ repeat.index == steps }}"
+                then:
+                  - alias: "Last step, set light to end settings"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data: >
+                      {% set br = dict(brightness=br_end) if br_change and use_br else {} %}
+                      {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
+                      {{ dict(br, **ct) }}
+                else:
+                  - alias: "Adjust light according to settings script"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data: >
+                      {% set br = dict(brightness=(br_start + repeat.index * br_step) | round(0))
+                          if br_change and use_br else {} %}
+                      {% set ct = dict(color_temp=(ct_start + repeat.index * ct_step) | round(0))
+                          if ct_change and use_ct else {} %}
+                      {{ dict(br, **ct) }}
+              - delay: "{{ delay }}"
+        - alias: "Remove light from group"
+          service: group.set
+          data:
+            object_id: transition_active
+            name: Lights with transition active
+            icon: mdi:lightbulb
+            entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list | reject('eq', light) | list }}"
