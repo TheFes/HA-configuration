@@ -189,7 +189,7 @@ transition_lights_perform_transition:
             name: Lights with transition active
             icon: mdi:lightbulb
             entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list + [light] }}"
-        - alias: "Set variables for initial turn_on service call"
+        - alias: "Apply default settings if needed"
           variables:
             br_start_set: "{{ br_start is not none or br_start_pct is not none }}"
             br_start: "{{ br_start if br_start is not none else (br_start_pct | default(0, true) * 2.55) | round(0) }}"
@@ -208,12 +208,13 @@ transition_lights_perform_transition:
             {{ dict(br, **ct) }}
         - alias: "Check if light is on"
           wait_template: "{{ is_state(light, 'on') }}"
-        - alias: "Set variables for repeat"
+        - alias: "Set variables for repeat and apply defaults if needed"
           variables:
-            br_start: "{{ br_start if br_start_set else state_attr(light, 'brightness') }}"
+            br_start: "{{ br_start if br_start_set else state_attr(light, 'brightness') | default(0, true) }}"
             br_end: >
               {% set br_end_set = br_end is not none or br_end_pct is not none %}
               {% set br_end = 255 if not br_end_set else br_end %}
+              {% set br_end = 0 if state_attr(light, 'brightness') is none else br_end %}
               {{ br_end if br_end is not none else (br_end_pct * 2.55) | round(0) }}
             ct_start: "{{ ct_start if cr_start_set else state_attr(light, 'color_temp') }}"
             ct_end: >
@@ -224,7 +225,7 @@ transition_lights_perform_transition:
             max_steps: "{{ duration / min_delay }}"
             br_change: "{{ br_end - br_start }}"
             ct_change: "{{ ct_end - ct_start if ct_end and ct_start else 0 }}"
-            steps: "{{ [[br_change | abs, ct_change | abs] | max, max_steps] | min }}"
+            steps: "{{ [[br_change | abs, ct_change | abs, 1] | max, max_steps] | min }}"
             br_step: "{{ (br_change / steps) }}"
             ct_step: "{{ (ct_change / steps) }}"
             delay: "{{ (duration / steps) | round(2) }}"
