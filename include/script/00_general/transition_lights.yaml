@@ -134,7 +134,7 @@ transition_lights:
         number:
           min: 0
           max: 10
-          step: 0.25
+          step: 0.1
           unit_of_measurement: "sec"
   sequence:
     - alias: Convert lights input to lists if it is a string
@@ -181,7 +181,7 @@ transition_lights_perform_transition:
       if: >
         {{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}
       then:
-        - delay: "{{ 0.25 * (state_attr(this.entity_id, 'current') -1) }}"
+        - delay: "{{ 0.1 * (state_attr(this.entity_id, 'current') -1) }}"
         - alias: "Add light to group"
           service: group.set
           data:
