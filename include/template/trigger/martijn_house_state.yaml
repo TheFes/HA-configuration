@@ -18,13 +18,13 @@ sensor:
     state: >
       {%- set last_change_min = (now() - states.person.martijn.last_changed).total_seconds() / 60 %}
       {%- set person = 'person.martijn' %}
-      {%- if last_change_min >= (60*12) and is_state(person, 'not_home') %}
+      {%- if last_change_min >= 60 * 12 and is_state(person, 'not_home') %}
         Al lang niet thuis
       {%- elif last_change_min > 10 and is_state(person, 'not_home') %}
         Niet thuis
       {%- 
         elif (last_change_min > 10 and is_state(person, 'home')) 
-        or (is_state(person, 'home') and this.state == 'Net weg'))
+        or (is_state(person, 'home') and this.state == 'Net weg')
       %}
         Thuis
       {%- elif is_state(person, 'home') %}
