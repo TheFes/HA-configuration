@@ -69,10 +69,12 @@ google_home_resume:
     dummy_player: media_player.vlc_telnet
     image_delay:
       seconds: 20
+    dashboard_cast_delay:
+      seconds: 20
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.8.2
+        version: 2.8.3
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -882,6 +884,7 @@ google_home_resume:
                 ytube_resume: false
                 action_type: resume
                 image_delay: "{{ image_delay if image_delay is defined and image_delay else 20 }}"
+                dashboard_cast_delay: "{{ dashboard_cast_delay if dashboard_cast_delay is defined and dashboard_cast_delay else 20 }}"
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
@@ -927,11 +930,12 @@ google_home_resume_helper:
                       or 'png' in state_attr(player.entity_id, 'media_content_id') | lower
                     )
               }}
+            dashboard_cast: "{{ is_state_attr(player.entity_id, 'app_name', 'Home Assistant Lovelace') }}"
         - alias: "State changed since script started?"
           wait_template: >
             {{
               event_script
-              or ytube_resume 
+              or ytube_resume
               or (
                   (states[player.entity_id].last_changed > as_datetime(start_time))
                   and expand([player.entity_id] + player.members)
@@ -939,6 +943,7 @@ google_home_resume_helper:
                         | list | count > 0
                 )
               or image
+              or dashboard_cast
             }}
           timeout: "00:00:30"
         - variables:
@@ -964,15 +969,20 @@ google_home_resume_helper:
             %}
             {%- set checklist = [player.entity_id] + player.members %}
             {{
+              dashboard_cast or
               expand(checklist) | rejectattr('state', 'in', ['idle', 'off', 'paused']) | list | count == 0
               and current | select('eq', player.entity_id) | list | count == 0
             }}
-        - if: "{{ image }}"
+        - if: "{{ image or dashboard_cast }}"
           then:
-            - delay: "{{ image_delay }}"
+            - delay: >
+                {{ image_delay if image else dashboard_cast_delay }}
         - alias: "Restore volume in case volume has changed"
           if: >
-            {{ player.volume_level | round(2, default=0) != state_attr(player.entity_id, 'volume_level') | round(2, default=0) }}
+            {{ 
+              player.voluem_level is defined 
+              and player.volume_level | round(2, default=0) != state_attr(player.entity_id, 'volume_level') | round(2, default=0)
+            }}
           then:
             - alias: "Restore volume"
               repeat:

@@ -11,32 +11,36 @@
         service_data:
           announce: true
       variables:
-        entities: >
-          {% set groups = states.group
-                    | selectattr('entity_id', 'search', 'resume_script_active_ghresume_')
-                    | map(attribute='entity_id')
-                    | list
-          %}
-          {% set active = expand(groups)
-                            | rejectattr('state', 'in', ['unkown', 'unavailable'])
-                            | map(attribute='entity_id')
-                            | unique
-                            | list
-          %}
-          {{ trigger.event.data.service_data.entity_id | reject('in', active) | list }}
+        announce_volume: 0.4
+      id: play
+    - platform: event
+      event_type: call_service
+      event_data:
+        domain: cast
+        service: show_lovelace_view
+      id: cast
+  variables:
+    entities: >
+      {% set groups = states.group
+                | selectattr('entity_id', 'search', 'resume_script_active_ghresume_')
+                | map(attribute='entity_id')
+                | list
+      %}
+      {% set active = expand(groups)
+                        | rejectattr('state', 'in', ['unkown', 'unavailable'])
+                        | map(attribute='entity_id')
+                        | unique
+                        | list
+      %}
+      {% set e = trigger.event.data.service_data.entity_id %}
+      {{ ((e | replace(' ', '')).split(',') if e is string else e) | reject('in', active) | list }}
   condition:
     - condition: template
-      value_template:
-        "{{\n  trigger.event.data.service_data.announce is defined\n  and
-        trigger.event.data.service_data.announce\n}}"
-    - condition: template
       value_template: "{{ entities | select('in', integration_entities('cast') + integration_entities('mass')) | list | count > 0 }}"
-  variables:
-    announce_volume: 0.4
   action:
     - alias: Variable for version number
       variables:
-        version: 0.1.0
+        version: 0.2.0
     - alias: Are there Spotify entities?
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -108,6 +112,8 @@
                                                           + entity.attributes.get('media_position', 0)
                                         )
               %}
+            {%- elif not entity.state in ['off', 'unavailable', 'unknown'] %}
+              {%- set additional = dict( volume_level = entity.attributes.volume_level ) %}
             {%- endif %}
             {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
           {%- endfor %}
@@ -161,7 +167,7 @@
               entity_id: "{{ repeat.item }}"
             data:
               command: snapshot_create
-    - if: "{{ announce_volume is defined and iif(announce_volume) }}"
+    - if: "{{ trigger.id == 'play' and announce_volume is defined and iif(announce_volume) }}"
       then:
         - wait_template: "{{ is_state(entities|first, 'idle') }}"
         - alias: Set volume for announcement

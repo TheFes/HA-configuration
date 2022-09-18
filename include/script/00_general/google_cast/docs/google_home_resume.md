@@ -17,13 +17,13 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.2 - 8 September 2022
-#### 🌟 Improvements
-* Make check for images no longer case senstitive (note the file extension of the image needs to be `jpg`, `jpeg` or `png`)
+### Version 2.8.3 - 18 September 2022
+#### ✨ New features
+* Resume after casting a dashboard is now also supported. A separate variable is also provided for the delay after which the resume should start has also been added. Default delay if ommitted is 20 seconds. A trigger has been added to the automation (v0.2.0) as well, so it is resumed automatically. Remove this trigger if you don't want automatic resume when casting a dashboard.
+#### 🐛 Bug fixes
+* Updated automation to v0.2.0 to include volume of idle cast entities
+* Don't try to restore the volume when it is not provided in the player data
 
-### Version 2.8.1 - 5 September 2022
-#### 🌟 Improvements
-* Small template improvement for YouTube resume
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -46,10 +46,11 @@ There are no required variables, but if you use Google Home speaker groups and p
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 |image_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
+|dashboard_cast_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
 
 ## The automation for automatic resume (✨ NEW in v2.7.0)
 [Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
-In version 1.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
+In version 2.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
 
 Place it in your `automations.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
 
