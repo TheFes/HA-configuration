@@ -8,7 +8,7 @@ pepijn_turn_on:
           conditions:
             - alias: "No transition active?"
               condition: template
-              value_template: "{{ 'light.pepijn' not in state_attr('group.transition_active', 'entity_id') | default([]) }}"
+              value_template: "{{ 'light.pepijn' not in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
             - alias: "Not yet dimmed?"
               condition: state
               entity_id: input_boolean.dimmed_pepijn
