@@ -4,7 +4,7 @@ cards:
     title: Overig
   - type: grid
     square: true
-    columns: 2
+    columns: 3
     cards:
       - type: custom:mushroom-template-card
         primary: Ventilatie
@@ -20,3 +20,13 @@ cards:
         badge_color: red
         icon: mdi:water-boiler
         icon_color: "{{ 'blue' if is_state('switch.ketel', 'on') }}"
+      - type: custom:mushroom-entity-card
+        entity: button.herstart_emby
+        icon_color: "blue"
+        secondary_info: none
+        name: Emby
+        tap_action:
+          action: call-service
+          service: button.press
+          target:
+            entity_id: button.herstart_emby

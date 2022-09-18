@@ -1,28 +1,23 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    primary: Hal/Voordeur
-    icon: mdi:door
+    primary: Badkamer
+    icon: mdi:bathtub
     icon_color: blue
     layout: horizontal
     tap_action:
       action: navigate
-      navigation_path: hal
+      navigation_path: badkamer
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
         layout: vertical
-        entity: light.hal
+        entity: light.badkamer
         icon: "{{ 'mdi:ceiling-light' if is_state(entity, 'on') else 'mdi:ceiling-light-outline' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
       - type: custom:mushroom-template-card
-        entity: light.voordeur
+        entity: light.badkamermeubel
         layout: vertical
-        icon: mdi:outdoor-lamp
-        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-      - type: custom:mushroom-template-card
-        entity: switch.doorbell_chime_active
-        layout: vertical
-        icon: "{{ 'mdi:bell' if is_state(entity, 'on') else 'mdi:bell-off-outline' }}"
+        icon: mdi:mirror-rectangle
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
