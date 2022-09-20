@@ -28,6 +28,11 @@ google_home_resume:
       required: false
       selector:
         boolean:
+    resume_delay:
+      description: "Delay before resume when casting an image or dashboard. Default value use image_delay and dashboard_cast_delay variables."
+      required: false
+      selector:
+        duration:
   variables:
     players_screen:
       - media_player.keuken_hub
@@ -883,8 +888,8 @@ google_home_resume:
                 resume: "{{ repeat.item in players_to_resume }}"
                 ytube_resume: false
                 action_type: resume
-                image_delay: "{{ image_delay if image_delay is defined and image_delay else 20 }}"
-                dashboard_cast_delay: "{{ dashboard_cast_delay if dashboard_cast_delay is defined and dashboard_cast_delay else 20 }}"
+                image_delay: "{{ resume_delay if resume_delay is defined else image_delay if image_delay is defined and image_delay else 20 }}"
+                dashboard_cast_delay: "{{ resume_delay if resume_delay is defined else dashboard_cast_delay if dashboard_cast_delay is defined and dashboard_cast_delay else 20 }}"
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
