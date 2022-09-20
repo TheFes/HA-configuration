@@ -928,6 +928,8 @@ google_home_resume_helper:
                       'jpg' in state_attr(player.entity_id, 'media_content_id') | lower
                       or 'jpeg' in state_attr(player.entity_id, 'media_content_id') | lower
                       or 'png' in state_attr(player.entity_id, 'media_content_id') | lower
+                      or 'gif' in state_attr(player.entity_id, 'media_content_id') | lower
+                      or 'webp' in state_attr(player.entity_id, 'media_content_id') | lower
                     )
               }}
             dashboard_cast: "{{ is_state_attr(player.entity_id, 'app_name', 'Home Assistant Lovelace') }}"
