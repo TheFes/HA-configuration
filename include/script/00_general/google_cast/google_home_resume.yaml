@@ -29,7 +29,7 @@ google_home_resume:
       selector:
         boolean:
     resume_delay:
-      description: "Delay before resume when casting an image or dashboard. Default value use image_delay and dashboard_cast_delay variables."
+      description: "Delay before resume when casting an image or dashboard. Default value is set by default_resume_delay variable or 20 seconds."
       required: false
       selector:
         duration:
@@ -72,9 +72,7 @@ google_home_resume:
         - media_player.zolder_mini_martijn
     default_volume_level: 0.25
     dummy_player: media_player.vlc_telnet
-    image_delay:
-      seconds: 20
-    dashboard_cast_delay:
+    default_resume_delay:
       seconds: 20
   sequence:
     - alias: "Version number"
@@ -888,8 +886,7 @@ google_home_resume:
                 resume: "{{ repeat.item in players_to_resume }}"
                 ytube_resume: false
                 action_type: resume
-                image_delay: "{{ resume_delay if resume_delay is defined else image_delay if image_delay is defined and image_delay else 20 }}"
-                dashboard_cast_delay: "{{ resume_delay if resume_delay is defined else dashboard_cast_delay if dashboard_cast_delay is defined and dashboard_cast_delay else 20 }}"
+                resume_delay: "{{ resume_delay if resume_delay is defined and default_resume_delay else 20 }}"
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
@@ -982,8 +979,7 @@ google_home_resume_helper:
             }}
         - if: "{{ image or dashboard_cast }}"
           then:
-            - delay: >
-                {{ image_delay if image else dashboard_cast_delay }}
+            - delay: "{{ resume_delay }}"
         - alias: "Restore volume in case volume has changed"
           if: >
             {{ 
