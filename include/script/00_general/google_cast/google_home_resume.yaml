@@ -886,7 +886,14 @@ google_home_resume:
                 resume: "{{ repeat.item in players_to_resume }}"
                 ytube_resume: false
                 action_type: resume
-                resume_delay: "{{ resume_delay if resume_delay is defined and default_resume_delay else 20 }}"
+                resume_delay: > 
+                  {% if resume_delay is defined and resume_delay %}
+                    {{ resume_delay }}
+                  {% elif default_resume_delay is defined and default_resume_delay %}
+                    {{ default_resume_delay }}
+                  {% else %}
+                    20
+                  {% endif %} 
     - alias: "Create variable for existing groups"
       variables:
         groups_to_remove: >
