@@ -4,6 +4,7 @@
   max_exceeded: silent
   trigger:
     - platform: event
+      enabled: true
       event_type: call_service
       event_data:
         domain: media_player
@@ -14,6 +15,7 @@
         announce_volume: 0.4
       id: play
     - platform: event
+      enabled: true
       event_type: call_service
       event_data:
         domain: cast
