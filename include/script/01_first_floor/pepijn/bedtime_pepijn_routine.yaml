@@ -8,11 +8,12 @@ bedtime_pepijn_routine:
         entity_id: light.pepijn_template
       data:
         brightness_pct: 40
-    - alias: "Turn on Miffy light"
+    - alias: "Turn on Miffy & bed light"
       service: light.turn_on
       target:
         entity_id:
           - light.nijntje
+          - light.bed_pepijn
     - alias: "Turn on reading light"
       service: light.turn_on
       target:
