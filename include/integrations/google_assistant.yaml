@@ -24,30 +24,20 @@ google_assistant:
     # switch.bw_plug_20:
     #   name: Kerstboom
     #   room: Keuken
-    # Slaapkamer Floris
-    cover.switchbot_curtain_floris:
-      name: Gordijn Floris
+
+    # Badkamer
+    light.badkamer:
+      name: Badkamer
+      room: Badkamer
       aliases:
-        - Gordijn
-      room: Slaapkamer Floris
-    light.floris_template:
-      name: Floris
+        - Lamp badkamer
+        - Badkamer plafond
+    light.badkamermeubel:
+      name: Badkamermeubel
+      room: Badkamer
       aliases:
-        - Lamp Floris
-        - Floris
-      room: Slaapkamer Floris
-    cover.floris:
-      name: Floris
-      aliases:
-        - Screen Floris
-        - Floris Screen
-      room: Slaapkamer Floris
-    sensor.floris_temp:
-      name: Temperatuur Floris
-      aliases:
-        - Floris temperatuur
-        - Temperatuur Slaapkamer Floris
-      room: Slaapkamer Floris
+        - Lamp badkamermeubel
+
     # Eettafel
     light.eettafel:
       name: Eettafel
@@ -63,12 +53,19 @@ google_assistant:
       aliases:
         - Floris Leeslamp
         - Leeslammp Floris
+
     # Hal
     switch.doorbell_chime_active:
       name: Deurbel
       aliases:
         - Bel
       room: Hal
+    light.hal:
+      name: Hal
+      aliases:
+        - Lamp hal
+        - Hal Lamp
+        - Hallamp
     light.voordeur:
       name: Voordeur
       aliases:
@@ -81,6 +78,7 @@ google_assistant:
         - Lamp voor
         - Licht voor
       room: Hal
+
     # Keuken
     light.keuken:
       name: Keuken Plafond
@@ -109,6 +107,12 @@ google_assistant:
         - Keuken spotjes
         - Spotjes keuken
         - Spotjes keukenkastje
+
+    # Overloop
+    light.overloop:
+      name: Overloop
+      room: Overloop
+
     # Slaapkamer
     light.slaapkamer_template:
       name: Slaapkamer
@@ -131,6 +135,32 @@ google_assistant:
     vacuum.rockrobo_vacuum_v1:
       name: Stofzuiger
       room: Slaapkamer
+
+    # Slaapkamer Floris
+    cover.switchbot_curtain_floris:
+      name: Gordijn Floris
+      aliases:
+        - Gordijn
+      room: Slaapkamer Floris
+    light.floris_template:
+      name: Floris
+      aliases:
+        - Lamp Floris
+        - Floris
+      room: Slaapkamer Floris
+    cover.floris:
+      name: Floris
+      aliases:
+        - Screen Floris
+        - Floris Screen
+      room: Slaapkamer Floris
+    sensor.floris_temp:
+      name: Temperatuur Floris
+      aliases:
+        - Floris temperatuur
+        - Temperatuur Slaapkamer Floris
+      room: Slaapkamer Floris
+
     # Slaapkamer Pepijn
     light.pepijn_template:
       name: Pepijn
@@ -159,6 +189,7 @@ google_assistant:
         - Pepijn temperatuur
         - Temperatuur Slaapkamer Pepijn
       room: Slaapkamer Pepijn
+
     # Speelhoek
     light.speelhoek_template:
       name: Speelhoek Sfeer
@@ -176,10 +207,12 @@ google_assistant:
         - Fotoboek licht
         - Lamp Fotoboek
         - Licht Fotoboek
+
     # Trapkast
     light.trapkast:
       name: Trapkast
       room: Trapkast
+
     # Tuin
     cover.veranda:
       name: Zonwering Veranda
@@ -207,6 +240,7 @@ google_assistant:
       aliases:
         - Lampjes Tuin
         - Tuin lampjes
+
     # WC
     light.wc:
       name: WC
@@ -214,6 +248,7 @@ google_assistant:
         - Lamp WC
         - WC-lamp
       room: WC
+
     # Wookamer
     light.booglamp:
       name: Booglamp
@@ -240,6 +275,7 @@ google_assistant:
       aliases:
         - Woonkamer temperatuur
       room: Woonkamer
+
     # Zolder
     light.zolder_bol_template:
       name: Bol
@@ -270,6 +306,7 @@ google_assistant:
       aliases:
         - Zolder temperatuur
       room: Zolder
+
     # Zone Algemeen
     input_boolean.gast:
       name: Gast Modus
