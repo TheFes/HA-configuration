@@ -8,36 +8,39 @@ template:
         entity_id: sensor.ble_temperature_probe_1
         from: ~
         id: state
+        variables: &var_sensor_probe1
+          probe_entity: sensor.ble_temperature_probe_1
       - platform: time_pattern
         minutes: "/1"
         id: time
+        variables: *var_sensor_probe1
     sensor:
       - name: Inkbird Probe 1
         unique_id: 2cf2b064-9115-4603-a079-ca78702db172
-        state: >
+        state: &state_template >
           {% if trigger.id == 'state' %}
             {{ trigger.to_state.state }}
           {% else %}
             {{ this.state }}
           {% endif %}
-        icon: mdi:thermometer
-        unit_of_measurement: "°C"
-        availability: >
+        icon: &icon mdi:thermometer
+        unit_of_measurement: &unit "°C"
+        availability: &availability_template >
           {{
-            states('sensor.ble_temperature_probe_1') not in ['unavailable, unknown']
-            and now() - states.sensor.ble_temperature_probe_1.last_updated < timedelta(minutes=10)
+            states(probe_entity) not in ['unavailable, unknown']
+            and now() - states[probe_entity].last_updated < timedelta(minutes=10)
           }}
-        attributes:
+        attributes: &attributes
           history: >
             {%- set previous = this.get('attributes', {}).get('history', []) %}
-            {% set state = states('sensor.ble_temperature_probe_1') | float(0) %}
+            {% set state = states(probe_entity) | float(0) %}
             {% if state > 0 %}
               {{ [ state ] + (previous[:2] if previous else []) }}
             {% else %}
               {{ previous }}
             {% endif %}
           trend: >
-            {%- set history = state_attr('sensor.inkbird_probe_1', 'history') | default([], true) %}
+            {%- set history = state_attr(probe_entity, 'history') | default([], true) %}
             {% if history | count == 3 %}
               {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
@@ -55,47 +58,20 @@ template:
         entity_id: sensor.ble_temperature_probe_2
         from: ~
         id: state
+        variables: &var_sensor_probe2
+          probe_entity: sensor.ble_temperature_probe_2
       - platform: time_pattern
         minutes: "/1"
         id: time
+        variables: *var_sensor_probe2
     sensor:
       - name: Inkbird Probe 2
         unique_id: 0b0e5c49-6ff6-448b-9444-af80ddf633c9
-        state: >
-          {% if trigger.id == 'state' %}
-            {{ trigger.to_state.state }}
-          {% else %}
-            {{ this.state }}
-          {% endif %}
-        icon: mdi:thermometer
-        unit_of_measurement: "°C"
-        availability: >
-          {{
-            states('sensor.ble_temperature_probe_2') not in ['unavailable, unknown']
-            and now() - states.sensor.ble_temperature_probe_2.last_updated < timedelta(minutes=10)
-          }}
-        attributes:
-          history: >
-            {%- set previous = this.get('attributes', {}).get('history', []) %}
-            {% set state = states('sensor.ble_temperature_probe_2') | float(0) %}
-            {% if state > 0 %}
-              {{ [ state ] + (previous[:2] if previous else []) }}
-            {% else %}
-              {{ previous }}
-            {% endif %}
-          trend: >
-            {%- set history = state_attr('sensor.inkbird_probe_2', 'history') | default([], true) %}
-            {% if history | count == 3 %}
-              {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
-                up
-              {% elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
-                down
-              {% else %}
-                stable
-              {% endif %}
-            {% else %}
-              unknown
-            {% endif %}
+        state: *state_template
+        icon: *icon
+        unit_of_measurement: *unit
+        availability: *availability_template
+        attributes: *attributes
 
   # binary sensors for alert
   - binary_sensor:
