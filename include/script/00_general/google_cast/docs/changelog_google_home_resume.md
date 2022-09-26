@@ -2,6 +2,21 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.8.4 - 26 September 2022
+#### 🔴 BREAKING
+* `dashboard_delay` and `picture_delay` are combined in one variable `resume_delay`. This can be sent as variable in the script service call. You can set a default using `default_resume_delay` in the script. If no delay is defined, 20 seconds will be used
+#### 🌟 Improvements
+* Resume after sending webp and gif images is now also supported
+#### 🙏 Thanks to:
+* @cheadrian for the commits on Github
+
+### Version 2.8.3 - 18 September 2022
+#### ✨ New features
+* Resume after casting a dashboard is now also supported. A separate variable is also provided for the delay after which the resume should start has also been added. Default delay if ommitted is 20 seconds. A trigger has been added to the automation (v0.2.0) as well, so it is resumed automatically. Remove this trigger if you don’t want automatic resume when casting a dashboard.
+#### 🐛 Bug fixes
+* Updated automation to v0.2.0 to include volume of idle cast entities
+Don’t try to restore the volume when it is not provided in the player data
+
 ### Version 2.8.2 - 8 September 2022
 #### 🌟 Improvements
 * Make check for images no longer case senstitive (note the file extension of the image needs to be `jpg`, `jpeg` or `png`)

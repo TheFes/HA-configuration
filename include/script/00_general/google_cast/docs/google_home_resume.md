@@ -17,13 +17,13 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.3 - 18 September 2022
-#### ✨ New features
-* Resume after casting a dashboard is now also supported. A separate variable is also provided for the delay after which the resume should start has also been added. Default delay if ommitted is 20 seconds. A trigger has been added to the automation (v0.2.0) as well, so it is resumed automatically. Remove this trigger if you don't want automatic resume when casting a dashboard.
-#### 🐛 Bug fixes
-* Updated automation to v0.2.0 to include volume of idle cast entities
-* Don't try to restore the volume when it is not provided in the player data
-
+### Version 2.8.4 - 26 September 2022
+#### 🔴 BREAKING
+* `dashboard_delay` and `picture_delay` are combined in one variable `resume_delay`. This can be sent as variable in the script service call. You can set a default using `default_resume_delay` in the script. If no delay is defined, 20 seconds will be used
+#### 🌟 Improvements
+* Resume after sending webp and gif images is now also supported
+#### 🙏 Thanks to:
+* @cheadrian for the commits on Github
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -45,8 +45,7 @@ There are no required variables, but if you use Google Home speaker groups and p
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
-|image_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
-|dashboard_cast_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
+|default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
 
 ## The automation for automatic resume (✨ NEW in v2.7.0)
 [Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
@@ -127,6 +126,7 @@ When calling the script, there are 3 fields you can provide. `action` is require
 |target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported.
 |action|Yes|The ations to be performed, only service calls are supported. If other actions are needed, you can create a script and call the script.|
 |resume_this_action|No|Actions from the `action` field will not be resumed if set to `false`. Default is `true`.|
+|resume_delay|No|Delay after which the resume is started when sending an image, or casting a dashboard. Default is the `default_resume_delay` in the script settings, if that is not set, the default is 20 seconds.
 
 As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. It is also possible to add them under `data`, in that case you can use `script_extra`. Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 The following variables are supported:
