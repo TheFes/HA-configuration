@@ -7,7 +7,6 @@ trigger:
     entity_id:
       - light.keuken
       - light.wc
-      - light.woonkamer_plafond
     from: "off"
     to: "on"
 variables:
@@ -16,7 +15,6 @@ variables:
   bright:
     keuken: 30
     wc: 80
-    woonkamer_plafond: 50
 action:
   - alias: "Adjust brightness"
     service: light.turn_on
