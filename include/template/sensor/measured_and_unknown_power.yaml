@@ -15,7 +15,7 @@ sensor:
     attributes:
       using_power: >
         {%- set ns = namespace(power=[]) %}
-        {%- for e in expand('group.measured_power') %}
+        {%- for e in expand('group.measured_power') | selectattr('state' , 'is_number') %}
           {% if e.state | float > 0 %}
             {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state | float)] %}
           {% endif %}
@@ -24,8 +24,10 @@ sensor:
       not_using_power: >
         {%- set ns = namespace(power=[]) %}
         {%- for e in expand('group.measured_power') %}
-          {% if e.state | float == 0 %}
+          {% if e.state | is_number and e.state | float == 0 %}
             {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name) ] %}
+          {% elif not e.state | is_number %}
+            {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state)] %}
           {% endif %}
         {% endfor %} 
         {{ ns.power }}
