@@ -1,0 +1,44 @@
+platform: template
+lights:
+  hallway_osc:
+    unique_id: a5559042-06ec-4aa4-ac13-76cde63897f4
+    friendly_name: "Hallway"
+    level_template: "{{ state_attr('light.hallway', 'brightness') }}"
+    value_template: "{{ not is_state('select.hallway_lights_preset', 'uit') }}"
+    availability_template: "{{ not states('light.hallway') in ['unavailable', 'unknown'] }}"
+    turn_on:
+      - alias: "Set light to default preset"
+        service: select.select_option
+        data:
+          entity_id: select.hallway_lights_preset
+          option: "5%"
+    turn_off:
+      - alias: "Activate off preset"
+        service: select.select_option
+        data:
+          entity_id: select.hallway_lights_preset
+          option: "uit"
+    set_level:
+      - variables:
+          preset_values: >
+            {% set presets = state_attr('select.hallway_lights_preset', 'options') %}
+            {% set ns = namespace(presets=[]) %}
+            {% for p in presets %}
+              {% set v = 0 if p == 'uit' else p | replace('%', '') | int %}
+              {% set ns.presets = ns.presets + [ { 'preset': p, 'value': (v * 2.55) | round(0) } ] %}
+            {% endfor %}
+            {{ ns.presets }}
+      - if: >
+          {% set values = preset_values | map(attribute='value') | list %}
+          {{ brightness in values }}
+        then:
+          - alias: "Activate matching preset"
+            service: select.select_option
+            data:
+              entity_id: select.hallway_lights_preset
+              option: >
+                {{ preset_values | selectattr('value', 'eq', brightness) | map(attribute='preset') | join }}
+      - service: light.turn_on
+        data:
+          entity_id: light.hallway
+          brightness: "{{ brightness }}"

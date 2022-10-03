@@ -1,0 +1,19 @@
+platform: template
+lights:
+  bathroom_cabinet_osc:
+    unique_id: 053f4fc4-ad8a-4f4d-ae5f-c18d3250ae4c
+    friendly_name: "Bathroom Cabinet"
+    value_template: "{{ not is_state('select.bathroom_cabinet_lights_preset', 'uit') }}"
+    availability_template: "{{ not states('select.bathroom_cabinet_lights_preset') in ['unavailable', 'unknown'] }}"
+    turn_on:
+      - alias: "Set light to default preset"
+        service: select.select_option
+        data:
+          entity_id: select.bathroom_cabinet_lights_preset
+          option: "on"
+    turn_off:
+      - alias: "Activate off preset"
+        service: select.select_option
+        data:
+          entity_id: select.bathroom_cabinet_lights_preset
+          option: "uit"

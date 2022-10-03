@@ -1,0 +1,19 @@
+platform: template
+switches:
+  living_room_socket_osc:
+    unique_id: fa7266cc-b804-4425-85c8-ccb72bfd6914
+    friendly_name: "Living Room Socket"
+    value_template: "{{ not is_state('select.living_room_wall_socket_lights_preset', 'uit') }}"
+    availability_template: "{{ not states('select.living_room_wall_socket_lights_preset') in ['unavailable', 'unknown'] }}"
+    turn_on:
+      - alias: "Set light to default preset"
+        service: select.select_option
+        data:
+          entity_id: select.living_room_wall_socket_lights_preset
+          option: "on"
+    turn_off:
+      - alias: "Activate off preset"
+        service: select.select_option
+        data:
+          entity_id: select.living_room_wall_socket_lights_preset
+          option: "uit"
