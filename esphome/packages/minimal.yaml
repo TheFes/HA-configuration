@@ -7,10 +7,8 @@ wifi:
     gateway: 192.168.2.100
     subnet: 255.255.255.0
   ap:
-    ssid: "${device_name} ${device_type} Hotspot"
+    ssid: "${device_name} ${device_type}"
     password: !secret hotspot_pass
-
-captive_portal:
 
 # Enable logging
 logger:

@@ -1,0 +1,218 @@
+output:
+  - platform: gpio
+    id: "relay_output"
+    pin: GPIO26
+
+binary_sensor:
+  # - platform: gpio
+  #   pin: GPIO4
+  #   id: shelly1_switch
+  #   on_multi_click:
+  #     - timing:
+  #         - ON for at most 1s
+  #         - OFF for at most 1s
+  #         - ON for at most 1s
+  #         - OFF for at most 1s
+  #         - ON for at most 1s
+  #         - OFF for at least 0.2s
+  #       then:
+  #         - switch.toggle: shelly_relay
+  #     - timing:
+  #         - ON for at most 1s
+  #         - OFF for at most 1s
+  #         - ON for at most 1s
+  #         - OFF for at least 0.2s
+  #       then:
+  #         - if:
+  #             condition:
+  #               and:
+  #                 - api.connected:
+  #                 - switch.is_on: shelly_relay
+  #                 - not:
+  #                     text_sensor.state:
+  #                       id: light_status
+  #                       state: "unavailable"
+  #             then:
+  #               - homeassistant.event:
+  #                   event: esphome.button_pressed
+  #                   data:
+  #                     device: ${device_name}
+  #                     click_type: double
+  #             else:
+  #               - switch.toggle: shelly_relay
+  #     - timing:
+  #         - ON for at least 1.5s
+  #       then:
+  #         - if:
+  #             condition:
+  #               and:
+  #                 - api.connected:
+  #                 - switch.is_on: shelly_relay
+  #             then:
+  #               - homeassistant.event:
+  #                   event: esphome.button_pressed
+  #                   data:
+  #                     device: ${device_name}
+  #                     click_type: long
+  #             else:
+  #               - switch.toggle: shelly_relay
+  #     - timing:
+  #         - ON for at most 1s
+  #         - OFF for at least 0.25s
+  #       then:
+  #         - if:
+  #             condition:
+  #               and:
+  #                 - api.connected:
+  #                 - switch.is_on: shelly_relay
+  #             then:
+  #               - homeassistant.event:
+  #                   event: esphome.button_pressed
+  #                   data:
+  #                     device: ${device_name}
+  #                     click_type: short
+  #             else:
+  #               - switch.toggle: shelly_relay
+  #   on_release:
+  #     then:
+  #       - homeassistant.event:
+  #           event: esphome.button_pressed
+  #           data:
+  #             device: ${device_name}
+  #             click_type: release
+  #   filters:
+  #     - delayed_on_off: 50ms
+  - platform: gpio
+    id: shelly_button
+    pin:
+      number: GPIO25
+      inverted: yes
+      mode:
+        input: true
+        pullup: true
+    on_multi_click:
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - switch.toggle: shelly_relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                and:
+                  - api.connected:
+                  - switch.is_on: shelly_relay
+                  - not:
+                      text_sensor.state:
+                        id: light_status
+                        state: "unavailable"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: double
+              else:
+                - switch.toggle: shelly_relay
+      - timing:
+          - ON for at least 1.5s
+        then:
+          - if:
+              condition:
+                and:
+                  - api.connected:
+                  - switch.is_on: shelly_relay
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: long
+              else:
+                - switch.toggle: shelly_relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.25s
+        then:
+          - if:
+              condition:
+                and:
+                  - api.connected:
+                  - switch.is_on: shelly_relay
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: short
+              else:
+                - switch.toggle: shelly_relay
+    on_release:
+      then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${device_name}
+              click_type: release
+    filters:
+      - delayed_on_off: 5ms
+
+sensor:
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: "${device_name} Temperature"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:thermometer"
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+    on_value_range:
+      - above: "80.0"
+        then:
+          - switch.turn_off: "shelly_relay"
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO32
+    attenuation: 11db
+
+  - platform: adc
+    name: "${device_name} Relay Supply Voltage"
+    pin: GPIO33
+    attenuation: 11db
+    filters:
+      - multiply: 8
+
+# status_led:
+#   pin:
+#     number: GPIO0
+#     inverted: true
+
+switch:
+  - platform: output
+    id: shelly_relay
+    name: "${device_type} ${device_name}"
+    output: "relay_output"
+    restore_mode: restore_default_off
+
+text_sensor:
+  - platform: homeassistant
+    name: "Light ${device_name} status"
+    entity_id: light.${device_lower}
+    id: light_status
+    internal: true
