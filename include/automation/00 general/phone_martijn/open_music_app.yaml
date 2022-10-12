@@ -3,7 +3,7 @@ alias: "00 - Open music app on BT connection"
 mode: restart
 trigger:
   - platform: state
-    entity_id: sensor.pixel_5_bluetooth_connection
+    entity_id: sensor.pixel_7_pro_bluetooth_connection
     attribute: connected_paired_devices
 variables:
   bt_added: >
@@ -22,7 +22,7 @@ action:
   - if: "{{ bt_added in headphones }}"
     then:
       - alias: "Send notification to select right app"
-        service: notify.mobile_app_pixel_5
+        service: notify.mobile_app_pixel_7_pro
         data:
           title: Muziekje?
           message: Wat wil je luisteren
@@ -44,7 +44,7 @@ action:
       - delay:
           minutes: 10
   - alias: "Remove notification"
-    service: notify.mobile_app_pixel_5
+    service: notify.mobile_app_pixel_7_pro
     data:
       message: "clear_notification"
       data:

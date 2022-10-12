@@ -22,7 +22,7 @@ trigger:
     id: "reset"
 variables:
   name: "{{ states[trigger.entity_id].object_id }}"
-  notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_5' }}"
+  notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "sensor.{{ name }}_naar_huis"
   eta: >

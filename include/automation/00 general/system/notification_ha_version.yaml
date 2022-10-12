@@ -26,7 +26,7 @@ action:
     variables:
       action_update: "{{ 'UPDATE_' ~ context.id }}"
   - alias: "Send notification to phone"
-    service: notify.mobile_app_pixel_5
+    service: notify.mobile_app_pixel_7_pro
     data:
       title: >
         Update: {{ what }}

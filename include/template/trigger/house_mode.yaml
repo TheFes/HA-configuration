@@ -5,7 +5,7 @@ trigger:
       - input_boolean.gast
       - zone.home
   - platform: state
-    entity_id: sensor.pixel_5_charger_type
+    entity_id: sensor.pixel_7_pro_charger_type
     to: "wireless"
   - platform: state
     entity_id: sensor.de_buurvrouw_battery_state
@@ -48,7 +48,7 @@ sensor:
           and is_state('light.groep_beneden', 'off')
           and
             (
-              is_state('sensor.pixel_5_charger_type', 'wireless')
+              is_state('sensor.pixel_7_pro_charger_type', 'wireless')
               or not is_state('person.martijn', 'home')
             )
           and

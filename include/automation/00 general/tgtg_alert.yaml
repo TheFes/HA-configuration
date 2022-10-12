@@ -10,14 +10,14 @@ action:
       - conditions: "{{ states('sensor.tgtg_bakker_ochtend_box') == '0' }}"
         sequence:
           - alias: "Dismiss notification"
-            service: notify.mobile_app_pixel_5
+            service: notify.mobile_app_pixel_7_pro
             data:
               message: "clear_notification"
               data:
                 tag: TGTG
     default:
       - alias: "Send notification"
-        service: notify.mobile_app_pixel_5
+        service: notify.mobile_app_pixel_7_pro
         data:
           title: "TGTG Box beschikbaar"
           message: "Er {{ iif(states('sensor.tgtg_bakker_ochtend_box') == '1','is', 'zijn') }} er nog {{ states('sensor.tgtg_bakker_ochtend_box') }}"

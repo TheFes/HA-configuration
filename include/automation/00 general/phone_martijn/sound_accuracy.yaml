@@ -11,13 +11,13 @@ trigger:
     from: home
     id: "away"
   - platform: state
-    entity_id: sensor.pixel_5_detected_activity
+    entity_id: sensor.pixel_7_pro_detected_activity
     to:
       - "on_bicycle"
       - "in_vehicle"
     id: "on_the_move"
   - platform: state
-    entity_id: sensor.pixel_5_detected_activity
+    entity_id: sensor.pixel_7_pro_detected_activity
     from:
       - "on_bicycle"
       - "in_vehicle"
@@ -30,12 +30,12 @@ action:
             condition: trigger
             id: "home"
         sequence:
-          - service: notify.mobile_app_pixel_5
+          - service: notify.mobile_app_pixel_7_pro
             data:
               message: "command_ringer_mode"
               title: "normal"
           - delay: 0.5
-          - service: notify.mobile_app_pixel_5
+          - service: notify.mobile_app_pixel_7_pro
             data:
               message: "command_high_accuracy_mode"
               title: "turn_off"
@@ -44,7 +44,7 @@ action:
             condition: trigger
             id: "away"
         sequence:
-          - service: notify.mobile_app_pixel_5
+          - service: notify.mobile_app_pixel_7_pro
             data:
               message: "command_ringer_mode"
               title: "vibrate"
@@ -53,7 +53,7 @@ action:
             condition: trigger
             id: "on_the_move"
         sequence:
-          - service: notify.mobile_app_pixel_5
+          - service: notify.mobile_app_pixel_7_pro
             data:
               message: "command_high_accuracy_mode"
               title: "turn_on"
@@ -62,7 +62,7 @@ action:
             condition: trigger
             id: "stationary"
         sequence:
-          - service: notify.mobile_app_pixel_5
+          - service: notify.mobile_app_pixel_7_pro
             data:
               message: "command_high_accuracy_mode"
               title: "turn_off"
