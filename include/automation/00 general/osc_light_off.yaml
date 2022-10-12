@@ -1,0 +1,28 @@
+id: 5df25dee-a32d-428a-819f-dfe202a28572
+alias: "00 - Turn unwanted OSC lights off"
+trigger:
+  - platform: state
+    entity_id:
+      - light.bathroom
+      - light.bathroom_cabinet
+      - light.hallway
+      - light.landing
+      - light.living_room_ceiling
+    from:
+    to: "on"
+    for:
+      seconds: 2
+variables:
+  mapping:
+    bathroom: select.bathroom_ceiling_lights_preset
+    bathroom_cabinet: select.bathroom_cabinet_lights_preset
+    hallway: select.hallway_lights_preset
+    landing: select.landing_lights_preset
+    living_room_ceiling: select.living_room_ceiling_lights_preset
+condition:
+  - condition: template
+    value_template: "{{ is_state(mapping[trigger.entity_id.split('.')[1]], 'uit') }}"
+action:
+  - service: light.turn_off
+    target:
+      entity_id: "{{ trigger.entity_id }}"
