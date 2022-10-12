@@ -1,0 +1,20 @@
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - input_boolean.test
+        not_to:
+          - unavailable
+          - unknown
+        not_from:
+          - unavailable
+          - unknown
+    sensor:
+      unique_id: dbf841e2-ae6f-4fc1-9534-a1046204945f
+      name: Nominal Change History
+      state: "OK"
+      attributes:
+        changes: >
+          {% set current = this.attributes.get('changes', {}) %}
+          {% set new = {trigger.entity_id: trigger.to_state.last_changed.isoformat()} %}
+          {{ dict(current, **new) }}
