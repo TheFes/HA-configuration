@@ -15,9 +15,11 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Verstion 1.6.0 - 04 August 2022
-#### ✨ New feature
-* Support for Music Assistant resume
+### Version 1.6.1 - 13 October 2022
+#### 🌟 Improvements
+* Improved template to gather speaker data by removing dedundant templates
+#### 🐛 Bug fixes
+* Fix for `media_content_type` being stored incorreclty causing the data to be saved as string
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 

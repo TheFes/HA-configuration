@@ -8,6 +8,12 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
 * The Google Home Resume script
 
+### Version 0.6.2 - 13 October 2022
+#### 🌟 Improvements
+* Improved template to gather speaker data by removing dedundant templates
+#### 🐛 Bug fixes
+* Fix for `media_content_type` being stored incorreclty causing the data to be saved as string
+
 ### Version 0.6.1 - 12 July 2022
 #### 🐛 Bug fixes
 * Template fix to prevent errors on missing attributes when creating the data variables

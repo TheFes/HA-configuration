@@ -2,6 +2,12 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 1.6.1 - 13 October 2022
+#### 🌟 Improvements
+* Improved template to gather speaker data by removing dedundant templates
+#### 🐛 Bug fixes
+* Fix for `media_content_type` being stored incorreclty causing the data to be saved as string
+
 ### Verstion 1.6.0 - 04 August 2022
 #### ✨ New feature
 * Support for Music Assistant resume

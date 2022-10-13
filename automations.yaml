@@ -185,6 +185,24 @@
           data:
             entity_id: "{{ ytube_music_data | selectattr('target', 'in', target_list) | map(attribute='player') | list }}"
             command: interrupt_start
+    - alias: "Short delay"
+      delay: 0.5
+    - alias: "Check again if target is not in a group"
+      condition: template
+      value_template: >
+        {% set groups = states.group
+                  | selectattr('entity_id', 'search', 'resume_script_active_ghresume_')
+                  | map(attribute='entity_id')
+                  | list
+        %}
+        {% set active = expand(groups)
+                          | rejectattr('state', 'in', ['unkown', 'unavailable'])
+                          | map(attribute='entity_id')
+                          | unique
+                          | list
+        %}
+        {% set e = trigger.event.data.service_data.entity_id %}
+        {{ ((e | replace(' ', '')).split(',') if e is string else e) | reject('in', active) | list | count > 0 }}
     - alias: Send actions using Google Home Resume script
       service: script.turn_on
       target:

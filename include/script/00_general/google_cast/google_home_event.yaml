@@ -62,7 +62,7 @@ google_home_event:
     notify: notify.resume_data
   sequence:
     - variables:
-        version: 0.6.2
+        version: 0.6.3
     - variables:
         resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
         resume_volume: >
@@ -177,10 +177,9 @@ google_home_event:
                   {%- set ns = namespace(info=[]) %}
                   {%- for entity in expand(integration_entities('cast')) %}
                       {%- set general = dict(
-                                              data_source = 'event_script',
+                                              data_source = 'resume_script',
                                               entity_id = entity.entity_id,
-                                              state = entity.state,
-                                              target = iif(entity.entity_id in target_list,'target', 'no_target')
+                                              state = entity.state
                                               )
                       %}
                       {%- if mass_entities | count > 0 %}
@@ -191,41 +190,32 @@ google_home_event:
                         %}
                         {%- set general = dict(general, **mass_data) %}
                       {%- endif %}
-                      {%- if entity.attributes.app_name is defined and entity.attributes.app_name == 'Spotify' %}
-                        {%- set additional = dict(
-                                                  app_name = 'Spotify',
-                                                  volume_level = entity.attributes.volume_level,
-                                                  media_position =  as_timestamp(now()) | round(2)
-                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                    + entity.attributes.get('media_position', 0)
-                                                  )
-                        %}
-                      {%- elif entity.attributes.app_name is defined and entity.attributes.app_name in ['YouTube', 'YouTube Music'] %}
+                      {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
+                        {%- set additional = dict( volume_level = entity.attributes.volume_level ) %}
+                      {% elif entity.state == 'playing' %}
                         {%- set additional = dict(
                                                   app_name = entity.attributes.app_name,
                                                   volume_level = entity.attributes.volume_level,
-                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
+                                                  media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
+                                                                      if entity.attributes.get('app_name') == 'Google Podcasts' 
+                                                                      else entity.attributes.get('media_content_id', 'no media_content'),
                                                   media_position =  as_timestamp(now()) | round(2)
-                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
+                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2)
                                                                     + entity.attributes.get('media_position', 0)
                                                   )
                         %}
-                      {%- elif entity.state == 'playing' %}
-                        {%- set additional = dict(
-                                                  app_name = entity.attributes.app_name,
-                                                  volume_level = entity.attributes.volume_level,
-                                                  media_content_id = entity.attributes.get('media_content_id', 'no media_content'),
-                                                  media_title = entity.attributes.get('media_title', 'no title'),
-                                                  media_artist = entity.attributes.get('media_artist', 'no artist'),
-                                                  media_content_type = entity.attributes.get('media_content_type', 'no type'),
-                                                  entity_picture = entity.attributes.get('entity_picture', 'no pic'),
-                                                  media_position =  as_timestamp(now()) | round(2)
-                                                                    - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2) 
-                                                                    + entity.attributes.get('media_position', 0)
-                                                  )
-                        %}
-                      {%- endif %}
-                    {% set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
+                        {% if entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
+                          {%- set more_additional = dict(
+                                                        media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
+                                                                        else entity.attributes.get('media_artist', 'no artist'),
+                                                        media_content_type = '' ~ entity.attributes.get('media_content_type', 'no type'),
+                                                        entity_picture = entity.attributes.get('entity_picture', 'no pic')
+                                                        )
+                          %}
+                          {% set additional = dict(additional, **more_additional) %}
+                        {% endif %}
+                      {% endif %}
+                    {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
                   {%- endfor %}
                   {{ ns.info }}
                 ytube_music_data: >
