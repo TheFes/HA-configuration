@@ -242,10 +242,17 @@ transition_lights_perform_transition:
               - alias: "Check if step count is reached"
                 if: "{{ repeat.index == steps }}"
                 then:
-                  - alias: "Last step, set light to end settings"
-                    service: light.turn_on
-                    target:
-                      entity_id: "{{ light }}"
+                  - alias: "Use light.turn_off when br_end is 0"
+                    if: "{{ br_change and use_br and br_end == 0 }}"
+                    then:
+                      - service: light.turn_off
+                        target:
+                          entity_id: "{{ light }}"
+                    else:
+                      - alias: "Last step, set light to end settings"
+                        service: light.turn_on
+                        target:
+                          entity_id: "{{ light }}"
                     data: >
                       {% set br = dict(brightness=br_end) if br_change and use_br else {} %}
                       {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
