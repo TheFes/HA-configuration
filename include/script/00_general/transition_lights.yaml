@@ -258,17 +258,31 @@ transition_lights_perform_transition:
                           {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
                           {{ dict(br, **ct) }}
                 else:
-                  - alias: "Adjust light according to settings script"
-                    service: light.turn_on
-                    target:
-                      entity_id: "{{ light }}"
-                    data: >
-                      {% set br = dict(brightness=(br_start + repeat.index * br_step) | round(0))
-                          if br_change and use_br else {} %}
-                      {% set ct = dict(color_temp=(ct_start + repeat.index * ct_step) | round(0))
-                          if ct_change and use_ct else {} %}
-                      {{ dict(br, **ct) }}
-                  - delay: "{{ delay }}"
+                  - if: "{{ [0, (br_start + repeat.index * br_step) | round(0)] | max == 0 and br_end == 0 }}"
+                    then:
+                      - service: light.turn_off
+                        target:
+                          entity_id: "{{ light }}"
+                      - alias: "Remove light from group"
+                        service: group.set
+                        data:
+                          object_id: transition_active
+                          name: Lights with transition active
+                          icon: mdi:lightbulb
+                          entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list | reject('eq', light) | list }}"
+                      - stop: "Light turned off early"
+                    else:
+                      - alias: "Adjust light according to settings script"
+                        service: light.turn_on
+                        target:
+                          entity_id: "{{ light }}"
+                        data: >
+                          {% set br = dict(brightness=[255, [0, (br_start + repeat.index * br_step) | round(0)] | max] | min)
+                              if br_change and use_br else {} %}
+                          {% set ct = dict(color_temp=[ct_max, [ct_min, (ct_start + repeat.index * ct_step) | round(0)] | max ] | min)
+                              if ct_change and use_ct else {} %}
+                          {{ dict(br, **ct) }}
+                      - delay: "{{ delay }}"
         - alias: "Remove light from group"
           service: group.set
           data:
