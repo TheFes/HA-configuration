@@ -253,10 +253,10 @@ transition_lights_perform_transition:
                         service: light.turn_on
                         target:
                           entity_id: "{{ light }}"
-                    data: >
-                      {% set br = dict(brightness=br_end) if br_change and use_br else {} %}
-                      {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
-                      {{ dict(br, **ct) }}
+                        data: >
+                          {% set br = dict(brightness=br_end) if br_change and use_br else {} %}
+                          {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
+                          {{ dict(br, **ct) }}
                 else:
                   - alias: "Adjust light according to settings script"
                     service: light.turn_on
