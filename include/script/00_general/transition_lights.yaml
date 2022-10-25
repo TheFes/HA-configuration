@@ -31,6 +31,13 @@ transition_lights:
       required: false
       selector:
         boolean:
+    use_br_pct:
+      description: "Use brightness percentage (1-100) instead of brightness (1-255) for the transition"
+      name: Use brightness
+      default: false
+      required: false
+      selector:
+        boolean:
     br_start:
       description: "Start brightness of the transition (0-255) - Default is current value of the light - Use either value or percentage, not both"
       name: Brightness start value
@@ -151,17 +158,18 @@ transition_lights:
               variables:
                 light: "{{ repeat.item }}"
                 duration: "{{ duration }}"
-                br_start: "{{ br_start if br_start is defined else none }}"
-                br_start_pct: "{{ br_start_pct if br_start_pct is defined else none }}"
-                br_end: "{{ br_end if br_end is defined else none }}"
-                br_end_pct: "{{ br_end_pct if br_end_pct is defined else none }}"
-                ct_start: "{{ ct_start if ct_start is defined else none }}"
-                ct_end: "{{ ct_end if ct_end is defined else none }}"
-                ct_start_pct: "{{ ct_start_pct if ct_start_pct is defined else none }}"
-                ct_end_pct: "{{ ct_end_pct if ct_end_pct is defined else none }}"
-                min_delay: "{{ min_delay if min_delay is defined and min_delay is not none else 0.5 }}"
-                use_br: "{{ use_br if use_br is defined and use_br is not none else true }}"
-                use_ct: "{{ use_ct if use_ct is defined and use_ct is not none else true }}"
+                use_br_pct: "{{ use_br_pct | default(false) }}"
+                br_start: "{{ br_start | default(none) }}"
+                br_start_pct: "{{ br_start_pct | default(none) }}"
+                br_end: "{{ br_end | default(none) }}"
+                br_end_pct: "{{ br_end_pct | default(none) }}"
+                ct_start: "{{ ct_start | default(none) }}"
+                ct_end: "{{ ct_end | default(none) }}"
+                ct_start_pct: "{{ ct_start_pct | default(none) }}"
+                ct_end_pct: "{{ ct_end_pct | default(none) }}"
+                min_delay: "{{ min_delay | default(0.5) }}"
+                use_br: "{{ use_br | default(true) }}"
+                use_ct: "{{ use_ct | default(true) }}"
 
 transition_lights_perform_transition:
   alias: "00 - Perform transition light brightness and color_temp (helper script)"
@@ -192,7 +200,18 @@ transition_lights_perform_transition:
         - alias: "Apply default settings if needed"
           variables:
             br_start_set: "{{ br_start is not none or br_start_pct is not none }}"
-            br_start: "{{ br_start if br_start is not none else (br_start_pct | default(0, true) * 2.55) | round(0) }}"
+            br_start: >
+              {% if use_br_pct %}
+                {{ br_start_pct | default((br_start | default(0, true) / 2.55) | round(0), true) }}
+              {% else %}
+                {{ br_start | default((br_start_pct | default(0, true) * 2.55) | round(0), true) }}
+              {% endif %}
+            br_end: >
+              {% if use_br_pct %}
+                {{ br_end_pct | default((br_end | default(255, true) / 2.55) | round(0), true) }}
+              {% else %}
+                {{ br_end | default((br_end_pct | default(100, true) * 2.55) | round(0), true) }}
+              {% endif %}
             ct_start_set: "{{ ct_start is not none or ct_start_pct is not none }}"
             ct_min: "{{ state_attr(light, 'min_mireds') | default(0, true) }}"
             ct_max: "{{ state_attr(light, 'max_mireds') | default(0, true) }}"
@@ -210,16 +229,15 @@ transition_lights_perform_transition:
           wait_template: "{{ is_state(light, 'on') }}"
         - alias: "Set variables for repeat and apply defaults if needed"
           variables:
-            br_start: "{{ br_start if br_start_set else state_attr(light, 'brightness') | default(0, true) }}"
+            br: "{{ state_attr(light, 'brightness') }}"
+            br_start: >
+              {{ 0 if br is none else (br_start if br_start_set else br) }}
             br_end: >
-              {% set br_end_set = br_end is not none or br_end_pct is not none %}
-              {% set br_end = 255 if not br_end_set else br_end %}
-              {% set br_end = 0 if state_attr(light, 'brightness') is none else br_end %}
-              {{ br_end if br_end is not none else (br_end_pct * 2.55) | round(0) }}
+              {{ 0 if br is none else br_end }}
             ct_start: "{{ ct_start if cr_start_set else state_attr(light, 'color_temp') }}"
             ct_end: >
               {% set ct_end_set = ct_end is not none or ct_end_pct is not none %}
-              {% set ct_end = state_attr(light, 'min_mireds') | default(0, true) if not ct_end_set else ct_end %}
+              {% set ct_end = ct_min if not ct_end_set else ct_end %}
               {{ ct_end if ct_end is not none else (ct_min + ct_end_pct / 100 * ct_diff) | round(0) }}
             min_delay: "{{ min_delay if min_delay is not none else 0.5 }}"
             max_steps: "{{ duration / min_delay }}"
@@ -239,8 +257,13 @@ transition_lights_perform_transition:
                 condition: template
                 value_template: "{{ repeat.index <= steps }}"
             sequence:
-              - alias: "Check if step count is reached"
-                if: "{{ repeat.index == steps }}"
+              - variables:
+                  br_max: "{{ 100 if use_br_pct else 255 }}"
+                  br_next: "{{ [br_max, [0, (br_start + repeat.index * br_step) | round(0)] | max] | min }}"
+                  ct_next: "{{ [ct_max, [ct_min, (ct_start + repeat.index * ct_step) | round(0)] | max ] | min }}"
+                  br_key: "{{ 'brightness_pct' if use_br_pct else 'brightness' }}"
+              - alias: "Check if step count or target is reached"
+                if: "{{ repeat.index == steps or (br_next == br_end and ct_next == ct_end) or br_next == 0 }}"
                 then:
                   - alias: "Use light.turn_off when br_end is 0"
                     if: "{{ br_change and use_br and br_end == 0 }}"
@@ -254,35 +277,21 @@ transition_lights_perform_transition:
                         target:
                           entity_id: "{{ light }}"
                         data: >
-                          {% set br = dict(brightness=br_end) if br_change and use_br else {} %}
+                          {% set br = { br_key: br_end } if br_change and use_br else {} %}
                           {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
                           {{ dict(br, **ct) }}
                 else:
-                  - if: "{{ [0, (br_start + repeat.index * br_step) | round(0)] | max == 0 and br_end == 0 }}"
-                    then:
-                      - service: light.turn_off
-                        target:
-                          entity_id: "{{ light }}"
-                      - alias: "Remove light from group"
-                        service: group.set
-                        data:
-                          object_id: transition_active
-                          name: Lights with transition active
-                          icon: mdi:lightbulb
-                          entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list | reject('eq', light) | list }}"
-                      - stop: "Light turned off early"
-                    else:
-                      - alias: "Adjust light according to settings script"
-                        service: light.turn_on
-                        target:
-                          entity_id: "{{ light }}"
-                        data: >
-                          {% set br = dict(brightness=[255, [0, (br_start + repeat.index * br_step) | round(0)] | max] | min)
-                              if br_change and use_br else {} %}
-                          {% set ct = dict(color_temp=[ct_max, [ct_min, (ct_start + repeat.index * ct_step) | round(0)] | max ] | min)
-                              if ct_change and use_ct else {} %}
-                          {{ dict(br, **ct) }}
-                      - delay: "{{ delay }}"
+                  - alias: "Adjust light according to settings script"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data: >
+                      {% set br = { br_key: br_next }
+                          if br_change and use_br else {} %}
+                      {% set ct = dict(color_temp=ct_next)
+                          if ct_change and use_ct else {} %}
+                      {{ dict(br, **ct) }}
+                  - delay: "{{ delay }}"
         - alias: "Remove light from group"
           service: group.set
           data:
