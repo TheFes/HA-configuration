@@ -131,7 +131,20 @@ binary_sensor:
       - timing:
           - ON for at most 0.8s
         then:
-          - light.toggle: my_light
+          - if:
+              condition:
+                - or:
+                    - lambda: 'return id(time_homeassistant).now().hour >= 22;'
+                    - lambda: 'return id(time_homeassistant).now().hour <= 6;'
+                - text_sensor.state:
+                    id: my_light_mode
+                    state: "off"
+              then:
+                - light.turn_on:
+                    id: my_light
+                    brightness: 1%
+              else:
+                - light.toggle: my_light
       - timing:
           - ON for at least 0.8s
         then:

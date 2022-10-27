@@ -28,8 +28,9 @@ sensor:
     total:
       id: sensor_pulse_meter_total
       name: "${device_name} Total Consumption"
-      icon: "mdi:cube-outline"
-      unit_of_measurement: "M3"
+      unit_of_measurement: "m³"
+      state_class: total_increasing
+      device_class: water
       accuracy_decimals: 3
       filters:
         - multiply: 0.001
