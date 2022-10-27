@@ -2,12 +2,12 @@ id: d219003e-150b-49fc-8b9b-e627af61d560
 alias: "00 - Turn off bluetooth during night"
 trigger:
   - platform: state
-    entity_id: sensor.pixel_7_pro_charger_type
-    to: "wireless"
+    entity_id: sensor.pixel_7_pro_battery_state
+    to: "charging"
     id: "off"
   - platform: state
-    entity_id: sensor.pixel_7_pro_charger_type
-    from: "wireless"
+    entity_id: sensor.pixel_7_pro_battery_state
+    from: "charging"
     id: "on"
   - platform: time
     at: "22:30:00"
@@ -22,10 +22,26 @@ action:
             condition: time
             after: "22:29:59"
             before: "06:00:00"
-          - alias: "Wireless charging"
-            condition: state
-            entity_id: sensor.pixel_7_pro_charger_type
-            state: "wireless"
+          - or:
+              - and:
+                  - alias: "at home"
+                    condition: state
+                    entity_id: person.martijn
+                    state: home
+                  - alias: "Wireless charging"
+                    condition: state
+                    entity_id: sensor.pixel_7_pro_charger_type
+                    state: "wireless"
+              - and:
+                  - not:
+                      - alias: "at home"
+                        condition: state
+                        entity_id: person.martijn
+                        state: home
+                  - alias: "Charging"
+                    condition: state
+                    entity_id: sensor.pixel_7_pro_battery_state
+                    state: "charging"
         sequence:
           - alias: "Bluetooth off"
             service: notify.mobile_app_pixel_7_pro
