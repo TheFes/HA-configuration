@@ -1,0 +1,53 @@
+substitutions:
+  device_name: Bedside Lamp Martijn
+  device_type: ""
+  ip: 192.168.2.97
+  name: bedside-lamp
+  friendly_name: Bedside Lamp Martijn
+  #light_name: ${friendly_name} RGBWW Light
+  #light_mode_text_sensor_name: ${friendly_name} Light Mode
+  #default_transition_length: 800ms
+
+# --------------------------------------------------------------------------
+# Load configuration packages
+#
+# These provide a convenient way to compose your device configuration from
+# some functional building blocks. Pick and mix the blocks that you need.
+#
+# For customization you can override options in your config or you can
+# copy the contents of these packages directly in your config file as
+# an example for your own customizations.
+#
+# Available packages are:
+# - core.yaml                : core components & hardware setup
+# - behavior_default.yaml    : default device behavior
+# - ota_feedback.yaml        : enable visual feedback during OTA updates
+# - activate_preset_svc.yaml : 'activate_preset' service for Home Assistant
+# --------------------------------------------------------------------------
+
+packages:
+  bslamp2:
+    url: https://github.com/mmakaay/esphome-xiaomi_bslamp2
+    ref: dev
+    files:
+      - packages/core.yaml
+      # - packages/behavior_default.yaml
+      - packages/ota_feedback.yaml
+      - packages/activate_preset_svc.yaml
+    refresh: 0s
+  default_amended: !include packages/bedside_lamp/behaviour_default.yaml
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  # bt_proxy: !include packages/bt_proxy.yaml
+
+esphome:
+  name: ${name}
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
