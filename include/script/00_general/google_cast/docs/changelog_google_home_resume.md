@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
+### Version 2.8.6 - 27 October 2022
+#### 🐛 Bug fixes
+* Fixed a typo which caused that volume restore was not working anymore
+
 ### Version 2.8.5 - 13 October 2022
 #### 🌟 Improvements
 * Improved template to gather speaker data by removing dedundant templates
