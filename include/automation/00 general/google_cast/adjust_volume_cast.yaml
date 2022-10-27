@@ -27,7 +27,7 @@ trigger:
     to:
       - "off"
       - "idle"
-    for: "00:00:06"
+    for: "00:00:11"
 condition:
   - alias: "Previous state not unavailable"
     condition: template
@@ -36,7 +36,7 @@ condition:
     condition: template
     value_template: >
       {% set groups = integration_entities('group') | select('search', 'group.resume_script_active') | list %}
-      {% set entities = expand(groups) | map(attribute='entity_id') | list  %}
+      {% set entities = expand(groups) | map(attribute='entity_id') | list %}
       {{ not trigger.entity_id in entities }}
 variables:
   player: "{{ trigger.entity_id }}"

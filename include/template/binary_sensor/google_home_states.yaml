@@ -5,7 +5,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.huis_groep', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -15,7 +15,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.beneden_groep', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -25,7 +25,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.boven_groep', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -36,7 +36,7 @@ binary_sensor:
     state: >-
       {{ is_state('media_player.zolder_groep', 'playing') }}
     delay_on: "00:00:05"
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     attributes:
       volume: 0.25
 
@@ -46,7 +46,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.keuken_hub', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -56,7 +56,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.woonkamer_mini', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -67,11 +67,11 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.floris_mini', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: >
-        {%- if now() > today_at("19:00") %}
+        {%- if now() > today_at("19:30") %}
           0.0
         {%- else %}
           0.25
@@ -82,11 +82,11 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.pepijn_mini', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: >
-        {%- if now() > today_at("19:00") %}
+        {%- if now() > today_at("19:30") %}
           0.0
         {%- else %}
           0.25
@@ -97,7 +97,7 @@ binary_sensor:
     device_class: running
     state: >-
       {{ is_state('media_player.slaapkamer_hub', 'playing') }}
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     delay_on: "00:00:05"
     attributes:
       volume: 0.25
@@ -109,7 +109,7 @@ binary_sensor:
     state: >-
       {{ is_state('media_player.zolder_mini_marleen', 'playing') }}
     delay_on: "00:00:05"
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     attributes:
       volume: 0.25
 
@@ -119,6 +119,6 @@ binary_sensor:
     state: >-
       {{ is_state('media_player.zolder_mini_martijn', 'playing') }}
     delay_on: "00:00:05"
-    delay_off: "00:00:05"
+    delay_off: "00:00:10"
     attributes:
       volume: 0.25
