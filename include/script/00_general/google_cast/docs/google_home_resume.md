@@ -17,9 +17,9 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.6 - 27 October 2022
+### Version 2.8.7 - 29 October 2022
 #### 🐛 Bug fixes
-* Fixed a typo which caused that volume restore was not working anymore
+* Fix to avoid helper script started for players which are unavailable
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
@@ -153,7 +153,9 @@ In case you have a question, you found a bug, or have a feature request, you can
 In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded as a json file. To do this follow the steps below:
 1. Go to `Configuration > Automations & Scenes > Scripts` or use [![Open your Home Assistant instance and show your scripts.](https://my.home-assistant.io/badges/scripts.svg)](https://my.home-assistant.io/redirect/scripts/)
 1. Find the Google Home Resume script in the list.
-1. Click on the clock icon (with the arrow around it) next to the script.
+1. Click on 3 dot menu icon left of the script and then select `Traces`
+1. Make sure to select the right trace which contains the error
+1. Press the 3 dot menu icon in the top right corner, and select `Download trace`
 1. Press the download icon in the top right corner.
 1. Repeat for the Google Home Resume - Helper Script if the error is in that step.
 
