@@ -14,5 +14,5 @@ trigger:
 action:
   - service: frontend.set_theme
     data:
-      name: "Mushroom"
+      name: "Mushroom Shadow"
       mode: "{{ 'light' if is_state('sun.sun', 'above_horizon') else 'dark' }}"

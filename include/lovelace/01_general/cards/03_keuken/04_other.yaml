@@ -16,3 +16,15 @@ cards:
         secondary: "{{ states('sensor.vaatwasser_power') }} W"
         icon: mdi:dishwasher
         icon_color: "{{ 'blue' if is_state('switch.ketel', 'on') }}"
+        card_mod:
+          style:
+            mushroom-shape-icon$: |
+              ha-icon {
+                {% if states('sensor.vaatwasser_power') | float(0) > 0 %}
+                  --icon-animation: wash 1s ease-in-out infinite;
+                  transform-origin: 50% 75%;
+                {% endif %}
+              }
+              @keyframes wash {
+                50%  { clip-path: polygon(0 0, 0 100%, 35% 100%, 36% 74%, 31% 43%, 61% 40%, 71% 69%, 62% 78%, 36% 73%, 35% 100%, 100% 100%, 100% 0); }
+              }

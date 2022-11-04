@@ -2,15 +2,50 @@ type: vertical-stack
 cards:
   - type: custom:mushroom-title-card
     title: Wasmachine
-  - type: custom:mushroom-template-card
-    primary: >-
-      {{ 'Uit' if is_state('sensor.wasmachine', 'off') else
-      state_attr('sensor.wasmachine', 'current_course')}}
-    secondary: >-
-      {% set h, m, s = state_attr('sensor.wasmachine', 'remain_time').split(':') | map('int') %}
-      {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state('sensor.wasmachine', 'on') }}
-    icon: mdi:washing-machine
-    entity: sensor.wasmachine
-    icon_color: "{{ 'blue' if is_state('sensor.wasmachine', 'on') }}"
-    tap_action:
-      action: more-info
+  - type: custom:stack-in-card
+    cards:
+      - type: custom:mushroom-template-card
+        icon: mdi:washing-machine
+        entity: sensor.wasmachine
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        primary: >-
+          {{ 'Uit' if is_state(entity, 'off') else
+          state_attr(entity, 'current_course')}}
+        secondary: >-
+          {% set h, m, s = state_attr(entity, 'remain_time').split(':') | map('int') %}
+          {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state(entity, 'on') }}
+        card_mod:
+          style:
+            mushroom-shape-icon$: |
+              ha-icon {
+                {% if is_state('sensor.wasmachine', 'on') %}
+                  clip-path: polygon(0 0, 0 100%, 35% 100%, 34% 68%, 60% 41%, 71% 56%, 65% 74%, 47% 79%, 32% 69%, 35% 100%, 100% 100%, 100% 0);
+                {%- endif %}
+              }
+      - type: custom:mushroom-template-card
+        icon: mdi:washing-machine
+        entity: sensor.wasmachine
+        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        card_mod:
+          style:
+            mushroom-shape-icon$: |
+              ha-icon {
+                {% if is_state('sensor.wasmachine', 'on') %}
+                  --icon-animation: spin 1s linear infinite;
+                  transform-origin: 50% 58%;
+                  clip-path: circle(21.7% at 50% 58%);
+                {%- endif %}
+              }
+              .shape {
+                --shape-color: none;
+              }
+            .: |
+              ha-card {
+                width: 66px;
+                top: -66px;
+              }
+    card_mod:
+      style: |
+        ha-card {
+          height: 66px;
+        }
