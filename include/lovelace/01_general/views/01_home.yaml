@@ -33,11 +33,11 @@ layout:
   grid-template-areas: |
     ". badges badges badges ."
     ". header header header ."
-    ". messages messages messages ."
+    ". . messages . ."
     ". ground first second ."
     ". . outside . ."
   mediaquery:
-    "(max-width: 600px)":
+    "(max-width: 800px)":
       grid-template-columns: 100%
       grid-template-areas: |
         "badges"
@@ -48,11 +48,11 @@ layout:
         "first"
         "second"
     "(max-width: 1200px)":
-      grid-template-columns: 50% 50%
+      grid-template-columns: 25% 25% 25% 25%
       grid-template-areas: |
-        "badges badges"
-        "header header"
-        "messages messages"
-        "ground first"
-        "outside second"
+        "badges badges badges badges"
+        "header header header header"
+        ". messages messages ."
+        "ground ground first first"
+        "outside outside second second"
 cards: !include_dir_list /config/include/lovelace/01_general/cards/00_home/

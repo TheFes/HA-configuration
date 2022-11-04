@@ -1,26 +1,29 @@
-type: custom:mushroom-title-card
+type: custom:vertical-stack-in-card
 view_layout:
   grid-area: messages
-title: >-
-  {% if is_state('sensor.anniversary_' ~ user | lower, '0') %}
-    🎉 Gefeliciteerd {{ user }}!! 🎉
-  {%- elif now() < today_at('06:00') %}
-    Goedenacht {{ user }}
-  {%- elif now() < today_at('12:00') %}
-    Goedemorgen {{ user }}
-  {%- elif now() < today_at('18:00') %}
-    Goedemiddag {{ user }}
-  {%- else %}
-    Goedenavond {{ user }}
-  {%- endif %}
-alignment: center
-# actual messages are taken from template sensor, to avoid that every template has to be rendered on dashboard reload
-# also prevents reloading all messages on changes which affect only one message
-# template sensor can be found here: https://github.com/TheFes/HA-configuration/tree/main/include/template/sensor/dashboard_messages.yaml
-subtitle: >-
-  {%- if states('sensor.dashboard_messages') | int(0) > 0 %}
-    {%- set ns = namespace(test=[]) %}
-    {%- for item in states.sensor.dashboard_messages.attributes.items() if item[1] and item[0] not in ['friendly_name', 'icon'] %}
-      {{ item[1] }}
-    {%- endfor -%}
-  {%- endif %}
+cards:
+  - type: custom:mushroom-title-card
+    title: >-
+      {% if is_state('sensor.anniversary_' ~ user | lower, '0') %}
+        🎉 Gefeliciteerd {{ user }}!! 🎉
+      {%- elif now() < today_at('06:00') %}
+        Goedenacht {{ user }}
+      {%- elif now() < today_at('12:00') %}
+        Goedemorgen {{ user }}
+      {%- elif now() < today_at('18:00') %}
+        Goedemiddag {{ user }}
+      {%- else %}
+        Goedenavond {{ user }}
+      {%- endif %}
+    alignment: center
+    # actual messages are taken from template sensor, to avoid that every template has to be rendered on dashboard reload
+    # also prevents reloading all messages on changes which affect only one message
+    # template sensor can be found here: https://github.com/TheFes/HA-configuration/tree/main/include/template/sensor/dashboard_messages.yaml
+  - type: markdown
+    content: >-
+      {%- if states('sensor.dashboard_messages') | int(0) > 0 %}
+        {%- set ns = namespace(test=[]) %}
+        {%- for item in states.sensor.dashboard_messages.attributes.values() | selectattr('message', 'defined') | selectattr('message') %}
+          <ha-alert alert-type={{ item.level }}>{{ item.message }}</ha-alert>
+        {%- endfor -%}
+      {%- endif %}
