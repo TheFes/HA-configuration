@@ -1,0 +1,18 @@
+substitutions:
+  device_name: Bureau Martijn
+  device_type: Shelly1PM
+  device_lower: bureau_martijn
+  ip: 192.168.2.22
+  max_temp: "70.0"
+
+esphome:
+  name: shelly-pm-martijn
+  
+esp8266:
+  board: esp01_1m
+
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  switch: !include packages/shelly1_pm.yaml
+  arduino: !include packages/arduino.yaml

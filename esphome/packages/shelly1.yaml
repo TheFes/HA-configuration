@@ -1,0 +1,156 @@
+select:
+  - platform: template
+    name: "Button Type"
+    id: button_type_select
+    entity_category: config
+    options:
+      - Detached
+      - Momentary
+      - Toggle
+    optimistic: true
+    restore_value: true
+    on_value:
+      then:
+        - text_sensor.template.publish:
+            id: button_type_state
+            state: !lambda "return id(button_type_select).state;"
+
+switch:
+  - platform: gpio
+    name: Shelly1 ${device_name}
+    pin: GPIO4
+    id: shelly_relay
+    restore_mode: restore_default_off
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+      #mode: INPUT_PULLUP
+      #inverted: True
+    name: ${device_name} button
+    id: button_press
+    internal: true
+    on_state:
+      - if:
+          condition:
+            - text_sensor.state:
+                id: button_type_state
+                state: "Toggle"
+          then:
+            - switch.toggle: shelly_relay
+    on_multi_click:
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                or:
+                  - text_sensor.state:
+                      id: button_type_state
+                      state: "Detached"
+                  - text_sensor.state:
+                      id: button_type_state
+                      state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: triple
+                - switch.toggle: shelly_relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: shelly_relay
+                - or:
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Detached"
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: double
+              else:
+                - switch.toggle: shelly_relay
+      - timing:
+          - ON for at least 1.5s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: shelly_relay
+                - or:
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Detached"
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: long
+              else:
+                - switch.toggle: shelly_relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.25s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: shelly_relay
+                - text_sensor.state:
+                    id: button_type_state
+                    state: "Detached"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: short
+              else:
+                - if:
+                    condition:
+                      - text_sensor.state:
+                          id: button_type_state
+                          state: "Momentary"
+                    then:
+                      - switch.toggle: shelly_relay
+    on_release:
+      then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${device_name}
+              click_type: release
+
+text_sensor:
+  - platform: homeassistant
+    entity_id: light.${device_lower}
+    id: light_status
+    internal: true
+  - platform: template
+    internal: true
+    id: button_type_state
+    lambda: |-
+      return id(button_type_select).state;
