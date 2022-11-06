@@ -17,9 +17,9 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.7 - 29 October 2022
+### Version 2.8.8 - 14 November 2022
 #### 🐛 Bug fixes
-* Fix to avoid helper script started for players which are unavailable
+* Fix for `media_content_type` in template in automation
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
 
