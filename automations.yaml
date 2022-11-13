@@ -53,9 +53,11 @@
     - alias: Set variables to be used in the script
       variables:
         start_time: "{{ now() }}"
+        cast_entities: "{{ integration_entities('cast') }}"
+        mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
         cast_mass_playing: |
           {{
-            expand(integration_entities('cast'))
+            expand( cast_entities )
               | selectattr('attributes.media_title', 'defined')
               | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
               | map(attribute='entity_id')

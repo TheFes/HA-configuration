@@ -2,9 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
 
-### Version 2.8.9 - 13 November 2022
+### Version 2.8.9 / 2.8.10 - 13 November 2022
 #### 🐛 Bug fixes
-* Fix for not all players being restored to previous state
+* (2.8.9) Fix for not all players being restored to previous state
+* (2.8.10) Fix for missing variables in automation templates
 
 ### Version 2.8.8 - 6 November 2022
 #### 🐛 Bug fixes
