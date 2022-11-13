@@ -22,8 +22,8 @@ sensor:
           {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
           {%- set ns.a = ns.a + [ dict(n=item.name, d=d, y=y, h=h)] %}
         {%- endfor %}
-          {%- for item in ns.a | sort(attribute='d') -%}
-          {%- set n, d, y, h = item.n, item.d, item.y, item.h %}
+        {%- for item in ns.a | sort(attribute='d') -%}
+          {%- set n, d, y = item.n, item.d, item.y %}
           {%- set fixed_icons = {
                                   'Eerste date': '💕',
                                   'Sinterklaas': '🎁'
