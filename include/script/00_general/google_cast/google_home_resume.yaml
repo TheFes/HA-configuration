@@ -77,7 +77,7 @@ google_home_resume:
   sequence:
     - alias: "Version number"
       variables:
-        version: 2.8.8
+        version: 2.8.9
     - alias: "Failsafe to remove all groups if the script was not running"
       if: >
         {{ 
@@ -844,7 +844,7 @@ google_home_resume:
         for_each: >
           {{
             (players_to_resume + target_not_playing)
-              | select('in', player_data | map(attribute='entity_id'))
+              | select('in', player_data | map(attribute='entity_id') | list)
               | list 
           }}
         sequence:
