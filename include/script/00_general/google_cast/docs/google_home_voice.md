@@ -15,11 +15,12 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 1.6.1 - 13 October 2022
+### Version 2022.11.0 - 21 November 2022
+#### 🔴 BREAKING
+* You will need to update the Google Home Resume script as well if you update to this version
 #### 🌟 Improvements
-* Improved template to gather speaker data by removing dedundant templates
-#### 🐛 Bug fixes
-* Fix for `media_content_type` being stored incorreclty causing the data to be saved as string
+* Changed version number to YYYY.MM.version
+* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
