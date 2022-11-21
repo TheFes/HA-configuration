@@ -94,7 +94,7 @@ script:
     sequence:
       - alias: "Version number"
         variables:
-          version: 2022.11.0
+          version: 2022.11.1
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -434,12 +434,12 @@ script:
                         and iif(settings.radio_data)
                         and entity.media_artist in settings.radio_data.keys() | list
               %}
-                {%- set add_settings.radio_data = dict(
+                {%- set add_radio_data = dict(
                                               entity_picture = settings.radio_data[entity.media_artist].picture,
                                               media_title = settings.radio_data[entity.media_artist].title
                                               )
                 %}
-                {%- set additional = dict(additional, **add_settings.radio_data) %}
+                {%- set additional = dict(additional, **add_radio_data) %}
               {%- endif %}
               {%- set ns.info = ns.info + [ dict(entity, **additional) ] %}
             {%- endfor %}

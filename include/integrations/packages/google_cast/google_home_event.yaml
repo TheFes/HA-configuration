@@ -61,7 +61,7 @@ script:
           boolean:
     sequence:
       - variables:
-          version: 2022.11.0
+          version: 2022.11.1
       - variables:
           resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
           resume_volume: >
@@ -299,7 +299,7 @@ script:
             sequence:
               - variables:
                   player_data: >
-                    {{ state_attr('binary_sensor.resume_data_google_home_event'  , 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='player_data') | join }}
+                    {{ state_attr('binary_sensor.resume_data_google_home_event', 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='player_data') | first }}
                   players_to_resume: >
                     {% set player_list = player_data
                                           | selectattr('state', 'eq', 'playing')
@@ -308,7 +308,7 @@ script:
                     %}
                     {{ player_list | select('in', target_list) | list}}
                   cast_mass_playing: >
-                    {{ state_attr('binary_sensor.resume_data_google_home_event'  , 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='cast_mass_playing') | join }}
+                    {{ state_attr('binary_sensor.resume_data_google_home_event'  , 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='cast_mass_playing') | first }}
               - alias: "Anything to resume?"
                 if: "{{ players_to_resume | count > 0 }}"
                 then:
