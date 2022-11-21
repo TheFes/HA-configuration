@@ -11,13 +11,6 @@ notify:
       source: HA
       phone: !secret phone
       apikey: !secret callmebot_api
-  - name: resume_data
-    platform: file
-    filename: /config/include/files/resume_data.txt
-  - name: hacs_installed
-    platform: file
-    filename: /config/include/files/hacs_installed.txt
-    timestamp: true
   - name: mail_bestuur_be
     platform: smtp
     server: "smtp.gmail.com"
