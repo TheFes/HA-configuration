@@ -201,9 +201,13 @@ binary_sensor:
               else:
                 - if:
                     condition:
-                      - text_sensor.state:
-                          id: button_type_state
-                          state: "Momentary"
+                      or:
+                        - text_sensor.state:
+                            id: button_type_state
+                            state: "Detached"
+                        - text_sensor.state:
+                            id: button_type_state
+                            state: "Momentary"
                     then:
                       - switch.toggle: shelly_relay
     on_release:

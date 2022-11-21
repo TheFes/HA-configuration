@@ -2,6 +2,13 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 2022.11.0 - 21 November 2022
+#### 🔴 BREAKING
+* You will need to update the Google Home Resume script as well if you update to this version
+#### 🌟 Improvements
+* Changed version number to YYYY.MM.version
+* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+
 ### Version 1.6.1 - 13 October 2022
 #### 🌟 Improvements
 * Improved template to gather speaker data by removing dedundant templates

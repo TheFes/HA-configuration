@@ -17,22 +17,37 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent change
-### Version 2.8.9 / 2.8.10 - 13 November 2022
-#### 🐛 Bug fixes
-* (2.8.9) Fix for not all players being restored to previous state
-* (2.8.10) Fix for missing variables in automation templates
+### Version 2022.11.0 - 21 November 2022
+#### 🔴 BREAKING
+* Combined the script and automation in a package, see the setup section on how to update
+* You will need to update the Google Home Voice and Google Home Event scripts as well if you update to this version.
+#### 🌟 Improvements
+* Changed version number to YYYY.MM.version
+* As the automation is now included in the package, a variable `automation_enabled` is added to optionally disable the automation. It is enabled by default
+* Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
+* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+* Some variables which can be useful for debugging are added
 
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_resume.md)
-
+Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
+/root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml
 # Setup
 ## The script itself
-[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
+[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
 
-Place it in your `scripts.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
-Change the variables described below to match your setup.
+* In case you don't use packages yet, add the following to your `configuration.yaml`
+```yaml
+homeassistant:
+  # include this line
+  packages: !include_dir_named packages
+```
+* Create a folder named `packages` in your configuration folder (the same folder as where `configuration.yaml` is located)
+* Create a file named `google_home_resume.yaml` in that folder, and paste the contents of the link above in that file.
+* Change the settings in the file to match your setup
+
+You can perform the steps above using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
 ### Explanation of variables in the script
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_tts` is required to send a TTS with picture and text.
+There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
 
 |Variable|Default|Example|Description|
 | --- | --- | --- | --- |
@@ -42,15 +57,15 @@ There are no required variables, but if you use Google Home speaker groups and p
 |speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
-|default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used. 
+|default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
+|automation_enabled|`true`|`true`|If the automation for automatic resume should be used or not
+|dashboard_cast|`true`|`false`|If the automation should be used in case a HA Dasboard is cast to the device
+|announce_volume_automation|`0.4`|`0.75`|The volume used for announcements in the automation, remove or leave empty to leave the volume as it is.
 
-## The automation for automatic resume (✨ NEW in v2.7.0)
-[Link to the automation](https://github.com/TheFes/HA-configuration/blob/main/automations.yaml)
-In version 2.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated.
+## The automation for automatic resume (✨ NEW in v2.7.0 - 24 August 2022)
+In version 2.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated. The automation will also trigger on casting a Dasboard, this can be disabled in the settings so it only triggers on audio interruptions.
 
-Place it in your `automations.yaml` with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
-
-Change the variable `announce_volume` (on line 43) to your needs, the volume set there (value between 0 and 1) will be used for the volume of the TTS message or other content played using the `media_player.play_media` service call. There is only one generic setting here, if you want to use a different volume for different targets or messages/content, you need to call the script manually.
+The settings for to enable the automation and for the default volume to be used for announcements can be set in the settings part of the package.
 
 If set up like described above, the script will be automatically called for TTS messages, and when you use the `media_player.play_media` service call with `announce: true` enabled. If `announce` is not set, or set to `announce: false` the script will not be used. The TTS service call will do this automatically.
 
@@ -100,7 +115,7 @@ media_player.spotify_floris
 The feature to send a TTS together with picture and text works as as follows. The TTS is sent to a dummy player, and the script will wait for this event, and will take the url the the mp3 used as TTS message. It will then send this mp3 together with the picture and text to the actual target.
 As of Home Assistant 2022.4 there is a check if a target of a service call actually supports the service call. So the dummy player has to support TTS. As the media_player created by the [VLC Telnet integration](https://www.home-assistant.io/integrations/vlc_telnet/) supports TTS, I use this.
 
-In case you use HA OS, or run a supervised install, you can add the VLS Telnet add-on from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
+In case you use HA OS, or run a supervised install, you can add the [VLC Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_vlc) from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
 
 In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide it somewhere 😉
 
@@ -117,7 +132,7 @@ You can also start a script in a service call, so this allows you to do more adv
 The boolean `resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
 
-When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
+When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/examples_google_home_resume.md)
 |Field|Required|Description|
 | --- | --- | --- | 
 |target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported.

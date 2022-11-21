@@ -13,9 +13,8 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
         sequence:
-          - service: light.toggle
-            target:
-              entity_id: light.speelhoek_tafel
+          - alias: Binding made with led
+            delay: 0
       - conditions:
           - alias: "Long"
             condition: template
@@ -23,4 +22,4 @@ action:
         sequence:
           - service: light.toggle
             target:
-              entity_id: light.speelhoek
+              entity_id: light.groep_speelhoek

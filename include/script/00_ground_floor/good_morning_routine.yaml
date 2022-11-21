@@ -18,10 +18,11 @@ good_morning_routine:
           - light.keukenspotjes
           - light.booglamp
           - light.tv_lamp
-          - light.speelhoek
-    - alias: "Turn on dinging table light with max brightness"
+    - alias: "Turn on dinging table and speelhoek light with max brightness"
       service: light.turn_on
       target:
-        entity_id: light.eettafel
+        entity_id:
+          - light.eettafel
+          - light.groep_speelhoek
       data:
         brightness: 255
