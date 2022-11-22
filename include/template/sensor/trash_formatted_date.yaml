@@ -17,6 +17,9 @@ sensor:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_restgft' %}
         {{ as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() }}
+      in_two_weeks: >
+        {%- set sensor = 'sensor.afvalwijzer_restgft' %}
+        {{ now().date() - as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() <= timedelta(weeks=2) }}
 
   - unique_id: 821b207c-5c06-4da4-9e8c-a5790e6e4c8c
     name: Papier en PMD
@@ -36,6 +39,9 @@ sensor:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_dhm' %}
         {{ as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() }}
+      in_two_weeks: >
+        {%- set sensor = 'sensor.afvalwijzer_dhm' %}
+        {{ now().date() - as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() <= timedelta(weeks=2) }}
 
   - unique_id: ff7c02aa-aea3-42a7-91f5-f1a8f88a8986
     name: Kerstboom
@@ -55,3 +61,6 @@ sensor:
       collection_date: >
         {%- set sensor = 'sensor.afvalwijzer_kerstbomen' %}
         {{ as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() }}
+      in_two_weeks: >
+        {%- set sensor = 'sensor.afvalwijzer_kerstbomen' %}
+        {{ now().date() - as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() <= timedelta(weeks=2) }}

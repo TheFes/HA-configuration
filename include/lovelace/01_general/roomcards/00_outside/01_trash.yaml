@@ -1,30 +1,26 @@
-type: custom:vertical-stack-in-card
-cards:
-  - type: conditional
-    conditions:
-      - entity: sensor.afvalwijzer_next_type
-        state: "restgft"
-    card:
-      type: custom:mushroom-entity-card
-      entity: sensor.rest_en_gft
-  - type: conditional
-    conditions:
-      - entity: sensor.afvalwijzer_next_type
-        state_not: "restgft"
-    card:
-      type: custom:mushroom-entity-card
-      entity: sensor.papier_en_pmd
-  - type: conditional
-    conditions:
-      - entity: sensor.afvalwijzer_next_type
-        state_not: "restgft"
-    card:
-      type: custom:mushroom-entity-card
-      entity: sensor.rest_en_gft
-  - type: conditional
-    conditions:
-      - entity: sensor.afvalwijzer_next_type
-        state: "restgft"
-    card:
-      type: custom:mushroom-entity-card
-      entity: sensor.papier_en_pmd
+type: custom:auto-entities
+card:
+  type: custom:vertical-stack-in-card
+card_param: cards
+filter:
+  include:
+    - entity_id: sensor.afval_*
+      attributes:
+        in_two_weeks: true
+      options:
+        type: custom:mushroom-template-card
+        entity: this.entity_id
+        primary: "{{ states[entity].name }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
+        secondary: "{{ states(entity) }}"
+        icon_color: >
+          {% if is_state_attr(entity, 'collection_date', now().date() | string) %}
+            red
+          {% elif is_state_attr(entity, 'collection_date', (now()+timedelta(days=1)).date() | string) %}
+            yellow
+          {% else %}
+            blue
+          {% endif %}
+      sort:
+        method: attribute
+        attribute: collection_date
