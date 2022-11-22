@@ -8,20 +8,23 @@ states:
     alignment: center
     chips:
       - type: menu
-      - type: weather
+      - &weather
+        type: weather
         entity: weather.combined_daily
         show_conditions: false
         show_temperature: true
         tap_action:
           action: navigate
           navigation_path: weer
-      - type: entity
+      - &power
+        type: entity
         entity: sensor.net_power
         icon_color: yellow
         tap_action:
           action: navigate
           navigation_path: /energy
-      - type: entity
+      - &water
+        type: entity
         entity: sensor.watermeter_current_usage
         icon_color: blue
         tap_action:
@@ -37,20 +40,12 @@ states:
     type: custom:mushroom-chips-card
     alignment: center
     chips:
-      - type: weather
-        entity: weather.combined_daily
-        show_conditions: false
-        show_temperature: true
-        tap_action:
-          action: navigate
-          navigation_path: weer
-      - type: entity
-        entity: sensor.net_power
-        icon_color: yellow
+      - *weather
+      - <<: *power
         tap_action:
           action: none
-      - type: entity
-        entity: sensor.watermeter_current_usage
-        icon_color: blue
+      - <<: *water
         tap_action:
+          action: none
+        double_tap_action:
           action: none
