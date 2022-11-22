@@ -94,7 +94,7 @@ script:
     sequence:
       - alias: "Version number"
         variables:
-          version: 2022.11.1
+          version: 2022.11.2
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -1213,7 +1213,6 @@ script:
                   artist: "{{ small_text }}"
                   images:
                     - url: "{{ picture_url }}"
-
 # AUTOMATION FOR AUTOMATIC RESUME
 
 automation:
@@ -1262,11 +1261,11 @@ automation:
       - condition: template
         value_template: "{{ entities | select('in', integration_entities('cast') + integration_entities('mass')) | list | count > 0 }}"
       - condition: template
-        valute_template: "{{ state_attr('script.google_home_resume', 'settings').get('dashboard_cast', true) if trigger.id == 'cast' else true }}"
+        value_template: "{{ state_attr('script.google_home_resume', 'settings').get('dashboard_cast', true) if trigger.id == 'cast' else true }}"
     action:
       - alias: Variable for version number
         variables:
-          version: 2022.11.0
+          version: 2022.11.2
       - alias: Are there Spotify entities?
         if: "{{ integration_entities('spotify') | count > 0 }}"
         then:
@@ -1324,7 +1323,7 @@ automation:
                                             app_name = entity.attributes.app_name,
                                             volume_level = entity.attributes.volume_level | round(2),
                                             media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
-                                                                if entity.attributes.get('app_name') == 'Google Podcasts' 
+                                                                if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                 else entity.attributes.get('media_content_id', 'no media_content'),
                                             media_position = (as_timestamp(now()) | round(2)
                                                               - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2)
@@ -1336,7 +1335,7 @@ automation:
                                                 **dict(state='playing',
                                                       spotcast = spotify_entity if spotify_entity else 'to add'
                                                     )
-                                            ) 
+                                            )
                     %}
                   {%- elif entity.entity_id in expand(ytube_music_entities) | selectattr('attributes.remote_player_id', 'defined') | map(attribute='attributes.remote_player_id') | list %}
                     {%- set additional = dict(additional,
@@ -1344,7 +1343,7 @@ automation:
                                                       yt_player=expand(ytube_music_entities) | selectattr('attributes.remote_player_id', 'defined') | selectattr('attributes.remote_player_id', 'eq', entity.entity_id) | map(attribute='entity_id') | join,
                                                       media_content_id = 'ytube_music'
                                                     )
-                                            ) 
+                                            )
                     %}
                   {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
                     {%- set additional = dict(additional, **dict(
