@@ -8,6 +8,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
 * The Google Home Resume script
 
+# Most recent changes
 ### Version 2022.11.0 - 21 November 2022
 #### 🔴 BREAKING
 * Combined the script and template sensor in a package, see the setup instructions for more information
@@ -17,6 +18,12 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * Configuration variables are removed, the script uses the name of the binary sensor as defined in the template sensor configuration (`binary_sensor.resume_data_google_home_event`)
 * Used improved templates to store data
 * Removed file integration for long term storage as trigger based templates restore their state after restart or reload
+
+### Version 2022.11.1 - 23 November 2022
+#### 🔴 BREAKING
+* You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version
+#### 🌟 Improvements
+* The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
 

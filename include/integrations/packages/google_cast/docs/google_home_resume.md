@@ -16,7 +16,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
-# Most recent change
+# Most recent changes
 ### Version 2022.11.0 - 21 November 2022
 #### 🔴 BREAKING
 * Combined the script and automation in a package, see the setup section on how to update
@@ -27,6 +27,19 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
 * Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
 * Some variables which can be useful for debugging are added
+
+### Version 2022.11.2 - 22 November 2022
+#### 🌟 Improvements
+* Corrected a typo in the automation
+
+### Version 2022.11.3 - 23 November 2022
+#### 🔴 BREAKING
+* All player_data is now stored in one go, the Google Home Voice and Google Home Event script are using the exacte same template now to make it easier to update and improve it. Also update the Google Home Voice and Google Home Event scripts if you use those as well.
+#### 🌟 Improvements
+* Used more YAML anchors to avoid repeating code
+* A lot of minor template improvements
+#### 🌟 Improvements
+* Several fixes in both the script and automation
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 /root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml

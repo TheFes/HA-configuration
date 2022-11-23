@@ -2,6 +2,12 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 2022.11.1 - 23 November 2022
+#### 🔴 BREAKING
+* You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version
+#### 🌟 Improvements
+* The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+
 ### Version 2022.11.0 - 21 November 2022
 #### 🔴 BREAKING
 * You will need to update the Google Home Resume script as well if you update to this version

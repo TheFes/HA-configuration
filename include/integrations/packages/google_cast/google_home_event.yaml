@@ -61,7 +61,7 @@ script:
           boolean:
     sequence:
       - variables:
-          version: 2022.11.1
+          version: &version 2022.11.2
       - variables:
           resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
           resume_volume: >
@@ -149,85 +149,140 @@ script:
                     target:
                       entity_id: "{{ integration_entities('spotify') }}"
               - variables:
+                  settings: "{{ state_attr('script.google_home_resume', 'settings') | to_json }}"
+              - variables:
+                  data_source: event_script
+                  speaker_group_list: "{{ (settings.get('speaker_groups') or {}).keys() | list or [] }}"
+                  speaker_groups: "{{ settings.get('speaker_groups') or { 'no group': [ 'no members' ] } }}"
+                  cast_entities: "{{ integration_entities('cast') }}"
+                  spotify_entities: "{{ integration_entities('spotify') }}"
                   mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
                   cast_mass_playing: >
-                    {{
-                      expand(integration_entities('cast'))
-                        | selectattr('attributes.media_title', 'defined')
-                        | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
-                        | map(attribute='entity_id')
-                        | list
-                    }}
+                    {%- if cast_mass_playing is defined %}
+                      {{ cast_mass_playing }}
+                    {%- else %}
+                      {{
+                        expand(integration_entities('cast'))
+                          | selectattr('attributes.media_title', 'defined')
+                          | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
+                          | map(attribute='entity_id')
+                          | list
+                      }}
+                    {%- endif %}
                   mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
+                  primary_spotcast_check: >
+                    {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
+                    {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
                   ytube_music_entities: >
                     {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
+              - variables:
                   player_data: >
-                    {%- set ns = namespace(info=[]) %}
-                    {%- for entity in expand(integration_entities('cast')) %}
-                        {%- set general = dict(
-                                                data_source = 'event_script',
-                                                entity_id = entity.entity_id,
-                                                state = entity.state
-                                                )
-                        %}
-                        {%- if mass_entities | count > 0 %}
-                          {%- set mass_data = dict(
-                                                    mass_playing = entity.entity_id in cast_mass_playing,
-                                                    mass_sync = entity.entity_id | replace('.', '.mass_')
+                    {%- if player_data is undefined %}
+                      {# general information for all entities #}
+                      {%- set ns = namespace(info=[]) %}
+                      {%- for entity in expand(integration_entities('cast')) %}
+                          {%- set members = speaker_groups[entity.entity_id]
+                                        if speaker_groups is defined
+                                          and iif(speaker_groups)
+                                          and entity.entity_id in speaker_group_list
+                                        else []
+                          %}
+                          {%- set screen = entity.entity_id in settings.get('players_screen', []) %}
+                          {%- set type = iif(members,'group',iif(screen,'screen','no screen')) %}
+                          {%- set general = dict(
+                                                  data_source = data_source,
+                                                  entity_id = entity.entity_id,
+                                                  state = entity.state,
+                                                  type = type,
+                                                  members = members
                                                   )
                           %}
-                          {%- set general = dict(general, **mass_data) %}
-                        {%- endif %}
-                        {%- set spotify_entity = expand(integration_entities('spotify'))
-                                                    | selectattr('state', 'eq', 'playing')
-                                                    | selectattr('attributes.source', 'eq', entity.name)
-                                                    | map(attribute='object_id')
-                                                    | join
-                                                    | replace('spotify_', '')
-                        %}
-                        {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
-                          {%- set additional = dict( volume_level = entity.attributes.volume_level | round(2)) %}
-                        {% elif entity.state == 'playing' or spotify_entity %}
-                          {%- set additional = dict(
-                                                    state = 'playing',
-                                                    app_name = entity.attributes.app_name,
-                                                    volume_level = entity.attributes.volume_level | round(2),
-                                                    media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
-                                                                        if entity.attributes.get('app_name') == 'Google Podcasts' 
-                                                                        else entity.attributes.get('media_content_id', 'no media_content'),
-                                                    media_position = (as_timestamp(now()) | round(2)
-                                                                      - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2)
-                                                                      + entity.attributes.get('media_position', 0)) | round(2)
+                          {# add information for Music Assistant #}
+                          {%- if mass_entities | count > 0 %}
+                            {%- set mass_data = dict(
+                                                      mass_playing = entity.entity_id in cast_mass_playing,
+                                                      mass_sync = entity.entity_id | replace('.', '.mass_')
                                                     )
+                            %}
+                            {%- set general = dict(general, **mass_data) %}
+                          {%- endif %}
+                          {# check if there is a Spotify account playing on this entity #}
+                          {%- set list_check = expand([ entity.entity_id ] + members) | map(attribute='name') | list %}
+                          {%- set spotify_entity = expand(integration_entities('spotify'))
+                                                      | selectattr('state', 'eq', 'playing')
+                                                      | selectattr('attributes.source', 'in', list_check)
+                                                      | map(attribute='object_id')
+                                                      | join
+                                                      | replace('spotify_', '')
                           %}
-                          {% if entity.attributes.get('app_name') == 'Spotify' %}
-                            {%- set additional = dict(additional,
-                                                      **dict(state='playing',
-                                                              spotcast = spotify_entity if spotify_entity else 'to add'
-                                                            )
-                                                    ) 
+                          {# add volume level #}
+                          {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
+                            {%- set additional = dict( volume_level = entity.attributes.volume_level | round(2)) %}
+                          {# add metadata for playing entities #}
+                          {% elif entity.state == 'playing' or spotify_entity %}
+                            {%- set additional = dict(
+                                                      state = 'playing',
+                                                      app_name = entity.attributes.app_name,
+                                                      volume_level = entity.attributes.volume_level | round(2),
+                                                      media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
+                                                                          if entity.attributes.get('app_name') == 'Google Podcasts'
+                                                                          else entity.attributes.get('media_content_id', 'no media_content'),
+                                                      media_position = (as_timestamp(now()) | round(2)
+                                                                        - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2)
+                                                                        + entity.attributes.get('media_position', 0)) | round(2)
+                                                      )
                             %}
-                          {%- elif entity.entity_id in expand(ytube_music_entities) | selectattr('attributes.remote_player_id', 'defined') | map(attribute='attributes.remote_player_id') | list %}
-                            {%- set additional = dict(additional,
-                                                      **dict(app_name='Ytube Music Player',
-                                                              yt_player=expand(ytube_music_entities) | selectattr('attributes.remote_player_id', 'defined') | selectattr('attributes.remote_player_id', 'eq', entity.entity_id) | map(attribute='entity_id') | join,
-                                                              media_content_id = 'ytube_music'
-                                                            )
-                                                    ) 
+                            {# add Spotify account #}
+                            {% if entity.attributes.get('app_name') == 'Spotify' %}
+                              {%- set spotcast = spotify_entity if spotify_entity
+                                                        and settings.primary_spotcast is defined
+                                                        and spotify_entity != settings.primary_spotcast
+                                                        and integration_entities('spotify') | count > 1
+                                                        and primary_spotcast_check
+                                                      else 'primary_account' %}
+                              {%- set additional = dict(additional,
+                                                        **dict(state='playing',
+                                                                spotcast = spotcast
+                                                              )
+                                                      ) 
+                              %}
+                            {# add information for ytube_music_player integration #}
+                            {%- elif entity.entity_id in expand(ytube_music_entities)
+                                                          | selectattr('state', 'eq', 'playing')
+                                                          | selectattr('attributes.remote_player_id', 'defined')
+                                                          | map(attribute='attributes.remote_player_id')
+                                                          | list
                             %}
-                          {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
-                            {%- set additional = dict(additional, **dict(
-                                                          media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
-                                                                          else entity.attributes.get('media_artist', 'no artist'),
-                                                          media_content_type = '' ~ entity.attributes.get('media_content_type', 'no type'),
-                                                          entity_picture = entity.attributes.get('entity_picture', 'no pic')
-                                                          ))
-                            %}
+                              {%- set additional = dict(additional,
+                                                        **dict(app_name='Ytube Music Player',
+                                                                yt_player=expand(ytube_music_entities) | selectattr('attributes.remote_player_id', 'defined') | selectattr('attributes.remote_player_id', 'eq', entity.entity_id) | map(attribute='entity_id') | join,
+                                                                media_content_id = 'ytube_music'
+                                                              )
+                                                      ) 
+                              %}
+                            {# add infomration for web streams (including TuneIn) #}
+                            {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
+                              {%- if entity.attributes.get('media_artist') in settings.get('radio_data', {}).keys() | list %}
+                                {% set data = settings.radio_data[entity.attributes.media_artist] %}
+                                {% set picture, title = data.get('picture'), data.get('title') %}
+                              {% endif %}
+                              {%- set additional = dict(additional, **dict(
+                                                            media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
+                                                                            else entity.attributes.get('media_artist', 'no artist'),
+                                                            media_title = title if title is defined else entity.attributes.get('media_title', 'no title'),
+                                                            media_content_type = '' ~ entity.attributes.get('media_content_type', 'no type'),
+                                                            entity_picture = picture if picture is defined else entity.attributes.get('entity_picture', 'no pic')
+                                                            ))
+                              %}
+                            {% endif %}
                           {% endif %}
-                        {% endif %}
-                      {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
-                    {%- endfor %}
-                    {{ ns.info }}
+                        {# cobmine all data #}
+                        {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
+                      {%- endfor %}
+                      {{ ns.info }}
+                    {%- else %}
+                      {{ player_data }}
+                    {%- endif %}
                   resume_data_new:
                     - resume_id: "{{ resume_id }}"
                       player_data: "{{ player_data }}"
@@ -340,6 +395,6 @@ template:
         state: >
           {{ trigger.event.data.resume_data | count > 0 }}
         attributes:
-          version: 2022.11.0
+          version: *version
           resume_data: >
             {{ trigger.event.data.resume_data }}

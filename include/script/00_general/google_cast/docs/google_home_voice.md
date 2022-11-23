@@ -22,6 +22,12 @@ The script itself relies on the other script, so make sure that script is runnin
 * Changed version number to YYYY.MM.version
 * Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
 
+### Version 2022.11.1 - 23 November 2022
+#### 🔴 BREAKING
+* You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version
+#### 🌟 Improvements
+* The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
 # Prerequisites

@@ -2,6 +2,32 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
 
+### Version 2022.11.3 - 23 November 2022
+#### 🔴 BREAKING
+* All player_data is now stored in one go, the Google Home Voice and Google Home Event script are using the exacte same template now to make it easier to update and improve it. Also update the Google Home Voice and Google Home Event scripts if you use those as well.
+#### 🌟 Improvements
+* Used more YAML anchors to avoid repeating code
+* A lot of minor template improvements
+#### 🌟 Improvements
+* Several fixes in both the script and automation
+
+### Version 2022.11.2 - 22 November 2022
+#### 🌟 Improvements
+* Corrected a typo in the automation
+
+### Version 2022.11.0 / 2022.11.1 - 21 November 2022
+#### 🔴 BREAKING
+* Combined the script and automation in a package, see the setup section on how to update. Remove the old scripts and automation first, and do a reload from Developer Tools > YAML before copying the new version to your system.
+* You will need to update the Google Home Voice and Google Home Event scripts as well if you update to this version.
+#### 🌟 Improvements
+* Changed version number to YYYY.MM.version
+* As the automation is now included in the package, a variable `automation_enabled` is added to optionally disable the automation. It is enabled by default
+* Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
+* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+* Some variables which can be useful for debugging are added
+#### 🌟 Improvements
+* (2022.11.1) Fixed a template error
+
 ### Version 2.8.9 / 2.8.10 - 13 November 2022
 #### 🐛 Bug fixes
 * (2.8.9) Fix for not all players being restored to previous state
