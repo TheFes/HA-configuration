@@ -165,7 +165,7 @@ google_home_say:
                                                   media_content_id = entity.attributes.media_content_id | default('no media_content'),
                                                   media_title = entity.attributes.media_title | default('no title'),
                                                   media_artist = entity.attributes.media_artist | default('No artist'),
-                                                  media_content_type = entity.attributes.media_content_type | default('no type'),
+                                                  media_content_type = '' ~ entity.attributes.media_content_type | default('no type'),
                                                   app_name = entity.attributes.app_name | default('no app'),
                                                   entity_picture = entity.attributes.entity_picture | default('no pic'),
                                                   volume_level = entity.attributes.volume_level | round(2) 
