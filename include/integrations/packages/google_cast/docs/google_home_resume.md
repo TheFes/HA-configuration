@@ -17,29 +17,24 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
 
 # Most recent changes
-### Version 2022.11.0 - 21 November 2022
+### Version 2022.11
 #### 🔴 BREAKING
-* Combined the script and automation in a package, see the setup section on how to update
-* You will need to update the Google Home Voice and Google Home Event scripts as well if you update to this version.
+* Combined the script and automation in a package, see the setup section on how to update. Remove the old scripts and automation first, and do a reload from Developer Tools > YAML before copying the new version to your system.
+* You will need to update the Google Home Voice and Google Home Event scripts as well if you update to this version. Version 2022.11.1 of those scripts is required  if you use 2022.11.3 of this script.
 #### 🌟 Improvements
-* Changed version number to YYYY.MM.version
-* As the automation is now included in the package, a variable `automation_enabled` is added to optionally disable the automation. It is enabled by default
-* Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
-* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
-* Some variables which can be useful for debugging are added
-
-### Version 2022.11.2 - 22 November 2022
-#### 🌟 Improvements
-* Corrected a typo in the automation
-
-### Version 2022.11.3 - 23 November 2022
-#### 🔴 BREAKING
-* All player_data is now stored in one go, the Google Home Voice and Google Home Event script are using the exacte same template now to make it easier to update and improve it. Also update the Google Home Voice and Google Home Event scripts if you use those as well.
-#### 🌟 Improvements
-* Used more YAML anchors to avoid repeating code
-* A lot of minor template improvements
-#### 🌟 Improvements
-* Several fixes in both the script and automation
+* (2022.11.0) Changed version number to YYYY.MM.version
+* (2022.11.0) As the automation is now included in the package, a variable `automation_enabled` is added to optionally disable the automation. It is enabled by default
+* (2022.11.0) Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
+* (2022.11.0) Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+* (2022.11.0) Some variables which can be useful for debugging are added
+* (2022.11.3) Used more YAML anchors to avoid repeating code
+* (2022.11.3) Improved template to store player_data
+* (2022.11.3) A lot of minor template improvements
+#### 🐛 Bug fixes
+* (2022.11.1) Fixed a template error
+* (2022.11.2) Corrected a typo in the automation
+* (2022.11.3) Several fixes in both the script and automation
+* (2022.11.4) :shit: forgot a comma in a template
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 /root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml

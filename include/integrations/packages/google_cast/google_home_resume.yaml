@@ -95,7 +95,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.11.3
+          version: 2022.11.4
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -627,7 +627,7 @@ script:
         if: >
           {{
             player_data
-              | rejectattr('data_source', 'in' [ 'automation', 'voice_script' ])
+              | rejectattr('data_source', 'in', [ 'automation', 'voice_script' ])
               | selectattr('entity_id', 'in', players_to_resume)
               | selectattr('yt_player', 'defined')
               | list

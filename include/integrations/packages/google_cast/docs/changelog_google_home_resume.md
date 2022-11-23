@@ -2,13 +2,17 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
 
+### Version 2022.11.4 - 22 November 2022
+#### 🐛 Bug fixes
+* :shit: forgot a comma in a template
+
 ### Version 2022.11.3 - 23 November 2022
 #### 🔴 BREAKING
 * All player_data is now stored in one go, the Google Home Voice and Google Home Event script are using the exacte same template now to make it easier to update and improve it. Also update the Google Home Voice and Google Home Event scripts if you use those as well.
 #### 🌟 Improvements
 * Used more YAML anchors to avoid repeating code
 * A lot of minor template improvements
-#### 🌟 Improvements
+#### 🐛 Bug fixes
 * Several fixes in both the script and automation
 
 ### Version 2022.11.2 - 22 November 2022
