@@ -95,7 +95,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.11.7
+          version: 2022.11.8
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -1047,7 +1047,7 @@ script:
                           media_content_type: "{{ player.media_content_type }}"
                           extra:
                             metadata: >
-                              {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
+                              {{ metadata if picture_url == 'no pic' else dict(metadata, **picture) }}
                       - alias: "Wait until media_content_id is available"
                         wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
                         timeout: "00:00:10"
@@ -1085,7 +1085,7 @@ script:
                           media_content_type: "{{ player.media_content_type }}"
                           extra:
                             metadata: >
-                              {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
+                              {{ metadata if picture_url == 'no pic' else dict(metadata, **picture) }}
                       - alias: "Wait until media_content_id is available"
                         wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
                         timeout: "00:00:10"
