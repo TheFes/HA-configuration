@@ -9,21 +9,19 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * The Google Home Resume script
 
 # Most recent changes
-### Version 2022.11.0 - 21 November 2022
+### Version 2022.11
 #### 🔴 BREAKING
 * Combined the script and template sensor in a package, see the setup instructions for more information
-* This version requires version 2022.11.0 of the Google Home Resume script or higher
+* The latest version of this script (2022.11.2) requires version 2022.11.3 of the Google Home Resume script or higher
 #### 🌟 Improvements
-* Changed version number to YYYY.MM.version
-* Configuration variables are removed, the script uses the name of the binary sensor as defined in the template sensor configuration (`binary_sensor.resume_data_google_home_event`)
-* Used improved templates to store data
-* Removed file integration for long term storage as trigger based templates restore their state after restart or reload
-
-### Version 2022.11.1 - 23 November 2022
-#### 🔴 BREAKING
-* You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version
-#### 🌟 Improvements
-* The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+* (2022.11.0) Changed version number to YYYY.MM.version
+* (2022.11.0) Configuration variables are removed, the script uses the name of the binary sensor as defined in the template sensor configuration (`binary_sensor.resume_data_google_home_event`)
+* (2022.11.0) Used improved templates to store data
+* (2022.11.0) Removed file integration for long term storage as trigger based templates restore their state after restart or reload
+* (2022.11.2) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+#### 🐛 Bug fixes
+* (2022.11.1) Fixed a template error
+* (2022.11.5) Better handling of empty settings
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
 

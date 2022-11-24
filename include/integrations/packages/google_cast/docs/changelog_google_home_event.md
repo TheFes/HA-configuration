@@ -2,6 +2,10 @@
 * For [Google Home Event script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_event.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_event.md)
 
+### Version 2022.11.2 - 24 November 2022
+#### 🐛 Bug fixes
+* Better handling of empty settings
+
 ### Version 2022.11.1 - 23 November 2022
 #### 🔴 BREAKING
 * You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version

@@ -30,11 +30,13 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * (2022.11.3) Used more YAML anchors to avoid repeating code
 * (2022.11.3) Improved template to store player_data
 * (2022.11.3) A lot of minor template improvements
+* (2022.11.5) Improved the template to get the entities to resume
 #### 🐛 Bug fixes
 * (2022.11.1) Fixed a template error
 * (2022.11.2) Corrected a typo in the automation
 * (2022.11.3) Several fixes in both the script and automation
 * (2022.11.4) :shit: forgot a comma in a template
+* (2022.11.5) Better handling of empty settings
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 /root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml

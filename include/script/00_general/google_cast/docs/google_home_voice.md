@@ -15,18 +15,15 @@ The script itself relies on the other script, so make sure that script is runnin
 
 
 # Most recent change
-### Version 2022.11.0 - 21 November 2022
+### Version 2022.11
 #### 🔴 BREAKING
-* You will need to update the Google Home Resume script as well if you update to this version
+* To use the latest version of this script (2022.11.1) youll need to update the Google Home Resume script to version 2022.11.3 or higher as well
 #### 🌟 Improvements
-* Changed version number to YYYY.MM.version
-* Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
-
-### Version 2022.11.1 - 23 November 2022
-#### 🔴 BREAKING
-* You will need to update the Google Home Resume script to 2022.11.3 as well if you update to this version
-#### 🌟 Improvements
-* The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+* (2022.11.0) Changed version number to YYYY.MM.version
+* (2022.11.0) Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+* (2022.11.1) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+#### 🐛 Bug fixes
+* (2022.11.2) Better handling of empty settings
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 

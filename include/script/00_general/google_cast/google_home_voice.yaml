@@ -11,7 +11,7 @@ google_home_voice:
   sequence:
     - alias: "Variable for version number"
       variables:
-        version: 2022.11.1
+        version: 2022.11.2
     - alias: "Are there Spotify entities?"
       if: "{{ integration_entities('spotify') | count > 0 }}"
       then:
@@ -33,8 +33,8 @@ google_home_voice:
           {{ action | reject('in', service_calls) | list | count }}
         settings: "{{ state_attr('script.google_home_resume', 'settings') | to_json }}"
         data_source: voice_script
-        speaker_group_list: "{{ (settings.get('speaker_groups') or {}).keys() | list or [] }}"
-        speaker_groups: "{{ settings.get('speaker_groups') or { 'no group': [ 'no members' ] } }}"
+        speaker_group_list: "{{ settings.get('speaker_groups') | default({'no group': [ 'no members' ] }, true) }}"
+        speaker_groups: "{{ settings.get('speaker_groups') if speaker_group_list else { 'no group': [ 'no members' ] }  }}"
         cast_entities: "{{ integration_entities('cast') }}"
         spotify_entities: "{{ integration_entities('spotify') }}"
         mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
@@ -67,7 +67,7 @@ google_home_voice:
                                 and entity.entity_id in speaker_group_list
                               else []
                 %}
-                {%- set screen = entity.entity_id in settings.get('players_screen', []) %}
+                {%- set screen = entity.entity_id in settings.get('players_screen') | default([], true) %}
                 {%- set type = iif(members,'group',iif(screen,'screen','no screen')) %}
                 {%- set general = dict(
                                         data_source = data_source,
@@ -142,7 +142,7 @@ google_home_voice:
                     %}
                   {# add infomration for web streams (including TuneIn) #}
                   {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
-                    {%- if entity.attributes.get('media_artist') in settings.get('radio_data', {}).keys() | list %}
+                    {%- if entity.attributes.get('media_artist') in (settings.get('radio_data') | default({}, true)).keys() | list %}
                       {% set data = settings.radio_data[entity.attributes.media_artist] %}
                       {% set picture, title = data.get('picture'), data.get('title') %}
                     {% endif %}
