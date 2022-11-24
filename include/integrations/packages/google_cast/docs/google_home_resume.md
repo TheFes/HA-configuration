@@ -40,6 +40,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * (2022.11.5) Better handling of empty settings
 * (2022.11.6) Small fix and improvement for players_to_resume
 * (2022.11.7) Stupid copy/paste error in previous bugfix
+* (2022.11.8) Typo fix in template
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 /root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml
