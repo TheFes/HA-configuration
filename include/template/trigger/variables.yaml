@@ -10,14 +10,14 @@ sensor:
     attributes:
       default_timestamp: false
       variables: >
-        {% set current = this.attributes.get('variables', {}) %}
-        {% if trigger.event.event_type == 'set_variable' %}
-          {% if trigger.event.data.get('set_timestamp', this.attributes.get('default_timestamp', false)) %}
-            {% set new = {trigger.event.data.key: {'value': trigger.event.data.value, 'timestamp': now().isoformat()}} %}
-          {% else %}
-            {% set new = {trigger.event.data.key: trigger.event.data.value} %}
-          {% endif %}
+        {%- set current = this.attributes.get('variables', {}) %}
+        {%- if trigger.event.event_type == 'set_variable' %}
+          {%- if trigger.event.data.get('set_timestamp', this.attributes.get('default_timestamp', false)) %}
+            {%- set new = {trigger.event.data.key: {'value': trigger.event.data.value, 'timestamp': now().isoformat()}} %}
+          {%- else %}
+            {%- set new = {trigger.event.data.key: trigger.event.data.value} %}
+          {%- endif %}
           {{ dict(current, **new) }}
-        {% elif trigger.event.event_type == 'remove_variable' %}
+        {%- elif trigger.event.event_type == 'remove_variable' %}
           {{ dict(current.items() | rejectattr('0', 'eq', trigger.event.data.key)) }}
-        {% endif %}
+        {%- endif %}

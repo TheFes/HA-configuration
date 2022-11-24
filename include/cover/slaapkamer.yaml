@@ -3,7 +3,7 @@ covers:
   slaapkamer:
     unique_id: d9194724-fece-44c8-9ec7-0b737d662f39
     availability_template: >
-      {% set s = ['unknown', 'unavailable'] %}
+      {%- set s = ['unknown', 'unavailable'] %}
       {%- set covers = 
         [ 'cover.slaapkamer_links', 'cover.slaapkamer_midden', 'cover.slaapkamer_rechts']
       %}
@@ -13,15 +13,15 @@ covers:
     device_class: blind
     value_template: "{{ states('sensor.cover_slaapkamer') if states('sensor.cover_slaapkamer') in [ 'opening', 'closing'] else true }}"
     icon_template: >
-      {% if is_state('sensor.cover_slaapkamer', 'opening') %}
+      {%- if is_state('sensor.cover_slaapkamer', 'opening') %}
         mdi:arrow-collapse-up
-      {% elif is_state('sensor.cover_slaapkamer', 'closing') %}
+      {%- elif is_state('sensor.cover_slaapkamer', 'closing') %}
         mdi:arrow-collapse-down
-      {% elif is_state_attr('cover.slaapkamer', 'current_position', 100) %}
+      {%- elif is_state_attr('cover.slaapkamer', 'current_position', 100) %}
         mdi:blinds-open
-      {% else %}
+      {%- else %}
         mdi:blinds
-      {% endif %}
+      {%- endif %}
     friendly_name: "Screens Slaapkamer"
     position_template: >
       {%- set covers = 
@@ -35,13 +35,13 @@ covers:
       {%- endif %}
     open_cover:
       service: >
-        {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+        {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
         {{ 'cover.close_cover' if i else 'cover.open_cover' }}
       target:
         entity_id: cover.slaapkamer_groep
     close_cover:
       service: >
-        {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+        {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
         {{ 'cover.open_cover' if i else 'cover.close_cover' }}
       target:
         entity_id: cover.slaapkamer_groep
@@ -53,5 +53,5 @@ covers:
       entity_id: cover.slaapkamer_groep
       data:
         position: >
-          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
           {{ 100 - position if i else position }}

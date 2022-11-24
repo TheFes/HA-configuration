@@ -14,13 +14,13 @@ filter:
         icon: "{{ state_attr(entity, 'icon') }}"
         secondary: "{{ states(entity) }}"
         icon_color: >
-          {% if is_state_attr(entity, 'collection_date', now().date() | string) %}
+          {%- if is_state_attr(entity, 'collection_date', now().date() | string) %}
             red
-          {% elif is_state_attr(entity, 'collection_date', (now()+timedelta(days=1)).date() | string) %}
+          {%- elif is_state_attr(entity, 'collection_date', (now()+timedelta(days=1)).date() | string) %}
             yellow
-          {% else %}
+          {%- else %}
             blue
-          {% endif %}
+          {%- endif %}
       sort:
         method: attribute
         attribute: collection_date

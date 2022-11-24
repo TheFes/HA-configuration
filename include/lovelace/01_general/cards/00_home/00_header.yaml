@@ -168,7 +168,7 @@ states:
         chip:
           type: template
           icon: >
-            {% set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
+            {%- set n = states.update | selectattr('state', 'eq', 'on') | list | count %}
             {{ 'mdi:numeric-' ~ n ~ '-box' }}
           icon_color: yellow
           tap_action:

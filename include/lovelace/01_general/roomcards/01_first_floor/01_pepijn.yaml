@@ -18,38 +18,38 @@ cards:
         entity: light.groep_pepijn
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_pepijn', 'on') %}
+          {%- if is_state('light.groep_pepijn', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_pepijn', 'on') %}
+          {%- if is_state('light.groep_pepijn', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.pepijn
         badge_icon: "{{ 'mdi:alert' if is_state('cover.pepijn', 'unavailable')}}"
         badge_color: red
         layout: vertical
         icon: >-
-          {% if is_state('cover.pepijn_tahoma', 'opening') and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
+          {%- if is_state('cover.pepijn_tahoma', 'opening') and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
             mdi:arrow-collapse-down
-          {% elif is_state('cover.pepijn_tahoma', 'closing') and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
+          {%- elif is_state('cover.pepijn_tahoma', 'closing') and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
             mdi:arrow-collapse-up
-          {% elif state_attr('cover.pepijn_tahoma', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr('cover.pepijn_tahoma', 'current_position') | int(0) > 0 %}
             mdi:blinds
-          {% else %}
+          {%- else %}
             mdi:blinds-open
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if states('cover.pepijn_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
+          {%- if states('cover.pepijn_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.pepijn_tahoma', 'current_position') in [0, 100]  %}
             green
-          {% elif is_state_attr('cover.pepijn_tahoma', 'current_position', 100) %}
+          {%- elif is_state_attr('cover.pepijn_tahoma', 'current_position', 100) %}
             yellow
-          {% elif state_attr('cover.pepijn_tahoma', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr('cover.pepijn_tahoma', 'current_position') | int(0) > 0 %}
             orange
-          {% endif %}
+          {%- endif %}
       - type: conditional
         conditions:
           - entity: media_player.pepijn_mini
@@ -62,8 +62,8 @@ cards:
           entity: media_player.pepijn_mini
           icon: mdi:cast
           icon_color: >-
-            {% if is_state('media_player.pepijn_mini', 'playing') %}
+            {%- if is_state('media_player.pepijn_mini', 'playing') %}
               yellow
-            {% elif is_state('media_player.pepijn_mini', 'unavailable') %}
+            {%- elif is_state('media_player.pepijn_mini', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}

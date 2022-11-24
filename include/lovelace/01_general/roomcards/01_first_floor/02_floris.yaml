@@ -17,64 +17,64 @@ cards:
         entity: light.groep_floris
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_floris', 'on') %}
+          {%- if is_state('light.groep_floris', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_floris', 'on') %}
+          {%- if is_state('light.groep_floris', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.floris
         badge_icon: "{{ 'mdi:alert' if is_state('cover.floris', 'unavailable')}}"
         badge_color: red
         layout: vertical
         icon: >-
-          {% if is_state('cover.floris_tahoma', 'opening') and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
+          {%- if is_state('cover.floris_tahoma', 'opening') and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
             mdi:arrow-collapse-up
-          {% elif is_state('cover.floris_tahoma', 'closing') and not is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
+          {%- elif is_state('cover.floris_tahoma', 'closing') and not is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
             mdi:arrow-collapse-down
-          {% elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
             mdi:blinds
-          {% else %}
+          {%- else %}
             mdi:blinds-open
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if states('cover.floris_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
+          {%- if states('cover.floris_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
             green
-          {% elif is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
+          {%- elif is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
             yellow
-          {% elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
             orange
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.switchbot_curtain_floris
         layout: vertical
         badge_icon: >
-          {% if is_state('cover.switchbot_curtain_floris', 'unavailable') %}
+          {%- if is_state('cover.switchbot_curtain_floris', 'unavailable') %}
             mdi:alert
-          {% elif states('sensor.switchbot_curtain_floris_battery') | float(100) < 20 %}
+          {%- elif states('sensor.switchbot_curtain_floris_battery') | float(100) < 20 %}
             mdi:battery-alert
-          {% endif %}
+          {%- endif %}
         badge_color: red
         icon: >-
-          {% if is_state('cover.switchbot_curtain_floris', 'opening') %}
+          {%- if is_state('cover.switchbot_curtain_floris', 'opening') %}
             mdi:arrow-collapse-right
-          {% elif is_state('cover.switchbot_curtain_floris', 'closing') %}
+          {%- elif is_state('cover.switchbot_curtain_floris', 'closing') %}
             mdi:arrow-collapse-left
-          {% elif is_state('binary_sensor.curtain_floris_open', 'off') %}
+          {%- elif is_state('binary_sensor.curtain_floris_open', 'off') %}
             mdi:curtains-closed
-          {% else %}
+          {%- else %}
             mdi:curtains
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if states('cover.switchbot_curtain_floris') in [ 'opening', 'closing' ] %}
+          {%- if states('cover.switchbot_curtain_floris') in [ 'opening', 'closing' ] %}
             green
-          {% elif is_state('binary_sensor.curtain_floris_open', 'off') %}
+          {%- elif is_state('binary_sensor.curtain_floris_open', 'off') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: conditional
         conditions:
           - entity: media_player.floris_mini
@@ -87,8 +87,8 @@ cards:
           entity: media_player.floris_mini
           icon: mdi:cast
           icon_color: >-
-            {% if is_state('media_player.floris_mini', 'playing') %}
+            {%- if is_state('media_player.floris_mini', 'playing') %}
               yellow
-            {% elif is_state('media_player.floris_mini', 'unavailable') %}
+            {%- elif is_state('media_player.floris_mini', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}

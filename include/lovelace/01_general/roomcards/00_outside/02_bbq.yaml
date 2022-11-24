@@ -12,27 +12,27 @@ card:
       primary: "{{ states(entity) }} °C {{ '🚨' if is_state('input_boolean.probe_1_alert', 'on') }}"
       icon: mdi:grill
       icon_color: >
-        {% if states(entity) | int < states('input_number.probe_1_min') | int %}
+        {%- if states(entity) | int < states('input_number.probe_1_min') | int %}
           blue
-        {% elif states(entity) | int <= states('input_number.probe_1_max') | int %}
+        {%- elif states(entity) | int <= states('input_number.probe_1_max') | int %}
           green
-        {% else %}
+        {%- else %}
           red
-        {% endif %}
+        {%- endif %}
       badge_icon: >
-        {% set trend = state_attr(entity, 'trend') %}
-        {% if trend == 'up' %}
+        {%- set trend = state_attr(entity, 'trend') %}
+        {%- if trend == 'up' %}
           mdi:arrow-up
-        {% elif trend == 'down' %}
+        {%- elif trend == 'down' %}
           mdi:arrow-down
-        {% endif %}
+        {%- endif %}
       badge_color: >
-        {% set trend = state_attr(entity, 'trend') %}
-        {% if trend == 'up' %}
+        {%- set trend = state_attr(entity, 'trend') %}
+        {%- if trend == 'up' %}
           red
-        {% elif trend == 'down' %}
+        {%- elif trend == 'down' %}
           blue
-        {% endif %}
+        {%- endif %}
       layout: horizontal
       secondary: "> {{ states('input_number.probe_1_min') | int }} °C | < {{ states('input_number.probe_1_max') | int  }} °C"
       double_tap_action:
@@ -63,27 +63,27 @@ card:
       primary: "{{ states(entity) }} °C {{ '🚨' if is_state('input_boolean.probe_2_alert', 'on') }}"
       icon: mdi:food-steak
       icon_color: >
-        {% if states(entity) | int < states('input_number.probe_2_target') | int %}
+        {%- if states(entity) | int < states('input_number.probe_2_target') | int %}
           blue
-        {% elif states(entity) | int < states('input_number.probe_2_target') | int + 3 %}
+        {%- elif states(entity) | int < states('input_number.probe_2_target') | int + 3 %}
           green
-        {% else %}
+        {%- else %}
           red
-        {% endif %}
+        {%- endif %}
       badge_icon: >
-        {% set trend = state_attr(entity, 'trend') %}
-        {% if trend == 'up' %}
+        {%- set trend = state_attr(entity, 'trend') %}
+        {%- if trend == 'up' %}
           mdi:arrow-up
-        {% elif trend == 'down' %}
+        {%- elif trend == 'down' %}
           mdi:arrow-down
-        {% endif %}
+        {%- endif %}
       badge_color: >
-        {% set trend = state_attr(entity, 'trend') %}
-        {% if trend == 'up' %}
+        {%- set trend = state_attr(entity, 'trend') %}
+        {%- if trend == 'up' %}
           red
-        {% elif trend == 'down' %}
+        {%- elif trend == 'down' %}
           blue
-        {% endif %}
+        {%- endif %}
       layout: horizontal
       secondary: "> {{ states('input_number.probe_2_target') | int }} °C"
       double_tap_action:

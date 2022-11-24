@@ -15,6 +15,6 @@ template:
       state: "OK"
       attributes:
         changes: >
-          {% set current = this.attributes.get('changes', {}) %}
-          {% set new = {trigger.entity_id: trigger.to_state.last_changed.isoformat()} %}
+          {%- set current = this.attributes.get('changes', {}) %}
+          {%- set new = {trigger.entity_id: trigger.to_state.last_changed.isoformat()} %}
           {{ dict(current, **new) }}

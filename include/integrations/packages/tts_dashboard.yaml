@@ -139,12 +139,3 @@ script:
                   - service: homeassistant.turn_off
                     target:
                       entity_id: "{{ boolean }}"
-          - alias: "Reset selection"
-            choose:
-              - conditions: "{{ True if default_selection else False }}"
-                sequence:
-                  - service: input_select.select_option
-                    target:
-                      entity_id: input_select.dropdown_google_say
-                    data:
-                      option: "{{ default_selection }}"

@@ -12,13 +12,13 @@ cards:
           {{ 'Uit' if is_state(entity, 'off') else
           state_attr(entity, 'current_course')}}
         secondary: >-
-          {% set h, m, s = state_attr(entity, 'remain_time').split(':') | map('int') %}
+          {%- set h, m, s = state_attr(entity, 'remain_time').split(':') | map('int') %}
           {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state(entity, 'on') }}
         card_mod:
           style:
             mushroom-shape-icon$: |
               ha-icon {
-                {% if is_state('sensor.wasmachine', 'on') %}
+                {%- if is_state('sensor.wasmachine', 'on') %}
                   clip-path: polygon(0 0, 0 100%, 35% 100%, 34% 68%, 60% 41%, 71% 56%, 65% 74%, 47% 79%, 32% 69%, 35% 100%, 100% 100%, 100% 0);
                 {%- endif %}
               }
@@ -30,7 +30,7 @@ cards:
           style:
             mushroom-shape-icon$: |
               ha-icon {
-                {% if is_state('sensor.wasmachine', 'on') %}
+                {%- if is_state('sensor.wasmachine', 'on') %}
                   --icon-animation: spin 1s linear infinite;
                   transform-origin: 50% 58%;
                   clip-path: circle(21.7% at 50% 58%);

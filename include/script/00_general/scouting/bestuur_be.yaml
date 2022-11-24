@@ -29,8 +29,8 @@ bestuur_be_add:
         entity_id: input_select.agenda_bestuur_be
       data:
         options: >
-          {% set current = state_attr('input_select.agenda_bestuur_be', 'options') %}
-          {% set index = state_attr('input_select.agenda_bestuur_be', 'options').index(states('input_select.agenda_bestuur_be')) %}
+          {%- set current = state_attr('input_select.agenda_bestuur_be', 'options') %}
+          {%- set index = state_attr('input_select.agenda_bestuur_be', 'options').index(states('input_select.agenda_bestuur_be')) %}
           {{ current[0:index+1] + [text] + current[index+1:] }}
     - service: input_text.set_value
       target:

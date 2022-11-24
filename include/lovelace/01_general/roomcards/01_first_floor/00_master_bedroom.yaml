@@ -17,15 +17,15 @@ cards:
         entity: light.groep_slaapkamer
         layout: vertical
         icon: >-
-          {% if is_state(entity, 'on') %}
+          {%- if is_state(entity, 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state(entity, 'on') %}
+          {%- if is_state(entity, 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.slaapkamer
         layout: vertical
@@ -33,23 +33,23 @@ cards:
         badge_color: red
         icon: "{{ state_attr('cover.slaapkamer', 'icon') }}"
         icon_color: >-
-          {% if states('cover.slaapkamer') in [ 'opening', 'closing' ] %}
+          {%- if states('cover.slaapkamer') in [ 'opening', 'closing' ] %}
             green
-          {% elif is_state_attr('cover.slaapkamer', 'current_position', 0) %}
+          {%- elif is_state_attr('cover.slaapkamer', 'current_position', 0) %}
             yellow
-          {% elif state_attr('cover.slaapkamer', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr('cover.slaapkamer', 'current_position') | int(100) < 100 %}
             orange
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: vacuum.rockrobo_vacuum_v1
         layout: vertical
         icon: mdi:robot-vacuum
         icon_color: >-
-          {% if is_state('vacuum.rockrobo_vacuum_v1', 'cleaning') %}
+          {%- if is_state('vacuum.rockrobo_vacuum_v1', 'cleaning') %}
             yellow
-          {% elif is_state('vacuum.rockrobo_vacuum_v1', 'error') %}
+          {%- elif is_state('vacuum.rockrobo_vacuum_v1', 'error') %}
             red
-          {% endif %}
+          {%- endif %}
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -85,8 +85,8 @@ cards:
           entity: media_player.slaapkamer_hub
           icon: mdi:cast
           icon_color: >-
-            {% if is_state('media_player.slaapkamer_hub', 'playing') %}
+            {%- if is_state('media_player.slaapkamer_hub', 'playing') %}
               yellow
-            {% elif is_state('media_player.slaapkamer_hub', 'unavailable') %}
+            {%- elif is_state('media_player.slaapkamer_hub', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}

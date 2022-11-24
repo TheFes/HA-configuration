@@ -3,7 +3,7 @@ binary_sensor:
     name: "Cover unavailable"
     device_class: problem
     state: >-
-      {% 
+      {%- 
         set covers =  [
                         'cover.pepijn',
                         'cover.floris',
@@ -18,7 +18,7 @@ binary_sensor:
     delay_on: "00:00:30"
     attributes:
       names: >
-        {% 
+        {%- 
           set covers =  [
                           'cover.pepijn',
                           'cover.floris',

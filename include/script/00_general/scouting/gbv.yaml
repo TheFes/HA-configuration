@@ -29,8 +29,8 @@ gbv_add:
         entity_id: input_select.agenda_gbv
       data:
         options: >
-          {% set current = state_attr('input_select.agenda_gbv', 'options') %}
-          {% set index = state_attr('input_select.agenda_gbv', 'options').index(states('input_select.agenda_gbv')) %}
+          {%- set current = state_attr('input_select.agenda_gbv', 'options') %}
+          {%- set index = state_attr('input_select.agenda_gbv', 'options').index(states('input_select.agenda_gbv')) %}
           {{ current[0:index+1] + [text] + current[index+1:] }}
     - service: input_text.set_value
       target:

@@ -6,11 +6,11 @@ sensor:
     unique_id: a3f7d94b-a356-42c8-8661-e59da760507f
     state: "{{ trigger.to_state.state }}"
     icon: >
-      {% if trigger.to_state.state | float(0) > 0 %}
+      {%- if trigger.to_state.state | float(0) > 0 %}
         mdi:home
-      {% else %}
+      {%- else %}
         mdi:home-outline
-      {% endif %}
+      {%- endif %}
     attributes:
       last_arrival: >
         {%- set arrived = trigger.to_state.attributes.persons

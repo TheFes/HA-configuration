@@ -201,21 +201,21 @@ transition_lights_perform_transition:
           variables:
             br_start_set: "{{ br_start is not none or br_start_pct is not none }}"
             br_start: >
-              {% if br_start is none and br_start_pct is none %}
+              {%- if br_start is none and br_start_pct is none %}
                 0
-              {% elif use_br_pct %}
+              {%- elif use_br_pct %}
                 {{ (br_start / 2.55) | round(0) if br_start_pct is none else br_start_pct }}
-              {% else %}
+              {%- else %}
                 {{ (br_start_pct * 2.55) | round(0) if br_start is none else br_start }}
-              {% endif %}
+              {%- endif %}
             br_end: >
-              {% if br_end is none and br_end_pct is none %}
+              {%- if br_end is none and br_end_pct is none %}
                 {{ 100 if use_br_pct else 255 }}
-              {% elif use_br_pct %}
+              {%- elif use_br_pct %}
                 {{ (br_end / 2.55) | round(0) if br_end_pct is none else br_end_pct }}
-              {% else %}
+              {%- else %}
                 {{ (br_end_pct * 2.55) | round(0) if br_end is none else br_end }}
-              {% endif %}
+              {%- endif %}
             ct_start_set: "{{ ct_start is not none or ct_start_pct is not none }}"
             ct_min: "{{ state_attr(light, 'min_mireds') | default(0, true) }}"
             ct_max: "{{ state_attr(light, 'max_mireds') | default(0, true) }}"
@@ -227,8 +227,8 @@ transition_lights_perform_transition:
           target:
             entity_id: "{{ light }}"
           data: >
-            {% set br = { br_key: br_start } if br_start_set else {} %}
-            {% set ct = dict(color_temp=ct_start) if ct_start_set else {} %}
+            {%- set br = { br_key: br_start } if br_start_set else {} %}
+            {%- set ct = dict(color_temp=ct_start) if ct_start_set else {} %}
             {{ dict(br, **ct) }}
         - alias: "Check if light is on"
           wait_template: "{{ is_state(light, 'on') }}"
@@ -236,21 +236,21 @@ transition_lights_perform_transition:
           variables:
             br: "{{ state_attr(light, 'brightness') }}"
             br_start: >
-              {% if br is none %}
+              {%- if br is none %}
                 0
-              {% elif br_start_set %}
+              {%- elif br_start_set %}
                 {{ br_start }}
-              {% elif use_br_pct %}
+              {%- elif use_br_pct %}
                 {{ (br / 2.55) | round(0) }}
-              {% else %}
+              {%- else %}
                 {{ br }}
-              {% endif %}
+              {%- endif %}
             br_end: >
               {{ 0 if br is none else br_end }}
-            ct_start: "{{ ct_start if cr_start_set else state_attr(light, 'color_temp') | default(0, true) }}"
+            ct_start: "{{ ct_start if ct_start_set else state_attr(light, 'color_temp') | default(0, true) }}"
             ct_end: >
-              {% set ct_end_set = ct_end is not none or ct_end_pct is not none %}
-              {% set ct_end = ct_min if not ct_end_set else ct_end %}
+              {%- set ct_end_set = ct_end is not none or ct_end_pct is not none %}
+              {%- set ct_end = ct_min if not ct_end_set else ct_end %}
               {{ ct_end if ct_end is not none else (ct_min + ct_end_pct / 100 * ct_diff) | round(0) }}
             min_delay: "{{ min_delay if min_delay is not none else 0.5 }}"
             max_steps: "{{ (duration / min_delay) | round(0) }}"
@@ -273,17 +273,17 @@ transition_lights_perform_transition:
             sequence:
               - variables:
                   br_next: >
-                    {% if br_end > br_start %}
+                    {%- if br_end > br_start %}
                       {{ [br_max, (br_start + repeat.index * br_step) | round(0)] | min }}
-                    {% else %}
+                    {%- else %}
                       {{ [0, (br_start + repeat.index * br_step) | round(0)] | max }}
-                    {% endif %}
+                    {%- endif %}
                   ct_next: >
-                    {% if ct_end > ct_start %}
+                    {%- if ct_end > ct_start %}
                       {{ [ct_max, (ct_start + repeat.index * ct_step) | round(0)] | min }}
-                    {% else %}
+                    {%- else %}
                       {{ [ct_min, (ct_start + repeat.index * ct_step) | round(0)] | max }}
-                    {% endif %}
+                    {%- endif %}
               - alias: "Check if step count or target is reached"
                 if: "{{ repeat.index == steps or (br_next == br_end and ct_next == ct_end) or br_next == 0 }}"
                 then:
@@ -299,8 +299,8 @@ transition_lights_perform_transition:
                         target:
                           entity_id: "{{ light }}"
                         data: >
-                          {% set br = { br_key: br_end } if br_change and use_br else {} %}
-                          {% set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
+                          {%- set br = { br_key: br_end } if br_change and use_br else {} %}
+                          {%- set ct = dict(color_temp=ct_end) if ct_change and use_ct else {} %}
                           {{ dict(br, **ct) }}
                 else:
                   - alias: "Adjust light according to settings script"
@@ -308,9 +308,9 @@ transition_lights_perform_transition:
                     target:
                       entity_id: "{{ light }}"
                     data: >
-                      {% set br = { br_key: br_next }
+                      {%- set br = { br_key: br_next }
                           if br_change and use_br else {} %}
-                      {% set ct = dict(color_temp=ct_next)
+                      {%- set ct = dict(color_temp=ct_next)
                           if ct_change and use_ct else {} %}
                       {{ dict(br, **ct) }}
                   - delay: "{{ delay }}"

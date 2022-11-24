@@ -17,12 +17,12 @@ cards:
         entity: light.trapkast
         layout: vertical
         icon: >-
-          {% if is_state('light.trapkast', 'on') %}
+          {%- if is_state('light.trapkast', 'on') %}
             mdi:lightbulb
-          {% else %}
+          {%- else %}
             mdi:lightbulb-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.trapkast', 'on') %}
+          {%- if is_state('light.trapkast', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}

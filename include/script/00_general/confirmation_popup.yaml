@@ -54,15 +54,15 @@ confirmation_popup:
             check_entity: "{{ check_entity or toggle_entity }}"
         - alias: "Check if current state matches the provided on_state"
           if: >
-            {% if on_state is not defined or not on_state %}
+            {%- if on_state is not defined or not on_state %}
               {{ true }}
-            {% elif 'above' in on_state %}
+            {%- elif 'above' in on_state %}
               {{ states(check_entity) | float(0) > on_state.split(' ')[1] | float(0) }}
-            {% elif 'below' in on_state %}
+            {%- elif 'below' in on_state %}
               {{ states(check_entity) | float(0) < on_state.split(' ')[1] | float(0) }}
-            {% else %}
+            {%- else %}
               {{ on_state == 'all' or states(check_entity) == on_state }}
-            {% endif %}
+            {%- endif %}
           then:
             - alias: "Determine which popup type is needed"
               choose:
@@ -196,68 +196,68 @@ confirmation_popup:
                               cards:
                                 - type: custom:mushroom-template-card
                                   icon: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
                                       {{ 'mdi:circle' if p | count > 0 else 'mdi:circle-small' }}
-                                    {% endraw %}
+                                    {%- endraw %}
                                   layout: vertical
                                   icon_color: |-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
-                                      {% if p | count == 4 %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
+                                      {%- if p | count == 4 %}
                                         {{ states('input_select.passcode_color') }}
-                                      {% else %}
+                                      {%- else %}
                                         {{ 'blue' if p | count > 0 }}
-                                      {% endif %}
-                                    {% endraw %}
+                                      {%- endif %}
+                                    {%- endraw %}
                                 - type: custom:mushroom-template-card
                                   icon: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
                                       {{ 'mdi:circle' if p | count > 1 else 'mdi:circle-small' }}
-                                    {% endraw %}
+                                    {%- endraw %}
                                   layout: vertical
                                   icon_color: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
-                                      {% if p | count == 4 %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
+                                      {%- if p | count == 4 %}
                                         {{ states('input_select.passcode_color') }}
-                                      {% else %}
+                                      {%- else %}
                                         {{ 'blue' if p | count > 1 }}
-                                      {% endif %}
-                                    {% endraw %}
+                                      {%- endif %}
+                                    {%- endraw %}
                                 - type: custom:mushroom-template-card
                                   icon: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
                                       {{ 'mdi:circle' if p | count > 2 else 'mdi:circle-small' }}
-                                    {% endraw %}
+                                    {%- endraw %}
                                   layout: vertical
                                   icon_color: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
-                                      {% if p | count == 4 %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
+                                      {%- if p | count == 4 %}
                                         {{ states('input_select.passcode_color') }}
-                                      {% else %}
+                                      {%- else %}
                                         {{ 'blue' if p | count > 2 }}
-                                      {% endif %}
-                                    {% endraw %}
+                                      {%- endif %}
+                                    {%- endraw %}
                                 - type: custom:mushroom-template-card
                                   icon: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
                                       {{ 'mdi:circle' if p | count > 3 else 'mdi:circle-small' }}
-                                    {% endraw %}
+                                    {%- endraw %}
                                   layout: vertical
                                   icon_color: >-
-                                    {% raw %}
-                                      {% set p = states('input_text.passcode') %}
-                                      {% if p | count == 4 %}
+                                    {%- raw %}
+                                      {%- set p = states('input_text.passcode') %}
+                                      {%- if p | count == 4 %}
                                         {{ states('input_select.passcode_color') }}
-                                      {% else %}
+                                      {%- else %}
                                         {{ 'blue' if p | count > 3 }}
-                                      {% endif %}
-                                    {% endraw %}
+                                      {%- endif %}
+                                    {%- endraw %}
                     - alias: "Store current state of entity to be able to check if it changed"
                       variables:
                         current_state: "{{ states(toggle_entity) }}"

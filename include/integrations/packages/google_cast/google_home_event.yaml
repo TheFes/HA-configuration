@@ -126,9 +126,9 @@ script:
               {# determine cast entities of all entities #}
                 {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
             {# create list with all entities #}
-              {% set target_list = (area_cast + device_cast + entity_cast) | unique | list %}
+              {%- set target_list = (area_cast + device_cast + entity_cast) | unique | list %}
             {%- else %}
-              {% set target_list = integration_entities('cast') %}
+              {%- set target_list = integration_entities('cast') %}
             {%- endif %}
             {{ target_list | reject('in', ignore_list) | list }}
           all: "{{ target_list == integration_entities('cast') }}"
@@ -171,7 +171,7 @@ script:
                     {%- endif %}
                   mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
                   primary_spotcast_check: >
-                    {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
+                    {%- set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
                     {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
                   ytube_music_entities: >
                     {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
@@ -219,7 +219,7 @@ script:
                           {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
                             {%- set additional = dict( volume_level = entity.attributes.volume_level | round(2)) %}
                           {# add metadata for playing entities #}
-                          {% elif entity.state == 'playing' or spotify_entity %}
+                          {%- elif entity.state == 'playing' or spotify_entity %}
                             {%- set additional = dict(
                                                       state = 'playing',
                                                       app_name = entity.attributes.app_name,
@@ -233,7 +233,7 @@ script:
                                                       )
                             %}
                             {# add Spotify account #}
-                            {% if entity.attributes.get('app_name') == 'Spotify' %}
+                            {%- if entity.attributes.get('app_name') == 'Spotify' %}
                               {%- set spotcast = spotify_entity if spotify_entity
                                                         and settings.primary_spotcast is defined
                                                         and spotify_entity != settings.primary_spotcast
@@ -261,11 +261,11 @@ script:
                                                       ) 
                               %}
                             {# add infomration for web streams (including TuneIn) #}
-                            {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
+                            {%- elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
                               {%- if entity.attributes.get('media_artist') in (settings.get('radio_data') | default({}, true)).keys() | list %}
-                                {% set data = settings.radio_data[entity.attributes.media_artist] %}
-                                {% set picture, title = data.get('picture'), data.get('title') %}
-                              {% endif %}
+                                {%- set data = settings.radio_data[entity.attributes.media_artist] %}
+                                {%- set picture, title = data.get('picture'), data.get('title') %}
+                              {%- endif %}
                               {%- set additional = dict(additional, **dict(
                                                             media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                             else entity.attributes.get('media_artist', 'no artist'),
@@ -274,8 +274,8 @@ script:
                                                             entity_picture = picture if picture is defined else entity.attributes.get('entity_picture', 'no pic')
                                                             ))
                               %}
-                            {% endif %}
-                          {% endif %}
+                            {%- endif %}
+                          {%- endif %}
                         {# cobmine all data #}
                         {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
                       {%- endfor %}
@@ -356,12 +356,12 @@ script:
                   player_data: >
                     {{ state_attr('binary_sensor.resume_data_google_home_event', 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='player_data') | first }}
                   players_to_resume: >
-                    {% set player_list = player_data
+                    {%- set player_list = player_data
                                           | selectattr('state', 'eq', 'playing')
                                           | map(attribute='entity_id')
                                           | list
                     %}
-                    {{ player_list | select('in', target_list) | list}}
+                    {{ player_list | select('in', target_list) | list }}
                   cast_mass_playing: >
                     {{ state_attr('binary_sensor.resume_data_google_home_event'  , 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='cast_mass_playing') | first }}
               - alias: "Anything to resume?"

@@ -2,36 +2,36 @@ binary_sensor:
   - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
     name: "Rain"
     state: >
-      {% set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-      {% set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-      {% set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-      {% set p3 = states('sensor.br_precipitation') | float('nan') %}
-      {% set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-      {% if p4 %}
-        {% set ns = namespace(p=[]) %}
-        {% for item in p4.split(' ')[:4] %}
-          {% set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-        {% endfor %}
-        {% set p4 =  ns.p | sum %}
-      {% else %}
-        {% set p4 = 'nan' %}
-      {% endif %}
+      {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+      {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+      {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+      {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+      {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+      {%- if p4 %}
+        {%- set ns = namespace(p=[]) %}
+        {%- for item in p4.split(' ')[:4] %}
+          {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+        {%- endfor %}
+        {%- set p4 =  ns.p | sum %}
+      {%- else %}
+        {%- set p4 = 'nan' %}
+      {%- endif %}
       {{ (p3 if p3 | is_number else [ p1, p2, p4 ] | select('is_number') | max) > 0 }}
     availability: >
-      {% set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-      {% set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-      {% set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-      {% set p3 = states('sensor.br_precipitation') | float('nan') %}
-      {% set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-      {% if p4 %}
-        {% set ns = namespace(p=[]) %}
-        {% for item in p4.split(' ')[:4] %}
-          {% set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-        {% endfor %}
-        {% set p4 = ns.p | sum %}
-      {% else %}
-        {% set p4 = 'nan' %}
-      {% endif %}
+      {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+      {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+      {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+      {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+      {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+      {%- if p4 %}
+        {%- set ns = namespace(p=[]) %}
+        {%- for item in p4.split(' ')[:4] %}
+          {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+        {%- endfor %}
+        {%- set p4 = ns.p | sum %}
+      {%- else %}
+        {%- set p4 = 'nan' %}
+      {%- endif %}
       {{ [ p1, p2, p3, p4 ] | select('is_number') | list | count > 0 }}
     icon: >
       {{ 'mdi:weather-sunny' if this.state is defined and this.state == 'off' else 'mdi:weather-rainy' }}

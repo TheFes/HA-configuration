@@ -26,7 +26,7 @@ variables:
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "sensor.{{ name }}_naar_huis"
   eta: >
-    {% set delta = 40 if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' else states(sensor) | float %}
+    {%- set delta = 40 if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' else states(sensor) | float %}
     {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
 action:
   - if: "{{ trigger.id == 'reset' }}"

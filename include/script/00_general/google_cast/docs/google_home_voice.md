@@ -50,7 +50,7 @@ eta_thefes:
   sequence:
     - variables:
         message: >
-          {% set eta = (as_timestamp(now()) + 60 * states ('sensor.thefes_home') | float(0) | timestamp_custom('%H:%M') %}
+          {%- set eta = (as_timestamp(now()) + 60 * states ('sensor.thefes_home') | float(0) | timestamp_custom('%H:%M') %}
           If TheFes leaves now, he will be home at {{ eta }}.
     - alias: "TTS for speaker voice command"
       service: script.google_home_voice

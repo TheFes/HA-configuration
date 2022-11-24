@@ -16,46 +16,46 @@ cards:
         entity: light.groep_keuken
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_keuken', 'on') %}
+          {%- if is_state('light.groep_keuken', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_keuken', 'on') %}
+          {%- if is_state('light.groep_keuken', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: switch.groep_keuken
         layout: vertical
         icon: >-
-          {% if is_state('switch.groep_keuken', 'on') %}
+          {%- if is_state('switch.groep_keuken', 'on') %}
             mdi:toggle-switch-variant
-          {% else %}
+          {%- else %}
             mdi:toggle-switch-variant-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('switch.groep_keuken', 'on') %}
+          {%- if is_state('switch.groep_keuken', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: sensor.extractor_hood_status
         layout: vertical
         icon: >-
-          {% if not states('sensor.extractor_hood_status') in
+          {%- if not states('sensor.extractor_hood_status') in
           ['Inactief', 'Plug uit'] %}
             mdi:pot-steam
-          {% else %}
+          {%- else %}
             mdi:pot-steam-outline
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if not states('sensor.extractor_hood_status') in
+          {%- if not states('sensor.extractor_hood_status') in
           ['Inactief', 'Plug uit'] %}
             yellow
-          {% elif is_state('sensor.extractor_hood_status', 'Plug
+          {%- elif is_state('sensor.extractor_hood_status', 'Plug
           uit') %}
             red
-          {% endif %}
+          {%- endif %}
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -137,8 +137,8 @@ cards:
           entity: media_player.keuken_hub
           icon: mdi:cast
           icon_color: >-
-            {% if is_state('media_player.keuken_hub', 'playing') %}
+            {%- if is_state('media_player.keuken_hub', 'playing') %}
               yellow
-            {% elif is_state('media_player.keuken_hub', 'unavailable') %}
+            {%- elif is_state('media_player.keuken_hub', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}

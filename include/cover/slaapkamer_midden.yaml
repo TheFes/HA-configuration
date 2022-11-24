@@ -5,21 +5,21 @@ covers:
     friendly_name: "Screens Slaapkamer Midden"
     device_class: blind
     position_template: >
-      {% set s = state_attr('cover.slaapkamer_midden', 'current_position') %}
-      {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+      {%- set s = state_attr('cover.slaapkamer_midden', 'current_position') %}
+      {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
       {{ 100 - s if i else s }}
     availability_template: >
-      {% set s = ['unknown', 'unavailable'] %}
+      {%- set s = ['unknown', 'unavailable'] %}
       {{ not states('cover.slaapkamer_midden') in s }}
     open_cover:
       - service: >
-          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
           {{ 'cover.close_cover' if i else 'cover.open_cover' }}
         target:
           entity_id: cover.slaapkamer_midden
     close_cover:
       - service: >
-          {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
           {{ 'cover.open_cover' if i else 'cover.close_cover' }}
         target:
           entity_id: cover.slaapkamer_midden
@@ -33,5 +33,5 @@ covers:
           entity_id: cover.slaapkamer_midden
         data:
           position: >
-            {% set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+            {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
             {{ 100 - position if i else position }}

@@ -20,12 +20,12 @@ cards:
         entity: light.wc
         layout: vertical
         icon: >-
-          {% if is_state('light.wc', 'on') %}
+          {%- if is_state('light.wc', 'on') %}
             mdi:lightbulb
-          {% else %}
+          {%- else %}
             mdi:lightbulb-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.wc', 'on') %}
+          {%- if is_state('light.wc', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}

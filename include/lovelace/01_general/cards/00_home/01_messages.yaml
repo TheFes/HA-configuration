@@ -4,7 +4,7 @@ view_layout:
 cards:
   - type: custom:mushroom-title-card
     title: >-
-      {% if is_state('sensor.anniversary_' ~ user | lower, '0') %}
+      {%- if is_state('sensor.anniversary_' ~ user | lower, '0') %}
         🎉 Gefeliciteerd {{ user }}!! 🎉
       {%- elif now() < today_at('06:00') %}
         Goedenacht {{ user }}

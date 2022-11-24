@@ -1,12 +1,12 @@
 screens_unavailable:
   name: "Screens"
   title: >
-    {% set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
-    {% set names = iif(names, names, []) %}
+    {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
+    {%- set names = iif(names, names, []) %}
     🚨 Screen{{ iif(names | count == 1, '', 's') }} niet beschikbaar
   message: >
-    {% set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
-    {% set names = iif(names, names, []) %}
+    {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
+    {%- set names = iif(names, names, []) %}
     De volgende screens zijn niet beschikbaar: {{ names | join(', ') }}
   entity_id: binary_sensor.cover_unavailable
   state: "on"

@@ -22,35 +22,35 @@ cards:
         entity: light.groep_tuin
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_tuin', 'on') %}
+          {%- if is_state('light.groep_tuin', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_tuin', 'on') %}
+          {%- if is_state('light.groep_tuin', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.veranda
         badge_icon: "{{ 'mdi:alert' if is_state('cover.veranda', 'unavailable')}}"
         badge_color: red
         layout: vertical
         icon: >-
-          {% if is_state('cover.veranda', 'opening') %}
+          {%- if is_state('cover.veranda', 'opening') %}
             mdi:arrow-expand-horizontal
-          {% elif is_state('cover.veranda', 'closing') %}
+          {%- elif is_state('cover.veranda', 'closing') %}
             mdi:arrow-collapse-horizontal
-          {% elif is_state('cover.veranda', 'closed') %}
+          {%- elif is_state('cover.veranda', 'closed') %}
             mdi:storefront-outline
-          {% else %}
+          {%- else %}
             mdi:storefront
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if states('cover.veranda') in ['opening', 'closing'] %}
+          {%- if states('cover.veranda') in ['opening', 'closing'] %}
             green
-          {% elif is_state_attr('cover.veranda', 'current_position', 100) %}
+          {%- elif is_state_attr('cover.veranda', 'current_position', 100) %}
             yellow
-          {% elif state_attr('cover.veranda', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr('cover.veranda', 'current_position') | int(0) > 0 %}
             orange
-          {% endif %}
+          {%- endif %}

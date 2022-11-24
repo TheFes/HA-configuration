@@ -16,20 +16,20 @@ sensor:
       using_power: >
         {%- set ns = namespace(power=[]) %}
         {%- for e in expand('group.measured_power') | selectattr('state' , 'is_number') %}
-          {% if e.state | float > 0 %}
-            {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state | float)] %}
-          {% endif %}
-        {% endfor %} 
+          {%- if e.state | float > 0 %}
+            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state | float)] %}
+          {%- endif %}
+        {%- endfor %} 
         {{ ns.power | sort(attribute='state', reverse=true) }}
       not_using_power: >
         {%- set ns = namespace(power=[]) %}
         {%- for e in expand('group.measured_power') %}
-          {% if e.state | is_number and e.state | float == 0 %}
-            {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name) ] %}
-          {% elif not e.state | is_number %}
-            {% set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state)] %}
-          {% endif %}
-        {% endfor %} 
+          {%- if e.state | is_number and e.state | float == 0 %}
+            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name) ] %}
+          {%- elif not e.state | is_number %}
+            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state)] %}
+          {%- endif %}
+        {%- endfor %} 
         {{ ns.power }}
     icon: mdi:flash
     availability: "{{ state_attr('group.measured_power', 'entity_id') | default([], true) | list | count > 0 }}"

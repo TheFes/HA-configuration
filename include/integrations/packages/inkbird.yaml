@@ -18,11 +18,11 @@ template:
       - name: Inkbird Probe 1
         unique_id: 2cf2b064-9115-4603-a079-ca78702db172
         state: &state_template >
-          {% if trigger.id == 'state' %}
+          {%- if trigger.id == 'state' %}
             {{ trigger.to_state.state }}
-          {% else %}
+          {%- else %}
             {{ this.state }}
-          {% endif %}
+          {%- endif %}
         icon: &icon mdi:thermometer
         unit_of_measurement: &unit "°C"
         availability: &availability_template >
@@ -33,25 +33,25 @@ template:
         attributes: &attributes
           history: >
             {%- set previous = this.get('attributes', {}).get('history', []) %}
-            {% set state = states(probe_entity) | float(0) %}
-            {% if state > 0 %}
+            {%- set state = states(probe_entity) | float(0) %}
+            {%- if state > 0 %}
               {{ [ state ] + (previous[:2] if previous else []) }}
-            {% else %}
+            {%- else %}
               {{ previous }}
-            {% endif %}
+            {%- endif %}
           trend: >
             {%- set history = state_attr(probe_entity, 'history') | default([], true) %}
-            {% if history | count == 3 %}
-              {% if history[0] >= history[1] >= history[2] and history[2] != history | max %}
+            {%- if history | count == 3 %}
+              {%- if history[0] >= history[1] >= history[2] and history[2] != history | max %}
                 up
-              {% elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
+              {%- elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
                 down
-              {% else %}
+              {%- else %}
                 stable
-              {% endif %}
-            {% else %}
+              {%- endif %}
+            {%- else %}
               unknown
-            {% endif %}
+            {%- endif %}
   # probe 2
   - trigger:
       - platform: state
@@ -80,10 +80,10 @@ template:
         name: "Probe 1"
         device_class: problem
         state: >-
-          {% set state = states('sensor.inkbird_probe_1') | int(0) %}
-          {% set min = states('input_number.probe_1_min') | int(0) %}
-          {% set max = states('input_number.probe_1_max') | int(0) %}
-          {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+          {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+          {%- set min = states('input_number.probe_1_min') | int(0) %}
+          {%- set max = states('input_number.probe_1_max') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
           {{
             ((state < min and trend != 'up')
             or (state > max and trend != 'down'))
@@ -91,49 +91,49 @@ template:
           }}
         availability: "{{ states('sensor.inkbird_probe_1') | is_number }}"
         icon: >
-          {% set state = states('sensor.inkbird_probe_1') | int(0) %}
-          {% set min = states('input_number.probe_1_min') | int(0) %}
-          {% set max = states('input_number.probe_1_max') | int(0) %}
-          {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
-          {% if state < min and trend != 'up' %}
+          {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+          {%- set min = states('input_number.probe_1_min') | int(0) %}
+          {%- set max = states('input_number.probe_1_max') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+          {%- if state < min and trend != 'up' %}
             mdi:grill-outline
-          {% else %}
+          {%- else %}
             mdi:grill
-          {% endif %}
+          {%- endif %}
         attributes:
           title: >
-            {% set state = states('sensor.inkbird_probe_1') | int(0) %}
-            {% set min = states('input_number.probe_1_min') | int(0) %}
-            {% set max = states('input_number.probe_1_max') | int(0) %}
-            {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
-            {% if state < min and trend != 'up' %}
+            {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+            {%- set min = states('input_number.probe_1_min') | int(0) %}
+            {%- set max = states('input_number.probe_1_max') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+            {%- if state < min and trend != 'up' %}
               BBQ te koud
-            {% elif state > max and trend != 'down' %}
+            {%- elif state > max and trend != 'down' %}
               BBQ te warm
-            {% else %}
+            {%- else %}
               Prima!
-            {% endif %}
+            {%- endif %}
           message: >
-            {% set state = states('sensor.inkbird_probe_1') | int(0) %}
-            {% set min = states('input_number.probe_1_min') | int(0) %}
-            {% set max = states('input_number.probe_1_max') | int(0) %}
-            {% set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
-            {% if state < min and trend != 'up' %}
+            {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+            {%- set min = states('input_number.probe_1_min') | int(0) %}
+            {%- set max = states('input_number.probe_1_max') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+            {%- if state < min and trend != 'up' %}
               De BBQ is nog niet warm genoeg, en de temperatuur gaat niet omhoog!
-            {% elif state > max and trend != 'down' %}
+            {%- elif state > max and trend != 'down' %}
               De BBQ is te warm, en de temperatuur gaat niet omlaag
-            {% else %}
+            {%- else %}
               Alles prima!
-            {% endif %}
+            {%- endif %}
 
       # probe 2
       - unique_id: decc7762-59b0-4ef9-a4ac-8f8f7bcf0d10
         name: "Probe 2"
         device_class: problem
         state: >-
-          {% set state = states('sensor.inkbird_probe_2') | int(0) %}
-          {% set target = states('input_number.probe_2_target') | int(0) %}
-          {% set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+          {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+          {%- set target = states('input_number.probe_2_target') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
           {{
             ((state < target and trend != 'up')
             or state >= target)
@@ -141,37 +141,37 @@ template:
           }}
         availability: "{{ states('sensor.inkbird_probe_2') | is_number }}"
         icon: >
-          {% set state = states('sensor.inkbird_probe_2') | int(0) %}
-          {% set target = states('input_number.probe_2_target') | int(0) %}
-          {% set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
-          {% if state < target and trend != 'up' %}
+          {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+          {%- set target = states('input_number.probe_2_target') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+          {%- if state < target and trend != 'up' %}
             mdi:food-steak-off
-          {% else %}
+          {%- else %}
             mdi:food-steak
-          {% endif %}
+          {%- endif %}
         attributes:
           title: >
-            {% set state = states('sensor.inkbird_probe_2') | int(0) %}
-            {% set target = states('input_number.probe_2_target') | int(0) %}
-            {% set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
-            {% if state >= target %}
+            {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+            {%- set target = states('input_number.probe_2_target') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+            {%- if state >= target %}
               Vlees klaar!
-            {% elif state < target and trend != 'up' %}
+            {%- elif state < target and trend != 'up' %}
               Vlees te koud!
-            {% else %}
+            {%- else %}
               Alles prima!
-            {% endif %}
+            {%- endif %}
           message: >
-            {% set state = states('sensor.inkbird_probe_2') | int(0) %}
-            {% set target = states('input_number.probe_2_target') | int(0) %}
-            {% set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
-            {% if state >= target %}
+            {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+            {%- set target = states('input_number.probe_2_target') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+            {%- if state >= target %}
               Het vlees is klaar! Haal het er snel af!
-            {% elif state < target and trend != 'up' %}
+            {%- elif state < target and trend != 'up' %}
               Het vlees is nog niet warm genoeg, maar de temperatuur gaat niet omhoog!
-            {% else %}
+            {%- else %}
               Alles prima!
-            {% endif %}
+            {%- endif %}
 
 # alerts
 alert:

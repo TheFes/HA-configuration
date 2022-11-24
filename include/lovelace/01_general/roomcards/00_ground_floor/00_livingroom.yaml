@@ -19,43 +19,43 @@ cards:
         entity: light.groep_woonkamer
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_woonkamer', 'on') %}
+          {%- if is_state('light.groep_woonkamer', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_woonkamer', 'on') %}
+          {%- if is_state('light.groep_woonkamer', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: switch.groep_woonkamer
         layout: vertical
         icon: >-
-          {% if is_state('switch.groep_woonkamer', 'on') %}
+          {%- if is_state('switch.groep_woonkamer', 'on') %}
             mdi:toggle-switch-variant
-          {% else %}
+          {%- else %}
             mdi:toggle-switch-variant-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('switch.groep_woonkamer', 'on') %}
+          {%- if is_state('switch.groep_woonkamer', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: media_player.shield_en_soundbar
         layout: vertical
         icon: >-
-          {% if not states('media_player.shield_en_soundbar') in
+          {%- if not states('media_player.shield_en_soundbar') in
           ['unavailable', 'unknown', 'off'] %}
             mdi:television
-          {% else %}
+          {%- else %}
             mdi:television-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if not states('media_player.shield_en_soundbar') in
+          {%- if not states('media_player.shield_en_soundbar') in
           ['unavailable', 'unknown', 'off'] %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: conditional
         conditions:
           - entity: media_player.woonkamer_mini
@@ -70,8 +70,8 @@ cards:
           entity: media_player.woonkamer_mini
           icon: mdi:cast
           icon_color: >-
-            {% if is_state('media_player.woonkamer_mini', 'playing') %}
+            {%- if is_state('media_player.woonkamer_mini', 'playing') %}
               yellow
-            {% elif is_state('media_player.woonkamer_mini', 'unavailable') %}
+            {%- elif is_state('media_player.woonkamer_mini', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}

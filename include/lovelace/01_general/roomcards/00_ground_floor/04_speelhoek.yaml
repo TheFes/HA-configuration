@@ -16,12 +16,12 @@ cards:
         entity: light.groep_speelhoek
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_speelhoek', 'on') %}
+          {%- if is_state('light.groep_speelhoek', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_speelhoek', 'on') %}
+          {%- if is_state('light.groep_speelhoek', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}

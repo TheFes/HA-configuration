@@ -33,14 +33,14 @@ action:
         notification_icon: mdi:party-popper
   - variables:
       target: >
-        {% 
+        {%- 
           if is_state('media_player.zolder_mini_martijn', 'playing')
           or is_state('sensor.location_phone_martijn', 'Zolder') 
         %}
           [ 'media_player.keuken_hub', 'media_player.zolder_mini_martijn' ]
-        {% else %}
+        {%- else %}
           [ 'media_player.keuken_hub' ]
-        {% endif %}
+        {%- endif %}
   - alias: "Send TTS using Google Home Resume script"
     service: script.turn_on
     target:

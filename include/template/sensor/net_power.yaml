@@ -3,12 +3,12 @@ sensor:
   - name: Net Power
     unique_id: 199c6be9-6258-40a3-b3b7-6d8123d2464c
     state: >
-      {% set p = integration_entities('dsmr')
+      {%- set p = integration_entities('dsmr')
                   | select('search', 'power')
                   | select('search' , 'production')
                   | list
       %}
-      {% set p = (
+      {%- set p = (
                   expand(p)
                     | map(attribute='state')
                     | select('is_number')
@@ -16,12 +16,12 @@ sensor:
                     | sum
                   ) /2
       %}
-      {% set c = integration_entities('dsmr')
+      {%- set c = integration_entities('dsmr')
                   | select('search', 'power')
                   | select('search' , 'consumption')
                   | list
       %}
-      {% set c = (
+      {%- set c = (
                   expand(c)
                     | map(attribute='state')
                     | select('is_number')
@@ -33,13 +33,13 @@ sensor:
     icon: mdi:flash
     unit_of_measurement: "W"
     availability: >
-      {% set p = integration_entities('dsmr')
+      {%- set p = integration_entities('dsmr')
                   | select('search', 'power')
                   | select('search' , 'production')
                   | list
                   | count
       %}
-      {% set c = integration_entities('dsmr')
+      {%- set c = integration_entities('dsmr')
                   | select('search', 'power')
                   | select('search' , 'consumption')
                   | list

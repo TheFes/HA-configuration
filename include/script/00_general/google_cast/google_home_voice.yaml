@@ -52,7 +52,7 @@ google_home_voice:
           {%- endif %}
         mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
         primary_spotcast_check: >
-          {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
+          {%- set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
           {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
         ytube_music_entities: >
           {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
@@ -99,7 +99,7 @@ google_home_voice:
                 {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
                   {%- set additional = dict( volume_level = entity.attributes.volume_level | round(2)) %}
                 {# add metadata for playing entities #}
-                {% elif entity.state == 'playing' or spotify_entity %}
+                {%- elif entity.state == 'playing' or spotify_entity %}
                   {%- set additional = dict(
                                             state = 'playing',
                                             app_name = entity.attributes.app_name,
@@ -113,7 +113,7 @@ google_home_voice:
                                             )
                   %}
                   {# add Spotify account #}
-                  {% if entity.attributes.get('app_name') == 'Spotify' %}
+                  {%- if entity.attributes.get('app_name') == 'Spotify' %}
                     {%- set spotcast = spotify_entity if spotify_entity
                                               and settings.primary_spotcast is defined
                                               and spotify_entity != settings.primary_spotcast
@@ -141,11 +141,11 @@ google_home_voice:
                                             ) 
                     %}
                   {# add infomration for web streams (including TuneIn) #}
-                  {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
+                  {%- elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
                     {%- if entity.attributes.get('media_artist') in (settings.get('radio_data') | default({}, true)).keys() | list %}
-                      {% set data = settings.radio_data[entity.attributes.media_artist] %}
-                      {% set picture, title = data.get('picture'), data.get('title') %}
-                    {% endif %}
+                      {%- set data = settings.radio_data[entity.attributes.media_artist] %}
+                      {%- set picture, title = data.get('picture'), data.get('title') %}
+                    {%- endif %}
                     {%- set additional = dict(additional, **dict(
                                                   media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                   else entity.attributes.get('media_artist', 'no artist'),
@@ -154,8 +154,8 @@ google_home_voice:
                                                   entity_picture = picture if picture is defined else entity.attributes.get('entity_picture', 'no pic')
                                                   ))
                     %}
-                  {% endif %}
-                {% endif %}
+                  {%- endif %}
+                {%- endif %}
               {# cobmine all data #}
               {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
             {%- endfor %}
@@ -259,12 +259,12 @@ google_home_voice:
                   {%- set service = item.service %}
                   {%- if target_variable is defined and target_variable %}
                     {%- if service == 'script.turn_on' %}
-                      {% set add = {'voice_target': target_list[0]} %}
-                      {% set var = dict(variables = dict(data.get('variables', {}), **add)) %}
-                      {% set data = dict(data, **var) %}
+                      {%- set add = {'voice_target': target_list[0]} %}
+                      {%- set var = dict(variables = dict(data.get('variables', {}), **add)) %}
+                      {%- set data = dict(data, **var) %}
                     {%- elif service.split('.')[0] == 'script' %}
-                      {% set add = { 'voice_target': target_list[0]} %}
-                      {% set data = dict(data, **add) %}
+                      {%- set add = { 'voice_target': target_list[0]} %}
+                      {%- set data = dict(data, **add) %}
                     {%- endif %}
                     {%- set add = {'entity_id': target_list[0]} %}
                     {%- set extra = dict(extra, **add) %}
@@ -328,11 +328,11 @@ google_home_voice:
                     {%- set service = repeat.item.service %}
                     {%- if target_variable is defined and target_variable %}
                       {%- if service == 'script.turn_on' %}
-                        {% set add = {'voice_target': target_list[0]} %}
-                        {% set var = dict(variables = dict(data.get('variables', {}), **add)) %}
+                        {%- set add = {'voice_target': target_list[0]} %}
+                        {%- set var = dict(variables = dict(data.get('variables', {}), **add)) %}
                         {{ dict(data, **var) }}
                       {%- elif service.split('.')[0] == 'script' %}
-                        {% set add = { 'voice_target': target_list[0]} %}
+                        {%- set add = { 'voice_target': target_list[0]} %}
                         {{ dict(data, **add) }}
                       {%- else %}
                         {{ data }}

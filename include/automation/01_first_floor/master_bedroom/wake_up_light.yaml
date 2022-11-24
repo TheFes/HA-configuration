@@ -6,9 +6,9 @@ trigger:
   - platform: template
     value_template: >
       {%- if not states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
-        {% set alarm = as_local(as_datetime(states('sensor.slaapkamer_hub_alarms'))) %}
-        {% set start_offset = states('input_number.wakeup_start') | int(0) %}
-        {% set alarm_start = alarm - timedelta(minutes=start_offset) %}
+        {%- set alarm = as_local(as_datetime(states('sensor.slaapkamer_hub_alarms'))) %}
+        {%- set start_offset = states('input_number.wakeup_start') | int(0) %}
+        {%- set alarm_start = alarm - timedelta(minutes=start_offset) %}
         {{ 
               now().date == alarm.date()
               and now().strftime('%H:%M') == alarm_start.strftime('%H:%M')

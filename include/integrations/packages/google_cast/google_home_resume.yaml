@@ -465,7 +465,6 @@ script:
             {# check which entities in checklist are playing #}
               {%- set checklist_playing = checklist | select('in', playing) | list %}
             {# check if entities in checklist are part af a group which is playing#}
-
               {%- set groups_playing = player_data
                                         | selectattr('state', 'eq', 'playing') 
                                         | selectattr('type', 'eq', 'group')
@@ -486,12 +485,10 @@ script:
                                         | map(attribute='entity_id')
                                         | list
             %}
-
             {# combine it all to determine which entities should be resumed #}
               {{ (checklist_playing + groups_playing + members_playing)
-                                                  | unique
                                                   | reject('in', members_reject)
-                                                  | select('in', playing)
+                                                  | unique
                                                   | list
               }}
       - alias: "Send log message about wrong wrong primary_spotcast"

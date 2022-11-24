@@ -17,28 +17,28 @@ cards:
         entity: light.groep_zolder
         layout: vertical
         icon: >-
-          {% if is_state('light.groep_zolder', 'on') %}
+          {%- if is_state('light.groep_zolder', 'on') %}
             mdi:lightbulb-group
-          {% else %}
+          {%- else %}
             mdi:lightbulb-group-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('light.groep_zolder', 'on') %}
+          {%- if is_state('light.groep_zolder', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: custom:mushroom-template-card
         entity: switch.groep_zolder
         layout: vertical
         icon: >-
-          {% if is_state('switch.groep_zolder', 'on') %}
+          {%- if is_state('switch.groep_zolder', 'on') %}
             mdi:toggle-switch-variant
-          {% else %}
+          {%- else %}
             mdi:toggle-switch-variant-off
-          {% endif %}
+          {%- endif %}
         icon_color: >-
-          {% if is_state('switch.groep_zolder', 'on') %}
+          {%- if is_state('switch.groep_zolder', 'on') %}
             yellow
-          {% endif %}
+          {%- endif %}
       - type: conditional
         conditions:
           - entity: sensor.wasmachine
@@ -95,9 +95,9 @@ cards:
           entity: media_player.groep_zolder
           icon: mdi:cast
           icon_color: >-
-            {% set s = expand('media_player.groep_zolder') | map(attribute='state') | list %}
-            {% if 'playing' in s %}
+            {%- set s = expand('media_player.groep_zolder') | map(attribute='state') | list %}
+            {%- if 'playing' in s %}
               yellow
-            {% elif is_state('media_player.groep_zolder', 'unavailable') %}
+            {%- elif is_state('media_player.groep_zolder', 'unavailable') %}
               red
-            {% endif %}
+            {%- endif %}
