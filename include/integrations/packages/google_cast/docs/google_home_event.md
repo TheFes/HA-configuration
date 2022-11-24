@@ -21,7 +21,7 @@ I've created the [Google Home Resume script](https://community.home-assistant.io
 * (2022.11.2) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
 #### 🐛 Bug fixes
 * (2022.11.1) Fixed a template error
-* (2022.11.5) Better handling of empty settings
+* (2022.11.3) Better handling of empty settings
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
 
