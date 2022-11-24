@@ -2,7 +2,11 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
 
-### Version 2022.11.4 - 24 November 2022
+### Version 2022.11.6 - 24 November 2022
+#### 🐛 Bug fixes
+* Small fix and improvement for players_to_resume
+
+### Version 2022.11.5 - 24 November 2022
 #### 🌟 Improvements
 * Improved the template to get the entities to resume
 #### 🐛 Bug fixes

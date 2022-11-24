@@ -95,7 +95,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.11.5
+          version: 2022.11.6
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -161,7 +161,7 @@ script:
             {%- endif %}
           mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
           primary_spotcast_check: >
-            {% set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
+            {%- set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
             {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
           ytube_music_entities: >
             {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
@@ -216,7 +216,7 @@ script:
                                   | selectattr('data.script_extra.entity_id', 'defined') | map(attribute='data.script_extra.entity_id')
                                   | reject('string') | select('iterable') | sum(start=[])
                   %}
-                  {% set entity_list = entity_list + (s + t + d + e + se) | reject('eq', '') | list %}
+                  {%- set entity_list = entity_list + (s + t + d + e + se) | reject('eq', '') | list %}
                 {# devices #}
                   {%- set s = (service_calls | selectattr('device_id', 'defined')
                                   | map(attribute='device_id') | select('string') | join(',') | replace(' ','')).split(',')
@@ -245,7 +245,7 @@ script:
                                   | selectattr('data.script_extra.device_id', 'defined') | map(attribute='data.script_extra.device_id')
                                   | reject('string') | select('iterable') | sum(start=[])
                   %}
-                  {% set device_list = device_list + (s + t + d + e + se) | reject('eq', '') | list %}
+                  {%- set device_list = device_list + (s + t + d + e + se) | reject('eq', '') | list %}
                 {# areas #}
                   {%- set s = (service_calls | selectattr('area_id', 'defined')
                                   | map(attribute='area_id') | select('string') | join(',') | replace(' ','')).split(',')
@@ -274,7 +274,7 @@ script:
                                   | selectattr('data.script_extra.area_id', 'defined') | map(attribute='data.script_extra.area_id')
                                   | reject('string') | select('iterable') | sum(start=[])
                   %}
-                  {% set area_list = area_list + (s + t + d + e + se) | reject('eq', '') | list %}
+                  {%- set area_list = area_list + (s + t + d + e + se) | reject('eq', '') | list %}
               {# create entity list based on device/area input #}
                 {# determine entities of areas #}
                   {%- set ns = namespace(area = []) %}
@@ -298,7 +298,7 @@ script:
               {# replace mass entities with cast entities #}
                 {%- if mass_entities | count > 0 and total_list | select('search', '.mass_') | list | count > 0%}
                   {%- set ns = namespace(no_mass = []) %}
-                  {% for item in total_list %}
+                  {%- for item in total_list %}
                     {%- set ns.no_mass = ns.no_mass + ( [item] if item in cast_entities else [ item | replace('.mass_', '.') ] ) %}
                   {%- endfor %}
                   {%- set tota_list = ns.no_mass | select('in', cast_entities) | unique | list %}
@@ -369,7 +369,7 @@ script:
                   {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
                     {%- set additional = dict( volume_level = entity.attributes.volume_level | round(2)) %}
                   {# add metadata for playing entities #}
-                  {% elif entity.state == 'playing' or spotify_entity %}
+                  {%- elif entity.state == 'playing' or spotify_entity %}
                     {%- set additional = dict(
                                               state = 'playing',
                                               app_name = entity.attributes.app_name,
@@ -383,7 +383,7 @@ script:
                                               )
                     %}
                     {# add Spotify account #}
-                    {% if entity.attributes.get('app_name') == 'Spotify' %}
+                    {%- if entity.attributes.get('app_name') == 'Spotify' %}
                       {%- set spotcast = spotify_entity if spotify_entity
                                                 and settings.primary_spotcast is defined
                                                 and spotify_entity != settings.primary_spotcast
@@ -411,11 +411,11 @@ script:
                                               ) 
                       %}
                     {# add infomration for web streams (including TuneIn) #}
-                    {% elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
+                    {%- elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
                       {%- if entity.attributes.get('media_artist') in (settings.get('radio_data') | default({}, true)).keys() | list %}
-                        {% set data = settings.radio_data[entity.attributes.media_artist] %}
-                        {% set picture, title = data.get('picture'), data.get('title') %}
-                      {% endif %}
+                        {%- set data = settings.radio_data[entity.attributes.media_artist] %}
+                        {%- set picture, title = data.get('picture'), data.get('title') %}
+                      {%- endif %}
                       {%- set additional = dict(additional, **dict(
                                                     media_artist = 'Google Podcasts' if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                     else entity.attributes.get('media_artist', 'no artist'),
@@ -424,8 +424,8 @@ script:
                                                     entity_picture = picture if picture is defined else entity.attributes.get('entity_picture', 'no pic')
                                                     ))
                       %}
-                    {% endif %}
-                  {% endif %}
+                    {%- endif %}
+                  {%- endif %}
                 {# cobmine all data #}
                 {%- set ns.info = ns.info + [ dict(general, **additional) if additional is defined else general ] %}
               {%- endfor %}
@@ -446,53 +446,51 @@ script:
             %}
             {{ expand(resume_action_false) | map(attribute='entity_id') | list }}
           players_to_resume: >
-            {% set target_list = players_to_resume if players_to_resume is defined else target_list %}
+            {%- set target_list = players_to_resume if players_to_resume is defined else target_list %}
             {# determine entities which are playing #}
-              {% set playing = player_data | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list %}
+              {%- set playing = player_data | selectattr('state', 'eq', 'playing') | map(attribute='entity_id') | list %}
             {# add members of playing groups (they are sometimes not shown as playing) #}
-              {% set playing = playing + player_data 
+              {%- set playing = playing + player_data 
                                           | selectattr('state', 'eq', 'playing')
                                           | selectattr('type', 'eq', 'group')
                                           | map(attribute='members')
                                           | sum(start=[])
               %}
             {# add members of groups in target_list to create checklist of entities #}
-              {% set checklist = target_list + player_data
+              {%- set checklist = target_list + player_data
                                                 | selectattr('entity_id', 'in', target_list)
                                                 | map(attribute='members')
                                                 | sum(start=[])
               %}
             {# check which entities in checklist are playing #}
-              {% set checklist_playing = checklist | select('in', playing) | list %}
+              {%- set checklist_playing = checklist | select('in', playing) | list %}
             {# check if entities in checklist are part af a group which is playing#}
-              {% set ns = namespace(groups=[]) %}
-              {% for item in checklist_playing %}
-                {% set ns.groups = ns.groups + player_data
-                                                | selectattr('state', 'eq', 'playing')
-                                                | selectattr('type', 'eq', 'group')
-                                                | selectattr('members', 'search', item)
-                                                | map(attribute='entity_id')
-                                                | list
-                %}
-              {% endfor %}
-              {% set groups_playing = ns.groups %}
+
+              {%- set groups_playing = player_data
+                                        | selectattr('state', 'eq', 'playing') 
+                                        | selectattr('type', 'eq', 'group')
+                                        | selectattr('members', 'search', checklist_playing | join('|'))
+                                        | map(attribute='entity_id')
+                                        | list
+            %}
             {# create lists of members of playing groups #}
-              {% set members = player_data
-                                | selectattr('entity_id', 'in', checklist + groups_playing)
-                                | map(attribute='members')
-                                | sum(start=[])
+              {%- set members_reject = player_data
+                                        | selectattr('entity_id', 'in', groups_playing)
+                                        | map(attribute='members')
+                                        | sum(start=[])
               %}
-            {# create list of members of groups in checlist_playing #}
-              {% set members_playing = player_data
+            {# create list of playing members of groups in checlist #}
+              {%- set members_playing = player_data
                                         | selectattr('entity_id', 'in', checklist)
                                         | selectattr('state', 'eq', 'playing')
                                         | map(attribute='entity_id')
                                         | list
             %}
+
             {# combine it all to determine which entities should be resumed #}
-              {{ (target_list + groups_playing + members_playing)
+              {{ (checklist_playing + groups_playing + members_playing)
                                                   | unique
-                                                  | reject('in', members)
+                                                  | reject('in', members_reject)
                                                   | select('in', playing)
                                                   | list
               }}
@@ -630,9 +628,9 @@ script:
             - variables:
                 service_call: "{{ repeat.item }}"
                 target: >
-                  {% set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                  {% set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
-                  {% set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                  {%- set s = service_call.items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                  {%- set d = service_call.get('data', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
+                  {%- set t = service_call.get('target', {}).items() | selectattr('0', 'in', ['entity_id', 'area_id', 'device_id']) | list %}
                   {{ dict(s, **dict(t, **dict(d))) }}
                 extra: >
                   {%- set extra =
@@ -1165,7 +1163,7 @@ automation:
         id: cast
     variables:
       entities: >
-        {% set e = trigger.event.data.service_data.entity_id %}
+        {%- set e = trigger.event.data.service_data.entity_id %}
         {{ (e | replace(' ', '')).split(',') if e is string else e }}
       settings: *settings
     condition:
@@ -1180,7 +1178,7 @@ automation:
         value_template: "{{ entities | select('in', integration_entities('cast') + integration_entities('mass')) | list | count > 0 }}"
       - alias: "Check if dashboard resume is enabled in case of dashboard cast trigger"
         condition: template
-        value_template: "{{ trigger.id == 'play' or settings.get('dashboard_cast') | default(true) }}"
+        value_template: "{{ trigger.id == 'play' or settings.get('dashboard_cast') | default(true) or settings.get('dashboard_cast') is none }}"
     action:
       - alias: Variable for version number
         variables: *version
@@ -1208,18 +1206,18 @@ automation:
       - alias: "Check if target is already being resumed"
         condition: template
         value_template: &group_check >
-          {% set groups = states.group
+          {%- set groups = states.group
                     | selectattr('entity_id', 'search', 'resume_script_active_ghresume_')
                     | map(attribute='entity_id')
                     | list
           %}
-          {% set active = expand(groups)
+          {%- set active = expand(groups)
                             | rejectattr('state', 'in', ['unkown', 'unavailable'])
                             | map(attribute='entity_id')
                             | unique
                             | list
           %}
-          {% set e = trigger.event.data.service_data.entity_id %}
+          {%- set e = trigger.event.data.service_data.entity_id %}
           {{ entities | reject('in', active) | list | count > 0 }}
       - alias: Are there Spotify entities?
         if: "{{ integration_entities('spotify') | count > 0 }}"
