@@ -2,6 +2,10 @@
 * For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
 
+### Version 2022.11.8 - 24 November 2022
+#### 🐛 Bug fixes
+* Typo fix when applying metadata to service call to resume stream
+
 ### Version 2022.11.7 - 24 November 2022
 #### 🌟 Improvements
 * Added a timeout on wait_templates after resume to prevent the script staying active
