@@ -95,7 +95,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.11.6
+          version: 2022.11.7
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
           {{ 
@@ -142,7 +142,7 @@ script:
       - alias: "Set variables to be used in the script"
         variables: &generic_vars
           start_time: "{{ start_time if start_time is defined else now() }}"
-          speaker_group_list: "{{ settings.get('speaker_groups') | default({'no group': [ 'no members' ] }, true) }}"
+          speaker_group_list: "{{ (settings.get('speaker_groups') | default({}, true)).keys() | list }}"
           speaker_groups: "{{ settings.get('speaker_groups') if speaker_group_list else { 'no group': [ 'no members' ] }  }}"
           cast_entities: "{{ integration_entities('cast') }}"
           spotify_entities: "{{ integration_entities('spotify') }}"
@@ -940,7 +940,7 @@ script:
                       player.media_content_id is defined
                       and player.media_content_id.startswith('http')
                     }}
-                  mass: "{{ player.mass_playing if player.mass_playing is defined else false }}"
+                  mass: "{{ player.get('mass_playing') | default(false, true) }}"
               - alias: "Resume playing"
                 choose:
                   - alias: "Music Assistant?"
@@ -963,12 +963,16 @@ script:
                       - alias: "Wait until song is playing"
                         wait_template: >
                           {{ iif(state_attr(player_ytube, '_media_id')) and iif(state_attr(player_ytube, 'media_position')) }}
-                      - alias: "Seek"
-                        service: media_player.media_seek
-                        target:
-                          entity_id: "{{ player_ytube }}"
-                        data:
-                          seek_position: "{{ player.media_position }}"
+                        timeout: "00:00:10"
+                      - alias: "Go to the right position in the track when resume is performed"
+                        if: "{{ wait.completed }}"
+                        then:
+                          - alias: "Seek"
+                            service: media_player.media_seek
+                            target:
+                              entity_id: "{{ player_ytube }}"
+                            data:
+                              seek_position: "{{ player.media_position }}"
                   - alias: "YouTube?"
                     conditions: "{{ player.type == 'screen' and youtube }}"
                     sequence:
@@ -985,13 +989,17 @@ script:
                             is_state_attr(player.entity_id, 'media_content_id', player.media_content_id)
                             and iif(state_attr(player.entity_id, 'media_position'))
                           }}
-                      - alias: "Seek"
-                        service: media_player.media_seek
-                        target:
-                          entity_id: "{{ player.entity_id }}"
-                        data:
-                          seek_position: >
-                            {{ [0, player.media_position - 3] | max }}
+                        timeout: "00:00:10"
+                      - alias: "Go to the right position in the track when resume is performed"
+                        if: "{{ wait.completed }}"
+                        then:
+                          - alias: "Seek"
+                            service: media_player.media_seek
+                            target:
+                              entity_id: "{{ player.entity_id }}"
+                            data:
+                              seek_position: >
+                                {{ [0, player.media_position - 3] | max }}
                   - alias: "Spotify?"
                     conditions: "{{ spotify }}"
                     sequence:
@@ -1008,12 +1016,16 @@ script:
                       - alias: "Wait until song is playing"
                         wait_template: >
                           {{ is_state_attr(player.entity_id, 'app_name', 'Spotify') and iif(state_attr(player.entity_id, 'media_position')) }}
-                      - alias: "Seek"
-                        service: media_player.media_seek
-                        target:
-                          entity_id: "{{ player.entity_id }}"
-                        data:
-                          seek_position: "{{ player.media_position }}"
+                        timeout: "00:00:10"
+                      - alias: "Go t the right position in the track when resume is performed"
+                        if: "{{ wait.completed }}"
+                        then:
+                          - alias: "Seek"
+                            service: media_player.media_seek
+                            target:
+                              entity_id: "{{ player.entity_id }}"
+                            data:
+                              seek_position: "{{ player.media_position }}"
                   - alias: "Google Podcast?"
                     conditions: "{{ podcast }}"
                     sequence:
@@ -1038,16 +1050,20 @@ script:
                               {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
                       - alias: "Wait until media_content_id is available"
                         wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
-                      - alias: "Play (avoids long delay)"
-                        service: media_player.media_play
-                        target:
-                          entity_id: "{{ player.entity_id }}"
-                      - alias: "Seek"
-                        service: media_player.media_seek
-                        target:
-                          entity_id: "{{ player.entity_id }}"
-                        data:
-                          seek_position: "{{ player.media_position }}"
+                        timeout: "00:00:10"
+                      - alias: "Go to the right position in the track when resume is performed"
+                        if: "{{ wait.completed }}"
+                        then:
+                          - alias: "Play (avoids long delay)"
+                            service: media_player.media_play
+                            target:
+                              entity_id: "{{ player.entity_id }}"
+                          - alias: "Seek"
+                            service: media_player.media_seek
+                            target:
+                              entity_id: "{{ player.entity_id }}"
+                            data:
+                              seek_position: "{{ player.media_position }}"
                   - alias: "Stream?"
                     conditions: "{{ stream }}"
                     sequence:
@@ -1072,10 +1088,14 @@ script:
                               {{ medadata if picture_url == 'no pic' else dict(metadata, **picture) }}
                       - alias: "Wait until media_content_id is available"
                         wait_template: "{{ is_state_attr(player.entity_id, 'media_content_id', player.media_content_id) }}"
-                      - alias: "Play (avoids long delay)"
-                        service: media_player.media_play
-                        target:
-                          entity_id: "{{ player.entity_id }}"
+                        timeout: "00:00:10"
+                      - alias: "Go to the right position in the track when resume is performed"
+                        if: "{{ wait.completed }}"
+                        then:
+                          - alias: "Play (avoids long delay)"
+                            service: media_player.media_play
+                            target:
+                              entity_id: "{{ player.entity_id }}"
           - alias: "Check if resume_action_false group exists"
             if: >
               {{ integration_entities('group') | select('search', 'resume_action_false_ghresume_' ~ context.id | lower) | list | count > 0 }}

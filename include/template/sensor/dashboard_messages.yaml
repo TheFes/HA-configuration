@@ -38,16 +38,21 @@ sensor:
         {%- endfor %}
         {{ dict(message=ns.message | join('\n'), level='info') }}
       trash: >-
-        {%- set sensors = [ 'sensor.papier_en_pmd', 'sensor.rest_en_gft' ] %}
+        {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'afval_sensor.rest_en_gft' ] %}
         {%- set active = expand(sensors)
                           | selectattr('state', 'in', ['Vandaag', 'Morgen'])
                           | map(attribute='entity_id')
                           | join
         %}
+        {%- set state = expand(sensors)
+                          | selectattr('state', 'in', ['Vandaag', 'Morgen'])
+                          | map(attribute='state')
+                          | join
+        %}
         {%- if active | count > 0 %}
           {%- set message = '🚮 ' ~ states(active) ~ ': ' ~ state_attr(active, 'friendly_name') %}
         {%- endif %}
-        {{ dict(message=message | default(''), level='warning') }}
+        {{ dict(message=message | default(''), level='warning' if state == 'Vandaag' else 'info') }}
       diswasher: >-
         {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
           {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %}
