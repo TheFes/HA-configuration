@@ -2,6 +2,10 @@
 * For [Google Home Voice script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml)
 * More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_voice.md)
 
+### Version 2022.11.3 - 26 November 2022
+#### :bug: Bug fixes
+* Fix template copy/paste error causing variable store to fail
+
 ### Version 2022.11.2 - 24 November 2022
 #### 🐛 Bug fixes
 * Better handling of empty settings

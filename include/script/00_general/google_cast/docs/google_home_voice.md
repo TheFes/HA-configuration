@@ -24,6 +24,7 @@ The script itself relies on the other script, so make sure that script is runnin
 * (2022.11.1) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
 #### 🐛 Bug fixes
 * (2022.11.2) Better handling of empty settings
+* (2022.11.3) Fix template copy/paste error causing variable store to fail
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
