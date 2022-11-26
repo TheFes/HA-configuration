@@ -61,7 +61,7 @@ script:
           boolean:
     sequence:
       - variables:
-          version: &version 2022.11.3
+          version: &version 2022.11.4
       - variables:
           resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
           resume_volume: >
@@ -152,8 +152,8 @@ script:
                   settings: "{{ state_attr('script.google_home_resume', 'settings') | to_json }}"
               - variables:
                   data_source: event_script
-                  speaker_group_list: "{{ settings.get('speaker_groups') | default({'no group': [ 'no members' ] }, true) }}"
-                  speaker_groups: "{{ settings.get('speaker_groups') if speaker_group_list else { 'no group': [ 'no members' ] }  }}"
+                  speaker_groups: "{{ settings.get('speaker_groups') | default({}, true) }}"
+                  speaker_group_list: "{{ speaker_groups.keys() | list }}"
                   cast_entities: "{{ integration_entities('cast') }}"
                   spotify_entities: "{{ integration_entities('spotify') }}"
                   mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
