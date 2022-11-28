@@ -7,15 +7,6 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * Resuming an entire speaker group after a single group member has been interrupted
 * Resuming of individual group members after the speaker group has performed an action
 
-# Requirements
-## General
-* Home Assistant version 2022.5 is required
-* The script creates groups while running, so if you don't have any groups set up already, add `group:` to your configuration.yaml.
-## Spotify resume
-* For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
-## YouTube Music resume
-* Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used. And only when YouTube music was started using that custom integration (which is quite easy now with the changes to the media panel)
-
 # Most recent changes
 ### Version 2022.11
 #### 🔴 BREAKING
@@ -44,21 +35,6 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 /root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml
-# Setup
-## The script itself
-[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml) on my Github config, so I don have to maintain it in two places
-
-* In case you don't use packages yet, add the following to your `configuration.yaml`
-```yaml
-homeassistant:
-  # include this line
-  packages: !include_dir_named packages
-```
-* Create a folder named `packages` in your configuration folder (the same folder as where `configuration.yaml` is located)
-* Create a file named `google_home_resume.yaml` in that folder, and paste the contents of the link above in that file.
-* Change the settings in the file to match your setup
-
-You can perform the steps above using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
 ### Explanation of variables in the script
 There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
@@ -171,36 +147,6 @@ The following variables are supported:
 Examples for different use cases can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
-
-# Known limitations
-* It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
-* When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards. To minimize this, Spotify entities are updated just before the information is stored.
-* YouTube and YouTube music will only resume the video/song which was playing at the time of the interruption, and only on players with a screen if not started using the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration.
-
-# Questions/issues/bugs/feature requests?
-In case you have a question, you found a bug, or have a feature request, you can either ask here, or open an [issue](https://github.com/TheFes/HA-configuration/issues) on my GitHub repository. In case you create a GitHub issue, please label it with `google home scripts`
-
-In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded as a json file. To do this follow the steps below:
-1. Go to `Configuration > Automations & Scenes > Scripts` or use [![Open your Home Assistant instance and show your scripts.](https://my.home-assistant.io/badges/scripts.svg)](https://my.home-assistant.io/redirect/scripts/)
-1. Find the Google Home Resume script in the list.
-1. Click on 3 dot menu icon left of the script and then select `Traces`
-1. Make sure to select the right trace which contains the error
-1. Press the 3 dot menu icon in the top right corner, and select `Download trace`
-1. Press the download icon in the top right corner.
-1. Repeat for the Google Home Resume - Helper Script if the error is in that step.
-
-In case you create the issue on GitHub you can upload the json files, in case you create the issue as a post here, you can copy the json files to a code sharing website like [dpaste.org](https://www.dpaste.org). Please create a different link for each json file.
-
-# Why not a blueprint?
-I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
-* You need to provide information on your speaker groups, players with a screen and spotcast account. That would mean that you will have to do that each time you use the blueprint to create a script, or that you'll have to add this information each time the blueprint is updated, which would reduce the easiness of updating the script.
-* I tried to bypass the point above by using includes, but the blueprint would do that once, and add the informaton in the yaml, instead of keeping the include code.
-* I use really large and complicated templates, and these would be converted to really messy one line templates, making it impossible to read and debug if needed.
-
-So, basically, I gave it a try, and decided it would not work :)
-
-# Other scripts
-For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
 
 # Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
