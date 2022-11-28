@@ -7,6 +7,13 @@ trigger:
 mode: single
 max_exceeded: silent
 variables:
+  birthday:
+    - sensor.anniversary_floris
+    - sensor.anniversary_martijn
+    - sensor.anniversary_pepijn
+    - sensor.anniversary_martijn
+  holiday:
+    - sensor.anniversary_sinterklaas
   blink:
     always:
       - light.slaapkamer
@@ -78,7 +85,7 @@ action:
               - sensor.location_phone_martijn
               - sensor.location_phone_marleen
             match: any
-            state: "Zolder"
+            state: "🏡2️⃣"
     then:
       - alias: "Send TTS using Google Home Resume script"
         service: script.turn_on
@@ -182,3 +189,51 @@ action:
             service: scene.turn_on
             target:
               entity_id: scene.before
+  - variables:
+      ha_url: !secret ha_url
+  - alias: "TTS announcement in case of birthday"
+    if:
+      - "{{ '0' in birthday | map('states') | list }}"
+      - alias: "Someone home"
+        condition: numeric_state
+        entity_id: zone.home
+        above: 0
+    then:
+      - variables:
+          name: >
+            {{
+              expand(birthday)
+                | selectattr('state', 'eq', '0')
+                | map(attribute='object_id')
+                | join
+                | replace('anniversary_', '')
+                | title
+            }}
+      - service: tts.google_cloud_say
+        data:
+          entity_id: media_player.zolder_groep
+          message: >
+            <speak>
+              <par>
+                <media xml:id="hoera" begin="1.5s">
+                  <speak><emphasis level="strong">Hoera!</emphasis></speak>
+                </media>
+                <media xml:id="deur" begin="hoera.end+1.5s">
+                  <speak>Er staat iemand aan de deur! Misschien is het wel visite voor {{ name }}!</speak>
+                </media>
+                <media begin="deur.end-0.2s" soundLevel="-6dB">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
+                </media>
+                <media begin="hoera.begin+0.5s" soundLevel="-2dB"
+                  fadeInDur="2s" fadeOutDur="0.2s">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong1.mp3"/>
+                </media>
+                <media repeatCount="2" soundLevel="+2.28dB"
+                  fadeInDur="2s" fadeOutDur="0.2s" begin="1s">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
+                </media>
+              </par>
+            </speak>
