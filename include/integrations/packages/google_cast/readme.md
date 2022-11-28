@@ -72,6 +72,42 @@ You can perform the steps above using a file editor (like [Visual Studio Code Ad
 ## Spotify resume
 * For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
 
+### One Spotify Account
+* In case you only have one Spotify account set up in Home Assistant, there are no additional settings needed besides installing the integrations above.
+
+#### Multiple accounts
+* In case you use multiple accounts, you need to add the Spotify integration for all accounts, in the [documentaton](https://www.home-assistant.io/integrations/spotify/) it's described how te set up multiple accounts.
+* The entity_id's for media_player entities from the Spotify integration will be formatted like `media_player.spotify_{{ account name }}`. 
+* For each Spotify account you need to add the `sp_key` and `sp_dc` as described in the [spotcast documentation](https://github.com/fondberg/spotcast#multiple-accounts). It is very important that the account names you use here, match the account names from the entity_ids of the Spotify media_player entities.
+* As there the first entry in the spotcast settings doesn't have an account name, there will be one Spotify media_player entity which doesn't have a matching spotcast account. The account name part from that entity_id is what I call the `primary_spotcast` account.
+* To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). 
+
+##### Example:
+3 Spotify integrations:
+![image|440x279](https://community-assets.home-assistant.io/original/4X/a/9/4/a942d64e3f46104adf270fdc6d3035a148137cf6.png)
+
+The media_players entities connected to these Spotify integration are named:
+```
+media_player.spotify_martijn
+media_player.spotify_marleen
+media_player.spotify_floris
+```
+
+Spotcast setup (the Spotify account for `Martijn` is the primary account, and has no named account in the spotcast setup), so the `primary_account` in this example is `martijn`:
+```yaml
+spotcast:
+  sp_dc: !secret sp_dc
+  sp_key: !secret sp_key
+  country: NL
+  accounts:
+    marleen:
+      sp_dc: !secret sp_dc_marleen
+      sp_key: !secret sp_key_marleen
+    floris:
+      sp_dc: !secret sp_dc_floris
+      sp_key: !secret sp_key_floris
+```
+
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used to play the media. And only when YouTube music was started using that custom integration (which is quite easy using the media panel [![Open your Home Assistant instance and browse available media.](https://my.home-assistant.io/badges/media_browser.svg)](https://my.home-assistant.io/redirect/media_browser/))
 
