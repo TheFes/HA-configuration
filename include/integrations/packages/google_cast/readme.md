@@ -3,6 +3,10 @@
 1. [Latest version](#latest-version)
 1. [Requirements](#requirements)
 1. [Setup instructions](#setup-instructions)
+    * [Updating from previous version](#updating-from-a-previous-version)
+    * [Install the package](#install-the-package)
+    * [Spotify resume settings](#spotify-resume)
+    * [Youtube Music resume settings](#youtube-music-resume)
 1. [Description of scripts](#description-of-scripts)
 1. [Known limitations](#known-limitations)
 1. [Questions/Issues/Bugs/Feature requests](#questionsissuesbugsfeature-requests)
@@ -28,7 +32,7 @@ It's December which is the time to come together with your family for the holida
 * There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
 Previous changes can be found here:
-* [Google Home Resume script and automation]()
+* [Google Home Resume script and automation](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 * [Google Home Voice script]()
 * [Google Home Event script and template sensor]()
 
@@ -37,15 +41,16 @@ Previous changes can be found here:
 * Home Assistant version 2022.5 or higher because of specific template functions
 
 # Setup instructions
-## Updating from a verion prior to 2022.11
+## Updating from a previous version
+### Prior to 2022.11
 If you are still using a version wich is not using the YYYY.MM version numbering, you are not using packages yet. Remove the existing Google Home scripts you are using (Resume/Voice/Event) and the Google Home Resume automation if you were using that. If you were using the Google Home Event script, also remove the template sensor used by that script.
 
 After removing all the old stuff reload Scripts, Automations and Template entities from Developer Tools > YAML ([![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/)) or restart Home Assistant. Then move on to [Install the package](#install-the-package).
 
-## Updating from version 2022.11
+### From version 2022.11
 Remove the Google Home Voice script if you use that, and the Google Home Event package if you were using that. 
 
-After removing all the old stuff reload Scripts, Automations and Template entities from Developer Tools > YAML ([![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/)) or restart Home Assistant. 
+After removing all the old stuff reload Scripts, Automations and Template entities from Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
 
 Leave the settings in the Google Home Resume package as they are now, and replace everything below that (indicated by the comment) with the code from the new version (of course don't copy my settings).
 
@@ -86,7 +91,7 @@ In case you have a question, you found a bug, or have a feature request, you can
 
 In case something isn't working or you found a bug, a trace of the script will be needed in most cases to determine the cause. The trace can be downloaded as a json file. To do this follow the steps below:
 1. Go to `Configuration > Automations & Scenes > Scripts` or use [![Open your Home Assistant instance and show your scripts.](https://my.home-assistant.io/badges/scripts.svg)](https://my.home-assistant.io/redirect/scripts/)
-1. Find the Google Home Resume script in the list.
+1. Find the Google Home scripts in the list.
 1. Click on 3 dot menu icon left of the script and then select `Traces`
 1. Make sure to select the right trace which contains the error
 1. Press the 3 dot menu icon in the top right corner, and select `Download trace`

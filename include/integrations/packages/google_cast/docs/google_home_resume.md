@@ -34,7 +34,6 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 * (2022.11.8) Typo fix when applying metadata to service call to resume stream
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
-/root/config/include/integrations/packages/google_home_resume/google_home_resume.yaml
 
 ### Explanation of variables in the script
 There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
