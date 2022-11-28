@@ -1,4 +1,5 @@
 icon: "mdi:cast"
+title: "Media & TTS"
 path: cast
 cards:
   - type: custom:mushroom-chips-card
@@ -15,12 +16,17 @@ cards:
       title: Google Cast
     filter:
       template: >
-        {{
-          expand(integration_entities('cast'))
+        {% set list = expand(integration_entities('cast'))
             | rejectattr('state', 'in', ['idle', 'off', 'unavailable'])
             | map(attribute='entity_id')
             | list
-        }}
+        %}
+        {% set members = state_attr('script.google_home_resume', 'settings').speaker_groups.items()
+                          | selectattr('0', 'in', list)
+                          | map(attribute='1')
+                          | sum(start=[])
+        %}
+        {{ list | reject('in', members) | list }}
     sort:
       method: attribute
       attribute: "friendly_name"

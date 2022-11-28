@@ -1,0 +1,19 @@
+type: grid
+title: Istellingen slaaplamp
+square: false
+columns: 2
+cards:
+  - type: custom:mushroom-template-card
+    entity: input_number.leestijd_pepijn
+    primary: "Leestijd"
+    secondary: "{{ states(entity) | int }} minuten"
+    tap_action:
+      action: more-info
+    icon: mdi:book-open-page-variant
+  - type: custom:mushroom-template-card
+    entity: input_datetime.pepijn_time_awake
+    primary: "Pepijn uit bed"
+    secondary: "{{ today_at(states(entity)).strftime('%-H:%M') }}"
+    icon: mdi:sun-clock
+    tap_action:
+      action: more-info
