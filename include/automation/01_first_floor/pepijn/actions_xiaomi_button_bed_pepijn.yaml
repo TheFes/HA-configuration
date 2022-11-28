@@ -17,59 +17,32 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
         sequence:
-          - alias: "Which action"
-            choose:
-              - conditions: >
-                  {{ 
-                    (
-                      now() > today_at(states('input_datetime.pepijn_time_bed')) 
-                      or now() < today_at(states('input_datetime.pepijn_time_awake')) + timedelta(hours=1)
-                    )
-                    and not toggle
-                  }}
-                sequence:
-                  - alias: "Sleep or awake?"
-                    choose:
-                      - conditions: >
-                          {%- set awake = today_at(states('input_datetime.pepijn_time_awake')) %} 
-                          {{ awake < now() < awake + timedelta(hours=1)}}
-                        sequence:
-                          - service: light.turn_on
-                            target:
-                              entity_id: light.pepijn_leeslamp
-                            data:
-                              color_name: green
-                              brightness: 15
-                          - delay: 5
-                          - service: light.turn_off
-                            target:
-                              entity_id: light.pepijn_leeslamp
-                      - conditions: >
-                          {%- set awake = today_at(states('input_datetime.pepijn_time_awake')) %} 
-                          {{ awake - timedelta(minutes=30) < now() < awake }}
-                        sequence:
-                          - service: light.turn_on
-                            target:
-                              entity_id: light.pepijn_leeslamp
-                            data:
-                              color_name: orange
-                              brightness: 15
-                          - delay: 5
-                          - service: light.turn_off
-                            target:
-                              entity_id: light.pepijn_leeslamp
-                    default:
-                      - service: light.turn_on
-                        target:
-                          entity_id: light.pepijn_leeslamp
-                        data:
-                          color_name: red
-                          brightness: 15
-                      - delay: 5
-                      - service: light.turn_off
-                        target:
-                          entity_id: light.pepijn_leeslamp
-            default:
+          - alias: "only perform when it's dark or the sun is below horizon"
+            if: >
+              {{ 
+                (
+                  is_state('sun.sun', 'below_horizon')
+                  or states('sensor.pepijn_lux') | float(0) < 10 
+                )
+                and
+                  (
+                    now() > today_at(states('input_datetime.pepijn_time_bed'))
+                    or now() < today_at(states('input_datetime.pepijn_time_awake'))
+                  )
+                and not toggle
+              }}
+            then:
+              - service: light.turn_on
+                target:
+                  entity_id: light.pepijn_leeslamp
+                data:
+                  color_name: red
+                  brightness: 90
+              - delay: 15
+              - service: light.turn_off
+                target:
+                  entity_id: light.pepijn_leeslamp
+            else:
               - service: light.toggle
                 target:
                   entity_id: light.groep_bed_pepijn

@@ -1,0 +1,24 @@
+id: 55509fd0-bdce-4cd2-86dc-2a8bee22b1b0
+alias: "F1P - Turn reading light orange or green just before wake time"
+trigger:
+  - platform: template
+    value_template: >
+      {% set end = today_at(states('input_datetime.pepijn_time_awake')) %}
+      {% set start = end - timedelta(minutes=states('input_number.leestijd_pepijn')|int) %}
+      {{ start < now() < end }}
+    id: orange
+  - platform: time
+    at: input_datetime.pepijn_time_awake
+    id: green
+condition:
+  - alias: "Lights off"
+    condition: state
+    entity_id: light.bed_pepijn
+    state: "off"
+action:
+  - service: light.turn_on
+    target:
+      entity_id: light.pepijn_leeslamp
+    data:
+      color_name: "{{ trigger.id }}"
+      brightness_pct: 90
