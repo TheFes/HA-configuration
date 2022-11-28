@@ -113,7 +113,9 @@ spotcast:
 
 
 # Description of scripts
-* Google Home Resume
+* **Google Home Resume**
+The Google Home Resume script is used to resume a Google Home device after it has been interrupted. For example when a TTS has been sent, or when a sound has been played. You can manually trigger the script, and include the action after which it should be resumed in the service call for the script, or you can use the automation. 
+More information on how to use the Google Home Resume script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
 * Google Home Voice
 * Google Home Event
 
