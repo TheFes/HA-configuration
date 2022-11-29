@@ -5,8 +5,10 @@
 1. [Setup instructions](#setup-instructions)
     * [Updating from previous version](#updating-from-a-previous-version)
     * [Install the package](#install-the-package)
+    * [Script Settings](#script-settings)
     * [Spotify resume settings](#spotify-resume)
     * [Youtube Music resume settings](#youtube-music-resume)
+    * [Dummy player for TTS with picture and text](#dummy-player-for-tts-with-picture-and-text)
 1. [Description of scripts](#description-of-scripts)
 1. [Known limitations](#known-limitations)
 1. [Questions/Issues/Bugs/Feature requests](#questionsissuesbugsfeature-requests)
@@ -69,6 +71,21 @@ homeassistant:
 
 You can perform the steps above using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
+## Script Settings
+There are no required settings, but if you use Google Home speaker groups you should define those as described below. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
+
+|Variable|Default|Example|Description|
+| --- | --- | --- | --- |
+|primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
+|radio_data||[My settings ](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml#L12-L24)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
+|speaker_groups||[See script on Github ](hhttps://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml#L25-L45)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
+|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
+|dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
+|default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
+|automation_enabled|`true`|`true`|If the automation for automatic resume should be used or not
+|dashboard_cast|`false`|`false`|If the automation should be used in case a HA Dasboard is cast to the device
+|announce_volume_automation||`0.75`|The volume used for announcements in the automation, remove or leave empty to leave the volume as it is.
+
 ## Spotify resume
 * For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
 
@@ -111,13 +128,26 @@ spotcast:
 ## YouTube Music resume
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used to play the media. And only when YouTube music was started using that custom integration (which is quite easy using the media panel [![Open your Home Assistant instance and browse available media.](https://my.home-assistant.io/badges/media_browser.svg)](https://my.home-assistant.io/redirect/media_browser/))
 
+## Dummy player for TTS with picture and text
+In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages.
+
+The feature to send a TTS together with picture and text works as as follows. The TTS is sent to a dummy player, and the script will wait for this event, and will take the url the the mp3 used as TTS message. It will then send this mp3 together with the picture and text to the actual target.
+As of Home Assistant 2022.4 there is a check if a target of a service call actually supports the service call. So the dummy player has to support TTS. As the media_player created by the [VLC Telnet integration](https://www.home-assistant.io/integrations/vlc_telnet/) supports TTS, I use this.
+
+In case you use HA OS, or run a supervised install, you can add the [VLC Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_vlc) from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
+
+In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide it somewhere 😉
 
 # Description of scripts
 * **Google Home Resume**
 The Google Home Resume script is used to resume a Google Home device after it has been interrupted. For example when a TTS has been sent, or when a sound has been played. You can manually trigger the script, and include the action after which it should be resumed in the service call for the script, or you can use the automation. 
 More information on how to use the Google Home Resume script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
-* Google Home Voice
-* Google Home Event
+* **Google Home Voice**
+The Google Home Voice script uses Google Home Routines and Ambient sounds to check on which device you issued a voice command, so it can send a TTS message or other action to that specific device.
+More information on how to use the Google Home Voice script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_voice.md)
+* **Google Home Event**
+The Google Home Event script can store the data of your devices in a template sensor, so you can restore the states on a later moment. So you can store the state when you leave the house, and restore the music when you come back in.
+More information on how to use the Google Home Event script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_event.md)
 
 # Known limitations
 * It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.

@@ -35,81 +35,14 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 
-### Explanation of variables in the script
-There are no required variables, but if you use Google Home speaker groups and players with a screen you should define those as described above. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
-
-|Variable|Default|Example|Description|
-| --- | --- | --- | --- |
-|players_screen||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L32-L35)|Enter a list of cast devices with a screen. Do not use a comma seperated string here.|
-|primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
-|radio_data||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L37-L43)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
-|speaker_groups||[See script on Github ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml#L44-L64)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
-|default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
-|dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
-|default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
-|automation_enabled|`true`|`true`|If the automation for automatic resume should be used or not
-|dashboard_cast|`true`|`false`|If the automation should be used in case a HA Dasboard is cast to the device
-|announce_volume_automation|`0.4`|`0.75`|The volume used for announcements in the automation, remove or leave empty to leave the volume as it is.
-
-## The automation for automatic resume (✨ NEW in v2.7.0 - 24 August 2022)
-In version 2.7.0 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated. The automation will also trigger on casting a Dasboard, this can be disabled in the settings so it only triggers on audio interruptions.
+## The automation for automatic resume
+In August 2022 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated. The automation will also trigger on casting a Dasboard, this can be disabled in the settings so it only triggers on audio interruptions.
 
 The settings for to enable the automation and for the default volume to be used for announcements can be set in the settings part of the package.
 
 If set up like described above, the script will be automatically called for TTS messages, and when you use the `media_player.play_media` service call with `announce: true` enabled. If `announce` is not set, or set to `announce: false` the script will not be used. The TTS service call will do this automatically.
 
-## Spotify specific settings
-* In case you only have one Spotify account set up in Home Assistant, there are no additional settings needed besides intalling the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
-
-In case you use multiple accounts, you need to add the Spotify integration for all accounts, besides that you take care of the following:
-1. The entity_id's for media_player entities from the Spotify integration should be formatted like `media_player.spotify_{{ spotcast user }}`. For the primary Spotcast user you can use whatever you want as `{{ spotcast user }}`.
-1. The primary Spotcast user needs to be specified under `primary_spotcast` (see comment above).
-1. To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). 
-
-This is how it is set up in my system:
-4 Spotify integrations (account `Pepijn` not shown here, as it didn't fit):
-![image|440x279](https://community-assets.home-assistant.io/original/4X/a/9/4/a942d64e3f46104adf270fdc6d3035a148137cf6.png)
-
-Spotcast (the Spotify account for `Pepijn` is the primary account, and has no named account in the spotcast setup):
-```yaml
-spotcast:
-  sp_dc: !secret sp_dc
-  sp_key: !secret sp_key
-  country: NL
-  accounts:
-    martijn:
-      sp_dc: !secret sp_dc_martijn
-      sp_key: !secret sp_key_martijn
-    marleen:
-      sp_dc: !secret sp_dc_marleen
-      sp_key: !secret sp_key_marleen
-    floris:
-      sp_dc: !secret sp_dc_floris
-      sp_key: !secret sp_key_floris
-```
-
-The media_players connected to the Spotify integration are named (matching the spotcast configuration and the `primary_spotcast` variable in the script, which is `pepijn`):
-```
-media_player.spotify_pepijn
-media_player.spotify_martijn
-media_player.spotify_marleen
-media_player.spotify_floris
-```
-
-## Cast devices with screen (like Google Nest Hub or Android TV)
-* Google Nest Hub speakers and other cast devices with a screen can be entered under the variable `players_screen`. This will make sure the photo display is turned on again after the TTS in case nothing was already playing, and supports resume of YouTube.
-* In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages. More info below.
-
-## Dummy player for TTS with picture and text
-The feature to send a TTS together with picture and text works as as follows. The TTS is sent to a dummy player, and the script will wait for this event, and will take the url the the mp3 used as TTS message. It will then send this mp3 together with the picture and text to the actual target.
-As of Home Assistant 2022.4 there is a check if a target of a service call actually supports the service call. So the dummy player has to support TTS. As the media_player created by the [VLC Telnet integration](https://www.home-assistant.io/integrations/vlc_telnet/) supports TTS, I use this.
-
-In case you use HA OS, or run a supervised install, you can add the [VLC Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_vlc) from the add-on store. After starting the add-on it will automatically be detected by Home Assistant, and you can add the VLC Telnet integration. This will create `media_player.vlc_telnet` which you can use as dummy player.
-
-In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide it somewhere 😉
-
-## Google Home Speaker groups
-* If you use speaker groups in the Google Home app, you can enter them under the variable `speaker_groups`. If you use them, you'll need to complete this variable, and add the group members in there as well (see the script for an example).
+The automation will check if a resume for a specific speaker is already active, if that is the case it will not trigger the script for that specific speaker.
 
 # How to use the script
 This script only contains the code to resume after the interruption, it doesn't contain any standard actions (like sending a TTS or playing an MP3 file)
