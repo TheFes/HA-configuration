@@ -168,9 +168,9 @@ script:
                   | list
               }}
             {%- endif %}
-          mass_playing: "{{ (cast_mass_playing | join(',') | replace('.', '.mass_')).split(',') | select() | list }}"
+          mass_playing: "{{ cast_mass_playing | map('replace', '.', '.mass_') | select() | list }}"
           primary_spotcast_check: >
-            {%- set accounts = (spotify_entities | join(',') | replace('media_player.spotify_', '')).split(',') %}
+            {%- set accounts = spotify_entities | map('replace', 'media_player.spotify_', '') | list %}
             {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
           ytube_music_entities: >
             {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
@@ -372,7 +372,7 @@ script:
             {% endif %}
             {# replace mass entities with cast entities #}
               {%- if mass_entities and total_list | select('search', '.mass_') | list %}
-                {% set no_mass = (total_list | join(',') | replace('.mass_', '.')).split(',') %}
+                {% set no_mass = total_list | map('replace', '.mass_', '.') | list %}
                 {%- set total_list = no_mass | select('in', cast_entities) | unique | list %}
               {%- endif %}
             {# avoid to target both complete speaker groups and single members #}
