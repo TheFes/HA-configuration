@@ -225,13 +225,13 @@ script:
                   %}
                   {# add volume level #}
                   {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
-                    {%- set additional = dict(volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level') | round(2, default=0.25)) %}
+                    {%- set additional = dict(volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level')) | round(2, default=0.25)) %}
                   {# add metadata for playing entities #}
                   {%- elif entity.state == 'playing' or spotify_entity %}
                     {%- set additional = dict(
                                               state = 'playing',
                                               app_name = entity.attributes.get('app_name', 'no app'),
-                                              volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level') | round(2, default=0.25),
+                                              volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level')) | round(2, default=0.25),
                                               media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
                                                                   if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                   else entity.attributes.get('media_content_id', 'no media_content'),
