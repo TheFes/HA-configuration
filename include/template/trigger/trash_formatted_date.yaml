@@ -1,0 +1,41 @@
+- trigger:
+    - platform: state
+      entity_id: sensor.afvalwijzer_restgft
+      not_to: unavailable
+  sensor:
+    - unique_id: 9d6b50c5-6059-4d91-ae4e-43dcd095987c
+      name: Rest en GFT
+      state: &state >-
+        {%- set sensor = trigger.entity_id %}
+        {%- set collection_date = as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() %}
+        {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
+        {%- set days_until = state_attr(sensor, 'days_until_collection_date') %}
+        {%- if days_until <= 1 %}
+          {{ ['Vandaag', 'Morgen'][days_until] }}
+        {%- else %}
+          {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
+        {%- endif %}
+      icon: mdi:trash-can
+      availability: &availabity "{{ not states(trigger.entity_id) in [ 'unknown', 'unavailable', 'Geen' ] }}"
+      attributes: &attributes
+        waste_type: >
+          {{
+            this.attributes.friendly_name if trigger.to_state.state != states('sensor.afvalwijzer_kerstbomen')
+            else this.attributes.friendly_name | replace(' en ', ', ') ~ ' en 🌲'
+          }}
+        collection_date: >
+          {{ as_local(as_datetime(state_attr(trigger.entity_id, 'year_month_day_date'))).date() }}
+        in_two_weeks: >
+          {{ now().date() - as_local(as_datetime(state_attr(trigger.entity_id, 'year_month_day_date'))).date() <= timedelta(weeks=2) }}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.afvalwijzer_dhm
+      not_to: unavailable
+  sensor:
+    - unique_id: 821b207c-5c06-4da4-9e8c-a5790e6e4c8c
+      name: Papier en PMD
+      state: *state
+      icon: mdi:trash-can-outline
+      availability: *availabity
+      attributes: *attributes
