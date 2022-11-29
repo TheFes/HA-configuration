@@ -188,7 +188,7 @@ script:
             {%- if player_data is undefined %}
               {# general information for all entities #}
               {%- set ns = namespace(info=[]) %}
-              {%- for entity in expand(integration_entities('cast')) %}
+              {%- for entity in expand(cast_entities) %}
                   {%- set members = speaker_groups[entity.entity_id]
                                 if speaker_groups is defined
                                   and iif(speaker_groups)
@@ -197,6 +197,11 @@ script:
                   %}
                   {%- set screen = entity.attributes.device_class is not defined %}
                   {%- set type = iif(members,'group',iif(screen,'screen','speaker')) %}
+                  {%- if type == 'speaker' %}
+                    {% set groups = speaker_groups.items() | selectattr('1', 'search', entity.entity_id) | map(attribute='0') | list %}
+                    {% set playing = expand(groups) | selectattr('state', 'eq', 'playing') | list | count > 0 %}
+                    {% set type = 'playing_member' if playing else type %}
+                  {%- endif %}
                   {%- set general = dict(
                                           data_source = data_source,
                                           entity_id = entity.entity_id,
@@ -204,9 +209,11 @@ script:
                                           type = type,
                                           members = members
                                           )
+                                    if type != 'playing_member'
+                                    else dict(entity_id = entity.entity_id, type = type)
                   %}
                   {# add information for Music Assistant #}
-                  {%- if mass_entities | count > 0 %}
+                  {%- if mass_entities | count > 0 and type != 'playing_member' %}
                     {%- set mass_data = dict(
                                               mass_playing = entity.entity_id in cast_mass_playing,
                                               mass_sync = entity.entity_id | replace('.', '.mass_')
@@ -216,7 +223,7 @@ script:
                   {%- endif %}
                   {# check if there is a Spotify account playing on this entity #}
                   {%- set list_check = expand([ entity.entity_id ] + members) | map(attribute='name') | list %}
-                  {%- set spotify_entity = expand(integration_entities('spotify'))
+                  {%- set spotify_entity = expand(spotify_entities)
                                               | selectattr('state', 'eq', 'playing')
                                               | selectattr('attributes.source', 'in', list_check)
                                               | map(attribute='object_id')
@@ -224,28 +231,41 @@ script:
                                               | replace('spotify_', '')
                   %}
                   {# add volume level #}
-                  {%- if not entity.state in ['off', 'unavailable', 'unknown', 'playing'] %}
+                  {%- if not entity.state in ['off', 'unavailable', 'unknown'] or type == 'playing_member' %}
                     {%- set additional = dict(volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level')) | round(2, default=0.25)) %}
+                  {%- else %}
+                    {%- set additional = {} %}
+                  {%- endif %}
                   {# add metadata for playing entities #}
-                  {%- elif entity.state == 'playing' or spotify_entity %}
-                    {%- set additional = dict(
+                  {%- if type == 'playing_member'%}
+                  {%- elif spotify_entity or
+                          (
+                            entity.state == 'playing'
+                            and expand(speaker_groups.items()
+                                        | selectattr('0', 'eq', entity.entity_id)
+                                        | list) 
+                                          | rejectattr('state', 'eq', 'playing')
+                                          | list
+                                          | count == 0
+                          )
+                  %}
+                    {%- set additional = dict(additional, **dict(
                                               state = 'playing',
                                               app_name = entity.attributes.get('app_name', 'no app'),
-                                              volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level')) | round(2, default=0.25),
                                               media_content_id = (entity.attributes.get('media_content_id', {}) | from_json).get('contentId', 'no media_content')
                                                                   if entity.attributes.get('app_name') == 'Google Podcasts'
                                                                   else entity.attributes.get('media_content_id', 'no media_content'),
                                               media_position = (as_timestamp(now()) | round(2)
                                                                 - as_timestamp(entity.attributes.get('media_position_updated_at', now())) | round(2)
                                                                 + entity.attributes.get('media_position', 0)) | round(2)
-                                              )
+                                              ))
                     %}
                     {# add Spotify account #}
                     {%- if entity.attributes.get('app_name') == 'Spotify' %}
                       {%- set spotcast = spotify_entity if spotify_entity
                                                 and settings.primary_spotcast is defined
                                                 and spotify_entity != settings.primary_spotcast
-                                                and integration_entities('spotify') | count > 1
+                                                and spotify_entities | count > 1
                                                 and primary_spotcast_check
                                               else 'primary_account' %}
                       {%- set additional = dict(additional,
@@ -268,7 +288,7 @@ script:
                                                       )
                                               ) 
                       %}
-                    {# add infomration for web streams (including TuneIn) #}
+                    {# add information for web streams (including TuneIn) #}
                     {%- elif entity.attributes.get('app_name') not in ['Spotify', 'YouTube', 'YouTube Music'] %}
                       {%- if entity.attributes.get('media_artist') in (settings.get('radio_data') | default({}, true)).keys() | list %}
                         {%- set data = settings.radio_data[entity.attributes.media_artist] %}
@@ -292,7 +312,7 @@ script:
             {{ player_data }}
           target_list: >
             {%- if target_list is defined %}
-              {{ target_list }}
+              {%- set total_list = target_list %}
             {%- else %}
               {# create target lists #}
               {# define target and entities_check variables #}
@@ -349,19 +369,19 @@ script:
                   {%- set device_list = device_list | map('device_entities') | sum(start=[]) | select('in', entities_check) | list %}
               {# create list with all cast and mass entities #}
                 {%- set total_list = (area_list + device_list + entity_list) | unique | list %}
-              {# replace mass entities with cast entities #}
-                {%- if mass_entities and total_list | select('search', '.mass_') | list %}
-                  {% set no_mass = (total_list | join(',') | replace('.mass_', '.')).split(',') %}
-                  {%- set total_list = no_mass | select('in', cast_entities) | unique | list %}
-                {%- endif %}
-              {# avoid to target both complete speaker groups and single members #}
-                {%- set members = player_data
-                                    | selectattr('entity_id', 'in', total_list)
-                                    | map(attribute='members')
-                                    | sum(start=[])
-                %}
-                {{ total_list | reject('in', members) | list }}
+            {% endif %}
+            {# replace mass entities with cast entities #}
+              {%- if mass_entities and total_list | select('search', '.mass_') | list %}
+                {% set no_mass = (total_list | join(',') | replace('.mass_', '.')).split(',') %}
+                {%- set total_list = no_mass | select('in', cast_entities) | unique | list %}
               {%- endif %}
+            {# avoid to target both complete speaker groups and single members #}
+              {%- set members = player_data
+                                  | selectattr('entity_id', 'in', total_list)
+                                  | map(attribute='members')
+                                  | sum(start=[])
+              %}
+              {{ total_list | reject('in', members) | list }}
           resume_active: >
             {%- set resume_active = integration_entities('group')
                                             | select('search', 'group.resume_active_ghresume')
