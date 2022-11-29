@@ -1,89 +1,89 @@
-sensor:
-  - unique_id: 7d7557d2-b6ea-40a5-81c4-c8cafb45f1c3
-    name: Dashboard Messages
-    state: >
-      {{
-        this.attributes.items() 
-          | rejectattr('0', 'in', ['icon', 'friendly_name'])
-          | selectattr('1')
-          | list
-          | count
-      }}
-    icon: mdi:text-box-search-outline
-    attributes:
-      anniversaries: >-
-        {%- set days_to_show = 14 %}
-        {%-set ns = namespace(a=[], message=[]) %}
-        {%- for item in expand(integration_entities('anniversaries')) %}
-          {%- set d_h = item.attributes.get('days_until_half_anniversary', 999) %}
-          {%- set h = d_h < item.state | int %}
-          {%- set d = [item.state | int, d_h] | min %}
-          {%- set y = item.attributes.get('current_years') %}
-          {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
-          {%- set ns.a = ns.a + [ dict(n=item.name, d=d, y=y, h=h)] %}
-        {%- endfor %}
-        {%- for item in ns.a | sort(attribute='d') -%}
-          {%- set n, d, y = item.n, item.d, item.y %}
-          {%- set fixed_icons = {
-                                  'Eerste date': '💕',
-                                  'Sinterklaas': '🎁'
-                                } %}
-          {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
-          {%- set icon = fixed_icons[n] | default(icons | random, true) %}
-          {%- if d == 0 %}
-            {%- set ns.message = ns.message + [icon ~ ' Vandaag: ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
-          {%- elif d < days_to_show %}
-            {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dag' ~ ('en' if d > 1 ) ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+- sensor:
+    - unique_id: 7d7557d2-b6ea-40a5-81c4-c8cafb45f1c3
+      name: Dashboard Messages
+      state: >
+        {{
+          this.attributes.items() 
+            | rejectattr('0', 'in', ['icon', 'friendly_name'])
+            | selectattr('1')
+            | list
+            | count
+        }}
+      icon: mdi:text-box-search-outline
+      attributes:
+        anniversaries: >-
+          {%- set days_to_show = 14 %}
+          {%-set ns = namespace(a=[], message=[]) %}
+          {%- for item in expand(integration_entities('anniversaries')) %}
+            {%- set d_h = item.attributes.get('days_until_half_anniversary', 999) %}
+            {%- set h = d_h < item.state | int %}
+            {%- set d = [item.state | int, d_h] | min %}
+            {%- set y = item.attributes.get('current_years') %}
+            {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
+            {%- set ns.a = ns.a + [ dict(n=item.name, d=d, y=y, h=h)] %}
+          {%- endfor %}
+          {%- for item in ns.a | sort(attribute='d') -%}
+            {%- set n, d, y = item.n, item.d, item.y %}
+            {%- set fixed_icons = {
+                                    'Eerste date': '💕',
+                                    'Sinterklaas': '🎁'
+                                  } %}
+            {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
+            {%- set icon = fixed_icons[n] | default(icons | random, true) %}
+            {%- if d == 0 %}
+              {%- set ns.message = ns.message + [icon ~ ' Vandaag: ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+            {%- elif d < days_to_show %}
+              {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dag' ~ ('en' if d > 1 ) ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+            {%- endif %}
+          {%- endfor %}
+          {{ dict(message=ns.message | join('\n'), level='info') }}
+        trash: >-
+          {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'afval_sensor.rest_en_gft' ] %}
+          {%- set active = expand(sensors)
+                            | selectattr('state', 'in', ['Vandaag', 'Morgen'])
+                            | map(attribute='entity_id')
+                            | join
+          %}
+          {%- set state = expand(sensors)
+                            | selectattr('state', 'in', ['Vandaag', 'Morgen'])
+                            | map(attribute='state')
+                            | join
+          %}
+          {%- if active | count > 0 %}
+            {%- set message = '🚮 ' ~ states(active) ~ ': ' ~ state_attr(active, 'friendly_name') %}
           {%- endif %}
-        {%- endfor %}
-        {{ dict(message=ns.message | join('\n'), level='info') }}
-      trash: >-
-        {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'afval_sensor.rest_en_gft' ] %}
-        {%- set active = expand(sensors)
-                          | selectattr('state', 'in', ['Vandaag', 'Morgen'])
-                          | map(attribute='entity_id')
-                          | join
-        %}
-        {%- set state = expand(sensors)
-                          | selectattr('state', 'in', ['Vandaag', 'Morgen'])
-                          | map(attribute='state')
-                          | join
-        %}
-        {%- if active | count > 0 %}
-          {%- set message = '🚮 ' ~ states(active) ~ ': ' ~ state_attr(active, 'friendly_name') %}
-        {%- endif %}
-        {{ dict(message=message | default(''), level='warning' if state == 'Vandaag' else 'info') }}
-      diswasher: >-
-        {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
-          {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %}
-          {%- if now() < time_set | as_local %}
-            {%- set seconds = (time_set - now()).total_seconds() %}
-            {%- set hours = (seconds / 3600) | int %}
-            {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
-            {%- set program = states('input_select.dishwasher_program') %}
-            {%- set extra = states('input_select.dishwasher_program_extra') %}
-            {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
-            {%- set program = program ~ extra %}
-            {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('input_datetime.dishwasher_program')).strftime('%H:%M') ~ '(' ~ program ~ ')' %}
-          {%- else %}
-            {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
+          {{ dict(message=message | default(''), level='warning' if state == 'Vandaag' else 'info') }}
+        diswasher: >-
+          {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
+            {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %}
+            {%- if now() < time_set | as_local %}
+              {%- set seconds = (time_set - now()).total_seconds() %}
+              {%- set hours = (seconds / 3600) | int %}
+              {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+              {%- set program = states('input_select.dishwasher_program') %}
+              {%- set extra = states('input_select.dishwasher_program_extra') %}
+              {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
+              {%- set program = program ~ extra %}
+              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('input_datetime.dishwasher_program')).strftime('%H:%M') ~ '(' ~ program ~ ')' %}
+            {%- else %}
+              {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
+            {%- endif %}
           {%- endif %}
-        {%- endif %}
-        {{ dict(message=message | default(''), level='info') }}
-      washing_machine: >-
-        {%- if is_state('sensor.wasmachine', 'on') %}
-          {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
-          {%- set total = h * 3600 + m *60 %}
-          {%- set message = '🧺 Wasmachine klaar rond ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') %}
-        {%- endif %}
-        {{ dict(message=message | default(''), level='info') }}
-      eta_martijn: >-
-        {%- if iif(states('input_text.eta_martijn')) %}
-          {%- set message = states('input_text.eta_martijn') %}
-        {%- endif %}
-        {{ dict(message=message | default(''), level='info') }}
-      eta_marleen: >-
-        {%- if iif(states('input_text.eta_marleen')) %}
-          {%- set message = states('input_text.eta_marleen') %}
-        {%- endif %}
-        {{ dict(message=message | default(''), level='info') }}
+          {{ dict(message=message | default(''), level='info') }}
+        washing_machine: >-
+          {%- if is_state('sensor.wasmachine', 'on') %}
+            {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
+            {%- set total = h * 3600 + m *60 %}
+            {%- set message = '🧺 Wasmachine klaar rond ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') %}
+          {%- endif %}
+          {{ dict(message=message | default(''), level='info') }}
+        eta_martijn: >-
+          {%- if iif(states('input_text.eta_martijn')) %}
+            {%- set message = states('input_text.eta_martijn') %}
+          {%- endif %}
+          {{ dict(message=message | default(''), level='info') }}
+        eta_marleen: >-
+          {%- if iif(states('input_text.eta_marleen')) %}
+            {%- set message = states('input_text.eta_marleen') %}
+          {%- endif %}
+          {{ dict(message=message | default(''), level='info') }}

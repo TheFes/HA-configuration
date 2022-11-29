@@ -1,49 +1,49 @@
-trigger:
-  - platform: event
-    event_type: call_service
-    id: closing
-    event_data:
-      domain: cover
-      service: close_cover
-      service_data:
-        entity_id: cover.slaapkamer_groep
-  - platform: event
-    event_type: call_service
-    id: closing
-    event_data:
-      domain: cover
-      service: close_cover
-      service_data:
-        entity_id: cover.slaapkamer
-  - platform: event
-    event_type: call_service
-    id: opening
-    event_data:
-      domain: cover
-      service: close_cover
-      service_data:
-        entity_id: cover.slaapkamer_groep
-  - platform: event
-    event_type: call_service
-    id: opening
-    event_data:
-      domain: cover
-      service: open_cover
-      service_data:
-        entity_id: cover.slaapkamer
-  - platform: state
-    entity_id: cover.slaapkamer
-    attribute: current_position
-    id: idle
-sensor:
-  - name: Cover Slaapkamer
-    unique_id: a7f46b20-cef6-48e7-ab75-44f27b59d9f4
-    state: "{{ trigger.id }}"
-    icon: >
-      {%- if trigger.id == 'closing' %}
-        mdi:arrow-collapse-down
-      {%- elif trigger.id == 'opening' %}
-        mdi:arrow-collapse-up
-      {%- else %}
-        mdi:blinds
-      {%- endif %}
+- trigger:
+    - platform: event
+      event_type: call_service
+      id: closing
+      event_data:
+        domain: cover
+        service: close_cover
+        service_data:
+          entity_id: cover.slaapkamer_groep
+    - platform: event
+      event_type: call_service
+      id: closing
+      event_data:
+        domain: cover
+        service: close_cover
+        service_data:
+          entity_id: cover.slaapkamer
+    - platform: event
+      event_type: call_service
+      id: opening
+      event_data:
+        domain: cover
+        service: close_cover
+        service_data:
+          entity_id: cover.slaapkamer_groep
+    - platform: event
+      event_type: call_service
+      id: opening
+      event_data:
+        domain: cover
+        service: open_cover
+        service_data:
+          entity_id: cover.slaapkamer
+    - platform: state
+      entity_id: cover.slaapkamer
+      attribute: current_position
+      id: idle
+  sensor:
+    - name: Cover Slaapkamer
+      unique_id: a7f46b20-cef6-48e7-ab75-44f27b59d9f4
+      state: "{{ trigger.id }}"
+      icon: >
+        {%- if trigger.id == 'closing' %}
+          mdi:arrow-collapse-down
+        {%- elif trigger.id == 'opening' %}
+          mdi:arrow-collapse-up
+        {%- else %}
+          mdi:blinds
+        {%- endif %}

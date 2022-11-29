@@ -1,6 +1,6 @@
-binary_sensor:
-  - unique_id: 276bfe1b-eb1e-4cca-af74-613f365ccfdd
-    name: "Floris Light inside"
-    device_class: light
-    state: >-
-      {{ states('sensor.floris_lux') | float(0) > 10 }}
+- binary_sensor:
+    - unique_id: 276bfe1b-eb1e-4cca-af74-613f365ccfdd
+      name: "Floris Light inside"
+      device_class: light
+      state: >-
+        {{ states('sensor.floris_lux') | float(0) > 10 }}

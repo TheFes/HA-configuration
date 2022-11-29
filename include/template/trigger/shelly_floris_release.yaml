@@ -1,17 +1,17 @@
-trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Floris
-      click_type: release
-    id: "on"
-  - platform: homeassistant
-    event: start
-  - platform: event
-    event_type: event_template_reloaded
-binary_sensor:
-  - name: Shelly Floris release
-    unique_id: 5f2a80e9-5e7a-4174-91ac-a1fb596512de
-    state: "{{ trigger.id == 'on' }}"
-    icon: mdi:radiobox-blank
-    auto_off: 0.25
+- trigger:
+    - platform: event
+      event_type: esphome.button_pressed
+      event_data:
+        device: Floris
+        click_type: release
+      id: "on"
+    - platform: homeassistant
+      event: start
+    - platform: event
+      event_type: event_template_reloaded
+  binary_sensor:
+    - name: Shelly Floris release
+      unique_id: 5f2a80e9-5e7a-4174-91ac-a1fb596512de
+      state: "{{ trigger.id == 'on' }}"
+      icon: mdi:radiobox-blank
+      auto_off: 0.25

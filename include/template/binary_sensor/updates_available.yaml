@@ -1,6 +1,6 @@
-binary_sensor:
-  - unique_id: f4a8205d-38af-4c0f-a704-ae89ae89a0f9
-    name: "Updates availalbe"
-    device_class: update
-    state: >-
-      {{ states.update | selectattr('state', 'eq', 'on') | list | count > 0 }}
+- binary_sensor:
+    - unique_id: f4a8205d-38af-4c0f-a704-ae89ae89a0f9
+      name: "Updates availalbe"
+      device_class: update
+      state: >-
+        {{ states.update | selectattr('state', 'eq', 'on') | list | count > 0 }}

@@ -1,45 +1,45 @@
-sensor:
-  - unique_id: 6da8e3ab-38a9-4897-89e5-192802ff6894
-    name: Measured Power
-    unit_of_measurement: "W"
-    state_class: measurement
-    device_class: power
-    state: >-
-      {{ 
-        expand('group.measured_power')
-          | map(attribute='state')
-          | map('float', default=0)
-          | sum
-          | round(1)
-      }}
-    attributes:
-      using_power: >
-        {%- set ns = namespace(power=[]) %}
-        {%- for e in expand('group.measured_power') | selectattr('state' , 'is_number') %}
-          {%- if e.state | float > 0 %}
-            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state | float)] %}
-          {%- endif %}
-        {%- endfor %} 
-        {{ ns.power | sort(attribute='state', reverse=true) }}
-      not_using_power: >
-        {%- set ns = namespace(power=[]) %}
-        {%- for e in expand('group.measured_power') %}
-          {%- if e.state | is_number and e.state | float == 0 %}
-            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name) ] %}
-          {%- elif not e.state | is_number %}
-            {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state)] %}
-          {%- endif %}
-        {%- endfor %} 
-        {{ ns.power }}
-    icon: mdi:flash
-    availability: "{{ state_attr('group.measured_power', 'entity_id') | default([], true) | list | count > 0 }}"
+- sensor:
+    - unique_id: 6da8e3ab-38a9-4897-89e5-192802ff6894
+      name: Measured Power
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >-
+        {{ 
+          expand('group.measured_power')
+            | map(attribute='state')
+            | map('float', default=0)
+            | sum
+            | round(1)
+        }}
+      attributes:
+        using_power: >
+          {%- set ns = namespace(power=[]) %}
+          {%- for e in expand('group.measured_power') | selectattr('state' , 'is_number') %}
+            {%- if e.state | float > 0 %}
+              {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state | float)] %}
+            {%- endif %}
+          {%- endfor %} 
+          {{ ns.power | sort(attribute='state', reverse=true) }}
+        not_using_power: >
+          {%- set ns = namespace(power=[]) %}
+          {%- for e in expand('group.measured_power') %}
+            {%- if e.state | is_number and e.state | float == 0 %}
+              {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name) ] %}
+            {%- elif not e.state | is_number %}
+              {%- set ns.power = ns.power + [dict(enitty_id=e.entity_id, name=e.name, state=e.state)] %}
+            {%- endif %}
+          {%- endfor %} 
+          {{ ns.power }}
+      icon: mdi:flash
+      availability: "{{ state_attr('group.measured_power', 'entity_id') | default([], true) | list | count > 0 }}"
 
-  - unique_id: defa0d9f-ce65-4af1-a63e-a1bbe14c4092
-    name: Unknown Power
-    unit_of_measurement: "W"
-    state_class: measurement
-    device_class: power
-    state: >-
-      {{ [0, states('sensor.power_consumption') | float(0) | multiply(1000) - states('sensor.measured_power')| float(0)] | max }}
-    icon: mdi:flash
-    availability: "{{ states('sensor.power_consumption') | is_number and states('sensor.measured_power') | is_number }}"
+    - unique_id: defa0d9f-ce65-4af1-a63e-a1bbe14c4092
+      name: Unknown Power
+      unit_of_measurement: "W"
+      state_class: measurement
+      device_class: power
+      state: >-
+        {{ [0, states('sensor.power_consumption') | float(0) | multiply(1000) - states('sensor.measured_power')| float(0)] | max }}
+      icon: mdi:flash
+      availability: "{{ states('sensor.power_consumption') | is_number and states('sensor.measured_power') | is_number }}"

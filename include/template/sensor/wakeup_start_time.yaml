@@ -1,20 +1,7 @@
-sensor:
-  - unique_id: abc767ef-4439-4aa9-9408-db0082ed5a0b
-    name: Wakeup start
-    state: >-
-      {%- if states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
-        Geen alarm
-      {%- else %}
-        {{ 
-          as_timestamp
-            ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
-            - timedelta(minutes = states('input_number.wakeup_start')|int(20))) 
-              | timestamp_custom('%H:%M') 
-        }}
-      {%- endif %}
-    icon: mdi:sun-wireless
-    attributes:
-      date: >
+- sensor:
+    - unique_id: abc767ef-4439-4aa9-9408-db0082ed5a0b
+      name: Wakeup start
+      state: >-
         {%- if states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
           Geen alarm
         {%- else %}
@@ -22,6 +9,19 @@ sensor:
             as_timestamp
               ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
               - timedelta(minutes = states('input_number.wakeup_start')|int(20))) 
-                | timestamp_custom('%d/%m/%Y')
+                | timestamp_custom('%H:%M') 
           }}
         {%- endif %}
+      icon: mdi:sun-wireless
+      attributes:
+        date: >
+          {%- if states('sensor.slaapkamer_hub_alarms') in ['unknown', 'unavailable'] %}
+            Geen alarm
+          {%- else %}
+            {{ 
+              as_timestamp
+                ( as_datetime(states('sensor.slaapkamer_hub_alarms')) 
+                - timedelta(minutes = states('input_number.wakeup_start')|int(20))) 
+                  | timestamp_custom('%d/%m/%Y')
+            }}
+          {%- endif %}

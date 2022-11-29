@@ -1,69 +1,69 @@
-binary_sensor:
-  - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
-    name: "Rain"
-    state: >
-      {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-      {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-      {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-      {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
-      {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-      {%- if p4 %}
-        {%- set ns = namespace(p=[]) %}
-        {%- for item in p4.split(' ')[:4] %}
-          {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-        {%- endfor %}
-        {%- set p4 =  ns.p | sum %}
-      {%- else %}
-        {%- set p4 = 'nan' %}
-      {%- endif %}
-      {{ (p3 if p3 | is_number else [ p1, p2, p4 ] | select('is_number') | max) > 0 }}
-    availability: >
-      {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-      {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-      {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-      {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
-      {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-      {%- if p4 %}
-        {%- set ns = namespace(p=[]) %}
-        {%- for item in p4.split(' ')[:4] %}
-          {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-        {%- endfor %}
-        {%- set p4 = ns.p | sum %}
-      {%- else %}
-        {%- set p4 = 'nan' %}
-      {%- endif %}
-      {{ [ p1, p2, p3, p4 ] | select('is_number') | list | count > 0 }}
-    icon: >
-      {{ 'mdi:weather-sunny' if this.state is defined and this.state == 'off' else 'mdi:weather-rainy' }}
+- binary_sensor:
+    - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
+      name: "Rain"
+      state: >
+        {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+        {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+        {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+        {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+        {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+        {%- if p4 %}
+          {%- set ns = namespace(p=[]) %}
+          {%- for item in p4.split(' ')[:4] %}
+            {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+          {%- endfor %}
+          {%- set p4 =  ns.p | sum %}
+        {%- else %}
+          {%- set p4 = 'nan' %}
+        {%- endif %}
+        {{ (p3 if p3 | is_number else [ p1, p2, p4 ] | select('is_number') | max) > 0 }}
+      availability: >
+        {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+        {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+        {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+        {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+        {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+        {%- if p4 %}
+          {%- set ns = namespace(p=[]) %}
+          {%- for item in p4.split(' ')[:4] %}
+            {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+          {%- endfor %}
+          {%- set p4 = ns.p | sum %}
+        {%- else %}
+          {%- set p4 = 'nan' %}
+        {%- endif %}
+        {{ [ p1, p2, p3, p4 ] | select('is_number') | list | count > 0 }}
+      icon: >
+        {{ 'mdi:weather-sunny' if this.state is defined and this.state == 'off' else 'mdi:weather-rainy' }}
 
-  - unique_id: b42aac64-7a0d-4409-b26c-44c803b7e033
-    name: "Rain until afternoon"
-    state: >-
-      {%- set hour = now().hour | int(0)%}
-      {%- set number_of_hours = (13 - hour) if hour < 13 else (13 + (24 - hour)) %}
-      {%- set start = today_at(now().hour ~ ':00') %}
-      {%- set end = start + timedelta(hours=number_of_hours) %}
-      {%- set forecast = state_attr('weather.combined_hourly', 'forecast')
-                          | selectattr('datetime', '>=', start.isoformat())
-                          | selectattr('datetime', '<=', end.isoformat())
-                          | list
-      %}
-      {{ forecast | map(attribute='precipitation') | sum | float(0) }}
-    icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-    availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"
+    - unique_id: b42aac64-7a0d-4409-b26c-44c803b7e033
+      name: "Rain until afternoon"
+      state: >-
+        {%- set hour = now().hour | int(0)%}
+        {%- set number_of_hours = (13 - hour) if hour < 13 else (13 + (24 - hour)) %}
+        {%- set start = today_at(now().hour ~ ':00') %}
+        {%- set end = start + timedelta(hours=number_of_hours) %}
+        {%- set forecast = state_attr('weather.combined_hourly', 'forecast')
+                            | selectattr('datetime', '>=', start.isoformat())
+                            | selectattr('datetime', '<=', end.isoformat())
+                            | list
+        %}
+        {{ forecast | map(attribute='precipitation') | sum | float(0) }}
+      icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
+      availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"
 
-  - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
-    name: "Rain until morning"
-    state: >-
-      {%- set hour = now().hour | int(0)%}
-      {%- set number_of_hours = (7 - hour) if hour < 7 else (7 + (24 - hour)) %}
-      {%- set start = today_at(now().hour ~ ':00') %}
-      {%- set end = start + timedelta(hours=number_of_hours) %}
-      {%- set forecast = state_attr('weather.combined_hourly', 'forecast')
-                          | selectattr('datetime', '>=', start.isoformat())
-                          | selectattr('datetime', '<=', end.isoformat())
-                          | list
-      %}
-      {{ forecast | map(attribute='precipitation') | sum | float(0) }}
-    icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-    availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"
+    - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
+      name: "Rain until morning"
+      state: >-
+        {%- set hour = now().hour | int(0)%}
+        {%- set number_of_hours = (7 - hour) if hour < 7 else (7 + (24 - hour)) %}
+        {%- set start = today_at(now().hour ~ ':00') %}
+        {%- set end = start + timedelta(hours=number_of_hours) %}
+        {%- set forecast = state_attr('weather.combined_hourly', 'forecast')
+                            | selectattr('datetime', '>=', start.isoformat())
+                            | selectattr('datetime', '<=', end.isoformat())
+                            | list
+        %}
+        {{ forecast | map(attribute='precipitation') | sum | float(0) }}
+      icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
+      availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"

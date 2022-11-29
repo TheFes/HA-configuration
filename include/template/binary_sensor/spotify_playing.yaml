@@ -1,12 +1,12 @@
-binary_sensor:
-  - unique_id: dff5afd3-3e63-4e26-ad58-2fe0462cbfcd
-    name: "Spotify Playing"
-    device_class: running
-    icon: mdi:spotify
-    state: >-
-      {{ 
-        expand(integration_entities('spotify')) 
-          | rejectattr('state', 'in', ['idle', 'off', 'unavailable']) 
-          | list 
-          | count > 0 
-      }}
+- binary_sensor:
+    - unique_id: dff5afd3-3e63-4e26-ad58-2fe0462cbfcd
+      name: "Spotify Playing"
+      device_class: running
+      icon: mdi:spotify
+      state: >-
+        {{ 
+          expand(integration_entities('spotify')) 
+            | rejectattr('state', 'in', ['idle', 'off', 'unavailable']) 
+            | list 
+            | count > 0 
+        }}

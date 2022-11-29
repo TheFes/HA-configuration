@@ -1,13 +1,13 @@
-binary_sensor:
-  - unique_id: 9aec0333-a840-46a4-807f-01f5e9a231e4
-    name: "Shelly Firmware"
-    device_class: problem
-    state: >-
-      {{
-        expand(integration_entities('shelly'))
-          | selectattr('state', 'eq', 'on')
-          | map(attribute='entity_id')
-          | select('search', 'over')
-          | list
-          | count > 0
-      }}
+- binary_sensor:
+    - unique_id: 9aec0333-a840-46a4-807f-01f5e9a231e4
+      name: "Shelly Firmware"
+      device_class: problem
+      state: >-
+        {{
+          expand(integration_entities('shelly'))
+            | selectattr('state', 'eq', 'on')
+            | map(attribute='entity_id')
+            | select('search', 'over')
+            | list
+            | count > 0
+        }}

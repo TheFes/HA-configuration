@@ -1,23 +1,23 @@
-trigger:
-  - platform: event
-    event_type: set_variable
-  - platform: event
-    event_type: remove_variable
-sensor:
-  - unique_id: 4a4c8e53-9e68-4198-9cc5-b336e228ea4d
-    name: Variables
-    state: Variables
-    attributes:
-      default_timestamp: false
-      variables: >
-        {%- set current = this.attributes.get('variables', {}) %}
-        {%- if trigger.event.event_type == 'set_variable' %}
-          {%- if trigger.event.data.get('set_timestamp', this.attributes.get('default_timestamp', false)) %}
-            {%- set new = {trigger.event.data.key: {'value': trigger.event.data.value, 'timestamp': now().isoformat()}} %}
-          {%- else %}
-            {%- set new = {trigger.event.data.key: trigger.event.data.value} %}
+- trigger:
+    - platform: event
+      event_type: set_variable
+    - platform: event
+      event_type: remove_variable
+  sensor:
+    - unique_id: 4a4c8e53-9e68-4198-9cc5-b336e228ea4d
+      name: Variables
+      state: Variables
+      attributes:
+        default_timestamp: false
+        variables: >
+          {%- set current = this.attributes.get('variables', {}) %}
+          {%- if trigger.event.event_type == 'set_variable' %}
+            {%- if trigger.event.data.get('set_timestamp', this.attributes.get('default_timestamp', false)) %}
+              {%- set new = {trigger.event.data.key: {'value': trigger.event.data.value, 'timestamp': now().isoformat()}} %}
+            {%- else %}
+              {%- set new = {trigger.event.data.key: trigger.event.data.value} %}
+            {%- endif %}
+            {{ dict(current, **new) }}
+          {%- elif trigger.event.event_type == 'remove_variable' %}
+            {{ dict(current.items() | rejectattr('0', 'eq', trigger.event.data.key)) }}
           {%- endif %}
-          {{ dict(current, **new) }}
-        {%- elif trigger.event.event_type == 'remove_variable' %}
-          {{ dict(current.items() | rejectattr('0', 'eq', trigger.event.data.key)) }}
-        {%- endif %}

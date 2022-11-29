@@ -1,80 +1,80 @@
-sensor:
-  # BMI
-  - unique_id: eb9c1934-3975-4b0b-a741-e957af8a3324
-    name: BMI Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'bmi') }}"
-    state_class: measurement
-    icon: mdi:face-woman-outline
+- sensor:
+    # BMI
+    - unique_id: eb9c1934-3975-4b0b-a741-e957af8a3324
+      name: BMI Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'bmi') }}"
+      state_class: measurement
+      icon: mdi:face-woman-outline
 
-  - unique_id: 47c6e476-cc07-497a-abb2-f9ddbcdf1029
-    name: BMI Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'bmi') }}"
-    state_class: measurement
-    icon: mdi:face-man-outline
+    - unique_id: 47c6e476-cc07-497a-abb2-f9ddbcdf1029
+      name: BMI Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'bmi') }}"
+      state_class: measurement
+      icon: mdi:face-man-outline
 
-  # Body fat
-  - unique_id: f3d48dc4-3034-4bf9-85f9-3379c363a127
-    name: Lichaamsvet Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'body_fat') }}"
-    state_class: measurement
-    unit_of_measurement: "%"
-    icon: mdi:hamburger
+    # Body fat
+    - unique_id: f3d48dc4-3034-4bf9-85f9-3379c363a127
+      name: Lichaamsvet Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'body_fat') }}"
+      state_class: measurement
+      unit_of_measurement: "%"
+      icon: mdi:hamburger
 
-  - unique_id: 46497ab6-5b10-46d9-8a4f-f81161f10569
-    name: Lichaamsvet Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'body_fat') }}"
-    state_class: measurement
-    unit_of_measurement: "%"
-    icon: mdi:hamburger
+    - unique_id: 46497ab6-5b10-46d9-8a4f-f81161f10569
+      name: Lichaamsvet Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'body_fat') }}"
+      state_class: measurement
+      unit_of_measurement: "%"
+      icon: mdi:hamburger
 
-  # Body score
-  - unique_id: 083433df-482b-4728-b907-6b35637a6443
-    name: Lichaamsscore Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'body_score') }}"
-    state_class: measurement
-    icon: mdi:counter
+    # Body score
+    - unique_id: 083433df-482b-4728-b907-6b35637a6443
+      name: Lichaamsscore Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'body_score') }}"
+      state_class: measurement
+      icon: mdi:counter
 
-  - unique_id: 7e8487f5-4948-4c63-8a5f-8cae89aab225
-    name: Lichaamsscore Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'body_score') }}"
-    state_class: measurement
-    icon: mdi:counter
+    - unique_id: 7e8487f5-4948-4c63-8a5f-8cae89aab225
+      name: Lichaamsscore Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'body_score') }}"
+      state_class: measurement
+      icon: mdi:counter
 
-  # Bone mass
-  - unique_id: 201daad9-a631-4374-a095-c96076d28745
-    name: Botmassa Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'bone_mass') }}"
-    state_class: measurement
-    icon: mdi:bone
+    # Bone mass
+    - unique_id: 201daad9-a631-4374-a095-c96076d28745
+      name: Botmassa Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'bone_mass') }}"
+      state_class: measurement
+      icon: mdi:bone
 
-  - unique_id: 980fa8e6-35eb-4d4e-963e-8917f4a2730a
-    name: Botmassa Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'bone_mass') }}"
-    state_class: measurement
-    icon: mdi:bone
+    - unique_id: 980fa8e6-35eb-4d4e-963e-8917f4a2730a
+      name: Botmassa Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'bone_mass') }}"
+      state_class: measurement
+      icon: mdi:bone
 
-  # Muscle mass
-  - unique_id: 6511271b-4a66-4792-9bbc-4888e76b606c
-    name: Spiermassa Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'muscle_mass') }}"
-    state_class: measurement
-    icon: mdi:arm-flex
+    # Muscle mass
+    - unique_id: 6511271b-4a66-4792-9bbc-4888e76b606c
+      name: Spiermassa Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'muscle_mass') }}"
+      state_class: measurement
+      icon: mdi:arm-flex
 
-  - unique_id: f4133522-9333-49ef-abd0-ee576c24dd50
-    name: Spiermassa Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'muscle_mass') }}"
-    state_class: measurement
-    icon: mdi:arm-flex
+    - unique_id: f4133522-9333-49ef-abd0-ee576c24dd50
+      name: Spiermassa Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'muscle_mass') }}"
+      state_class: measurement
+      icon: mdi:arm-flex
 
-  # Water
-  - unique_id: 1a8a87b4-cafa-4940-94f7-e57aade9d981
-    name: Water Marleen
-    state: "{{ state_attr('bodymiscale.marleen', 'water') }}"
-    state_class: measurement
-    icon: mdi:water
+    # Water
+    - unique_id: 1a8a87b4-cafa-4940-94f7-e57aade9d981
+      name: Water Marleen
+      state: "{{ state_attr('bodymiscale.marleen', 'water') }}"
+      state_class: measurement
+      icon: mdi:water
 
-  - unique_id: acfbc7f9-60fa-4086-b650-057288521fef
-    name: Water Martijn
-    state: "{{ state_attr('bodymiscale.martijn', 'water') }}"
-    state_class: measurement
-    icon: mdi:water
+    - unique_id: acfbc7f9-60fa-4086-b650-057288521fef
+      name: Water Martijn
+      state: "{{ state_attr('bodymiscale.martijn', 'water') }}"
+      state_class: measurement
+      icon: mdi:water

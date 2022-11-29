@@ -1,27 +1,27 @@
-trigger:
-  - platform: event
-    event_type: set_initial_state
-    id: initial
-  - platform: template
-    value_template: >
+- trigger:
+    - platform: event
+      event_type: set_initial_state
+      id: initial
+    - platform: template
+      value_template: >
+        {{
+          states('sensor.growatt_max_daily') | is_number
+          and states('sensor.growatt_total_energy_today') | float(0) > states('sensor.growatt_max_daily') | float
+        }}
+  sensor:
+    unique_id: 770f3fe1-6afb-4922-8070-a9b5c5954061
+    name: "Growatt Max daily"
+    state: >
       {{
-        states('sensor.growatt_max_daily') | is_number
-        and states('sensor.growatt_total_energy_today') | float(0) > states('sensor.growatt_max_daily') | float
+        this.state if trigger.id == 'initial' and this.state | is_number
+        else states('sensor.growatt_total_energy_today')
       }}
-sensor:
-  unique_id: 770f3fe1-6afb-4922-8070-a9b5c5954061
-  name: "Growatt Max daily"
-  state: >
-    {{
-      this.state if trigger.id == 'initial' and this.state | is_number
-      else states('sensor.growatt_total_energy_today')
-    }}
-  device_class: energy
-  unit_of_measurement: "kWh"
-  state_class: measurement
-  attributes:
-    date: >
-      {{
-        this.attributes.date if trigger.id == 'initial' and this.attributes.get('date') is not none
-        else now().date()
-      }}
+    device_class: energy
+    unit_of_measurement: "kWh"
+    state_class: measurement
+    attributes:
+      date: >
+        {{
+          this.attributes.date if trigger.id == 'initial' and this.attributes.get('date') is not none
+          else now().date()
+        }}
