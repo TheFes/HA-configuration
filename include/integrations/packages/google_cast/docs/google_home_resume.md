@@ -1,41 +1,33 @@
+# Table of contents
+1. [Description](#description)
+1. [This script supports](#this-script-supports)
+1. [Latest changes](#latest-changes)
+1. [The automation for automatic resume](#the-automation-for-automatic-resume)
+1. [How to use the script](#how-to-use-the-script)
+1. [☕](#buy-me-a-coffee)
+
 # Description
+
 A script to send actions to Google Cast devices, resume what was playing afterwards and restore the previous volume in case the volume was changed.
 **Note:** Only service calls are supported, but you can call a script in a service call, so other actions can be performed by calling a script.
 
 # This script supports
+
 * Resuming of TuneIn, Spotify, YouTube (only for players with screen) YouTube music (only if custom integration is used), Music Assistant, Google Podcast and generic streams after any actions which interrupted the audio
 * Resuming an entire speaker group after a single group member has been interrupted
 * Resuming of individual group members after the speaker group has performed an action
 
-# Most recent changes
-### Version 2022.11
-#### 🔴 BREAKING
-* Combined the script and automation in a package, see the setup section on how to update. Remove the old scripts and automation first, and do a reload from Developer Tools > YAML before copying the new version to your system.
-* You will need to update the Google Home Voice and Google Home Event scripts as well if you update to this version. Version 2022.11.1 of those scripts is required  if you use 2022.11.3 of this script.
+# Latest changes
+
+### Version 2022.12
 #### 🌟 Improvements
-* (2022.11.0) Changed version number to YYYY.MM.version
-* (2022.11.0) As the automation is now included in the package, a variable `automation_enabled` is added to optionally disable the automation. It is enabled by default
-* (2022.11.0) Sometimes Cast devices can show as `idle` in Home Assistant, while they are actually playing music from Spotify. They will also be resumed now
-* (2022.11.0) Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
-* (2022.11.0) Some variables which can be useful for debugging are added
-* (2022.11.3) Used more YAML anchors to avoid repeating code
-* (2022.11.3) Improved template to store player_data
-* (2022.11.3) A lot of minor template improvements
-* (2022.11.5) Improved the template to get the entities to resume
-* (2022.11.7) Added a timeout on wait_templates after resume to prevent the script staying active
-#### 🐛 Bug fixes
-* (2022.11.1) Fixed a template error
-* (2022.11.2) Corrected a typo in the automation
-* (2022.11.3) Several fixes in both the script and automation
-* (2022.11.4) :shit: forgot a comma in a template
-* (2022.11.5) Better handling of empty settings
-* (2022.11.6) Small fix and improvement for players_to_resume
-* (2022.11.7) Stupid copy/paste error in previous bugfix
-* (2022.11.8) Typo fix when applying metadata to service call to resume stream
+* Template to generate the `target_list` has been improved
+* A lot of other improvements in templates
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
 
 ## The automation for automatic resume
+
 In August 2022 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated. The automation will also trigger on casting a Dasboard, this can be disabled in the settings so it only triggers on audio interruptions.
 
 The settings for to enable the automation and for the default volume to be used for announcements can be set in the settings part of the package.
@@ -45,6 +37,7 @@ If set up like described above, the script will be automatically called for TTS 
 The automation will check if a resume for a specific speaker is already active, if that is the case it will not trigger the script for that specific speaker.
 
 # How to use the script
+
 This script only contains the code to resume after the interruption, it doesn't contain any standard actions (like sending a TTS or playing an MP3 file)
 
 To perform such an action, you need to provide them in the `action` field. In case you use the GUI, it will allow al kind of actions (like `delay` or `choose`) but the script can only handle service calls (so starting with `service`).
@@ -55,6 +48,7 @@ The boolean `resume_this_action` can be set to `false` if you don't want to resu
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
 
 When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/examples_google_home_resume.md)
+
 |Field|Required|Description|
 | --- | --- | --- | 
 |target|No|The targets which should be resumed, only needed if these targets are not clear from the actions. All usual targets (`area_id`, `device_id` and `entity_id`) are supported.
@@ -64,6 +58,7 @@ When calling the script, there are 3 fields you can provide. `action` is require
 
 As of version 2.0.0 you can also add `extra` variables together with each of your actions. These additional variables have to be entered in the service call information, on the same level as `service`, `target` and `data`. It is also possible to add them under `data`, in that case you can use `script_extra`. Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 The following variables are supported:
+
 |Variable|Example|Description|
 |---|---|---|
 |`volume`|`0.25` or `25`|Applies the volume set for the service call|
@@ -76,11 +71,12 @@ The following variables are supported:
 | `area_id` | `kitchen` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
 | `device_id` | `whatever` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
 
-Examples for different use cases can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md)
+Examples for different use cases can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/examples_google_home_resume.md)
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
 
 # Buy me a coffee
+
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
 

@@ -55,6 +55,9 @@ homeassistant:
         enable_automation: true
         dashboard_cast: true
         announce_volume_automation: 0.4
+      voice_settings: &voice_settings
+        check_for_title: "Witte ruis"
+        use_resume: true
 
 #### TO UPDATE TO A NEW VERSION, REPLACE EVERYTHING BELOW THIS LINE ####
 
@@ -1087,8 +1090,7 @@ script:
     icon: mdi:cast-audio
     mode: single
     max_exceeded: silent
-    variables:
-      check_for_title: "Witte ruis"
+    variables: *voice_settings
     sequence:
       - alias: "Variable for version number"
         variables:

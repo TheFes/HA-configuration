@@ -1,52 +1,41 @@
-# Table of contents
-
-1. [Background](#background)
-1. [Latest changes](#latest-changes)
-1. [Prerequisites](#prerequisites)
-1. [Settings for the voice script](#settings-for-the-voice-script)
-1. [How to use the script](#how-to-use-the-script)
-1. [☕](#buy-me-a-coffee)
-
 # Background
+In another post I have share a [script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) to send actions to a Google Home and resume the stream (TuneIn / Spotify) which was playing afterwards. It also restores the volume, and you can work with Google Home speakers groups.
 
 In my home I have several Google Nest/Home speakers, and I had some scripts where a TTS would be sent which was triggered by a Google Home routine. However, I could only set it to a predefined Google Home speaker, and not to the specific speaker on which I gave the voice command.
 
-This got me thinking, and I found a solution for this, using the ambient sounds which you can start in your routines.
+This made me thinking, and I found a solution for this, using the ambient sounds which you can start in your routines.
 
 So I made a new script, which can be used in cooperation with the other script, to send a TTS or other actions, like e.g. an image, or a cast of your Lovelace dashboard to specific Google Home after you ask a question to it. 
 
-As of version 2022.12 the script is included in the Google Home Resume package.
+The script itself relies on the other script, so make sure that script is running correctly first, including the prerequisites.
 
-# Latest changes
+# Requirements
+* Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
+* The [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and all its [prerequisites](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#prerequisites-10) in case you want to resume what was playing afterwards.
 
-### Version 2022.12
 
+# Most recent change
+### Version 2022.11
 #### 🔴 BREAKING
-
-* Integrated in the Google Home Resume package
+* To use the latest version of this script (2022.11.1) youll need to update the Google Home Resume script to version 2022.11.3 or higher as well
+#### 🌟 Improvements
+* (2022.11.0) Changed version number to YYYY.MM.version
+* (2022.11.0) Templates to store data are improved, variables to store Spotify and YouTube Music data are now integrated in the general player data variable
+* (2022.11.1) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
+#### 🐛 Bug fixes
+* (2022.11.2) Better handling of empty settings
+* (2022.11.3) Fix template copy/paste error causing variable store to fail
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
 
 # Prerequisites
-
-1. Install the [Google Home Resume package]()
 1. Expose scripts to Google Assistant (either use [Nabu Casa](https://www.nabucasa.com/), or the [manual setup](https://www.home-assistant.io/integrations/google_assistant/))
-1. A separate script per TTS messsage, which will be used in the Google Home routine
+1. A separate script per TTS messsage, which will be called from the Google Home
 1. A routine in the Google Home app which starts the script (you can find your scripts under `Adjust Home Devices` -> `Adjust scenes`) 
 The last action in your routine should be to start the ambient sound (`Play and control media` -> `Sleep sounds` -> Any sound you only use for this script
 1. Define the right variables for your home in the Google Home Voice script as desribed below
 
-# Settings for the voice script
-
-The settings are set in the `voice_settings` part of the package.
-
-|Variable|Required|Example|Description|
-| --- | --- | --- | --- |
-|check_for_title|Yes|`Witte Ruis`|The title of the ambient sound as shown in developer tools > states |
-|use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.
-
-# How to use the script
-
+# How to use start script
 To use the script you will need to provide the `action` to be performed. Like the Google Home Resume script only service calls are working. In case no service calls are entered the script will stop (it will only stop the ambient sound, but not resume the previous stream).
 There is no need to provide the `target`, it will be added by the Google Home Voice script, based on the ambient sound playing.
 In case you need to change the volume (eg for TTS) you can use the `volume` variable.
@@ -77,17 +66,29 @@ eta_thefes:
               message: "{{ message }}"
         volume: 35
 ```
-
 Variables in service call for the script:
 |Variable|Required|Description|
 | --- | --- | --- |
 |action|Yes|The title of the ambient sound as shown in developer tools > states |
-|target_conversion|No|A dictonary with target replacements when you send the voice command|
-|use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions, override the setting on the script.|
+|target_conversion|No|A list dictonary with target replacements when you send the voice command|
+|use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
 |target_variable|No|If set to `true` the entity_id of the Google Home will be added as the variable `voice_target` so it can be used in scripts, and added under `extra` so the Google Home Resume script will resume it.
 
-# Buy me a coffee
 
+# And finally the script itself
+[Link to the script ](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_voice.yaml) on my Github config, so I don have to maintain it in two places
+
+# Explanation of variables in the script
+
+|Variable|Required|Example|Description|
+| --- | --- | --- | --- |
+|check_for_title|Yes|`Witte Ruis`|The title of the ambient sound as shown in developer tools > states |
+|use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.
+
+# Other scripts
+For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+
+# Buy me a coffee
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
 
