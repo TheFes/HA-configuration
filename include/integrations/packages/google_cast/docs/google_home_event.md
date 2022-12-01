@@ -6,9 +6,13 @@
 1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
+___
+
 # Description
 
 This script can store the state of your Google Cast devices in a template sensor. This data can later be used to resume the speakers.
+
+___
 
 # Latest changes
 
@@ -24,6 +28,8 @@ This script can store the state of your Google Cast devices in a template sensor
 * More use of YAML anchors
 
 Older changes can be found [here](changelogs/changelog_google_home_event.md)
+
+___
 
 # Prerequisites
 
@@ -78,8 +84,13 @@ action:
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode.
 
+___
+
 # Questions/issues/bugs/feature requests?
+
 Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
+
+___
 
 # Buy me a coffee
 

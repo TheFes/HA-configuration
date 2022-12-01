@@ -3,6 +3,8 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
 * More information [here](google_home_resume.md)
 
+___
+
 # Table of contents
 
 1. [Basic example](#basic-example)
@@ -12,6 +14,8 @@
 1. [Usage of the extra key](#using-the-extra-key-on-the-same-level-as-data-and-target)
 1. [Usage of the script_exta variable](#using-the-script_extra-key-under-data)
 1. [Multiple actions to the same target](#multiple-actions-to-the-same-target-which-need-to-wait-for-each-other)
+
+___
 
 # Basic example
 
@@ -33,6 +37,8 @@ data:
         media_content_id: "media-source://media_source/local/dingdong.mp3"
 ```
 
+___
+
 # No target provided in the service call, required to provide target in script call
 
 In this example a script is started instead of a service call directly to the entities. Therefor is is required to provide the `target` so the script will know which entities should be resumed/restored.
@@ -51,6 +57,8 @@ data:
       data:
         file: "media-source://media_source/local/dingdong.mp3"
 ```
+
+___
 
 # Send TTS and apply volume for the TTS message
 
@@ -73,6 +81,8 @@ Enter the data for the TTS service call, and provide the volume under `extra`
           extra:
             volume: 0.5
 ```
+
+___
 
 # Send TTS with picture and text for a player with a screen
 
@@ -106,6 +116,9 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
               picture_url: http://10.0.0.5:8123/media/camera_front_door/snapshot.jpg
             volume: 0.5
 ```
+
+___
+
 ## Using the `script_extra` key under `data`
 
 ```yaml
@@ -131,6 +144,8 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
                 picture_url: http://10.0.0.5:8123/media/camera_front_door/snapshot.jpg
               volume: 0.5
 ```
+
+___
 
 # Multiple actions to the same target, which need to wait for each other.
 

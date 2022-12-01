@@ -7,6 +7,8 @@
 1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
+___
+
 # Background
 I first started to create a script to send actions to a Google Home and resume the stream (TuneIn / Spotify) which was playing afterwards. It also restores the volume, and you can work with Google Home speakers groups.
 
@@ -18,9 +20,13 @@ So I made a new script, which can be used in cooperation with the other script, 
 
 As of version 2022.12 this script is included into the total [Google Home Resume package](../readme.md)
 
+___
+
 # Requirements
 
 * The [Google Home Resume package](../readme.md) needs to be installed.
+
+___
 
 # Latest changes
 
@@ -37,6 +43,8 @@ As of version 2022.12 this script is included into the total [Google Home Resume
 
 Older changes can be found [here](changelogs/changelog_google_home_voice.md)
 
+___
+
 # Prerequisites
 
 1. The [Google Home Resume package](../readme.md) needs to be installed.
@@ -46,12 +54,16 @@ Older changes can be found [here](changelogs/changelog_google_home_voice.md)
 The last action in your routine should be to start the ambient sound (`Play and control media` -> `Sleep sounds` -> Any sound you only use for this script
 1. Define the right variables for your home in the Google Home Voice script as desribed below
 
+___
+
 # Explanation of settings for the voice script
 
 |Variable|Required|Example|Description|
 | --- | --- | --- | --- |
 |check_for_title|Yes|`Witte Ruis`|The title of the ambient sound as shown in developer tools > states |
 |use_resume|No|`false`|Use `use_resume: false` if you don't have the Google Home Resume script. Don't set this setting when you do want to use it, but set it in the script call instead if you need it. Default is `true`.
+
+___
 
 # How to use the script
 
@@ -93,8 +105,13 @@ Variables in service call for the script:
 |use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
 |target_variable|No|If set to `true` the entity_id of the Google Home will be added as the variable `voice_target` so it can be used in scripts, and added under `extra` so the Google Home Resume script will resume it.
 
+___
+
 # Questions/issues/bugs/feature requests?
+
 Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
+
+___
 
 # Buy me a coffee
 

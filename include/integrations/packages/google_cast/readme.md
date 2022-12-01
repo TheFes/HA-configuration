@@ -25,6 +25,8 @@ In the past years I also created others scripts using the Google Home Resume scr
 
 All these scripts are now combined in one package
 
+___
+
 # Latest version
 
 ## 2022.12 Happy Holidays; let's bring the family together
@@ -54,11 +56,15 @@ Previous changes can be found here:
 * [Google Home Voice script](docs/changelogs/changelog_google_home_voice.md)
 * [Google Home Event script and template sensor](docs/changelogs/changelog_google_home_event.md)
 
+___
+
 # Requirements
 
 * Home Assistant version 2022.5 because the new script features introduced in that version are used.
 * For Spotify resume Spotcast and the Spotify integration are requiresd. See the [relevant section](#spotify-resume) in the setup instructions.
 * For YouTube Music Ytube Music Player is required. See the [relevant section](#youtube-music-resume) in the setup instructions.
+
+___
 
 # Setup instructions
 
@@ -169,6 +175,8 @@ In case you use HA OS, or run a supervised install, you can add the [VLC Add-on]
 
 In case you don't have the supervisor or already use this add-on for other purposes, you can possibly use the media_player created by the [browser_mod](https://github.com/thomasloven/hass-browser_mod) custom component. Or you can buy an additionaly Nest Mini, set the volume to `0` and hide it somewhere 😉
 
+___
+
 # Description of scripts
 
 ## **Google Home Resume**
@@ -186,11 +194,15 @@ More information on how to use the Google Home Voice script can be found [here](
 The Google Home Event script can store the data of your devices in a template sensor, so you can restore the states on a later moment. So you can store the state when you leave the house, and restore the music when you come back in.
 More information on how to use the Google Home Event script can be found [here](docs/google_home_event.md)
 
+___
+
 # Known limitations
 
 * It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
 * When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards. To minimize this, Spotify entities are updated just before the information is stored.
 * YouTube and YouTube music will only resume the video/song which was playing at the time of the interruption, and only on players with a screen if not started using the [ytube_music_player](https://github.com/KoljaWindeler/ytube_music_player) custom integration.
+
+___
 
 # Questions/issues/bugs/feature requests?
 
@@ -207,6 +219,8 @@ In case something isn't working or you found a bug, a trace of the script will b
 
 In case you create the issue on GitHub you can upload the json files, in case you create the issue as a post here, you can copy the json files to a code sharing website like [dpaste.org](https://www.dpaste.org). Please create a different link for each json file.
 
+___
+
 # Why not a blueprint?
 
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
@@ -215,6 +229,8 @@ I've been asked a couple of times if I ever considered to make a blueprint out o
 * I use really large and complicated templates, and these would be converted to really messy one line templates, making it impossible to read and debug if needed.
 
 So, basically, I gave it a try, and decided it would not work :)
+
+___
 
 # Buy me a coffee
 

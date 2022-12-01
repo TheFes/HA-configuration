@@ -7,16 +7,22 @@
 1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
+___
+
 # Description
 
 A script to send actions to Google Cast devices, resume what was playing afterwards and restore the previous volume in case the volume was changed.
 **Note:** Only service calls are supported, but you can call a script in a service call, so other actions can be performed by calling a script.
+
+___
 
 # This script supports
 
 * Resuming of TuneIn, Spotify, YouTube (only for players with screen) YouTube music (only if custom integration is used), Music Assistant, Google Podcast and generic streams after any actions which interrupted the audio
 * Resuming an entire speaker group after a single group member has been interrupted
 * Resuming of individual group members after the speaker group has performed an action
+
+___
 
 # Latest changes
 
@@ -41,6 +47,8 @@ The settings for to enable the automation and for the default volume to be used 
 If set up like described above, the script will be automatically called for TTS messages, and when you use the `media_player.play_media` service call with `announce: true` enabled. If `announce` is not set, or set to `announce: false` the script will not be used. The TTS service call will do this automatically.
 
 The automation will check if a resume for a specific speaker is already active, if that is the case it will not trigger the script for that specific speaker.
+
+___
 
 # How to use the script
 
@@ -81,8 +89,13 @@ Examples for different use cases can be found [here](examples/examples_google_ho
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
 
+___
+
 # Questions/issues/bugs/feature requests?
+
 Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
+
+___
 
 # Buy me a coffee
 
