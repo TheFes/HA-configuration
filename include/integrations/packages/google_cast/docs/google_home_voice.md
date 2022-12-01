@@ -30,7 +30,7 @@ ___
 
 # Latest changes
 
-### Version 2022.12
+### 2022.12 Happy Holidays; let's bring the family togethe
 
 #### 🔴 BREAKING
 
