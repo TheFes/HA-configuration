@@ -23,7 +23,7 @@ This script can store the state of your Google Cast devices in a template sensor
 * Template improvements
 * More use of YAML anchors
 
-Older changes can be found [here](changelog_google_home_event.md)
+Older changes can be found [here](changelogs/changelog_google_home_event.md)
 
 # Prerequisites
 

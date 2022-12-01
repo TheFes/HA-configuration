@@ -30,7 +30,7 @@ A script to send actions to Google Cast devices, resume what was playing afterwa
 
 * There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
-Older changes can be found [here](changelog_google_home_resume.md)
+Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 
 ## The automation for automatic resume
 
@@ -53,7 +53,7 @@ You can also start a script in a service call, so this allows you to do more adv
 The boolean `resume_this_action` can be set to `false` if you don't want to resume the actions from the `action` field. To explain why you would want to do this, I have the following real life example:
 I've set up a tag scanner on which my kids can scan a card, and then some song will play. If there was already something playing (a TuneIn stream for example) I want that stream to resume after the song finished. However, the kids tend to scan the card a second time when they don't like the song. If that happens the first kids song which was already playing, would be resumed afterwards. With resume_this_action: false this will not be the case.
 
-When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](examples_google_home_resume.md)
+When calling the script, there are 3 fields you can provide. `action` is required, `target` is only required in case it is not clear from the `action` part. More details in the [examples](examples/examples_google_home_resume.md)
 
 |Field|Required|Description|
 | --- | --- | --- | 
@@ -77,7 +77,7 @@ The following variables are supported:
 | `area_id` | `kitchen` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
 | `device_id` | `whatever` | Target of the service_call in case this is not clear from the call itself, eg when calling a script. Use this when you want to set the volume for the service call |
 
-Examples for different use cases can be found [here](examples_google_home_resume.md)
+Examples for different use cases can be found [here](examples/examples_google_home_resume.md)
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
 

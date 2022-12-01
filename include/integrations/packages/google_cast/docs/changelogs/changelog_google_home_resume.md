@@ -294,7 +294,7 @@ Don’t try to restore the volume when it is not provided in the player data
 
 #### 🌟 Improvements
 
-* The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI. [Example](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md#using-the-script_extra-key-under-data) on how to use this.
+* The extra options for the script (`wait`, `volume` and `screen_tts`) can now also be defined under `data` in the service call, using the key `script_extra`. This way the options can also be added using the GUI. [Example](../examples/examples_google_home_resumed#using-the-script_extra-key-under-data) on how to use this.
 
 #### 🐛 Bug fixes
 
@@ -329,7 +329,7 @@ Don’t try to restore the volume when it is not provided in the player data
 
 #### 🧾 Docs
 
-* Craeted a separate doc for [script call examples](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
+* Craeted a separate doc for [script call examples](../examples/examples_google_home_resume.md) which shows how to use the new features. Description how to use the script to send a TTS and change the volume is also placed there now.
 * Partial rewrite of the script docs
 
 #### 🐛 Bug fixes
@@ -399,7 +399,7 @@ Don’t try to restore the volume when it is not provided in the player data
 #### 🌟 Improvements
 
 * No need for YAML anchors anymore, all data in the variables will be applied in the main script now.
-* Several changes to work better with the [Google Home Event script](https://community.home-assistant.io/t/store-media-state-of-cast-devices-on-event-e-g-leaving-home-and-resume-later/403059)
+* Several changes to work better with the [Google Home Event script](../google_home_event.md)
 
 #### 🐛 Bug fixes
 
@@ -436,7 +436,7 @@ Don’t try to restore the volume when it is not provided in the player data
 
 #### 🔴 BREAKING
 
-* This version brings quite some changes, which will require also to update the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) in case you use that one as well.
+* This version brings quite some changes, which will require also to update the [Google Home Voice script](../google_home_voice.md) in case you use that one as well.
 * The script is now split into one main script (`script.google_home_resume`) and 3 helper-scripts (`script.google_home_resume_perform_resume`, `script.google_home_resume_restore_non_playing` and `script.google_home_resume_ytube_seek`). This allows the resume of different speakers to be ran in parallel, instead of that they will have to wait for each other. So in case you send a TTS and a video feed to one of your Nest Hubs, and only a TTS to a Nest Mini, the Nest Mini can already resume before the Nest Hub is finished. All the scripts are in one yaml-file, the one linked below, please make sure that you copy everything. The script for the resume of the ytube music player integration is at the bottom, if you don't use that, you don't need that script.
 
 #### 🌟 Improvements
@@ -476,7 +476,7 @@ Don’t try to restore the volume when it is not provided in the player data
 
 #### 🔴 BREAKING
 
-* Made several changes in how data is sent from the [Google Home Voice script](https://community.home-assistant.io/t/script-to-send-actions-to-the-right-google-home-based-on-voice-commands/346885/9) to this one. So if you update this script, make sure to also update the other one
+* Made several changes in how data is sent from the [Google Home Voice script](../google_home_voice.md) to this one. So if you update this script, make sure to also update the other one
 
 #### 🌟 Improvements
 
@@ -557,7 +557,7 @@ I've set up a tag scanner on which my kids can scan a card, and then some song w
 ### 3 February 2022
 
 #### 🛑 Breaking change
-* Added [requirements](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#requirements-3) (HA Version 2022.2) to first post, also added requirements for Spotify resume there.
+* Added [requirements](../google_home_resume.md) (HA Version 2022.2) to first post, also added requirements for Spotify resume there.
 
 #### 🐛 Bug fixes
 * Removed WIP (work in progress) references in script object_id and alias.

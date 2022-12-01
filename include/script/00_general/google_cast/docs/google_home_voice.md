@@ -25,7 +25,7 @@ As of version 2022.12 the script is included in the Google Home Resume package.
 
 * Integrated in the Google Home Resume package
 
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelog_google_home_voice.md)
+Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/changelogs/changelog_google_home_voice.md)
 
 # Prerequisites
 

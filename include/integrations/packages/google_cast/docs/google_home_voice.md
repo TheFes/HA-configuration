@@ -35,7 +35,7 @@ As of version 2022.12 this script is included into the total [Google Home Resume
 * Template improvements
 * More use of YAML anchors
 
-Older changes can be found [here](changelog_google_home_voice.md)
+Older changes can be found [here](changelogs/changelog_google_home_voice.md)
 
 # Prerequisites
 
