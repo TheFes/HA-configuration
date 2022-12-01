@@ -42,9 +42,9 @@ It's December which is the time to come together with your family for the holida
 * There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
 Previous changes can be found here:
-* [Google Home Resume script and automation](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_resume.md)
-* [Google Home Voice script]()
-* [Google Home Event script and template sensor]()
+* [Google Home Resume script and automation](docs/changelog_google_home_resume.md)
+* [Google Home Voice script](docs/changelog_google_home_voice.md)
+* [Google Home Event script and template sensor](docs/changelog_google_home_event.md)
 
 # Requirements
 
@@ -72,7 +72,7 @@ Leave the settings in the Google Home Resume package as they are now, and replac
 
 ## Install the package
 
-[Link to the package](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
+[Link to the package](google_home_resume.yaml)
 
 * In case you don't use packages yet, add the following to your `configuration.yaml`
 ```yaml
@@ -93,8 +93,8 @@ There are no required settings, but if you use Google Home speaker groups you sh
 |Variable|Default|Example|Description|
 | --- | --- | --- | --- |
 |primary_spotcast||`pepijn`|The Spotify account which is used as primary account for spotcast, should match the last part of the Spotify media player.|
-|radio_data||[My settings ](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml#L12-L24)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
-|speaker_groups||[See script on Github ](hhttps://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml#L25-L45)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
+|radio_data||[My settings ](google_home_resume.yaml#L12-L24)|A dictionary with the pictures and titles. The picture urls should be full urls, not HA internal urls). As key value the artist should be used (check `media_artist` in developer tools > states)|
+|speaker_groups||[See script on Github ](google_home_resume.yaml#L25-L45)|A combination of a dictionary and a list, with speaker groups of which all entities are included in another speaker group.|
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 |default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
@@ -166,13 +166,13 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 * **Google Home Resume**
 The Google Home Resume script is used to resume a Google Home device after it has been interrupted. For example when a TTS has been sent, or when a sound has been played. You can manually trigger the script, and include the action after which it should be resumed in the service call for the script, or you can use the automation. 
-More information on how to use the Google Home Resume script can be found [here](./docs/google_home_resume.md)
+More information on how to use the Google Home Resume script can be found [here](docs/google_home_resume.md)
 * **Google Home Voice**
 The Google Home Voice script uses Google Home Routines and Ambient sounds to check on which device you issued a voice command, so it can send a TTS message or other action to that specific device.
-More information on how to use the Google Home Voice script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_voice.md)
+More information on how to use the Google Home Voice script can be found [here](docs/google_home_voice.md)
 * **Google Home Event**
 The Google Home Event script can store the data of your devices in a template sensor, so you can restore the states on a later moment. So you can store the state when you leave the house, and restore the music when you come back in.
-More information on how to use the Google Home Event script can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_event.md)
+More information on how to use the Google Home Event script can be found [here](docs/google_home_event.md)
 
 # Known limitations
 
