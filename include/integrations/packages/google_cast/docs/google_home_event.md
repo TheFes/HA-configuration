@@ -3,6 +3,7 @@
 1. [Latest changes](#latest-changes)
 1. [Prerequisites](#prerequisites)
 1. [How to use the script](#how-to-use-the-script)
+1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
 # Description
@@ -76,6 +77,9 @@ action:
 ```
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode.
+
+# Questions/issues/bugs/feature requests?
+Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
 
 # Buy me a coffee
 

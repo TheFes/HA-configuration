@@ -4,6 +4,7 @@
 1. [Prerequisites](#prerequisites)
 1. [Explanation of the settings for the voice script](#explanation-of-settings-for-the-voice-script)
 1. [How to use the script](#how-to-use-the-script)
+1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
 # Background
@@ -91,6 +92,9 @@ Variables in service call for the script:
 |target_conversion|No|A list dictonary with target replacements when you send the voice command|
 |use_resume|No|Set to `false` in case you don't want to use the Google Home Resume script, and just want to send the actions|
 |target_variable|No|If set to `true` the entity_id of the Google Home will be added as the variable `voice_target` so it can be used in scripts, and added under `extra` so the Google Home Resume script will resume it.
+
+# Questions/issues/bugs/feature requests?
+Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
 
 # Buy me a coffee
 

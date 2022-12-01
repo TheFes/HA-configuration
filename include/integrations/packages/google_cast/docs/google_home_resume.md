@@ -4,6 +4,7 @@
 1. [Latest changes](#latest-changes)
 1. [The automation for automatic resume](#the-automation-for-automatic-resume)
 1. [How to use the script](#how-to-use-the-script)
+1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
 1. [☕](#buy-me-a-coffee)
 
 # Description
@@ -79,6 +80,9 @@ The following variables are supported:
 Examples for different use cases can be found [here](examples_google_home_resume.md)
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode. 
+
+# Questions/issues/bugs/feature requests?
+Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
 
 # Buy me a coffee
 
