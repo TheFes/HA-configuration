@@ -1,13 +1,13 @@
 # Changelog
 
-* For Google Home Voice Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
-* More information [here](google_home_voice.md)
+* For Google Home Voice Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
+* More information [here](../google_home_voice.md)
 
 ### Version 2022.12.0
 
 #### 🔴 BREAKING
 
-* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
+* Integrated into the Google Home Resume package, update according to the [instructions](../../readme.md#setup-instructions)
 
 #### 🌟 Improvements
 
@@ -99,7 +99,7 @@
 
 #### ✨ New features
 
-* Support for `extra` variables in service calls added. This is a new feature of the Google Home Resume script. Version 2.0.0 or higher of the Google Home Resume script is required for this. For more information see [here](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896#how-to-use-the-script-19)
+* Support for `extra` variables in service calls added. This is a new feature of the Google Home Resume script. Version 2.0.0 or higher of the Google Home Resume script is required for this. For more information see [here](../google_home_resume.md)
 
 ### Version 1.3.5 - 2 April 2022
 
@@ -139,7 +139,7 @@
 
 #### 🔴 BREAKING
 
-* Changes in the way data is shared with the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
+* Changes in the way data is shared with the [Google Home Resume script](../google_home_resume.md). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
 
 #### 🌟 Improvements
 
@@ -155,7 +155,7 @@
 
 #### 🔴 BREAKING
 
-* Made several changes in how data is sent from this script to the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-radio-tunein-and-spotify-after-tts-on-google-home-speakers/326634). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
+* Made several changes in how data is sent from this script to the [Google Home Resume script](../google_home_resume.md). So if you update this script, make sure to also update the other one. However, as of this version, it is also possible to use this script without the Google Home Resume script
 
 #### ✨ New feature
 

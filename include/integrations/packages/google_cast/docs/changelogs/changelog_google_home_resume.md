@@ -1,7 +1,7 @@
 # Changelog
 
-* For Google Home Resume Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
-* More information [here](google_home_resume.md)
+* For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
+* More information [here](../google_home_resume.md)
 
 ### Version 2022.12.0
 

@@ -1,7 +1,7 @@
 # Changelog
 
 * General changes for the [Google Home Resume package](../google_home_resume.yaml)
-* More information [here](../readme.md)
+* More information [here](../../readme.md)
 
 ### 2022.12.0
 

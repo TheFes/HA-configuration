@@ -1,13 +1,13 @@
 # Changelog
 
-* For Google Home Event Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
-* More information [here](google_home_event.md)
+* For Google Home Event Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
+* More information [here](../google_home_event.md)
 
 ### Version 2022.12.0
 
 #### 🔴 BREAKING
 
-* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
+* Integrated into the Google Home Resume package, update according to the [instructions](../../readme.md#setup-instructions)
 
 #### 🌟 Improvements
 
@@ -104,7 +104,7 @@
 
 #### 🛑: Breaking change
 
-* The script now uses the main [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) and not only the Google Home Resume Perform Resume helper script. So if you only included that last script, you will have to include the total [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) now.
+* The script now uses the main [Google Home Resume script](../google_home_resume.md) and not only the Google Home Resume Perform Resume helper script. So if you only included that last script, you will have to include the total [Google Home Resume script](../google_home_resume.md) now.
 
 #### ✨: Improvements
 
