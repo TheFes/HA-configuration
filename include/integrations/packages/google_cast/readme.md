@@ -168,13 +168,18 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 # Description of scripts
 
-* **Google Home Resume**
+## **Google Home Resume**
+
 The Google Home Resume script is used to resume a Google Home device after it has been interrupted. For example when a TTS has been sent, or when a sound has been played. You can manually trigger the script, and include the action after which it should be resumed in the service call for the script, or you can use the automation. 
 More information on how to use the Google Home Resume script can be found [here](docs/google_home_resume.md)
-* **Google Home Voice**
+
+## **Google Home Voice**
+
 The Google Home Voice script uses Google Home Routines and Ambient sounds to check on which device you issued a voice command, so it can send a TTS message or other action to that specific device.
 More information on how to use the Google Home Voice script can be found [here](docs/google_home_voice.md)
-* **Google Home Event**
+
+## **Google Home Event**
+
 The Google Home Event script can store the data of your devices in a template sensor, so you can restore the states on a later moment. So you can store the state when you leave the house, and restore the music when you come back in.
 More information on how to use the Google Home Event script can be found [here](docs/google_home_event.md)
 
