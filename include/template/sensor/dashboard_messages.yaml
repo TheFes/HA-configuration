@@ -37,8 +37,16 @@
             {%- endif %}
           {%- endfor %}
           {{ dict(message=ns.message | join('\n'), level='info') }}
+        battery: >-
+          {% set ns = namespace(message=[]) %}
+          {% for item in expand('group.battery_warning') %}
+            {%- if item.state | float(21) <= 20 %}
+              {%- set ns.message = ns.message  + [ 'De batterij van '~ item.name.split(' Battery')[0] ~ ' is nog maar ' ~ item.state ~'%' ] %}
+            {%- endif %}
+          {% endfor %}
+          {{ dict(message=ns.message | join('\n'), level='warning') }}
         trash: >-
-          {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'afval_sensor.rest_en_gft' ] %}
+          {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'sensor.afval_rest_en_gft' ] %}
           {%- set active = expand(sensors)
                             | selectattr('state', 'in', ['Vandaag', 'Morgen'])
                             | map(attribute='entity_id')
@@ -64,7 +72,7 @@
               {%- set extra = states('input_select.dishwasher_program_extra') %}
               {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
               {%- set program = program ~ extra %}
-              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('input_datetime.dishwasher_program')).strftime('%H:%M') ~ '(' ~ program ~ ')' %}
+              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('input_datetime.dishwasher_program')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
             {%- else %}
               {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
             {%- endif %}

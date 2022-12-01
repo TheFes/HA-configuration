@@ -23,7 +23,11 @@ cards:
     content: >-
       {%- if states('sensor.dashboard_messages') | int(0) > 0 %}
         {%- set ns = namespace(test=[]) %}
-        {%- for item in states.sensor.dashboard_messages.attributes.values() | selectattr('message', 'defined') | selectattr('message') %}
+        {%- for item in states.sensor.dashboard_messages.attributes.values()
+                          | selectattr('message', 'defined')
+                          | sort(attribute='level', reverse=true)
+                          | selectattr('message')
+        %}
           <ha-alert alert-type={{ item.level }}>{{ item.message }}</ha-alert>
         {%- endfor -%}
       {%- endif %}
