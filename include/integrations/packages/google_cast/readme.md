@@ -128,12 +128,12 @@ For the Google Home Voice script there are 2 specific settings, these are descri
 
 The media_players entities connected to these Spotify integration are named:
 ```
-media_player.spotify_martijn
-media_player.spotify_marleen
 media_player.spotify_floris
+media_player.spotify_marleen
+media_player.spotify_martijn
 ```
 
-Spotcast setup (the Spotify account for `Martijn` is the primary account, and has no named account in the spotcast setup), so the `primary_account` in this example is `martijn`:
+Spotcast setup (the Spotify account for `Floris` is the primary account, and has no named account in the spotcast setup), so the `primary_account` in this example is `floris`:
 ```yaml
 spotcast:
   sp_dc: !secret sp_dc
@@ -144,8 +144,8 @@ spotcast:
       sp_dc: !secret sp_dc_marleen
       sp_key: !secret sp_key_marleen
     floris:
-      sp_dc: !secret sp_dc_floris
-      sp_key: !secret sp_key_floris
+      sp_dc: !secret sp_dc_martijn
+      sp_key: !secret sp_key_martijn
 ```
 
 ## YouTube Music resume
