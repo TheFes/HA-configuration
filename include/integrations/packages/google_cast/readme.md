@@ -123,7 +123,8 @@ For the Google Home Voice script there are 2 specific settings, these are descri
 ##### Example:
 
 3 Spotify integrations:
-![image|440x279](https://community-assets.home-assistant.io/original/4X/a/9/4/a942d64e3f46104adf270fdc6d3035a148137cf6.png)
+
+![image|440x279](docs/images/spotify_example.png)
 
 The media_players entities connected to these Spotify integration are named:
 ```
