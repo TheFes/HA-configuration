@@ -1,11 +1,22 @@
 # Changelog
 
-* For [Google Home Event script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_event.yaml)
-* More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_event.md)
+* For Google Home Event Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
+* More information [here](google_home_event.md)
+
+### Version 2022.12.0
+
+#### 🔴 BREAKING
+
+* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
+
+#### 🌟 Improvements
+
+* Template improvements
+* More use of YAML anchors
 
 ### Version 2022.11.4 - 26 November 2022
 
-#### :bug: Bug fixes
+#### 🐛 Bug fixes
 
 * Fix template copy/paste error causing variable store to fail
 

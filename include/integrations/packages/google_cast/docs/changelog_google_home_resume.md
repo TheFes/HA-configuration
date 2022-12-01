@@ -1,7 +1,17 @@
 # Changelog
 
-* For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_resume.yaml)
-* More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_resume.md)
+* For Google Home Resume Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
+* More information [here](google_home_resume.md)
+
+### Version 2022.12.0
+
+#### 🌟 Improvements
+* Template to generate the `target_list` has been improved
+* A lot of other improvements in templates
+
+#### 🐛 Bug fixes
+
+* There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
 ### Version 2022.11.8 - 24 November 2022
 

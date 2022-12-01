@@ -47,6 +47,7 @@ It's December which is the time to come together with your family for the holida
 * There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
 Previous changes can be found here:
+* [General package changes](docs/changelog_general.yaml)
 * [Google Home Resume script and automation](docs/changelog_google_home_resume.md)
 * [Google Home Voice script](docs/changelog_google_home_voice.md)
 * [Google Home Event script and template sensor](docs/changelog_google_home_event.md)
