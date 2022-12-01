@@ -22,7 +22,6 @@ This script can store the state of your Google Cast devices in a template sensor
 
 Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
 
-
 # How to start the script
 
 There are 5 fields which can be set while running the script.
