@@ -16,6 +16,8 @@
 1. [Why not a Blueprint](#why-not-a-blueprint)
 1. [☕](#buy-me-a-coffee)
 
+___
+
 # Background
 
 This package started somewhere in 2020 as a simple script to resume a Google Cast device after it was interrupted by a TTS message. During the years more functionality was added, the Cast devices can also be resumed after playing an audio file, or casting a Home Assistant Dasboard.
