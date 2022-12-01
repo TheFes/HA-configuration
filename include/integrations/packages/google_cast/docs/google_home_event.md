@@ -1,7 +1,8 @@
 # Table of contents
-1. [Background](#description)
+1. [Description](#description)
 1. [Latest changes](#latest-changes)
-1. [How to start the script](#how-to-start-the-script)
+1. [Prerequisites](#prerequisites)
+1. [How to use the script](#how-to-use-the-script)
 1. [☕](#buy-me-a-coffee)
 
 # Description
@@ -14,15 +15,20 @@ This script can store the state of your Google Cast devices in a template sensor
 
 #### 🔴 BREAKING
 
-* Integrated in the Google Home Resume package
+* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
 
 #### 🌟 Improvements
 
-* Improvements in templates
+* Template improvements
+* More use of YAML anchors
 
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
+Older changes can be found [here](changelog_google_home_event.md)
 
-# How to start the script
+# Prerequisites
+
+1. The [Google Home Resume package](../readme.md) needs to be installed.
+
+# How to use the script
 
 There are 5 fields which can be set while running the script.
 *Description of fields:*

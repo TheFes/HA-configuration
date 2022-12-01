@@ -38,7 +38,12 @@ It's December which is the time to come together with your family for the holida
 
 ### ♻ RESUME SCRIPT
 
+#### 🌟 Improvements
+
+* Template to generate the `target_list` has been improved
+
 #### 🐛 Bug fixes
+
 * There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
 
 Previous changes can be found here:
@@ -48,9 +53,9 @@ Previous changes can be found here:
 
 # Requirements
 
-## Home Assistant
-
-* Home Assistant version 2022.5 or higher because of specific template functions
+* Home Assistant version 2022.5 because the new script features introduced in that version are used.
+* For Spotify resume Spotcast and the Spotify integration are requiresd. See the [relevant section](#spotify-resume) in the setup instructions.
+* For YouTube Music Ytube Music Player is required. See the [relevant section](#youtube-music-resume) in the setup instructions.
 
 # Setup instructions
 
@@ -64,11 +69,9 @@ After removing all the old stuff reload Scripts, Automations and Template entiti
 
 ### From version 2022.11
 
-Remove the Google Home Voice script if you use that, and the Google Home Event package if you were using that. 
+Remove the Google Home Voice script if you use that, and the Google Home Event package if you were using that. Reloud scripts and template entities in Developer Tools > YAML Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
 
-After removing all the old stuff reload Scripts, Automations and Template entities from Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
-
-Leave the settings in the Google Home Resume package as they are now, and replace everything below that (indicated by the comment) with the code from the new version (of course don't copy my settings).
+Add the settings for the Voice Script to the settings you already have. Then copy everything below the settings from the package file on this GitHub repo and overwrite the current code in the package on your system using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
 ## Install the package
 

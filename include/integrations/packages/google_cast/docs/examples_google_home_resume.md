@@ -1,8 +1,20 @@
 # Examples
-* For [Google Home Resume script](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/google_home_resume.yaml)
-* More information [here](https://github.com/TheFes/HA-configuration/blob/main/include/script/00_general/google_cast/docs/google_home_resume.md)
+
+* For Google Home Script, which is included in [Google Home Resume package](../google_home_resume.yaml)
+* More information [here](google_home_resume.md)
+
+# Table of contents
+
+1. [Basic example](#basic-example)
+1. [No target provided in the service call](#no-target-provided-in-the-service-call-required-to-provide-target-in-script-call)
+1. [Send TTS and apply volume](#send-tts-and-apply-volume-for-the-tts-message)
+1. [Send TTS with picture and text](#send-tts-with-picture-and-text-for-a-player-with-a-screen)
+1. [Usage of the extra key](#using-the-extra-key-on-the-same-level-as-data-and-target)
+1. [Usage of the script_exta variable](#using-the-script_extra-key-under-data)
+1. [Multiple actions to the same target](#multiple-actions-to-the-same-target-which-need-to-wait-for-each-other)
 
 # Basic example
+
 This example will play an mp3 on 2 targets, without additional data
 
 ```yaml
@@ -22,6 +34,7 @@ data:
 ```
 
 # No target provided in the service call, required to provide target in script call
+
 In this example a script is started instead of a service call directly to the entities. Therefor is is required to provide the `target` so the script will know which entities should be resumed/restored.
 
 ```yaml
@@ -40,6 +53,7 @@ data:
 ```
 
 # Send TTS and apply volume for the TTS message
+
 Enter the data for the TTS service call, and provide the volume under `extra`
 
 ```yaml
@@ -61,12 +75,14 @@ Enter the data for the TTS service call, and provide the volume under `extra`
 ```
 
 # Send TTS with picture and text for a player with a screen
+
 Enter the data for the TTS service call, and provide the details in`screen_tts` under `extra`. Can be combined with `volume`.
 Based on the targets provided, and the variable `players_screen` for the script settings, the script will determine if it should be sent as normal TTS, or one with extra data.
 For this the script uses the helper script `script.google_home_resume_tts_screen`
 The `picture_url` should be a full url (starting with `http://` or `https://`, not a HA internal url) it can be an url within your network.
 
 ## Using the `extra` key on the same level as `data` and `target`
+
 ```yaml
 - alias: "Send TTS with picture and "
   service: script.turn_on
@@ -91,6 +107,7 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
             volume: 0.5
 ```
 ## Using the `script_extra` key under `data`
+
 ```yaml
 - alias: "Send TTS with picture and "
   service: script.turn_on
@@ -115,8 +132,8 @@ The `picture_url` should be a full url (starting with `http://` or `https://`, n
               volume: 0.5
 ```
 
-
 # Multiple actions to the same target, which need to wait for each other.
+
 In case you send multiple actions to the same target, which need to wait for each other, enter `wait: true` under `extra`
 Don't put `wait: true` at the end of the last service_call, this will block the Perform Resume script
 
