@@ -30,7 +30,7 @@ ___
 # Latest version
 
 ## 2022.12 Happy Holidays; let's bring the family together
-It's December which is the time to come together with your family for the holidays. That is exactly what this version does, it brings all scripts togehter into one package!
+It's December which is the time to come together with your family for the holidays. That is exactly what this version does, it brings all scripts together into one package!
 
 ### 🌐 GENERAL
 
