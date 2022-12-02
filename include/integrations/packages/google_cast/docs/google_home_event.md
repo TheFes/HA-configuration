@@ -39,6 +39,7 @@ ___
 
 There are 5 fields which can be set while running the script.
 *Description of fields:*
+
 |Field|Required|Description|
 | --- | --- | --- | 
 |target|No|The targets which should be stored or resumed, default is all entities of the Cast integration (including Chromecast, Google TV devices, etc)|

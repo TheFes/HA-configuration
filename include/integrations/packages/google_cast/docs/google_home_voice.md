@@ -98,6 +98,7 @@ eta_thefes:
         volume: 35
 ```
 Variables in service call for the script:
+
 |Variable|Required|Description|
 | --- | --- | --- |
 |action|Yes|The title of the ambient sound as shown in developer tools > states |
