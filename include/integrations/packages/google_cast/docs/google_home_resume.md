@@ -31,6 +31,8 @@ ___
 #### 🌟 Improvements
 * Template to generate the `target_list` has been improved
 * A lot of other improvements in templates
+* (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
+* (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
 
 #### 🐛 Bug fixes
 

@@ -46,6 +46,8 @@ It's December which is the time to come together with your family for the holida
 
 * Template to generate the `target_list` has been improved
 * Apparantly Google Home Speaker groups now show as `playing` when a member is playing media. Not only when the group has been targeted. The template to generate the `player_data` has been amended to avoid showing groups as playing when they are not.
+* (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
+* (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
 
 #### 🐛 Bug fixes
 
@@ -111,6 +113,7 @@ There are no required settings, but if you use Google Home speaker groups you sh
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 |default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
+|max_runtime||"00:10:00"|The maximum duration the Resume script should run, if this time is reached the script will be stopped. This avoids entities being logged in the groups, which will stop them from being resumed on a new disruption. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `600` or `minutes: 10` can be used.
 |automation_enabled|`true`|`true`|If the automation for automatic resume should be used or not
 |dashboard_cast|`false`|`false`|If the automation should be used in case a HA Dasboard is cast to the device
 |announce_volume_automation||`0.75`|The volume used for announcements in the automation, remove or leave empty to leave the volume as it is.
