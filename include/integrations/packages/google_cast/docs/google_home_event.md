@@ -1,41 +1,42 @@
-# Background
-I've created the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) last year, to resume a Google Cast device after it has been interrupted. One of the users asked if it would be possible to also resume on eg leaving the house, and restoring the state when you return, and this script is the result.
+# Table of contents
+1. [Description](#description)
+1. [Latest changes](#latest-changes)
+1. [Prerequisites](#prerequisites)
+1. [How to use the script](#how-to-use-the-script)
+1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
+1. [☕](#buy-me-a-coffee)
 
-# This script supports
-* Store the state of your Google Cast devices in a template sensor, or with additional setup, in a file. The latter allows you to restore the state even after a reboot of Home Assistant.
+___
 
-# Requirements
-* Home Assistant version 2022.2 is required because the `iif` filter/function introduced in that version is used in templates
-* The Google Home Resume script
+# Description
 
-# Most recent changes
-### Version 2022.11
+This script can store the state of your Google Cast devices in a template sensor. This data can later be used to resume the speakers.
+
+___
+
+# Latest changes
+
+### 2022.12 Happy Holidays; let's bring the family togethe
+
 #### 🔴 BREAKING
-* Combined the script and template sensor in a package, see the setup instructions for more information
-* The latest version of this script (2022.11.2) requires version 2022.11.3 of the Google Home Resume script or higher
+
+* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
+
 #### 🌟 Improvements
-* (2022.11.0) Changed version number to YYYY.MM.version
-* (2022.11.0) Configuration variables are removed, the script uses the name of the binary sensor as defined in the template sensor configuration (`binary_sensor.resume_data_google_home_event`)
-* (2022.11.0) Used improved templates to store data
-* (2022.11.0) Removed file integration for long term storage as trigger based templates restore their state after restart or reload
-* (2022.11.2) The script makes use of the settings of the Google Home Resume script so it can immediately store all data, and no further processing in the Google Home Resume script is needed.
-#### 🐛 Bug fixes
-* (2022.11.1) Fixed a template error
-* (2022.11.3) Better handling of empty settings
-* (2022.11.4) Fix template copy/paste error causing variable store to fail
 
-Older changes can be found [here](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/changelog_google_home_event.md)
+* Template improvements
+* More use of YAML anchors
 
-# Setup
-* You need to have the [Google Home Resume script](https://community.home-assistant.io/t/script-to-resume-google-cast-devices-after-they-have-been-interrupted-by-any-action/383896) up and running.
-* Besides the script itself, a template binary sensor is also used. These are combined in a package
+Older changes can be found [here](changelogs/changelog_google_home_event.md)
 
-## The package (script and template sensor)
-[Link to the package ](https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/google_home_event.yaml) on my Github config, so I don't have to maintain it in two places
+___
 
-Place the contents of that link in a file called `google_home_event.yaml` in the same folder as you placed the package for the Google Home Resume script with a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI. 
+# Prerequisites
 
-# How to start the script
+1. The [Google Home Resume package](../readme.md) needs to be installed.
+
+# How to use the script
+
 There are 5 fields which can be set while running the script.
 *Description of fields:*
 |Field|Required|Description|
@@ -83,10 +84,16 @@ action:
 
 The script can also be started from the GUI, both in YAML mode and full GUI mode.
 
-# Other scripts
-For other related Google Home scripst, see my [Github page](https://github.com/TheFes/HA-configuration/tree/main/include/script/00_general/google_cast)
+___
+
+# Questions/issues/bugs/feature requests?
+
+Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-requests) to reach out to me.
+
+___
 
 # Buy me a coffee
+
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
 
