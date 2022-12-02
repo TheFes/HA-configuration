@@ -81,7 +81,7 @@ After removing all the old stuff reload Scripts, Automations and Template entiti
 
 Remove the Google Home Voice script if you were already using it, and the Google Home Event package if you were using that. Reload scripts and template entities in Developer Tools > YAML Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
 
-🚨 **IMPORTANT: Add the settings for the Voice Script to the settings you already have.** The line `voice_settings: &voice_settings` needs to be included, otherwise you'll get errors while loading the configuration 🚨 Then copy everything below the settings from the package file on this GitHub repo and overwrite the current code in the package on your system using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
+🚨 ** IMPORTANT: Add the settings for the Voice Script to the settings you already have. ** The line `voice_settings: &voice_settings` needs to be included, otherwise you'll get errors while loading the configuration 🚨 Then copy everything below the settings from the package file on this GitHub repo and overwrite the current code in the package on your system using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
 ## Install the package
 
