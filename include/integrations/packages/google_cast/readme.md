@@ -40,7 +40,7 @@ It's December which is the time to come together with your family for the holida
 * A lot of bigger and smaller template fixes
 * More usage of YAML anchors, which also reduces the total number of lines for the combined scripts
 
-### ♻ RESUME SCRIPT
+### :recycle: RESUME SCRIPT
 
 #### 🌟 Improvements
 
