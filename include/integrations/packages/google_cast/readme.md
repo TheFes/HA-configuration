@@ -45,6 +45,7 @@ It's December which is the time to come together with your family for the holida
 #### 🌟 Improvements
 
 * Template to generate the `target_list` has been improved
+* Apparantly Google Home Speaker groups now show as `playing` when a member is playing media. Not only when the group has been targeted. The template to generate the `player_data` has been amended to avoid showing groups as playing when they are not.
 
 #### 🐛 Bug fixes
 

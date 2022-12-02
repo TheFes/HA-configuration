@@ -177,6 +177,20 @@ script:
             {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
           ytube_music_entities: >
             {{ integration_entities('ytube_music_player') | select('match', '^media_player.') | list }}
+          resume_active: >
+            {{ expand(integration_entities('group'))
+                | selectattr('entity_id', 'search', 'group.resume_active_ghresume')
+                | map(attribute='attributes.entity_id')
+                | map('list')
+                | sum(start=[])
+            }}
+          resume_action_false: >
+            {{ expand(integration_entities('group'))
+                | selectattr('entity_id', 'search', 'group.resume_action_false_ghresume')
+                | map(attribute='attributes.entity_id')
+                | map('list')
+                | sum(start=[])
+            }}
       - alias: "Update Spotify data if there are Spotify entities"
         if: "{{ spotify_entities | count > 0 }}"
         then:
@@ -187,10 +201,11 @@ script:
       - alias: "Store data of media player entities and determine target_list"
         variables:
           data_source: resume_script
+      - variables:
           player_data: &player_data >
             {%- if player_data is undefined %}
               {# general information for all entities #}
-              {%- set ns = namespace(info=[]) %}
+              {%- set ns = namespace(info=[], groups_playing=[]) %}
               {%- for entity in expand(cast_entities) %}
                   {%- set members = speaker_groups[entity.entity_id]
                                 if speaker_groups is defined
@@ -200,20 +215,29 @@ script:
                   %}
                   {%- set screen = entity.attributes.device_class is not defined %}
                   {%- set type = iif(members,'group',iif(screen,'screen','speaker')) %}
+                  {%- for group in speaker_group_list %}
+                    {%- set members = speaker_groups.items() | selectattr('0', 'eq', group) | map(attribute='1') | list | first %}
+                    {%- set members_playing = expand(members) | selectattr('state', 'eq', 'playing') | list | count == members | count %}
+                    {%- set content_list = expand(members) | selectattr('attributes.media_content_id', 'defined') | map(attribute='attributes.media_content_id') | list %}
+                    {%- set group_playing = members_playing and content_list | select('eq', content_list[0]) | list | count == content_list | count %}
+                    {%- set ns.groups_playing = ns.groups_playing + [ group ] if group_playing else ns.groups_playing %}
+                  {%- endfor %}
+                  {%- set groups_playing = ns.groups_playing %}
                   {%- if type == 'speaker' %}
                     {% set groups = speaker_groups.items() | selectattr('1', 'search', entity.entity_id) | map(attribute='0') | list %}
-                    {% set playing = expand(groups) | selectattr('state', 'eq', 'playing') | list | count > 0 %}
+                    {% set playing = groups | select('in', groups_playing) | list | count > 0 %}
                     {% set type = 'playing_member' if playing else type %}
                   {%- endif %}
+                  {%- set state = 'off' if type == 'group' and not entity.entity_id in groups_playing else entity.state %}
                   {%- set general = dict(
                                           data_source = data_source,
                                           entity_id = entity.entity_id,
-                                          state = entity.state,
+                                          state = state,
                                           type = type,
                                           members = members
                                           )
                                     if type != 'playing_member'
-                                    else dict(entity_id = entity.entity_id, type = type)
+                                    else dict(entity_id = entity.entity_id, type = type, members=[])
                   %}
                   {# add information for Music Assistant #}
                   {%- if mass_entities | count > 0 and type != 'playing_member' %}
@@ -234,14 +258,14 @@ script:
                                               | replace('spotify_', '')
                   %}
                   {# add volume level #}
-                  {%- if not entity.state in ['off', 'unavailable', 'unknown'] or type == 'playing_member' %}
+                  {%- if not state in ['off', 'unavailable', 'unknown'] or type == 'playing_member' %}
                     {%- set additional = dict(volume_level = entity.attributes.get('volume_level', settings.get('default_volume_level')) | round(2, default=0.25)) %}
                   {%- else %}
                     {%- set additional = {} %}
                   {%- endif %}
                   {# add metadata for playing entities #}
                   {%- if type == 'playing_member'%}
-                  {%- elif spotify_entity or
+                  {%- elif (spotify_entity or
                           (
                             entity.state == 'playing'
                             and expand(speaker_groups.items()
@@ -250,7 +274,7 @@ script:
                                           | rejectattr('state', 'eq', 'playing')
                                           | list
                                           | count == 0
-                          )
+                          )) and (type != 'group' or entity.entity_id in groups_playing)
                   %}
                     {%- set additional = dict(additional, **dict(
                                               state = 'playing',
@@ -313,6 +337,7 @@ script:
               {% set player_data = ns.info %}
             {%- endif %}
             {{ player_data }}
+      - variables:
           target_list: >
             {%- if target_list is defined %}
               {%- set total_list = target_list %}
@@ -336,7 +361,8 @@ script:
                                 call.get('extra', {}).get('entity_id', []),
                                 call.get('data', {}).get('script_extra', {}).get('entity_id', [])
                               ] %}
-                    {% set ns.e = [ns.e, e | map('join', ',') | join(',')] | join(',') %}
+                    {%- set e = ([e | select('string') | join(',')] + e | reject('string') | sum(start=[])) | join(',') %}
+                    {% set ns.e = [ns.e, e ] | select() | join(',') %}
                   {% endfor %}
                   {% set entity_list = (ns.e | replace(' ', '')).split(',') | select('in', entities_check) | unique | list %}
                 {# devices #}
@@ -349,7 +375,8 @@ script:
                                 call.get('extra', {}).get('device_id', []),
                                 call.get('data', {}).get('script_extra', {}).get('device_id', [])
                               ] %}
-                    {% set ns.d = [ns.d, d | map('join', ',') | join(',')] | join(',') %}
+                    {%- set d = ([d | select('string') | join(',')] + d | reject('string') | sum(start=[])) | join(',') %}
+                    {% set ns.d = [ns.d, d ] | select() | join(',') %}
                   {% endfor %}
                   {% set device_list = (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
                 {# areas #}
@@ -362,7 +389,8 @@ script:
                                 call.get('extra', {}).get('area_id', []),
                                 call.get('data', {}).get('script_extra', {}).get('area_id', [])
                               ] %}
-                    {% set ns.a = [ns.a, a | map('join', ',') | join(',')] | join(',') %}
+                    {%- set a = ([a | select('string') | join(',')] + a | reject('string') | sum(start=[])) | join(',') %}
+                    {% set ns.a = [ns.a, a ] | select() | join(',') %}
                   {% endfor %}
                   {% set area_list = (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
               {# create entity list based on device/area input #}
@@ -385,18 +413,7 @@ script:
                                   | sum(start=[])
               %}
               {{ total_list | reject('in', members) | list }}
-          resume_active: >
-            {%- set resume_active = integration_entities('group')
-                                            | select('search', 'group.resume_active_ghresume')
-                                            | list
-            %}
-            {{ expand(resume_active) | map(attribute='entity_id') | list }}
-          resume_action_false: >
-            {%- set resume_action_false = integration_entities('group')
-                                            | select('search', 'group.resume_action_false_ghresume')
-                                            | list
-            %}
-            {{ expand(resume_action_false) | map(attribute='entity_id') | list }}
+      - variables:
           players_to_resume: >
             {%- set target_list = players_to_resume if players_to_resume is defined else target_list %}
             {# determine entities which are playing #}
@@ -439,7 +456,7 @@ script:
             %}
             {# combine it all to determine which entities should be resumed #}
               {{ (checklist_playing + groups_playing + members_playing)
-                                                  | reject('in', members_reject)
+                                                  | reject('in', members_reject + resume_active)
                                                   | unique
                                                   | list
               }}
@@ -1395,8 +1412,6 @@ script:
               []
             {%- endif %}
           target_list: >
-            {# determine entities of cast integraton #}
-              {%- set cast_entities = integration_entities('cast') %}
             {# create target lists #}
             {%- if target is defined %}
               {# create lists based on target input #}
@@ -1512,7 +1527,12 @@ script:
             sequence:
               - variables:
                   player_data: >
-                    {{ state_attr('binary_sensor.resume_data_google_home_event', 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='player_data') | first }}
+                    {{
+                      state_attr('binary_sensor.resume_data_google_home_event', 'resume_data')
+                        | selectattr('resume_id', 'eq', resume_id)
+                        | map(attribute='player_data')
+                        | first
+                    }}
                   players_to_resume: >
                     {%- set player_list = player_data
                                           | selectattr('state', 'eq', 'playing')
@@ -1521,7 +1541,12 @@ script:
                     %}
                     {{ player_list | select('in', target_list) | list }}
                   cast_mass_playing: >
-                    {{ state_attr('binary_sensor.resume_data_google_home_event'  , 'resume_data') | selectattr('resume_id', 'eq', resume_id) | map(attribute='cast_mass_playing') | first }}
+                    {{
+                      state_attr('binary_sensor.resume_data_google_home_event', 'resume_data')
+                        | selectattr('resume_id', 'eq', resume_id)
+                        | map(attribute='cast_mass_playing')
+                        | first
+                    }}
               - alias: "Anything to resume?"
                 if: "{{ players_to_resume | count > 0 }}"
                 then:
@@ -1637,7 +1662,7 @@ automation:
                     | list
           %}
           {%- set active = expand(groups)
-                            | rejectattr('state', 'in', ['unkown', 'unavailable'])
+                            | rejectattr('state', 'in', ['unknown', 'unavailable'])
                             | map(attribute='entity_id')
                             | unique
                             | list
