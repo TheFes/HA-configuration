@@ -111,6 +111,7 @@ There are no required settings, but if you use Google Home speaker groups you sh
 |default_volume_level|`0.25`|`0.5`|The default volume level to use to set the entity to if the old volume can not be retreived (this should actually never be used, but it there as a failsafe)|
 |dummy_player||`media_player.vlc_telnet`|The dummy media_player used for the TTS with picture and text feature
 |default_resume_delay|20 seconds|`20`|The delay after which the resume will started when it was interrupted by sending an image. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `"00:00:20"` or `seconds: 20` can be used.
+|max_runtime||"00:10:00"|The maximum duration the Resume script should run, if this time is reached the script will be stopped. This avoids entities being logged in the groups, which will stop them from being resumed on a new disruption. Follows the syntax of [delay](https://www.home-assistant.io/docs/scripts/#wait-for-time-to-pass-delay), so also `600` or `minutes: 10` can be used.
 |automation_enabled|`true`|`true`|If the automation for automatic resume should be used or not
 |dashboard_cast|`false`|`false`|If the automation should be used in case a HA Dasboard is cast to the device
 |announce_volume_automation||`0.75`|The volume used for announcements in the automation, remove or leave empty to leave the volume as it is.
