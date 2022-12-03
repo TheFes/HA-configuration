@@ -1,0 +1,13 @@
+substitutions:
+  device_name: IJspegels
+  device_type: Plug
+  ip: 192.168.2.41
+
+esphome:
+  name: ijspegels
+
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  switch: !include packages/lsc_plug_switch.yaml
+  arduino: !include packages/arduino.yaml

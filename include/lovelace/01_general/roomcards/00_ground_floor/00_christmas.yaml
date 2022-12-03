@@ -1,0 +1,48 @@
+type: conditional
+conditions:
+  - entity: input_boolean.christmas_time
+    state: "on"
+card:
+  type: custom:vertical-stack-in-card
+  cards:
+    - type: custom:mushroom-template-card
+      primary: Kerst
+      icon: mdi:pine-tree
+      icon_color: green
+      layout: horizontal
+      tap_action:
+        action: navigate
+        navigation_path: woonkamer
+    - type: custom:vertical-stack-in-card
+      horizontal: true
+      cards:
+        - type: custom:mushroom-template-card
+          layout: vertical
+          entity: switch.kerstboom
+          icon: mdi:pine-tree
+          icon_color: >-
+            {%- if is_state(entity, 'on') %}
+              yellow
+            {%- elif is_state(entity, 'unavailable') %}
+              red
+            {%- endif %}
+        - type: custom:mushroom-template-card
+          layout: vertical
+          entity: switch.kerstster
+          icon: mdi:star
+          icon_color: >-
+            {%- if is_state(entity, 'on') %}
+              yellow
+            {%- elif is_state(entity, 'unavailable') %}
+              red
+            {%- endif %}
+        - type: custom:mushroom-template-card
+          layout: vertical
+          entity: switch.fotoboek
+          icon: mdi:sheep
+          icon_color: >-
+            {%- if is_state(entity, 'on') %}
+              yellow
+            {%- elif is_state(entity, 'unavailable') %}
+              red
+            {%- endif %}

@@ -31,6 +31,21 @@ cards:
           {%- if is_state('light.groep_tuin', 'on') %}
             yellow
           {%- endif %}
+      - type: conditional
+        conditions:
+          - entity: input_boolean.christmas_time
+            state: "on"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          entity: switch.ijspegels
+          icon: mdi:snowflake
+          icon_color: >-
+            {%- if is_state(entity, 'on') %}
+              yellow
+            {%- elif is_state(entity, 'unavailable') %}
+              red
+            {%- endif %}
       - type: custom:mushroom-template-card
         entity: cover.veranda
         badge_icon: "{{ 'mdi:alert' if is_state('cover.veranda', 'unavailable')}}"

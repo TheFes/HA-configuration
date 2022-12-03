@@ -1,0 +1,13 @@
+substitutions:
+  device_name: Kerstster
+  device_type: Plug
+  ip: 192.168.2.32
+
+esphome:
+  name: kerstster
+
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  switch: !include packages/lsc_plug_switch.yaml
+  arduino: !include packages/arduino.yaml
