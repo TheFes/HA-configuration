@@ -63,12 +63,13 @@ pepijn_turn_on:
                   condition: time
                   after: "18:00:00"
                   before: "20:00:00"
-                - alias: "Turn on Miffy and bed"
+                - alias: "Bed group"
                   service: light.turn_on
                   target:
-                    entity_id:
-                      - light.nijntje
-                      - light.bed_pepijn
+                    entity_id: light.groep_bed_pepijn
+                  data:
+                    color_temp_kelvin: 3000
+                    brightness_pct: 20
       default:
         - alias: "Light on with current brightness and color temp"
           service: light.turn_on
@@ -78,9 +79,10 @@ pepijn_turn_on:
           condition: time
           after: "18:00:00"
           before: "20:00:00"
-        - alias: "Turn on Miffy"
+        - alias: "Bed group"
           service: light.turn_on
           target:
-            entity_id:
-              - light.nijntje
-              - light.bed_pepijn
+            entity_id: light.groep_bed_pepijn
+          data:
+            color_temp_kelvin: 3000
+            brightness_pct: 20

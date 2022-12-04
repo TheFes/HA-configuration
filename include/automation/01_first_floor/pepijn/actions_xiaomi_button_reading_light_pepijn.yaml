@@ -32,11 +32,12 @@ action:
               entity_id: light.pepijn_template
             data:
               brightness_pct: 40
-          - alias: "Turn on Miffy light"
-            service: light.turn_on
+          - service: light.turn_on
             target:
-              entity_id:
-                - light.nijntje
+              entity_id: light.groep_bed_pepijn
+            data:
+              color_temp_kelvin: 3000
+              brightness_pct: 20
           - alias: "Turn on reading light"
             service: light.turn_on
             target:

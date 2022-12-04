@@ -1,5 +1,5 @@
 id: 55509fd0-bdce-4cd2-86dc-2a8bee22b1b0
-alias: "F1P - Turn reading light orange or green just before wake time"
+alias: "F1P - Turn graafmachine orange or green just before wake time"
 trigger:
   - platform: template
     value_template: >
@@ -10,15 +10,31 @@ trigger:
   - platform: time
     at: input_datetime.pepijn_time_awake
     id: green
-condition:
-  - alias: "Lights off"
-    condition: state
-    entity_id: light.bed_pepijn
-    state: "off"
 action:
-  - service: light.turn_on
-    target:
-      entity_id: light.pepijn_leeslamp
-    data:
-      color_name: "{{ trigger.id }}"
-      brightness_pct: 90
+  - if: "{{ trigger.id == 'orange' }}"
+    then:
+      - service: light.turn_on
+        target:
+          entity_id: light.graafmachine
+        data:
+          brightness_pct: 1
+          color_name: "orange"
+      - service: script.turn_on
+        target:
+          entity_id: script.transition_lights
+        data:
+          variables:
+            lights:
+              - light.graafmachine
+            br_start_pct: 1
+            br_end_pct: 100
+            use_ct: false
+            duration: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - now()).seconds }}"
+    else:
+      - service: light.turn_on
+        target:
+          entity_id: light.graafmachine
+        data:
+          color_name: "{{ trigger.id }}"
+          brightness_pct: 100
+          transition: 5

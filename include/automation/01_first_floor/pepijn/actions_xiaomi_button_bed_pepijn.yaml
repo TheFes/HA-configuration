@@ -8,8 +8,6 @@ trigger:
     event_data:
       device_id: f448ab96c13a02e1e4ed6dc679d693c5
 action:
-  - variables:
-      toggle: "{{ is_state('light.pepijn_leeslamp', 'on') or is_state('light.groep_bed_pepijn', 'on') }}"
   - alias: "Which click type"
     choose:
       - conditions:
@@ -17,33 +15,42 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
         sequence:
-          - alias: "only perform when it's dark or the sun is below horizon"
-            if: >
-              {{ 
-                (
-                  is_state('sun.sun', 'below_horizon')
-                  or states('sensor.pepijn_lux') | float(0) < 10 
-                )
-                and
-                  (
-                    now() > today_at(states('input_datetime.pepijn_time_bed'))
-                    or now() < today_at(states('input_datetime.pepijn_time_awake'))
-                  )
-                and not toggle
-              }}
-            then:
-              - service: light.turn_on
-                target:
-                  entity_id: light.pepijn_leeslamp
-                data:
-                  color_name: red
-                  brightness: 90
-              - delay: 15
+          - alias: "Perform right action"
+            choose:
+              - conditions: >
+                  {{
+                    (
+                      is_state('sun.sun', 'below_horizon')
+                      or states('sensor.pepijn_lux') | float(0) < 10 
+                    )
+                    and
+                      (
+                        now() > today_at(states('input_datetime.pepijn_time_bed'))
+                        or now() < today_at(states('input_datetime.pepijn_time_awake'))
+                      )
+                    and is_state('light.groep_bed_pepijn', 'off') 
+                  }}
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: light.graafmachine
+                    data:
+                      color_name: red
+                      brightness: 30
+                  - delay: 15
+                  - service: light.turn_off
+                    target:
+                      entity_id: light.graafmachine
+              - conditions: "{{ is_state('light.bed_pepijn', 'off') }}"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: light.groep_bed_pepijn
+                    data:
+                      color_temp_kelvin: 3000
+                      brightness_pct: 20
+            default:
               - service: light.turn_off
-                target:
-                  entity_id: light.pepijn_leeslamp
-            else:
-              - service: light.toggle
                 target:
                   entity_id: light.groep_bed_pepijn
       - conditions:

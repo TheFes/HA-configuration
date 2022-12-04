@@ -46,7 +46,10 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'long' }}"
         sequence:
-          - alias: "Toggle Miffy light"
+          - alias: "Toggle Bed Group"
             service: light.toggle
             target:
-              entity_id: light.nijntje
+              entity_id: light.groep_bed_pepijn
+            data:
+              color_temp_kelvin: 3000
+              brightness_pct: 20
