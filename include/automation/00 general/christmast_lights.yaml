@@ -4,7 +4,12 @@ mode: parallel
 trigger:
   - platform: state
     entity_id: light.tuinlampjes
-    to: ~
+    to:
+      - "on"
+      - "off"
+    from:
+      - "on"
+      - "off"
     id: icicles
   - platform: state
     entity_id: light.eettafel
@@ -12,7 +17,12 @@ trigger:
     id: tree_star
   - platform: state
     entity_id: light.tv_lamp
-    to: ~
+    to:
+      - "on"
+      - "off"
+    from:
+      - "on"
+      - "off"
     id: vase
   - platform: event
     event_type: esphome.button_pressed
@@ -33,28 +43,28 @@ action:
           - alias: "Turn icicles on or off"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
-              entity_id: switch.bw_plug_19
+              entity_id: switch.ijspegels
       - conditions: "{{ trigger.id == 'vase'}}"
         sequence:
           - alias: "Wait until vase is available"
-            wait_template: "{{ states('switch.backup_02') not in [ 'unavailable', 'unknown'] }}"
-          - alias: "vase schakelen met kerststal"
+            wait_template: "{{ states('switch.kerstvaas') not in [ 'unavailable', 'unknown'] }}"
+          - alias: "vase schakelen met tvlamp"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
-              entity_id: switch.backup_02
+              entity_id: switch.kerstvaas
       - conditions: "{{ trigger.id == 'tree_star'}}"
         sequence:
           - alias: "Turn christmas tree and star on"
             service: switch.turn_on
             target:
               entity_id:
-                - switch.bw_plug_20
-                - switch.backup_01
+                - switch.kerstboom
+                - switch.kerstster
       - conditions: "{{ trigger.id == 'to_bed'}}"
         sequence:
           - alias: "Turn christmas tree and star off"
             service: switch.turn_off
             target:
               entity_id:
-                - switch.bw_plug_20
-                - switch.backup_01
+                - switch.kerstboom
+                - switch.kerstster
