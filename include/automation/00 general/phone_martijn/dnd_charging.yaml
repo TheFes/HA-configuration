@@ -1,5 +1,5 @@
 id: d219003e-150b-49fc-8b9b-e627af61d560
-alias: "00 - Turn off bluetooth during night"
+alias: "00 - Turn on Do Not Disturb during the night"
 trigger:
   - platform: state
     entity_id: sensor.pixel_7_pro_battery_state
@@ -43,13 +43,6 @@ action:
                     entity_id: sensor.pixel_7_pro_battery_state
                     state: "charging"
         sequence:
-          - alias: "Bluetooth off"
-            service: notify.mobile_app_pixel_7_pro
-            data:
-              message: command_bluetooth
-              data:
-                command: turn_off
-          - delay: 0.5
           - alias: "DND on"
             service: notify.mobile_app_pixel_7_pro
             data:
@@ -60,13 +53,6 @@ action:
           - condition: trigger
             id: "on"
         sequence:
-          - alias: "Bluetooth on"
-            service: notify.mobile_app_pixel_7_pro
-            data:
-              message: command_bluetooth
-              data:
-                command: turn_on
-          - delay: 0.5
           - alias: "DND off"
             service: notify.mobile_app_pixel_7_pro
             data:
