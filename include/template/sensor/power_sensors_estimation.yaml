@@ -1,0 +1,60 @@
+- sensor:
+    - unique_id: 986234c3-e4bc-499c-ba54-f9ce7b91fbe3
+      name: Zigbee estimated power
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      state: >
+        {% set entities = integration_entities('deconz') %}
+        {% set devices = expand(entities)
+                          | selectattr('domain', 'in', ['light', 'switch'])
+                          | map(attribute='entity_id')
+                          | list
+                          | reject('is_state', 'unavailable')
+                          | map('device_attr', 'name')
+                          | unique
+                          | list
+        %}
+        {{ devices | count * 0.5 }}
+    - unique_id: 763192bc-4a07-4cef-9a4d-dd96c946441d
+      name: ESPHome estimated power
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      state: >
+        {% set entities = integration_entities('esphome') %}
+        {% set devices = entities
+                          | reject('is_state', 'unavailable')
+                          | map('device_attr', 'name')
+                          | unique
+                          | list
+        %}
+        {{ devices | count * 1 }}
+    - unique_id: 64267c6e-4a8d-4839-9c32-31e0455f874e
+      name: Shelly estimated power
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      state: >
+        {% set entities = integration_entities('shelly') %}
+        {% set devices = entities
+                          | reject('is_state', 'unavailable')
+                          | map('device_attr', 'name')
+                          | unique
+                          | list
+        %}
+        {{ devices | count * 1 }}
+    - unique_id: 4f66a089-b468-4463-8b69-ba293cfbe10a
+      name: OCS estimated power
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      state: >
+        {% set entities = integration_entities('onesmartcontrol') %}
+        {% set devices = entities
+                          | reject('is_state', 'unavailable')
+                          | map('device_attr', 'name')
+                          | unique
+                          | list
+        %}
+        {{ (devices | count * 0.4 + 4.7 + 1.5) | round(1) }}

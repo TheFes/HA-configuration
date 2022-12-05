@@ -14,8 +14,7 @@ action:
       entities: >
         {%- set reject_entities = state_attr('group.reject_power', 'entity_id') | list %}
         {{ states.sensor
-            | selectattr('entity_id', 'search', '_power') 
-            | rejectattr('entity_id', 'search', 'estimated_power')
+            | selectattr('entity_id', 'search', 'power')
             | rejectattr('entity_id', 'in', reject_entities)
             | rejectattr('entity_id', 'in', integration_entities('onesmartcontrol'))
             | rejectattr('entity_id', 'in', integration_entities('dsmr'))
