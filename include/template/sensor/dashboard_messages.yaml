@@ -30,9 +30,12 @@
                                   } %}
             {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
             {%- set icon = fixed_icons[n] | default(icons | random, true) %}
-            {%- if d == 0 %}
-              {%- set ns.message = ns.message + [icon ~ ' Vandaag: ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
-            {%- elif d < days_to_show %}
+            {%- if d <= 1 %}
+              {%- set ns.message = ns.message + [icon ~ [' Vandaag: ', ' Morgen '][d] ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+            {%- elif d % 7 == 0 and d <= days_to_show %}
+              {%- set w = (d / 7) | int  %}
+              {%- set ns.message = ns.message + [icon ~ ' Over ' ~ w ~ (' week ' if w == 1 else ' weken ') ~ ': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+            {%- elif d <= days_to_show %}
               {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dag' ~ ('en' if d > 1 ) ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
             {%- endif %}
           {%- endfor %}
