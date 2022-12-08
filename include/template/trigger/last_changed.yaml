@@ -1,0 +1,40 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.test
+      not_to: ["unavailable", "unknown"]
+      not_from: ["unavailable", "unknown"]
+  sensor:
+    unique_id: dbf841e2-ae6f-4fc1-9534-a1046204945f
+    name: Nominal Change History
+    state: >
+      {% set changes = state_attr(this.entity_id, 'changes') | default({}, true) %}
+      {{ changes.keys() | list | count }}
+    attributes:
+      changes: >
+        {% set current = this.attributes.get('changes', {}) %}
+        {% set new = {trigger.entity_id: as_local(trigger.to_state.last_changed).isoformat()} %}
+        {{ dict(current, **new) }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.test
+      to: ["on", "off"]
+      from: ["on", "off"]
+  sensor:
+    unique_id: 6ce41268-0770-4039-a047-6b0a3ea0fa63
+    name: Binary Change History
+    state: >
+      {% set on = state_attr(this.entity_id, 'changes_on') | default({}, true) %}
+      {% set off = state_attr(this.entity_id, 'changes_off') | default({}, true) %}
+      {{ (off.keys() | list + on.keys() | list) | unique | list | count }}
+    attributes:
+      changes_on: >
+        {% set current = this.attributes.get('changes_on', {}) %}
+        {% set new = {trigger.entity_id: as_local(trigger.to_state.last_changed).isoformat()} if trigger.to_state.state == 'on' else {} %}
+        {{ dict(current, **new) }}
+      changes_off: >
+        {% set current = this.attributes.get('changes_off', {}) %}
+        {% set new = {trigger.entity_id: as_local(trigger.to_state.last_changed).isoformat()} if trigger.to_state.state == 'off' else {} %}
+        {{ dict(current, **new) }}
