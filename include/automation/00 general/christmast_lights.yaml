@@ -43,7 +43,8 @@ action:
           - alias: "Turn icicles on or off"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
-              entity_id: switch.ijspegels
+              entity_id:
+                - switch.ijspegels
       - conditions: "{{ trigger.id == 'vase'}}"
         sequence:
           - alias: "Wait until vase is available"
@@ -60,6 +61,7 @@ action:
               entity_id:
                 - switch.kerstboom
                 - switch.kerstster
+                - switch.kerststerren
       - conditions: "{{ trigger.id == 'to_bed'}}"
         sequence:
           - alias: "Turn christmas tree and star off"
@@ -68,3 +70,4 @@ action:
               entity_id:
                 - switch.kerstboom
                 - switch.kerstster
+                - switch.kerststerren
