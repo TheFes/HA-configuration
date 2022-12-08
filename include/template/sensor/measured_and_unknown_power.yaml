@@ -75,7 +75,7 @@
           {%- endfor %}
           {{ ns.power }}
       icon: mdi:flash
-      availability: "{{ state_attr('group.measured_power', 'entity_id') | default([], true) | list | count > 0 }}"
+      availability: "{{ state_attr('sensor.measured_entities', 'entities') | default([], true) | list | count > 0 }}"
 
     - unique_id: defa0d9f-ce65-4af1-a63e-a1bbe14c4092
       name: Unknown Power
