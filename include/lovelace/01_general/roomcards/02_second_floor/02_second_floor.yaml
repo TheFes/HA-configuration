@@ -44,45 +44,11 @@ cards:
           - entity: sensor.wasmachine
             state: "on"
         card:
-          type: custom:stack-in-card
-          cards:
-            - type: custom:mushroom-template-card
-              icon: mdi:washing-machine
-              entity: sensor.wasmachine
-              layout: vertical
-              icon_color: yellow
-              card_mod:
-                style:
-                  mushroom-shape-icon$: |
-                    ha-icon {
-                      clip-path: polygon(0 0, 0 100%, 35% 100%, 34% 68%, 60% 41%, 71% 56%, 65% 74%, 47% 79%, 32% 69%, 35% 100%, 100% 100%, 100% 0);
-                    }
-            - type: custom:mushroom-template-card
-              icon: mdi:washing-machine
-              entity: sensor.wasmachine
-              icon_color: yellow
-              layout: vertical
-              card_mod:
-                style:
-                  mushroom-shape-icon$: |
-                    ha-icon {
-                      --icon-animation: spin 1s linear infinite;
-                      transform-origin: 50% 58%;
-                      clip-path: circle(21.7% at 50% 58%);
-                    }
-                    .shape {
-                      --shape-color: none;
-                    }
-                  .: |
-                    ha-card {
-                      width: 50px;
-                      top: -66px;
-                    }
-          card_mod:
-            style: |
-              ha-card {
-                height: 66px;
-              }
+          type: custom:mushroom-template-card
+          icon: mdi:washing-machine
+          entity: sensor.wasmachine
+          layout: vertical
+          icon_color: yellow
       - type: conditional
         conditions:
           - entity: media_player.groep_zolder
