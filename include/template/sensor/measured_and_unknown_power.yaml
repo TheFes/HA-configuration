@@ -65,7 +65,7 @@
           {{ ns.power | sort(attribute='state', reverse=true) }}
         not_using_power: >
           {%- set ns = namespace(power=[]) %}
-          {%- for e in state_attr('group.measured_power', 'entity_id') %}
+          {%- for e in state_attr('sensor.measured_entities', 'entities') %}
             {% set i = states[e] %}
             {%- if i.state | is_number and i.state | float == 0 %}
               {%- set ns.power = ns.power + [dict(enitty_id=i.entity_id, name=i.name) ] %}
