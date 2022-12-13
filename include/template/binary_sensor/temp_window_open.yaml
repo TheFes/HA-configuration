@@ -1,7 +1,7 @@
 - binary_sensor:
     - unique_id: 89607e16-e3fe-41aa-ade9-4b3d3ece55f5
       name: "Temperature Bedroom"
-      device_class: window
+      device_class: heat
       state: >-
         {{ 
           states('sensor.slaapkamer_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
@@ -12,7 +12,7 @@
 
     - unique_id: dbe79bbb-5f17-48b2-95a1-144cd8cc9aa7
       name: "Temperature Second Floor"
-      device_class: window
+      device_class: heat
       state: >-
         {{ 
           states('sensor.zolder_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
@@ -23,7 +23,7 @@
 
     - unique_id: 110ecf9a-de85-4976-a49a-6ec6c54ab5a6
       name: "Temperature Pepijn"
-      device_class: window
+      device_class: heat
       state: >-
         {{ 
           states('sensor.pepijn_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
@@ -34,7 +34,7 @@
 
     - unique_id: 1676e0c4-f873-406f-8223-c0c0565f0039
       name: "Temperature Livingroom"
-      device_class: door
+      device_class: heat
       state: >-
         {{ 
           states('sensor.woonkamer_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
@@ -45,7 +45,7 @@
 
     - unique_id: b998425b-81e2-41da-bb0c-4e9564035e68
       name: "Temperature Floris"
-      device_class: window
+      device_class: heat
       state: >-
         {{ 
           states('sensor.floris_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
