@@ -1,23 +1,137 @@
 type: vertical-stack
 cards:
-  - type: entities
-    title: Google Home bericht
-    entities:
-      - entity: input_text.tts_message
-        name: Bericht
-      - entity: input_boolean.tts_volume
-        name: Volume wijzigen?
-      - type: conditional
-        conditions:
-          - entity: input_boolean.tts_volume
-            state: "on"
-        row:
-          entity: input_number.tts_volume
-          name: Volume voor bericht
+  - type: grid
+    square: false
+    columns: 2
+    cards:
+      - type: custom:mushroom-template-card
+        primary: TTS
+        entity: input_select.tts_or_radio
+        icon: mdi:microphone-message
+        icon_color: "{{ 'blue' if is_state(entity, 'TTS') }}"
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          data:
+            option: "TTS"
+          target:
+            entity_id: input_select.tts_or_radio
+      - type: custom:mushroom-template-card
+        primary: Radio
+        icon: mdi:radio
+        icon_color: "{{ 'blue' if is_state(entity, 'Radio') }}"
+        entity: input_select.tts_or_radio
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          data:
+            option: "Radio"
+          target:
+            entity_id: input_select.tts_or_radio
+  - type: conditional
+    conditions:
+      - entity: input_select.tts_or_radio
+        state: "TTS"
+    card:
+      type: entities
+      entities:
+        - entity: input_text.tts_message
+          name: Bericht
+        - entity: input_boolean.tts_volume
+          name: Volume wijzigen?
+        - type: conditional
+          conditions:
+            - entity: input_boolean.tts_volume
+              state: "on"
+          row:
+            entity: input_number.tts_volume
+            name: Volume voor bericht
+  - type: conditional
+    conditions:
+      - entity: input_select.tts_or_radio
+        state: "Radio"
+    card:
+      type: custom:vertical-stack-in-card
+      cards:
+        - type: grid
+          square: false
+          columns: 4
+          cards:
+            - type: custom:mushroom-template-card
+              secondary: Radio 2
+              icon_color: "{{ 'blue' if is_state(entity, 'NPO Radio 2') }}"
+              entity: input_select.radio_channel
+              layout: vertical
+              picture: /local/pictures/radio/npo_radio_2.png
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: "NPO Radio 2"
+                target:
+                  entity_id: input_select.radio_channel
+              card_mod:
+                style: |
+                  ha-card { 
+                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'NPO Radio 2') }};
+                  }
+            - type: custom:mushroom-template-card
+              secondary: Radio Veronica
+              picture: /local/pictures/radio/radio_veronica.png
+              layout: vertical
+              icon_color: "{{ 'blue' if is_state(entity, 'Radio Veronica') }}"
+              entity: input_select.radio_channel
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: "Radio Veronica"
+                target:
+                  entity_id: input_select.radio_channel
+              card_mod:
+                style: |
+                  ha-card { 
+                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'Radio Veronica') }};
+                  }
+            - type: custom:mushroom-template-card
+              secondary: Willy
+              picture: /local/pictures/radio/willy.png
+              layout: vertical
+              icon_color: "{{ 'blue' if is_state(entity, 'Willy') }}"
+              entity: input_select.radio_channel
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: "Willy"
+                target:
+                  entity_id: input_select.radio_channel
+              card_mod:
+                style: |
+                  ha-card { 
+                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'Willy') }};
+                  }
+            - type: custom:mushroom-template-card
+              secondary: KINK
+              picture: /local/pictures/radio/kink.jpg
+              layout: vertical
+              icon_color: "{{ 'blue' if is_state(entity, 'KINK') }}"
+              entity: input_select.radio_channel
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: "KINK"
+                target:
+                  entity_id: input_select.radio_channel
+              card_mod:
+                style: |
+                  ha-card { 
+                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'KINK') }};
+                  }
   - type: grid
     square: false
     columns: 4
-    title: "Versturen aan:"
     cards:
       - type: custom:mushroom-template-card
         secondary: "{{ state_attr(entity, 'friendly_name') }}"
@@ -107,11 +221,16 @@ cards:
         entity: input_boolean.woonkamer_mini
         tap_action:
           action: toggle
-  - type: custom:mushroom-template-card
-    primary: Verstuur TTS
-    icon: mdi:send
-    layout: vertical
-    icon_color: "{{ 'blue' if is_state('group.tts_selection', 'on') else states('input_text.tts_icon_color') }}"
-    tap_action:
-      action: call-service
-      service: script.google_say_dashboard
+      - type: conditional
+        conditions:
+          - entity: group.tts_selection
+            state: "on"
+        card:
+          type: custom:mushroom-template-card
+          secondary: "{{ 'Verstuur TTS' if is_state('input_select.tts_or_radio', 'TTS') else 'Start radio' }}"
+          icon: "{{ 'mdi:send' if is_state('input_select.tts_or_radio', 'TTS') else 'mdi:radio' }}"
+          layout: vertical
+          icon_color: "{{ 'green' if is_state('script.google_tts_radio_dashboard', 'on') else 'blue' if is_state('group.tts_selection', 'on') else states('input_text.tts_icon_color') }}"
+          tap_action:
+            action: call-service
+            service: script.google_tts_radio_dashboard
