@@ -34,6 +34,14 @@ It's December which is the time to come together with your family for the holida
 
 ### 🌐 GENERAL
 
+#### 🚨 Breaking
+* The settings in the top section now also have a section with `voice_settings`. This needs to be added to versions prior to 2022.12, otherwise your configuration will not work. More information can be found in the  [update instructions](https://github.com/TheFes/HA-configuration/tree/main/include/integrations/packages/google_cast#from-version-202211)
+
+#### 🐛 Bug fixes
+
+* (2022.12.2) Add default to provide empty dictionary for `settings` in case no settings are provided.
+
+
 #### 🌟 Improvements
 
 * All scripts related to the Google Home devices are now combined in one package. This brings toghether the Google Home Resume, Google Home Voice and Google Home Event script. For me it makes it easier to update them, I can make more efficient usage of YAML anchors,so I don't need to update templates and settings in 3 places.
@@ -84,6 +92,25 @@ After removing all the old stuff reload Scripts, Automations and Template entiti
 Remove the Google Home Voice script if you were already using it, and the Google Home Event package if you were using that. Reload scripts and template entities in Developer Tools > YAML Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
 
 🚨 **IMPORTANT: Add the settings for the Voice Script to the settings you already have.** The line `voice_settings: &voice_settings` needs to be included, otherwise you'll get errors while loading the configuration 🚨 Then copy everything below the settings from the package file on this GitHub repo and overwrite the current code in the package on your system using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
+
+Make sure to add these `voice_settings` in a way that the current settings are still under the `settings` key.
+
+```yaml
+# correct
+settings: &settings
+  primary_spotcast: john_doe
+voice_settings: &voice_settings
+
+# also correct
+voice_settings: &voice_settings
+settings: &settings
+  primary_spotcast: john_doe
+
+# not correct
+settings: &settings
+voice_settings: &voice_settings
+  primary_spotcast: john_doe
+```
 
 ## Install the package
 
