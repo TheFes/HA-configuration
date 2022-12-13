@@ -4,5 +4,5 @@
       device_class: running
       state: >-
         {{ states('sensor.vaatwasser_power') | float(0) > 0 }}
-      delay_on: "00:02:00"
+      delay_on: "00:10:00"
       delay_off: "00:02:00"

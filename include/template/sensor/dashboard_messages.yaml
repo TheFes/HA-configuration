@@ -66,8 +66,8 @@
           {{ dict(message=message | default(''), level='warning' if state == 'Vandaag' else 'info') }}
         diswasher: >-
           {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
-            {%- set time_set = as_local(as_datetime(states('input_datetime.dishwasher_program'))) %}
-            {%- if now() < time_set | as_local %}
+            {%- set time_set = as_local(as_datetime(states('sensor.dishwasher_end_time'))) %}
+            {%- if now() < time_set %}
               {%- set seconds = (time_set - now()).total_seconds() %}
               {%- set hours = (seconds / 3600) | int %}
               {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
@@ -75,7 +75,7 @@
               {%- set extra = states('input_select.dishwasher_program_extra') %}
               {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
               {%- set program = program ~ extra %}
-              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('input_datetime.dishwasher_program')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
+              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
             {%- else %}
               {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
             {%- endif %}

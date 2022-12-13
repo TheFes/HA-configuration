@@ -1,177 +1,36 @@
 id: 341786d9-1a4e-4328-be86-1e3d68d5744c
-alias: "F0K - Dishwasher timer and notification"
+alias: "F0K - Dishwasher notification"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
     entity_id: binary_sensor.dishwasher_active
-    from: "off"
-    to: "on"
-    id: "started"
-  - platform: state
-    entity_id: binary_sensor.dishwasher_active
     from: "on"
     to: "off"
     id: "finished"
-  - platform: state
-    entity_id:
-      - input_select.dishwasher_program
-      - input_select.dishwasher_program_extra
-      - input_number.dishwasher_delayed_start
-    from: ~
-    id: "program_change"
-variables:
-  programs:
-    Intensief:
-      Normaal: { "hours": 2, "minutes": 15 }
-      Snel: { "hours": 1, "minutes": 30 }
-      Halve belading: { "hours": 1, "minutes": 50 }
-      Intensief: { "hours": 2, "minutes": 40 }
-      Extra droog: { "hours": 2, "minutes": 25 }
-    Auto:
-      Normaal: { "hours": 2, "minutes": 40 }
-      Snel: { "hours": 1, "minutes": 20 }
-      Halve belading: { "hours": 2, "minutes": 20 }
-      Intensief: { "hours": 2, "minutes": 45 }
-      Extra droog: { "hours": 2, "minutes": 50 }
-    Eco:
-      Normaal: { "hours": 3, "minutes": 30 }
-      Snel: { "hours": 1, "minutes": 25 }
-      Halve belading: { "hours": 3, "minutes": 11 }
-      Intensief: { "hours": 3, "minutes": 40 }
-      Extra droog: { "hours": 3, "minutes": 35 }
-    Stil:
-      Normaal: { "hours": 4, "minutes": 00 }
-      Snel: { "hours": 2, "minutes": 15 }
-      Halve belading: { "hours": 2, "minutes": 15 }
-      Intensief: { "hours": 4, "minutes": 5 }
-      Extra droog: { "hours": 4, "minutes": 5 }
-    Glas:
-      Normaal: { "hours": 1, "minutes": 30 }
-      Snel: { "hours": 1, "minutes": 0 }
-      Halve belading: { "hours": 1, "minutes": 20 }
-      Intensief: { "hours": 1, "minutes": 40 }
-      Extra droog: { "hours": 1, "minutes": 45 }
-    Snel:
-      Normaal: { "hours": 0, "minutes": 29 }
-      Extra droog: { "hours": 0, "minutes": 44 }
 action:
-  - alias: "Select action"
-    choose:
-      - conditions:
-          - alias: "Change in input_select or delay"
-            condition: trigger
-            id: "program_change"
-          - alias: "Dishwasher on"
-            condition: state
-            entity_id: binary_sensor.dishwasher_active
-            state: "on"
-        sequence:
-          - variables:
-              triggered_by_extra: "{{ 'extra' in trigger.entity_id }}"
-              triggered_by_delay: "{{ trigger.entity_id == 'input_number.dishwasher_delayed_start' }}"
-              program_old: >
-                {{ states('input_select.dishwasher_program') if triggered_by_extra or triggered_by_delay else trigger.from_state.state }}
-              extra_old: >
-                {{ trigger.from_state.state if triggered_by_extra else states('input_select.dishwasher_program_extra') }}
-              delayed_start_old: >
-                {{ trigger.from_state.state if triggered_by_delay else states('input_number.dishwasher_delayed_start') | int }}
-              program: "{{ states('input_select.dishwasher_program') }}"
-              extra: "{{ states('input_select.dishwasher_program_extra') }}"
-              delayed_start: "{{ states('input_number.dishwasher_delayed_start') }}"
-              seconds_old: >
-                {{ 
-                  programs[program_old][extra_old].hours * 3600
-                  + programs[program_old][extra_old].minutes * 60
-                  + delayed_start_old * 3600
-                }}
-              seconds_new: >
-                {{ 
-                  programs[program][extra].hours * 3600
-                  + programs[program][extra].minutes * 60
-                  + delayed_start * 3600
-                }}
-          - alias: "Set timer (input_datetime)"
-            service: input_datetime.set_datetime
-            target:
-              entity_id: input_datetime.dishwasher_program
-            data:
-              timestamp: >
-                {{
-                  states('input_datetime.dishwasher_program') | as_timestamp - seconds_old + seconds_new
-                }}
-          - alias: "Set timer delay (input_datetime)"
-            service: input_datetime.set_datetime
-            target:
-              entity_id: input_datetime.dishwasher_delay
-            data:
-              timestamp: >
-                {{
-                  states('input_datetime.dishwasher_delay') | as_timestamp - seconds_old + seconds_new
-                }}
-      - conditions:
-          - alias: "Dishwasher started"
-            condition: trigger
-            id: "started"
-          - alias: "Timer not set"
-            condition: template
-            value_template: "{{ now() > states('input_datetime.dishwasher_program') | as_datetime | as_local }}"
-        sequence:
-          - variables:
-              program: "{{ states('input_select.dishwasher_program') }}"
-              extra: "{{ states('input_select.dishwasher_program_extra') }}"
-              seconds: >
-                {{ 
-                  programs[program][extra].hours * 3600
-                  + programs[program][extra].minutes * 60
-                }}
-          - alias: "Set timer (input_datetime)"
-            service: input_datetime.set_datetime
-            target:
-              entity_id: input_datetime.dishwasher_program
-            data:
-              timestamp: "{{ now() | as_timestamp | int + seconds }}"
-          - alias: "Set timer (input_datetime)"
-            service: input_datetime.set_datetime
-            target:
-              entity_id: input_datetime.dishwasher_delay
-            data:
-              timestamp: "{{ now() | as_timestamp | int + states('input_number.dishwasher_delayed_start') | int(0) * 3600 }}"
-      - conditions:
-          - alias: "Dishwasher finished"
-            condition: trigger
-            id: "finished"
-        sequence:
-          - alias: "Timer off"
-            service: input_datetime.set_datetime
-            target:
-              entity_id:
-                - input_datetime.dishwasher_program
-                - input_datetime.dishwasher_delay
-            data:
-              timestamp: "{{ now() | as_timestamp | int }}"
-          - service: input_select.select_option
-            target:
-              entity_id: input_select.dishwasher_program
-            data:
-              option: Eco
-          - service: input_select.select_option
-            target:
-              entity_id: input_select.dishwasher_program_extra
-            data:
-              option: Normaal
-          - service: input_number.set_value
-            target:
-              entity_id: input_number.dishwasher_delayed_start
-            data:
-              value: 0
-          - alias: "Notification"
-            service: notify.all_phones
-            data:
-              title: "💦 De vaatwasser is klaar"
-              message: "Doe hem snel open zodat hij kan uitwasemen"
-              data:
-                channel: Dishwasher
-                ttl: 0
-                priority: high
-                notification_icon: mdi:dishwasher-alert
+  - service: input_select.select_option
+    target:
+      entity_id: input_select.dishwasher_program
+    data:
+      option: Eco
+  - service: input_select.select_option
+    target:
+      entity_id: input_select.dishwasher_program_extra
+    data:
+      option: Normaal
+  - service: input_number.set_value
+    target:
+      entity_id: input_number.dishwasher_delayed_start
+    data:
+      value: 0
+  - alias: "Notification"
+    service: notify.all_phones
+    data:
+      title: "💦 De vaatwasser is klaar"
+      message: "Doe hem snel open zodat hij kan uitwasemen"
+      data:
+        channel: Dishwasher
+        ttl: 0
+        priority: high
+        notification_icon: mdi:dishwasher-alert
