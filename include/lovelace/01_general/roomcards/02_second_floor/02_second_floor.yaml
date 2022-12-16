@@ -48,7 +48,7 @@ cards:
           icon: mdi:washing-machine
           entity: sensor.wasmachine
           layout: vertical
-          icon_color: yellow
+          icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'yellow' }}"
       - type: conditional
         conditions:
           - entity: media_player.groep_zolder

@@ -7,13 +7,14 @@ cards:
       - type: custom:mushroom-template-card
         icon: mdi:washing-machine
         entity: sensor.wasmachine
-        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'blue' if is_state(entity, 'on') }}"
         primary: >-
           {{ 'Uit' if is_state(entity, 'off') else
           state_attr(entity, 'current_course')}}
         secondary: >-
           {%- set h, m, s = state_attr(entity, 'remain_time').split(':') | map('int') %}
-          {{ relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state(entity, 'on') }}
+          {%- set error = is_state('binary_sensor.wasmachine_error_state', 'on') %}
+          {{ state_attr('sensor.wasmachine', 'error_message') if error else relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state(entity, 'on') }}
         card_mod:
           style:
             mushroom-shape-icon$: |
@@ -25,7 +26,7 @@ cards:
       - type: custom:mushroom-template-card
         icon: mdi:washing-machine
         entity: sensor.wasmachine
-        icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+        icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'blue' if is_state(entity, 'on') }}"
         card_mod:
           style:
             mushroom-shape-icon$: |
