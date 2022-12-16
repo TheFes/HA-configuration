@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.12.2
+          version: 2022.12.3
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -1625,6 +1625,7 @@ automation:
       entities: >
         {%- set e = trigger.event.data.service_data.entity_id %}
         {%- set e = (e | replace(' ', '')).split(',') if e is string else e %}
+        {%- set e = expand(e) | map(attribute='entity_id') | list %}
         {%- set speaker_groups = settings.get('speaker_groups') | default({}, true) %}
         {%- set members = speaker_groups.items() | selectattr('0', 'in', e) | map(attribute='1') | sum(start=[]) %}
         {{ e + members }}

@@ -3,7 +3,13 @@
 * General changes for the [Google Home Resume package](../google_home_resume.yaml)
 * More information [here](../../readme.md)
 
-### 2022.12.2
+### Version 2022.12.3
+
+#### 🌟 Improvements
+
+* The automation is now also triggered if a Home Assitant group is targeted which has cast entities as its members
+
+### Version 2022.12.2
 
 #### 🐛 Bug fixes
 
@@ -16,7 +22,7 @@
 * (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
 * (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
 
-### 2022.12.0
+### Version 2022.12.0
 
 #### 🚨 Breaking
 * The settings in the top section now also have a section with `voice_settings`. This needs to be added to versions prior to 2022.12, otherwise your configuration will not work. More information can be found in the  [update instructions](https://github.com/TheFes/HA-configuration/tree/main/include/integrations/packages/google_cast#from-version-202211)
