@@ -56,7 +56,7 @@ It's December which is the time to come together with your family for the holida
 * Apparantly Google Home Speaker groups now show as `playing` when a member is playing media. Not only when the group has been targeted. The template to generate the `player_data` has been amended to avoid showing groups as playing when they are not.
 * (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
 * (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
-* (2022.12.3) The automation is now also triggered if a Home Assitant group is targeted which has cast entities as its members
+* (2022.12.3) The automation is now also triggered if a Home Assistant group is targeted which has cast entities as its members
 
 #### 🐛 Bug fixes
 

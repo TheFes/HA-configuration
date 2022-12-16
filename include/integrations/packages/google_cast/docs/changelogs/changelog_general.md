@@ -7,7 +7,7 @@
 
 #### 🌟 Improvements
 
-* The automation is now also triggered if a Home Assitant group is targeted which has cast entities as its members
+* The automation is now also triggered if a Home Assistant group is targeted which has cast entities as its members
 
 ### Version 2022.12.2
 
