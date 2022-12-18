@@ -95,9 +95,10 @@ class SpotifyCastDevice:
         sp.launch_app()
 
         if not sp.is_launched and not sp.credential_error:
-            raise HomeAssistantError(
-                "Failed to launch spotify controller due to timeout"
-            )
+            # raise HomeAssistantError(
+            #     "Failed to launch spotify controller due to timeout"
+            # )
+            _LOGGER.warning("Spotify controller did not launch properly before timeout, this might not be a problem")
         if not sp.is_launched and sp.credential_error:
             raise HomeAssistantError(
                 "Failed to launch spotify controller due to credentials error"
