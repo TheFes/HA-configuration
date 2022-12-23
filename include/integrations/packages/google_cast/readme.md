@@ -82,15 +82,15 @@ ___
 
 ## Setup instructions
 
-## Updating from a previous version
+### Updating from a previous version
 
-### Prior to 2022.11
+#### Prior to 2022.11
 
 If you are still using a version wich is not using the YYYY.MM version numbering, you are not using packages yet. Remove the existing Google Home scripts you are using (Resume/Voice/Event) and the Google Home Resume automation if you were using that. If you were using the Google Home Event script, also remove the template sensor used by that script.
 
 After removing all the old stuff reload Scripts, Automations and Template entities from Developer Tools > YAML ([![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/)) or restart Home Assistant. Then move on to [Install the package](#install-the-package).
 
-### From version 2022.11
+#### From version 2022.11
 
 Remove the Google Home Voice script if you were already using it, and the Google Home Event package if you were using that. Reload scripts and template entities in Developer Tools > YAML Developer Tools > YAML [![Open your Home Assistant instance and show your server controls.](https://my.home-assistant.io/badges/server_controls.svg)](https://my.home-assistant.io/redirect/server_controls/) or restart Home Assistant.
 
@@ -115,7 +115,7 @@ voice_settings: &voice_settings
   primary_spotcast: john_doe
 ```
 
-## Install the package
+### Install the package
 
 [Link to the package](google_home_resume.yaml)
 
@@ -131,7 +131,7 @@ homeassistant:
 
 You can perform the steps above using a file editor (like [Visual Studio Code Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=a0d7b954_vscode) or [File Editor Add-on](https://my.home-assistant.io/redirect/supervisor_addon/?addon=core_configurator)), not via the GUI.
 
-## Script Settings
+### Script Settings
 
 There are no required settings, but if you use Google Home speaker groups you should define those as described below. Resuming Spotify with multiple accounts won't work properly without `primary_spotcast`. `dummy_player` is required to send a TTS with picture and text.
 
@@ -150,15 +150,15 @@ There are no required settings, but if you use Google Home speaker groups you sh
 
 For the Google Home Voice script there are 2 specific settings, these are described in the [documentation]() of the Voice script.
 
-## Spotify resume
+### Spotify resume
 
 * For Spotify you need to have the [Spotify integration ](https://www.home-assistant.io/integrations/spotify/) installed, and [Spotcast ](https://github.com/fondberg/spotcast/) (available on [HACS](https://github.com/hacs/integration))
 
-### One Spotify Account
+#### One Spotify Account
 
 * In case you only have one Spotify account set up in Home Assistant, there are no additional settings needed besides installing the integrations above.
 
-#### Multiple accounts
+##### Multiple accounts
 
 * In case you use multiple accounts, you need to add the Spotify integration for all accounts, in the [documentaton](https://www.home-assistant.io/integrations/spotify/) it's described how te set up multiple accounts.
 * The entity_id's for media_player entities from the Spotify integration will be formatted like `media_player.spotify_{{ account name }}`. 
@@ -166,7 +166,7 @@ For the Google Home Voice script there are 2 specific settings, these are descri
 * As there the first entry in the spotcast settings doesn't have an account name, there will be one Spotify media_player entity which doesn't have a matching spotcast account. The account name part from that entity_id is what I call the `primary_spotcast` account.
 * To determine the Spotify account, the source in the Spotify media_players is used. This is compared to the friendly name of the Goolge Home media_player. Therefor the Google Home media players in HA need to have the exact same name as they have in the Google Home app (this is also already a requirement for Spotcast to work with entity_id's). 
 
-##### Example:
+###### Example:
 
 3 Spotify integrations:
 
@@ -194,11 +194,11 @@ spotcast:
       sp_key: !secret sp_key_martijn
 ```
 
-## YouTube Music resume
+### YouTube Music resume
 
 * Resume can be performed in case the custom [YouTube Music player](https://github.com/KoljaWindeler/ytube_music_player) integration is used to play the media. And only when YouTube music was started using that custom integration (which is quite easy using the media panel [![Open your Home Assistant instance and browse available media.](https://my.home-assistant.io/badges/media_browser.svg)](https://my.home-assistant.io/redirect/media_browser/))
 
-## Dummy player for TTS with picture and text
+### Dummy player for TTS with picture and text
 
 In case you want to send a TTS with a picture and some text, you need to set up a dummy media_player which accepts TTS messages.
 
@@ -213,17 +213,17 @@ ___
 
 ## Description of scripts
 
-## **Google Home Resume**
+### **Google Home Resume**
 
 The Google Home Resume script is used to resume a Google Home device after it has been interrupted. For example when a TTS has been sent, or when a sound has been played. You can manually trigger the script, and include the action after which it should be resumed in the service call for the script, or you can use the automation. 
 More information on how to use the Google Home Resume script can be found [here](docs/google_home_resume.md)
 
-## **Google Home Voice**
+### **Google Home Voice**
 
 The Google Home Voice script uses Google Home Routines and Ambient sounds to check on which device you issued a voice command, so it can send a TTS message or other action to that specific device.
 More information on how to use the Google Home Voice script can be found [here](docs/google_home_voice.md)
 
-## **Google Home Event**
+### **Google Home Event**
 
 The Google Home Event script can store the data of your devices in a template sensor, so you can restore the states on a later moment. So you can store the state when you leave the house, and restore the music when you come back in.
 More information on how to use the Google Home Event script can be found [here](docs/google_home_event.md)
