@@ -1,4 +1,6 @@
-# Table of contents
+# Google Home Resume Package
+
+## Table of contents
 
 1. [Background](#background)
 1. [Latest version](#latest-version)
@@ -18,7 +20,7 @@
 
 ___
 
-# Background
+## Background
 
 This package started somewhere in 2020 as a simple script to resume a Google Cast device after it was interrupted by a TTS message. During the years more functionality was added, the Cast devices can also be resumed after playing an audio file, or casting a Home Assistant Dasboard.
 In the past years I also created others scripts using the Google Home Resume script. There is a script to determine on which device a question was asked and send a TTS or play a file on that specific device. Another script stores the state of the cast devices in a template sensor, so it can be resumed in later (for example store it when you leave home, and restore it when you arrive home again).
@@ -27,9 +29,9 @@ All these scripts are now combined in one package
 
 ___
 
-# Latest version
+## Latest version
 
-## 2022.12 Happy Holidays; let's bring the family together
+### 2022.12 Happy Holidays; let's bring the family together
 It's December which is the time to come together with your family for the holidays. That is exactly what this version does, it brings all scripts together into one package!
 
 ### 🌐 GENERAL
@@ -70,7 +72,7 @@ Previous changes can be found here:
 
 ___
 
-# Requirements
+## Requirements
 
 * Home Assistant version 2022.5 because the new script features introduced in that version are used.
 * For Spotify resume Spotcast and the Spotify integration are requiresd. See the [relevant section](#spotify-resume) in the setup instructions.
@@ -78,7 +80,7 @@ ___
 
 ___
 
-# Setup instructions
+## Setup instructions
 
 ## Updating from a previous version
 
@@ -97,17 +99,17 @@ Remove the Google Home Voice script if you were already using it, and the Google
 Make sure to add these `voice_settings` in a way that the current settings are still under the `settings` key.
 
 ```yaml
-# correct
+## correct
 settings: &settings
   primary_spotcast: john_doe
 voice_settings: &voice_settings
 
-# also correct
+## also correct
 voice_settings: &voice_settings
 settings: &settings
   primary_spotcast: john_doe
 
-# not correct
+## not correct
 settings: &settings
 voice_settings: &voice_settings
   primary_spotcast: john_doe
@@ -209,7 +211,7 @@ In case you don't have the supervisor or already use this add-on for other purpo
 
 ___
 
-# Description of scripts
+## Description of scripts
 
 ## **Google Home Resume**
 
@@ -228,7 +230,7 @@ More information on how to use the Google Home Event script can be found [here](
 
 ___
 
-# Known limitations
+## Known limitations
 
 * It is possible to create speaker groups on the fly from the Google Home app, e.g. if you are playing something from Spotify on your Kitchen speaker, you can add your Living Room speaker in the Google Home app, without them belonging to a speaker group. The script won't recognize these groups created on the fly. The cast integration won't recognize these devices as playing anymore, so they won't be resumed.
 * When Spotify switches to a new song or starts playing, the Spotify Media Player will shortly not show as playing. When at that moment the script is started, the stream will not be resumed afterwards. To minimize this, Spotify entities are updated just before the information is stored.
@@ -236,7 +238,7 @@ ___
 
 ___
 
-# Questions/issues/bugs/feature requests?
+## Questions/issues/bugs/feature requests?
 
 In case you have a question, you found a bug, or have a feature request, you can either ask here, or open an [issue](https://github.com/TheFes/HA-configuration/issues) on my GitHub repository. In case you create a GitHub issue, please label it with `google home scripts`
 
@@ -254,7 +256,7 @@ In case you create the issue on GitHub you can upload the json files, in case yo
 
 ___
 
-# Why not a blueprint?
+## Why not a blueprint?
 
 I've been asked a couple of times if I ever considered to make a blueprint out of this script. I do understand this would make updates more easy, however there are also some things which make it quite complicated:
 * You need to provide information on your speaker groups, players with a screen and spotcast account. That would mean that you will have to do that each time you use the blueprint to create a script, or that you'll have to add this information each time the blueprint is updated, which would reduce the easiness of updating the script.
@@ -265,7 +267,7 @@ So, basically, I gave it a try, and decided it would not work :)
 
 ___
 
-# Buy me a coffee
+## Buy me a coffee
 
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
