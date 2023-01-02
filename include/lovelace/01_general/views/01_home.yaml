@@ -3,30 +3,6 @@ icon: mdi:home
 title: Grid layout
 type: custom:grid-layout
 path: home
-badges:
-  - type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-      - type: menu
-      - type: weather
-        entity: weather.combined_daily
-        show_conditions: false
-        show_temperature: true
-        tap_action:
-          action: navigate
-          navigation_path: weer
-      - type: template
-        icon: mdi:lightning-bolt
-        content: >-
-          {{ ((states('sensor.power_consumption') | float -
-          states('sensor.power_production') | float) * 1000) | round }} W
-        icon_color: yellow
-        tap_action:
-          action: navigate
-          navigation_path: /energy
-      - type: entity
-        entity: sensor.water_meter_current_usage
-        icon_color: blue
 layout:
   grid-template-columns: 12.5% 25% 25% 25% 12.5%
   grid-template-rows: auto

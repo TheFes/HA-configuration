@@ -5,7 +5,6 @@ cards:
     icon: mdi:tree
     icon_color: blue
     layout: horizontal
-    entity: light.groep_tuin
     secondary: >-
       {{
         state_attr('weather.combined_daily', 'temperature') ~ '°C | '
@@ -21,16 +20,10 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_tuin
         layout: vertical
-        icon: >-
-          {%- if is_state('light.groep_tuin', 'on') %}
-            mdi:lightbulb-group
-          {%- else %}
-            mdi:lightbulb-group-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.groep_tuin', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
       - type: conditional
         conditions:
           - entity: input_boolean.christmas_time
@@ -40,32 +33,29 @@ cards:
           layout: vertical
           entity: switch.ijspegels
           icon: mdi:snowflake
-          icon_color: >-
-            {%- if is_state(entity, 'on') %}
-              yellow
-            {%- elif is_state(entity, 'unavailable') %}
-              red
-            {%- endif %}
+          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.veranda
-        badge_icon: "{{ 'mdi:alert' if is_state('cover.veranda', 'unavailable')}}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
         layout: vertical
         icon: >-
-          {%- if is_state('cover.veranda', 'opening') %}
+          {%- if is_state(entity, 'opening') %}
             mdi:arrow-expand-horizontal
-          {%- elif is_state('cover.veranda', 'closing') %}
+          {%- elif is_state(entity, 'closing') %}
             mdi:arrow-collapse-horizontal
-          {%- elif is_state('cover.veranda', 'closed') %}
+          {%- elif is_state(entity, 'closed') %}
             mdi:storefront-outline
           {%- else %}
             mdi:storefront
           {%- endif %}
         icon_color: >-
-          {%- if states('cover.veranda') in ['opening', 'closing'] %}
+          {%- if is_state(entity, ['opening', 'closing']) %}
             green
-          {%- elif is_state_attr('cover.veranda', 'current_position', 100) %}
+          {%- elif is_state_attr(entity, 'current_position', 100) %}
             yellow
-          {%- elif state_attr('cover.veranda', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr(entity, 'current_position') | int(0) > 0 %}
             orange
           {%- endif %}

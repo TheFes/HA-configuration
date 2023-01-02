@@ -16,19 +16,18 @@ states:
         tap_action:
           action: navigate
           navigation_path: weer
-      - &power
-        type: entity
+      - type: entity
         entity: sensor.net_power
         icon_color: yellow
         tap_action:
           action: navigate
           navigation_path: /energy
-      - &water
-        type: entity
+      - type: entity
         entity: sensor.watermeter_current_usage
         icon_color: blue
         tap_action:
-          action: none
+          action: navigate
+          navigation_path: /energy
         double_tap_action:
           action: call-service
           service: input_boolean.toggle
@@ -40,12 +39,12 @@ states:
     type: custom:mushroom-chips-card
     alignment: center
     chips:
-      - *weather
-      - <<: *power
+      - type: entity
+        entity: sensor.net_power
+        icon_color: yellow
+        tap_action: none
+      - type: entity
+        entity: sensor.watermeter_current_usage
+        icon_color: blue
         tap_action:
-          action: none
-      - <<: *water
-        tap_action:
-          action: none
-        double_tap_action:
           action: none

@@ -16,16 +16,10 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_slaapkamer
         layout: vertical
-        icon: >-
-          {%- if is_state(entity, 'on') %}
-            mdi:lightbulb-group
-          {%- else %}
-            mdi:lightbulb-group-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state(entity, 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
       - type: conditional
         conditions:
           - entity: input_boolean.christmas_time
@@ -35,24 +29,21 @@ cards:
           layout: vertical
           entity: switch.kerststerren
           icon: mdi:star
-          icon_color: >-
-            {%- if is_state(entity, 'on') %}
-              yellow
-            {%- elif is_state(entity, 'unavailable') %}
-              red
-            {%- endif %}
+          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.slaapkamer
         layout: vertical
-        badge_icon: "{{ 'mdi:alert' if is_state('cover.slaapkamer', 'unavailable')}}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
-        icon: "{{ state_attr('cover.slaapkamer', 'icon') }}"
+        icon: "{{ state_attr(entity, 'icon') }}"
         icon_color: >-
-          {%- if states('cover.slaapkamer') in [ 'opening', 'closing' ] %}
+          {%- if states(entity) in [ 'opening', 'closing' ] %}
             green
-          {%- elif is_state_attr('cover.slaapkamer', 'current_position', 0) %}
+          {%- elif is_state_attr(entity, 'current_position', 0) %}
             yellow
-          {%- elif state_attr('cover.slaapkamer', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr(entity, 'current_position') | int(100) < 100 %}
             orange
           {%- endif %}
       - type: custom:mushroom-template-card
@@ -60,11 +51,13 @@ cards:
         layout: vertical
         icon: mdi:robot-vacuum
         icon_color: >-
-          {%- if is_state('vacuum.rockrobo_vacuum_v1', 'cleaning') %}
+          {%- if is_state(entity, 'cleaning') %}
             yellow
-          {%- elif is_state('vacuum.rockrobo_vacuum_v1', 'error') %}
+          {%- elif is_state(entity, 'error') %}
             red
           {%- endif %}
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+        badge_color: red
         tap_action:
           action: fire-dom-event
           browser_mod:
@@ -99,9 +92,6 @@ cards:
           layout: vertical
           entity: media_player.slaapkamer_hub
           icon: mdi:cast
-          icon_color: >-
-            {%- if is_state('media_player.slaapkamer_hub', 'playing') %}
-              yellow
-            {%- elif is_state('media_player.slaapkamer_hub', 'unavailable') %}
-              red
-            {%- endif %}
+          icon_color: "{{ 'yellow' if is_state(entity, 'playing') }}"
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red

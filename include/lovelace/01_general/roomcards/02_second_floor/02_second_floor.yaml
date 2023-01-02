@@ -16,29 +16,17 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_zolder
         layout: vertical
-        icon: >-
-          {%- if is_state('light.groep_zolder', 'on') %}
-            mdi:lightbulb-group
-          {%- else %}
-            mdi:lightbulb-group-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.groep_zolder', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
       - type: custom:mushroom-template-card
         entity: switch.groep_zolder
         layout: vertical
-        icon: >-
-          {%- if is_state('switch.groep_zolder', 'on') %}
-            mdi:toggle-switch-variant
-          {%- else %}
-            mdi:toggle-switch-variant-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('switch.groep_zolder', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:toggle-switch-variant' if is_state(entity, 'on') else 'mdi:toggle-switch-variant-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
       - type: conditional
         conditions:
           - entity: sensor.wasmachine
@@ -61,9 +49,6 @@ cards:
           entity: media_player.groep_zolder
           icon: mdi:cast
           icon_color: >-
-            {%- set s = expand('media_player.groep_zolder') | map(attribute='state') | list %}
-            {%- if 'playing' in s %}
-              yellow
-            {%- elif is_state('media_player.groep_zolder', 'unavailable') %}
-              red
-            {%- endif %}
+            {{ 'yellow' if 'playing' in expand(entity) | map(attribute='state') | list }}
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red

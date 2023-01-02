@@ -15,13 +15,7 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_speelhoek
         layout: vertical
-        icon: >-
-          {%- if is_state('light.groep_speelhoek', 'on') %}
-            mdi:lightbulb-group
-          {%- else %}
-            mdi:lightbulb-group-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.groep_speelhoek', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red

@@ -17,19 +17,13 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_pepijn
         layout: vertical
-        icon: >-
-          {%- if is_state('light.groep_pepijn', 'on') %}
-            mdi:lightbulb-group
-          {%- else %}
-            mdi:lightbulb-group-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.groep_pepijn', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.pepijn
-        badge_icon: "{{ 'mdi:alert' if is_state('cover.pepijn', 'unavailable')}}"
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.pepijn', ['unavailable', 'unknown']) }}"
         badge_color: red
         layout: vertical
         icon: >-
@@ -61,9 +55,6 @@ cards:
           layout: vertical
           entity: media_player.pepijn_mini
           icon: mdi:cast
-          icon_color: >-
-            {%- if is_state('media_player.pepijn_mini', 'playing') %}
-              yellow
-            {%- elif is_state('media_player.pepijn_mini', 'unavailable') %}
-              red
-            {%- endif %}
+          icon_color: "{{ 'yellow' if is_state(entity, 'playing') }}"
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red

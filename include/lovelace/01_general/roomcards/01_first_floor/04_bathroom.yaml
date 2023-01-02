@@ -16,8 +16,12 @@ cards:
         entity: light.bathroom_osc
         icon: "{{ 'mdi:ceiling-light' if is_state(entity, 'on') else 'mdi:ceiling-light-outline' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+        badge_color: red
       - type: custom:mushroom-template-card
         entity: light.bathroom_cabinet_osc
         layout: vertical
         icon: mdi:mirror-rectangle
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+        badge_color: red

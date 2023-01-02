@@ -139,6 +139,20 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.huis_groep
+        badge_icon: &badge >
+          {% set radio_icon = 
+            {
+              "NPO Radio 2": "mdi:numeric-2-circle-outline",
+              "Radio Veronica": "mdi:alpha-v-circle-outline",
+              "Willy": "mdi:alpha-w-circle-outline",
+              "KINK": "mdi:alpha-k-circle-outline"
+            }
+          %}
+          {% if state_attr(entity | replace('input_boolean', 'media_player'), 'media_artist') in radio_icon.keys() | list %}
+            {{ radio_icon[state_attr(entity | replace('input_boolean', 'media_player'), 'media_artist')] }}
+          {% elif is_state(entity | replace('input_boolean', 'media_player'), 'playing') %}
+            mdi:play
+          {% endif %}
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -147,6 +161,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.zolder_groep
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -155,6 +170,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.boven_groep
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -163,6 +179,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.beneden_groep
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -171,6 +188,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.zolder_mini_martijn
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -179,6 +197,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.zolder_mini_marleen
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -187,6 +206,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.slaapkamer_hub
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -195,6 +215,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.pepijn_mini
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -203,6 +224,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.floris_mini
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -211,6 +233,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.keuken_hub
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
@@ -219,6 +242,7 @@ cards:
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.woonkamer_mini
+        badge_icon: *badge
         tap_action:
           action: toggle
       - type: conditional

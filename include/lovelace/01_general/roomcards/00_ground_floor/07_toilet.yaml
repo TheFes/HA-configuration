@@ -4,8 +4,9 @@ cards:
     primary: WC
     icon: mdi:toilet
     icon_color: blue
-    badge_icon: "{{ 'mdi:motion-sensor' if is_state('binary_sensor.motion_wc', 'on') }}"
-    badge_color: "{{ 'yellow' if is_state('binary_sensor.motion_wc', 'on') }}"
+    entity: binary_sensor.motion_wc
+    badge_icon: "{{ 'mdi:motion-sensor' if is_state(entity, 'on') }}"
+    badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     layout: horizontal
     secondary: >-
       {{ states('sensor.motion_wc_temperature') ~ '°C | ' if states('sensor.motion_wc_temperature') | is_number }}
@@ -19,13 +20,7 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.wc
         layout: vertical
-        icon: >-
-          {%- if is_state('light.wc', 'on') %}
-            mdi:lightbulb
-          {%- else %}
-            mdi:lightbulb-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.wc', 'on') %}
-            yellow
-          {%- endif %}
+        icon: "{{ 'mdi:lightbulb' if is_state(entity, 'on') else 'mdi:lightbulb-off '}}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red

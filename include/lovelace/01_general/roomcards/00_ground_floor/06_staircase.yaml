@@ -4,8 +4,9 @@ cards:
     primary: Trapkast
     icon: mdi:stairs
     icon_color: blue
-    badge_icon: "{{ 'mdi:door' if is_state('binary_sensor.deur_trapkast', 'on') }}"
-    badge_color: "{{ 'yellow' if is_state('binary_sensor.deur_trapkast', 'on') }}"
+    entity: binary_sensor.deur_trapkast
+    badge_icon: "{{ 'mdi:door' if is_state(entity, 'on') }}"
+    badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     layout: horizontal
     tap_action:
       action: navigate
@@ -16,13 +17,7 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.trapkast
         layout: vertical
-        icon: >-
-          {%- if is_state('light.trapkast', 'on') %}
-            mdi:lightbulb
-          {%- else %}
-            mdi:lightbulb-off
-          {%- endif %}
-        icon_color: >-
-          {%- if is_state('light.trapkast', 'on') %}
-            yellow
-          {%- endif %}
+        icon: mdi:outdoor-lamp
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
