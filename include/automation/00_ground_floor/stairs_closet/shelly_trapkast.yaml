@@ -1,0 +1,41 @@
+id: 1021cdb8-6a53-4e31-bc04-5d776323e1c8
+alias: "F0D - Actions for stairs closet shelly"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Trapkast
+action:
+  - alias: "Shelly on or not?"
+    choose:
+      - conditions:
+          - alias: "Shelly off"
+            condition: state
+            entity_id: switch.shelly1_trapkast
+            state: "off"
+        sequence:
+          - alias: "Turn on shelly"
+            service: switch.turn_on
+            target:
+              entity_id: switch.shelly1_trapkast
+    default:
+      - alias: "Click type?"
+        choose:
+          - conditions:
+              - alias: "Short?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            sequence:
+              - if: "{{ not is_state('light.trapkast', 'unavailable') }}"
+                then:
+                  - alias: "Toggle light"
+                    service: light.toggle
+                    target:
+                      entity_id: light.trapkast
+                else:
+                  - alias: "Toggle shelly"
+                    service: switch.toggle
+                    target:
+                      entity_id: switch.shelly1_trapkast

@@ -12,7 +12,7 @@ dishwasher_remaining_time_routine:
             {%- if hours == 0 %}
               "De vaatwasser is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar."
             {%- else %}
-              "De vaatwasser is klaar rond {{ (states('sensor.dishwasher_end_time') | as_datetime).strftime('%H:%M') }}."
+              "De vaatwasser is klaar rond {{ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M') }}."
             {%- endif %}
           {%- elif now() < time_set | as_local %}
             "De vaatwasser is nu elk moment klaar"
@@ -30,6 +30,6 @@ dishwasher_remaining_time_routine:
             extra:
               volume: 0.35
               screen_tts:
-                large_text: "{{ (states('input_datetime.dishwasher_program') | as_datetime).strftime('%H:%M') }}"
+                large_text: "{{ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M') }}"
                 small_text: "{{ message }}"
                 picture_url: "http://192.168.2.3:8123/local/pictures/dishwasher_2.jpg"

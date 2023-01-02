@@ -9,12 +9,16 @@
       state: &state >-
         {%- set sensor = trigger.entity_id %}
         {%- set collection_date = as_local(as_datetime(state_attr(sensor, 'year_month_day_date'))).date() %}
-        {%- set days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag' ] %}
+        {%- set days = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag' ] %}
         {%- set days_until = state_attr(sensor, 'days_until_collection_date') %}
         {%- if days_until <= 1 %}
           {{ ['Vandaag', 'Morgen'][days_until] }}
+        {%- elif days_until < 7 - now().isoweekday() %}
+          {{ days[collection_date.weekday()] | title }}
+        {%- elif days_until < 14 - now().isoweekday() %}
+          {{ 'Volgende week ' ~ days[collection_date.weekday()] }}
         {%- else %}
-          {{ days[collection_date.weekday()] ~ ' ' ~ collection_date.strftime('%d-%m-%y') }}
+          {{ 'Over ' ~ (days_until / 7) | round(0, 'ceiling') ~ ' weken' }}
         {%- endif %}
       icon: mdi:trash-can
       availability: &availabity "{{ not states(trigger.entity_id) in [ 'unknown', 'unavailable', 'Geen' ] }}"
@@ -31,7 +35,9 @@
 
 - trigger:
     - platform: state
-      entity_id: sensor.afvalwijzer_dhm
+      entity_id:
+        - sensor.afvalwijzer_dhm
+        - sensor.afvalwijzer_papier
       attribute: days_until_collection_date
       not_to: none
   sensor:

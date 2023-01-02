@@ -1,27 +1,27 @@
 platform: template
 lights:
-  living_room_osc:
-    unique_id: 639aa28d-7550-45c9-bd96-25f54a32c968
-    friendly_name: "Living Room Ceiling"
-    level_template: "{{ state_attr('light.living_room_ceiling', 'brightness') }}"
-    value_template: "{{ not is_state('select.living_room_ceiling_lights_preset', 'uit') }}"
-    availability_template: "{{ not states('light.living_room_ceiling') in ['unavailable', 'unknown'] }}"
+  kitchen_osc:
+    unique_id: cbf8c5b9-96f1-4dc8-b7e8-45c968fe03b4
+    friendly_name: "Kitchen Ceiling"
+    level_template: "{{ state_attr('light.kitchen_ceiling', 'brightness') }}"
+    value_template: "{{ not is_state('select.kitchen_ceiling_lights_preset', 'uit') }}"
+    availability_template: "{{ not states('light.kitchen_ceiling') in ['unavailable', 'unknown'] }}"
     turn_on:
       - alias: "Set light to default preset"
         service: select.select_option
         data:
-          entity_id: select.living_room_ceiling_lights_preset
-          option: "30%"
+          entity_id: select.kitchen_ceiling_lights_preset
+          option: "50%"
     turn_off:
       - alias: "Activate off preset"
         service: select.select_option
         data:
-          entity_id: select.living_room_ceiling_lights_preset
+          entity_id: select.kitchen_ceiling_lights_preset
           option: "uit"
     set_level:
       - variables:
           preset_values: >
-            {%- set presets = state_attr('select.living_room_ceiling_lights_preset', 'options') %}
+            {%- set presets = state_attr('select.kitchen_ceiling_lights_preset', 'options') %}
             {%- set ns = namespace(presets=[]) %}
             {%- for p in presets %}
               {%- set v = 0 if p == 'uit' else p | replace('%', '') | int %}
@@ -35,10 +35,10 @@ lights:
           - alias: "Activate matching preset"
             service: select.select_option
             data:
-              entity_id: select.living_room_ceiling_lights_preset
+              entity_id: select.kitchen_ceiling_lights_preset
               option: >
                 {{ preset_values | selectattr('value', 'eq', brightness) | map(attribute='preset') | join }}
       - service: light.turn_on
         data:
-          entity_id: light.living_room_ceiling
+          entity_id: light.kitchen_ceiling
           brightness: "{{ brightness }}"
