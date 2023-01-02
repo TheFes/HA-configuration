@@ -54,9 +54,6 @@ script:
               - text_sensor.state:
                   id: my_light_mode
                   state: night
-              - text_sensor.state:
-                  id: my_light_mode
-                  state: "off"
           then:
             - front_panel.turn_on_leds: [POWER]
       - front_panel.update_leds:
@@ -75,10 +72,6 @@ light:
             id: current_brightness
             value: !lambda return x;
         - script.execute: update_front_panel
-    # on_turn_off:
-    #   then:
-    #     - front_panel.set_level: 0.1
-    #     - front_panel.set_leds: POWER
 
     # You can use any effects that you like. These are just examples.
     effects:
@@ -133,12 +126,13 @@ binary_sensor:
         then:
           - if:
               condition:
-                - or:
-                    - lambda: 'return id(time_homeassistant).now().hour >= 22;'
-                    - lambda: 'return id(time_homeassistant).now().hour <= 6;'
-                - text_sensor.state:
-                    id: my_light_mode
-                    state: "off"
+                - and:
+                    - or:
+                        - lambda: "return id(time_homeassistant).now().hour >= 22;"
+                        - lambda: "return id(time_homeassistant).now().hour <= 6;"
+                    - text_sensor.state:
+                        id: my_light_mode
+                        state: "off"
               then:
                 - light.turn_on:
                     id: my_light
@@ -183,9 +177,23 @@ sensor:
     range_from: 0.02
     on_value:
       then:
-        - light.turn_on:
-            id: my_light
-            brightness: !lambda return x;
+        - if:
+            condition:
+              - and:
+                  - or:
+                      - lambda: "return id(time_homeassistant).now().hour >= 22;"
+                      - lambda: "return id(time_homeassistant).now().hour <= 6;"
+                  - text_sensor.state:
+                      id: my_light_mode
+                      state: "off"
+            then:
+              - light.turn_on:
+                  id: my_light
+                  brightness: 1%
+            else:
+              - light.turn_on:
+                  id: my_light
+                  brightness: !lambda return x;
 
 # This text sensor propagates the currently active light mode.
 # The possible light modes are: "off", "rgb", "white" and "night".
