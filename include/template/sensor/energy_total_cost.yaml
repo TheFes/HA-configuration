@@ -37,7 +37,7 @@
                               'sensor.gas_consumption_cost'
                             ]
           %}
-          {{ entities | map('state_attr', 'last_reset') | min }}
+          {{ entities | map('state_attr', 'last_reset') | max }}
     # electricity, gas and water (using the sensor above)
     - unique_id: d1f2e0f6-6b79-4b7a-bfb7-a380e5671eb9
       name: Utility Costs Total
@@ -55,4 +55,4 @@
                               'sensor.watermeter_total_consumption_cost'
                             ]
           %}
-          {{ entities | map('state_attr', 'last_reset') | min }}
+          {{ entities | map('state_attr', 'last_reset') | max }}
