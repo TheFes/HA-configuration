@@ -1,4 +1,5 @@
 - sensor:
+    # only electricity and gas
     - unique_id: 414d57af-ebbe-41d2-84de-913542306181
       name: Energy Costs Total
       state: >
@@ -37,8 +38,7 @@
                             ]
           %}
           {{ entities | map('state_attr', 'last_reset') | min }}
-
-- sensor:
+    # electricity, gas and water (using the sensor above)
     - unique_id: d1f2e0f6-6b79-4b7a-bfb7-a380e5671eb9
       name: Utility Costs Total
       state: >
