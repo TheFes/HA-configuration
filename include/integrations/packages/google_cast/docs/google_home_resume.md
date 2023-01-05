@@ -1,11 +1,14 @@
 # Table of contents
-1. [Description](#description)
-1. [This script supports](#this-script-supports)
-1. [Latest changes](#latest-changes)
-1. [The automation for automatic resume](#the-automation-for-automatic-resume)
-1. [How to use the script](#how-to-use-the-script)
-1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
-1. [☕](#buy-me-a-coffee)
+- [Table of contents](#table-of-contents)
+- [Description](#description)
+- [This script supports](#this-script-supports)
+- [Latest changes](#latest-changes)
+    - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
+      - [🐛 Bug fixes](#-bug-fixes)
+- [The automation for automatic resume](#the-automation-for-automatic-resume)
+- [How to use the script](#how-to-use-the-script)
+- [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
+- [☕ Coffee](#-coffee)
 
 ___
 
@@ -26,21 +29,15 @@ ___
 
 # Latest changes
 
-### 2022.12 Happy Holidays; let's bring the family togethe
-
-#### 🌟 Improvements
-* Template to generate the `target_list` has been improved
-* A lot of other improvements in templates
-* (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
-* (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
+### 2023.1 Best wishes for 2023! 
 
 #### 🐛 Bug fixes
 
-* There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
+* Fix for `target_list` in case multiple targets are provided as string
 
 Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 
-## The automation for automatic resume
+# The automation for automatic resume
 
 In August 2022 support for the Google Home Automatic Resume automation has been added. The automation will trigger on `media_player.play_media` service calls. This includes TTS messages, as the TTS service call will issue the `media_player.play_media` service call after the TTS message has been generated. The automation will also trigger on casting a Dasboard, this can be disabled in the settings so it only triggers on audio interruptions.
 
@@ -99,7 +96,7 @@ Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-reques
 
 ___
 
-# Buy me a coffee
+# ☕ Coffee
 
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!

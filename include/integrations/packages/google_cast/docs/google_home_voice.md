@@ -1,11 +1,16 @@
 # Table of contents
-1. [Background](#background)
-1. [Latest changes](#latest-changes)
-1. [Prerequisites](#prerequisites)
-1. [Explanation of the settings for the voice script](#explanation-of-settings-for-the-voice-script)
-1. [How to use the script](#how-to-use-the-script)
-1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
-1. [☕](#buy-me-a-coffee)
+- [Table of contents](#table-of-contents)
+- [Background](#background)
+- [Requirements](#requirements)
+- [Latest changes](#latest-changes)
+    - [2022.12 Happy Holidays; let's bring the family together](#202212-happy-holidays-lets-bring-the-family-together)
+      - [🔴 BREAKING](#-breaking)
+      - [🌟 Improvements](#-improvements)
+- [Prerequisites](#prerequisites)
+- [Explanation of settings for the voice script](#explanation-of-settings-for-the-voice-script)
+- [How to use the script](#how-to-use-the-script)
+- [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
+- [☕ Coffee](#-coffee)
 
 ___
 
@@ -30,7 +35,7 @@ ___
 
 # Latest changes
 
-### 2022.12 Happy Holidays; let's bring the family togethe
+### 2022.12 Happy Holidays; let's bring the family together
 
 #### 🔴 BREAKING
 
@@ -114,7 +119,7 @@ Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-reques
 
 ___
 
-# Buy me a coffee
+# ☕ Coffee
 
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!

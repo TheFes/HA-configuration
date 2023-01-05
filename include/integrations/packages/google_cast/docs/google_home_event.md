@@ -1,10 +1,13 @@
 # Table of contents
-1. [Description](#description)
-1. [Latest changes](#latest-changes)
-1. [Prerequisites](#prerequisites)
-1. [How to use the script](#how-to-use-the-script)
-1. [Questions/Issues/Bugs](#questionsissuesbugsfeature-requests)
-1. [☕](#buy-me-a-coffee)
+- [Table of contents](#table-of-contents)
+- [Description](#description)
+- [Latest changes](#latest-changes)
+    - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
+      - [🐛 Bug fixes](#-bug-fixes)
+- [Prerequisites](#prerequisites)
+- [How to use the script](#how-to-use-the-script)
+- [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
+- [☕ Coffee](#-coffee)
 
 ___
 
@@ -16,16 +19,12 @@ ___
 
 # Latest changes
 
-### 2022.12 Happy Holidays; let's bring the family togethe
+### 2023.1 Best wishes for 2023!
+Only a small update with some bugfixes right now :)
 
-#### 🔴 BREAKING
+#### 🐛 Bug fixes
 
-* Integrated into the Google Home Resume package, update according to the [instructions](../readme.md#setup-instructions)
-
-#### 🌟 Improvements
-
-* Template improvements
-* More use of YAML anchors
+* Fix for `target_list` which was not working if a target was specified
 
 Older changes can be found [here](changelogs/changelog_google_home_event.md)
 
@@ -93,7 +92,7 @@ Please follow the [instructions](../readme.md/#questionsissuesbugsfeature-reques
 
 ___
 
-# Buy me a coffee
+# ☕ Coffee
 
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!

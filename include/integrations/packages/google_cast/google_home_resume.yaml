@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: 2022.12.3
+          version: &ver 2023.1.0
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -352,9 +352,12 @@ script:
                 {%- set target = target | default({}, true) %}
                 {%- set entities_check = cast_entities + mass_entities %}
               {# create lists based on target input #}
-                {%- set a = target.get('area_id', '') | join(',') %}
-                {%- set d = target.get('device_id', '') | join(',') %}
-                {%- set e = target.get('entity_id', '') | join(',') %}
+                {%- set a = target.get('area_id', []) %}
+                {%- set d = target.get('device_id', []) %}
+                {%- set e = target.get('entity_id', []) %}
+                {%- set a = (a | replace(' ', '')).split(',') if a is string else a %}
+                {%- set d = (d | replace(' ', '')).split(',') if d is string else d %}
+                {%- set e = ((e | replace(' ', '')).split(',') if e is string else e) | select('in', cast_entities) | list %}
               {# add targets based on actions #}
                 {# entities #}
                   {% set ns = namespace(e=e) %}
@@ -1123,9 +1126,11 @@ script:
     max_exceeded: silent
     variables: *voice_settings
     sequence:
-      - alias: "Variable for version number"
+      - alias: "Copy settings"
         variables:
-          version: 2022.12.0
+          settings: *settings
+      - alias: "Variable for version number"
+        variables: *version
       - alias: "Are there Spotify entities?"
         if: "{{ integration_entities('spotify') | count > 0 }}"
         then:
@@ -1137,7 +1142,6 @@ script:
         variables: *service_vars
       - alias: "Set settings and data source"
         variables:
-          settings: *settings
           data_source: voice_script
       - alias: "Set generic variables used by all scripts"
         variables: *generic_vars
@@ -1387,7 +1391,7 @@ script:
           boolean:
     sequence:
       - variables:
-          version: &ver 2022.12.0
+          version: *ver
       - variables:
           resume_id: "{{ resume_id if (resume_id is defined and resume_id) else 'not provided' }}"
           resume_volume: >
@@ -1395,66 +1399,40 @@ script:
               {{ [1, resume_volume / 100] | min if resume_volume > 1 else resume_volume }}
             {%- endif %}
           ignore_list: >
-            {# determine entities of cast integraton #}
-              {%- set cast_entities = integration_entities('cast') %}
-            {# create target lists #}
-            {%- if ignore is defined %}
-              {# create lists based on target input #}
-                {%- set area_list = ignore.get('area_id', []) %}
-                {%- set area_list = area_list.replace(' ' , '').split(',') if area_list is string else area_list %}
-                {%- set device_list = ignore.get('device_id', [])%}
-                {%- set device_list = device_list.replace(' ' , '').split(',') if device_list is string else device_list %}
-                {%- set entity_list = ignore.get('entity_id', []) %}
-                {%- set entity_list = entity_list.replace(' ' , '').split(',') if entity_list is string else entity_list %}
-              {# determine cast entities of areas #}
-                {%- set ns = namespace(area_cast = []) %}
-                {%- for area in area_list %}
-                  {%- set ns.area_cast = ns.area_cast + area_entities(area) %}
-                {%- endfor %}
-                {%- set area_cast = ns.area_cast | select('in', cast_entities) | list %}
-              {# determine cast entities of devices #}
-                {%- set ns = namespace(device_cast = []) %}
-                {%- for device in device_list %}
-                  {%- set ns.device_cast = ns.device_cast + device_entities(device) %}
-                {%- endfor %}
-                {%- set device_cast = ns.device_cast | select('in', cast_entities) | list %}
-              {# determine cast entities of all entities #}
-                {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
-            {# create list with all entities #}
-              {{ (area_cast + device_cast + entity_cast) | unique | list }}
-            {%- else %}
-              []
-            {%- endif %}
+            {%- set cast_entities = integration_entities('cast') %}
+            {%- set ignore = ignore | default({}, true) %}
+            {# create lists based on target input #}
+              {%- set a = ignore.get('area_id', []) %}
+              {%- set d = ignore.get('device_id', []) %}
+              {%- set e = ignore.get('entity_id', []) %}
+              {%- set a = (a | replace(' ', '')).split(',') if a is string else a %}
+              {%- set d = (d | replace(' ', '')).split(',') if d is string else d %}
+              {%- set e = ((e | replace(' ', '')).split(',') if e is string else e) | select('in', cast_entities) | list %}
+            {# create entity list based on device/area input #}
+              {# determine entities of areas #}
+                {%- set a = a | map('area_entities') | sum(start=[]) | select('in', cast_entities) | list %}
+              {# determine entities of devices #}
+                {%- set d = d | map('device_entities') | sum(start=[]) | select('in', cast_entities) | list %}
+            {# create list with all cast and mass entities #}
+            {{ (a + d + e) | unique | list }}
           target_list: >
-            {# create target lists #}
-            {%- if target is defined %}
-              {# create lists based on target input #}
-                {%- set area_list = target.get('area_id', []) %}
-                {%- set area_list = area_list.replace(' ' , '').split(',') if area_list is string else area_list %}
-                {%- set device_list = target.get('device_id', [])%}
-                {%- set device_list = device_list.replace(' ' , '').split(',') if device_list is string else device_list %}
-                {%- set entity_list = target.get('entity_id', []) %}
-                {%- set entity_list = entity_list.replace(' ' , '').split(',') if entity_list is string else entity_list %}
-              {# determine cast entities of areas #}
-                {%- set ns = namespace(area_cast = []) %}
-                {%- for area in area_list %}
-                  {%- set ns.area_cast = ns.area_cast + area_entities(area) %}
-                {%- endfor %}
-                {%- set area_cast = ns.area_cast | select('in', cast_entities) | list %}
-              {# determine cast entities of devices #}
-                {%- set ns = namespace(device_cast = []) %}
-                {%- for device in device_list %}
-                  {%- set ns.device_cast = ns.device_cast + device_entities(device) %}
-                {%- endfor %}
-                {%- set device_cast = ns.device_cast | select('in', cast_entities) | list %}
-              {# determine cast entities of all entities #}
-                {%- set entity_cast = entity_list | select('in', cast_entities) | list %}
-            {# create list with all entities #}
-              {%- set target_list = (area_cast + device_cast + entity_cast) | unique | list %}
-            {%- else %}
-              {%- set target_list = integration_entities('cast') %}
-            {%- endif %}
-            {{ target_list | reject('in', ignore_list) | list }}
+            {%- set cast_entities = integration_entities('cast') %}
+            {%- set target = target | default({}, true) %}
+            {# create lists based on target input #}
+              {%- set a = target.get('area_id', []) %}
+              {%- set d = target.get('device_id', []) %}
+              {%- set e = target.get('entity_id', []) %}
+              {%- set a = (a | replace(' ', '')).split(',') if a is string else a %}
+              {%- set d = (d | replace(' ', '')).split(',') if d is string else d %}
+              {%- set e = ((e | replace(' ', '')).split(',') if e is string else e) | select('in', cast_entities) | list %}
+            {# create entity list based on device/area input #}
+              {# determine entities of areas #}
+                {%- set a = a | map('area_entities') | sum(start=[]) | select('in', cast_entities) | list %}
+              {# determine entities of devices #}
+                {%- set d = d | map('device_entities') | sum(start=[]) | select('in', cast_entities) | list %}
+            {# create list with all cast and mass entities #}
+              {%- set target_list = (a + d + e) | unique | list %}
+            {{ target_list | default(cast_entities, true) | reject('in', ignore_list) | list }}
           all: "{{ target_list == integration_entities('cast') }}"
       - alias: "Store or resume or remove data"
         choose:
@@ -1473,7 +1451,7 @@ script:
                     target:
                       entity_id: "{{ integration_entities('spotify') }}"
               - variables:
-                  settings: "{{ state_attr('script.google_home_resume', 'settings') | to_json }}"
+                  settings: *settings
                   data_source: event_script
               - variables: *generic_vars
               - variables:
@@ -1621,6 +1599,7 @@ automation:
           service: show_lovelace_view
         id: cast
     variables:
+      version: *ver
       settings: *settings
       entities: >
         {%- set e = trigger.event.data.service_data.entity_id %}
@@ -1643,8 +1622,6 @@ automation:
         condition: template
         value_template: "{{ trigger.id == 'play' or settings.get('dashboard_cast') | default(true) or settings.get('dashboard_cast') is none }}"
     action:
-      - alias: Variable for version number
-        variables: *version
       - alias: Set variables to be used in the automation
         variables: *generic_vars
       - alias: "Failsafe to remove all groups if no resume scripts are not running"

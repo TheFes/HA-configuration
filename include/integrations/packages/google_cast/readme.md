@@ -2,21 +2,38 @@
 
 ## Table of contents
 
-1. [Background](#background)
-1. [Latest version](#latest-version)
-1. [Requirements](#requirements)
-1. [Setup instructions](#setup-instructions)
-    * [Updating from previous version](#updating-from-a-previous-version)
-    * [Install the package](#install-the-package)
-    * [Script Settings](#script-settings)
-    * [Spotify resume settings](#spotify-resume)
-    * [Youtube Music resume settings](#youtube-music-resume)
-    * [Dummy player for TTS with picture and text](#dummy-player-for-tts-with-picture-and-text)
-1. [Description of scripts](#description-of-scripts)
-1. [Known limitations](#known-limitations)
-1. [Questions/Issues/Bugs/Feature requests](#questionsissuesbugsfeature-requests)
-1. [Why not a Blueprint](#why-not-a-blueprint)
-1. [☕](#buy-me-a-coffee)
+- [Google Home Resume Package](#google-home-resume-package)
+  - [Table of contents](#table-of-contents)
+  - [Background](#background)
+  - [Latest version](#latest-version)
+    - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
+    - [🌐 GENERAL](#-general)
+      - [🌟 Improvements](#-improvements)
+    - [:recycle: RESUME SCRIPT](#recycle-resume-script)
+      - [🐛 Bug fixes](#-bug-fixes)
+    - [🎭 EVENT SCRIPT](#-event-script)
+      - [🐛 Bug fixes](#-bug-fixes-1)
+  - [Requirements](#requirements)
+  - [Setup instructions](#setup-instructions)
+    - [Updating from a previous version](#updating-from-a-previous-version)
+      - [Prior to 2022.11](#prior-to-202211)
+      - [From version 2022.11](#from-version-202211)
+    - [Install the package](#install-the-package)
+    - [Script Settings](#script-settings)
+    - [Spotify resume](#spotify-resume)
+      - [One Spotify Account](#one-spotify-account)
+        - [Multiple accounts](#multiple-accounts)
+          - [Example:](#example)
+    - [YouTube Music resume](#youtube-music-resume)
+    - [Dummy player for TTS with picture and text](#dummy-player-for-tts-with-picture-and-text)
+  - [Description of scripts](#description-of-scripts)
+    - [**Google Home Resume**](#google-home-resume)
+    - [**Google Home Voice**](#google-home-voice)
+    - [**Google Home Event**](#google-home-event)
+  - [Known limitations](#known-limitations)
+  - [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
+  - [Why not a blueprint?](#why-not-a-blueprint)
+  - [☕ Coffee](#-coffee)
 
 ___
 
@@ -31,38 +48,26 @@ ___
 
 ## Latest version
 
-### 2022.12 Happy Holidays; let's bring the family together
-It's December which is the time to come together with your family for the holidays. That is exactly what this version does, it brings all scripts together into one package!
+### 2023.1 Best wishes for 2023!
+Only a small update with some bugfixes right now :)
 
 ### 🌐 GENERAL
 
-#### 🚨 Breaking
-* The settings in the top section now also have a section with `voice_settings`. This needs to be added to versions prior to 2022.12, otherwise your configuration will not work. More information can be found in the  [update instructions](https://github.com/TheFes/HA-configuration/tree/main/include/integrations/packages/google_cast#from-version-202211)
-
-#### 🐛 Bug fixes
-
-* (2022.12.2) Add default to provide empty dictionary for `settings` in case no settings are provided.
-
-
 #### 🌟 Improvements
 
-* All scripts related to the Google Home devices are now combined in one package. This brings toghether the Google Home Resume, Google Home Voice and Google Home Event script. For me it makes it easier to update them, I can make more efficient usage of YAML anchors,so I don't need to update templates and settings in 3 places.
-* A lot of bigger and smaller template fixes
-* More usage of YAML anchors, which also reduces the total number of lines for the combined scripts
+* Some changes in how the version numbers are copied over to the different scripts (using YAML anchors)
 
 ### :recycle: RESUME SCRIPT
 
-#### 🌟 Improvements
+#### 🐛 Bug fixes
 
-* Template to generate the `target_list` has been improved
-* Apparantly Google Home Speaker groups now show as `playing` when a member is playing media. Not only when the group has been targeted. The template to generate the `player_data` has been amended to avoid showing groups as playing when they are not.
-* (2022.12.1) New setting: `max_runtime` has been added. Here you can define a time period after which the scripts should be stopped, to avoid them waiting for ages. Take into account that this has to be longer than the interruption, so if you play a song of 10 minutes, the `max_runtime` has to be set longer than that
-* (2022.12.1) The `spotcast.start` service call is now issued twice, this should help in resuming Spotify
-* (2022.12.3) The automation is now also triggered if a Home Assistant group is targeted which has cast entities as its members
+* Fix for `target_list` in case multiple targets are provided as string
+
+### 🎭 EVENT SCRIPT
 
 #### 🐛 Bug fixes
 
-* There was bug when using the automation which would start the script for a group member when that was the target of a service call, but the group was playing. This caused the resume to fail.
+* Fix for `target_list` which was not working if a target was specified
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)
@@ -267,7 +272,7 @@ So, basically, I gave it a try, and decided it would not work :)
 
 ___
 
-## Buy me a coffee
+## ☕ Coffee
 
 If you like this script, please feel free to buy me a coffee (I might spend it on another beverage though).
 In case you decide to do so, thanks a lot!
