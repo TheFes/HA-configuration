@@ -5,6 +5,7 @@
 - [Google Home Resume Package](#google-home-resume-package)
   - [Table of contents](#table-of-contents)
   - [Background](#background)
+- [🚨 SPOTIFY RESUME ISSUES 🚨](#-spotify-resume-issues-)
   - [Latest version](#latest-version)
     - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
     - [🌐 GENERAL](#-general)
@@ -43,6 +44,17 @@ This package started somewhere in 2020 as a simple script to resume a Google Cas
 In the past years I also created others scripts using the Google Home Resume script. There is a script to determine on which device a question was asked and send a TTS or play a file on that specific device. Another script stores the state of the cast devices in a template sensor, so it can be resumed in later (for example store it when you leave home, and restore it when you arrive home again).
 
 All these scripts are now combined in one package
+
+___
+
+#  🚨 SPOTIFY RESUME ISSUES 🚨
+
+There are currently issues with resuming Spotify, this is not caused by the script, but something which is caused by Spotify, which makes Spotcast unable to perform the resume.
+The issue you will see (as error in the trace of the helper script, or your log, will be something like `Error executing script. Error for if at pos 2: Could not find device with name Kitchen Google Display`
+
+For me the suggestions provided in this [spotcast issue](https://github.com/fondberg/spotcast/issues/365#issuecomment-1356797204) on GitHub helped. I've done these changes in my spotcast files, and for me resume works fine now. The changed files can be found [here](https://github.com/TheFes/HA-configuration/tree/main/custom_components/spotcast).
+
+If that doesn't work, you might wat to try the changes from this [spotcast PR](https://github.com/fondberg/spotcast/pull/366). Haven't applied those mysef, because for me it seems to work now.
 
 ___
 
