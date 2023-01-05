@@ -4,16 +4,17 @@ view_layout:
 cards:
   - type: custom:mushroom-title-card
     title: >-
+      {% set language = states('input_select.dashboard_language') %}
       {%- if is_state('sensor.anniversary_' ~ user | lower, '0') %}
-        🎉 Gefeliciteerd {{ user }}!! 🎉
+        🎉 {{ 'Happy Birthday' if language == 'EN' and user == 'Martijn' else 'Gefeliciteerd' }} {{ user }}!! 🎉
       {%- elif now() < today_at('06:00') %}
-        Goedenacht {{ user }}
+        {{ 'Good night' if language == 'EN' and user == 'Martijn' else 'Goedenacht' }} {{ user }}
       {%- elif now() < today_at('12:00') %}
-        Goedemorgen {{ user }}
+        {{ 'Good Morning' if language == 'EN' and user == 'Martijn' else 'Goedemorgen' }} {{ user }}
       {%- elif now() < today_at('18:00') %}
-        Goedemiddag {{ user }}
+        {{ 'Good afternoon' if language == 'EN' and user == 'Martijn' else 'Goedemiddag' }} {{ user }}
       {%- else %}
-        Goedenavond {{ user }}
+        {{ 'Good evening' if language == 'EN' and user == 'Martijn' else 'Goedenavond' }} {{ user }}
       {%- endif %}
     alignment: center
     # actual messages are taken from template sensor, to avoid that every template has to be rendered on dashboard reload

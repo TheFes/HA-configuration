@@ -1,7 +1,12 @@
-square: false
-columns: 2
-title: Buiten
-type: grid
+type: vertical-stack
 view_layout:
   grid-area: outside
-cards: !include_dir_list /config/include/lovelace/01_general/roomcards/00_outside/
+cards:
+  - type: custom:mushroom-title-card
+    title: >-
+      {% set title = { "NL": "Buiten", "EN": "Outside" } %}
+      {{ title[states('input_select.dashboard_language')] if user == "Martijn" else title['NL'] }}
+  - type: grid
+    square: false
+    columns: 2
+    cards: !include_dir_list /config/include/lovelace/01_general/roomcards/00_outside/

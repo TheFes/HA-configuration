@@ -1,7 +1,9 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    primary: Hal/Voordeur
+    primary: >
+      {% set title = { "NL": "Hal/Voordeur", "EN": "Hallway" } %}
+      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
     icon: mdi:door
     icon_color: blue
     layout: horizontal
