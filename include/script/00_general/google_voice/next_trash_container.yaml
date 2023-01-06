@@ -6,6 +6,7 @@ next_trash_container_routine:
         trash_descr:
           restgft: "rest- en GFT-bak"
           dhm: "papier- en PMD-bak"
+          papier: "papier- en PMD-bak"
           kerstbomen: "kerstboom"
         trash_pickup: >
           {%- set trash_pickup = states('sensor.afvalwijzer_next_type').split(', ') %}
@@ -52,5 +53,5 @@ next_trash_container_routine:
                     {{ trash_pickup[0] }}
                   {%- endif %}
                 small_text: "{{ when }}"
-                picture_url: "http://192.168.2.3:8123/local/pictures/tts/{{ 'papierpmd.png' if 'dhm' in states('sensor.afvalwijzer_next_type') else 'restgft.png' }}"
+                picture_url: "http://192.168.2.3:8123/local/pictures/tts/{{ 'restgft.png' if 'rest' in states('sensor.afvalwijzer_next_type') else 'papierpmd.png' }}"
               volume: 0.35

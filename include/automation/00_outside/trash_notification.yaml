@@ -18,6 +18,7 @@ variables:
   trash_descr:
     restgft: "rest- en GFT-bak"
     dhm: "papier- en PMD-bak"
+    papier: "papier- en PMD-bak"
     kerstbomen: "kerstboom"
   trash_pickup: >
     {%- set trash = states(sensor).split(', ') %}
@@ -25,7 +26,7 @@ variables:
 condition:
   - alias: "Notification needed?"
     condition: template
-    value_template: "{{ states(sensor) != 'Geen' }}"
+    value_template: "{{ states(sensor) != 'geen' }}"
 action:
   - alias: "Notification phones"
     service: notify.all_phones
