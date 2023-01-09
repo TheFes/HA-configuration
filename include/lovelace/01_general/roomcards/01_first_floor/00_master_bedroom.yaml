@@ -1,6 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
+    entity: light.groep_slaapkamer
     primary: >
       {% set title = { "NL": "Slaapkamer", "EN": "Bedroom" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -8,7 +9,10 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >-
-      {{ states('sensor.slaapkamer_temp') ~ '°C' if states('sensor.slaapkamer_temp') | is_number }}
+      {% set hum = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'humidity') | map('states') | select('is_number') | map('float') | list or [0]) | average  | round(0) %}
+      {% set temp = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'temperature') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
+      {% set lux = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'illuminance') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
+      {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     tap_action:
       action: navigate
       navigation_path: slaapkamer

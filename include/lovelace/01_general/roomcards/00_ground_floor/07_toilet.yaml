@@ -4,15 +4,17 @@ cards:
     primary: >
       {% set title = { "NL": "WC", "EN": "Toilet" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    secondary: >
+      {% set hum = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'humidity') | map('states') | select('is_number') | map('float') | list or [0]) | average  | round(0) %}
+      {% set temp = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'temperature') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
+      {% set lux = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'illuminance') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
+      {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     icon: mdi:toilet
     icon_color: blue
     entity: binary_sensor.motion_wc
     badge_icon: "{{ 'mdi:motion-sensor' if is_state(entity, 'on') }}"
     badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     layout: horizontal
-    secondary: >-
-      {{ states('sensor.motion_wc_temperature') ~ '°C | ' if states('sensor.motion_wc_temperature') | is_number }}
-      {{ states('sensor.licht_wc') | int ~ ' lx' if states('sensor.licht_wc') | is_number }}
     tap_action:
       action: navigate
       navigation_path: wc

@@ -4,6 +4,11 @@ cards:
     primary: >
       {% set title = { "NL": "Speelhoek", "EN": "Play area" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    secondary: >
+      {% set hum = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'humidity') | map('states') | select('is_number') | map('float') | list or [0]) | average  | round(0) %}
+      {% set temp = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'temperature') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
+      {% set lux = (integration_entities('deconz') | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'illuminance') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
+      {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     icon: mdi:toy-brick
     icon_color: blue
     layout: horizontal
