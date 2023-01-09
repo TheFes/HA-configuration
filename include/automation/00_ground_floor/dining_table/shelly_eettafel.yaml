@@ -63,27 +63,28 @@ action:
                     - media_player.keuken_hub
                     - media_player.woonkamer_mini
               - alias: "Extractor hood off if needed?"
-                choose:
-                  - conditions:
-                      - alias: "Afzuigkap of lichtje actief?"
-                        condition: numeric_state
-                        entity_id: sensor.afzuigkap_power
-                        above: 0.5
-                    sequence:
-                      - alias: "Turn off power plug extractor hood"
-                        service: switch.turn_off
-                        target:
-                          entity_id: switch.afzuigkap
-              - alias: "TV plug off"
-                choose:
-                  - conditions:
-                      - alias: "Check for override"
-                        condition: state
-                        entity_id: input_boolean.tv_meubel_override
-                        state: "off"
-                    sequence:
-                      - delay: 20
-                      - alias: "Turn off plug"
-                        service: switch.turn_off
-                        target:
-                          entity_id: switch.tv_meubel
+                if:
+                  - alias: "Extractor hood active"
+                    condition: numeric_state
+                    entity_id: sensor.afzuigkap_power
+                    above: 0.5
+                then:
+                  - alias: "Turn off power plug extractor hood"
+                    service: switch.turn_off
+                    target:
+                      entity_id: switch.afzuigkap
+              - if:
+                  - alias: "Bed time"
+                    condition: time
+                    after: "21:00:00"
+                    before: "06:00:00"
+                  - alias: "Check for override"
+                    condition: state
+                    entity_id: input_boolean.tv_meubel_override
+                    state: "off"
+                then:
+                  - delay: 20
+                  - alias: "Turn off TV plug"
+                    service: switch.turn_off
+                    target:
+                      entity_id: switch.tv_meubel
