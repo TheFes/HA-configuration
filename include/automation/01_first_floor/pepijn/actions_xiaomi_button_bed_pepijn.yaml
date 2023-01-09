@@ -37,7 +37,10 @@ action:
                     data:
                       color_name: red
                       brightness: 30
-                  - delay: 15
+                  - delay: >
+                      {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes =states('input_number.leestijd_pepijn')| int) %}
+                      {% set next = next + timedelta(days=1) if now() > next else next %}
+                      {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
                   - service: light.turn_off
                     target:
                       entity_id: light.graafmachine
