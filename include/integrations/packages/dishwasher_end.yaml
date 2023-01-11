@@ -1,0 +1,142 @@
+automation:
+  - id: 341786d9-1a4e-4328-be86-1e3d68d5744c
+    alias: "F0K - Dishwasher notification"
+    mode: single
+    max_exceeded: silent
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_active
+        from: "on"
+        to: "off"
+        id: "finished"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dishwasher_program
+        data:
+          option: Eco
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.dishwasher_program_extra
+        data:
+          option: Normaal
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.dishwasher_delayed_start
+        data:
+          value: 0
+      - alias: "Notification"
+        service: notify.all_phones
+        data:
+          title: "💦 De vaatwasser is klaar"
+          message: "Doe hem snel open zodat hij kan uitwasemen"
+          data:
+            channel: Dishwasher
+            ttl: 0
+            priority: high
+            notification_icon: mdi:dishwasher-alert
+
+input_select:
+  dishwasher_program:
+    name: Programma
+    options:
+      - Intensief
+      - Auto
+      - Eco
+      - Stil
+      - Glas
+      - Snel
+  dishwasher_extra:
+    name: Extra instelling
+    options:
+      - Normaal
+      - Snel
+      - Halve belading
+      - Intensief
+      - Extra droog
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_active
+        from: ["on", "off"]
+        to: ["on", "off"]
+        for:
+          seconds: 1
+      - platform: state
+        entity_id:
+          - input_select.dishwasher_program
+          - input_select.dishwasher_program_extra
+          - input_number.dishwasher_delayed_start
+    sensor:
+      - unique_id: ecdac461-f0a5-486e-b05e-99357fd60567
+        name: Dishwasher end time
+        state: >
+          {% set on_delay = 10 %}
+          {% set sensor = 'binary_sensor.dishwasher_active' %}
+          {% set active = is_state(sensor, 'on') %}
+          {% set programs = {
+                              "Intensief": {
+                                "Normaal": 135,
+                                "Snel": 90,
+                                "Halve belading": 110,
+                                "Intensief": 160,
+                                "Extra droog": 145
+                              },
+                              "Auto": {
+                                "Normaal": 160,
+                                "Snel": 80,
+                                "Halve belading": 140,
+                                "Intensief": 165,
+                                "Extra droog": 170
+                              },
+                              "Eco": {
+                                "Normaal": 210,
+                                "Snel": 85,
+                                "Halve belading": 191,
+                                "Intensief": 220,
+                                "Extra droog": 215
+                              },
+                              "Stil": {
+                                "Normaal": 240,
+                                "Snel": 135,
+                                "Halve belading": 135,
+                                "Intensief": 245,
+                                "Extra droog": 245
+                              },
+                              "Glas": {
+                                "Normaal": 90,
+                                "Snel": 60,
+                                "Halve belading": 80,
+                                "Intensief": 100,
+                                "Extra droog": 105
+                              },
+                              "Snel": {
+                                "Normaal": 29,
+                                "Extra droog": 44
+                              }
+                            }
+          %}
+          {% set program = states('input_select.dishwasher_program') %}
+          {% set extra = states('input_select.dishwasher_program_extra') %}
+          {% set delay = states('input_number.dishwasher_delayed_start') | int * 60 %}
+          {% set duration = (programs[program][extra] - on_delay + delay) if programs else 0 %}
+          {% set dishwasher_on = state_attr('sensor.binary_change_history', 'changes_on')[sensor] %}
+          {% set dishwasher_off = state_attr('sensor.binary_change_history', 'changes_off')[sensor] %}
+          {{ as_datetime(dishwasher_on) + timedelta(minutes=duration) if active else as_datetime(dishwasher_off) }}
+        attributes:
+          start_time: >
+            {{
+              (now() - timedelta(minutes=10)).isoformat()
+              if trigger.entity_id == 'binary_sensor.dishwasher_active' and trigger.to_state.state == 'on'
+              else this.attributes.get('start_time')
+            }}
+          delayed_start: >
+            {% if trigger.entity_id == 'input_number.dishwasher_delayed_start' %}
+              {{
+                (as_datetime(this.attributes.get('start_time', now().isoformat())) 
+                + timedelta(hours = states('input_number.dishwasher_delayed_start') |int)).isoformat()
+              }}
+            {% else %}
+              {{ this.attributes.get('delayed_start') }}
+            {% endif %}
