@@ -24,9 +24,11 @@ lights:
       {% set light = this.entity_id | regex_replace('_template', '') %}
       {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
     min_mireds_template: &min_mireds >
-      {{ state_attr('light.speelhoek', 'min_mireds') | int(153) }}
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ state_attr(light, 'min_mireds') | int(153) }}
     max_mireds_template: &max_mireds >
-      {{ state_attr('light.speelhoek', 'max_mireds') | int(370) }}"
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ state_attr(light, 'max_mireds') | int(370) }}"
     availability_template: &availablity >
       {% set room = this.entity_id | regex_replace('light.|_template', '') %}
       {{
@@ -68,7 +70,7 @@ lights:
     set_level: &set_level
       - service: light.turn_on
         data:
-          entity_id: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
           brightness: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {% if light in integration_entities('esphome') %}
@@ -79,7 +81,7 @@ lights:
     set_temperature: &set_temperature
       - service: light.turn_on
         data:
-          entity_id: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
           color_temp: "{{ color_temp }}"
 
   slaapkamer_template:
