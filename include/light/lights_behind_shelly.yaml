@@ -1,0 +1,121 @@
+platform: template
+lights:
+  eettafel_template:
+    unique_id: 847f5495-8971-4656-8fde-7a636e983735
+    friendly_name: "Eettafel Template"
+    level_template: &level >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {% if light in integration_entities('esphome') %}
+        {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
+      {% else %}
+        {{ state_attr(light, 'brightness') | int(255) }}
+      {% endif %}
+    value_template: &value >
+      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+      {{
+        is_state('light.' ~ room, 'on')
+        or 
+          (
+            not states('light.' ~ room) | bool('na') is boolean
+            and is_state('switch.shelly1_' ~ room, 'on')
+          )
+      }}
+    temperature_template: &temperature >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
+    min_mireds_template: &min_mireds >
+      {{ state_attr('light.speelhoek', 'min_mireds') | int(153) }}
+    max_mireds_template: &max_mireds >
+      {{ state_attr('light.speelhoek', 'max_mireds') | int(370) }}"
+    availability_template: &availablity >
+      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+      {{
+        states('light.' ~ room) | bool('na') is boolean
+        or states('switch.shelly1_' ~ room) | bool('na') is boolean
+      }}
+    turn_on: &turn_on
+      - if: >
+          {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+          {{ states('light.' ~ room) | bool('na') is boolean }}
+        then:
+          - service: >
+              {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+              script.{{ room }}_toggle
+            data:
+              action: "on"
+        else:
+          - service: swicht.toggle
+            target:
+              entity_id: >
+                {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                switch.shelly1_{{ room }}
+    turn_off: &turn_off
+      - if: >
+          {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+          {{ states('light.' ~ room) | bool('na') is boolean }}
+        then:
+          - service: >
+              {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+              script.{{ room }}_toggle
+            data:
+              action: "off"
+        else:
+          - service: swicht.toggle
+            target:
+              entity_id: >
+                {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                switch.shelly1_{{ room }}
+    set_level: &set_level
+      - service: light.turn_on
+        data:
+          entity_id: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+          brightness: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {% if light in integration_entities('esphome') %}
+              {{ (brightness | float * 0.855 + 255*0.145) | round }}
+            {% else %}
+              {{ brightness }}
+            {% endif %}
+    set_temperature: &set_temperature
+      - service: light.turn_on
+        data:
+          entity_id: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+          color_temp: "{{ color_temp }}"
+
+  slaapkamer_template:
+    unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c1
+    friendly_name: "Slaapkamer Template"
+    level_template: *level
+    value_template: *value
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+
+  pepijn_template:
+    unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
+    friendly_name: "Pepijn Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  floris_template:
+    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+    friendly_name: "Floris Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
