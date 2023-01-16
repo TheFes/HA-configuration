@@ -22,7 +22,7 @@ variables:
   light: "{{ trigger.entity_id }}"
   max_ct: "{{ overrides.get(light, {}).get('max_ct') | default(state_attr(light, 'max_color_temp_kelvin'), true) }}"
   min_ct: "{{ overrides.get(light, {}).get('min_ct') | default(state_attr(light, 'min_color_temp_kelvin'), true) }}"
-  br: "{{ trigger.to_state.attributes.brightness }}"
+  br: "{{ state_attr(trigger.entity_id, 'brightness') }}"
   color_mode: "{{ state_attr(light, 'color_mode') | default('color_temp', true) }}"
 condition:
   - alias: "Light on?"
@@ -36,7 +36,7 @@ condition:
     value_template: "{{ color_mode == 'color_temp' }}"
   - alias: "No transition active"
     condition: template
-    value_template: "{{ light not in state_attr('group.transition_active', 'entity_id') or light | replace('_template', '') not in state_attr('group.transition_active', 'entity_id') }}"
+    value_template: "{{ light not in state_attr('group.transition_active', 'entity_id') and light | replace('_template', '') not in state_attr('group.transition_active', 'entity_id') }}"
 action:
   - alias: "Set color temperature based on brightness"
     service: light.turn_on
