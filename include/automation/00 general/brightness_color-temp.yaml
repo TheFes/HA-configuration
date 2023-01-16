@@ -13,14 +13,16 @@ trigger:
       - light.bedside_lamp_martijn
     attribute: brightness
 variables:
-  hue: []
+  overrides:
+    light.example_light:
+      min_ct: 2000
+      max_ct: 6500
   name: "{{ trigger.to_state.object_id | replace('_template', '') }}"
   input_boolean_dimmed: "{{ 'input_boolean.dimmed_' + name }}"
   light: "{{ trigger.entity_id }}"
-  max_ct: "{{ state_attr(light, 'max_mireds') }}"
-  min_ct: >
-    {{ 380 if light in hue else state_attr(light, 'min_mireds') }}
-  bright: "{{ state_attr(light, 'brightness') }}"
+  max_ct: "{{ overrides.get(light, {}).get('max_ct') | default(state_attr(light, 'max_color_temp_kelvin'), true) }}"
+  min_ct: "{{ overrides.get(light, {}).get('min_ct') | default(state_attr(light, 'min_color_temp_kelvin'), true) }}"
+  br: "{{ trigger.to_state.attributes.brightness }}"
   color_mode: "{{ state_attr(light, 'color_mode') | default('color_temp', true) }}"
 condition:
   - alias: "Light on?"
@@ -32,11 +34,14 @@ condition:
   - alias: "Light on color_temp mode?"
     condition: template
     value_template: "{{ color_mode == 'color_temp' }}"
+  - alias: "No transition active"
+    condition: template
+    value_template: "{{ light not in state_attr('group.transition_active', 'entity_id') or light | replace('_template', '') not in state_attr('group.transition_active', 'entity_id') }}"
 action:
-  - alias: "Set colore temperature based on brightness"
+  - alias: "Set color temperature based on brightness"
     service: light.turn_on
     target:
       entity_id: "{{ light }}"
     data:
-      color_temp: >-
-        {{ [ max_ct, (( max_ct - (( bright - 1) * ((max_ct - min_ct) / 254))) | int)] | min }}
+      color_temp_kelvin: >
+        {{ [max_ct, min_ct + ((br-1) * (max_ct - min_ct) / 254) | int] | min }}
