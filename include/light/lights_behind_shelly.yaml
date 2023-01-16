@@ -28,7 +28,7 @@ lights:
       {{ state_attr(light, 'min_mireds') | int(153) }}
     max_mireds_template: &max_mireds >
       {% set light = this.entity_id | regex_replace('_template', '') %}
-      {{ state_attr(light, 'max_mireds') | int(370) }}"
+      {{ state_attr(light, 'max_mireds') | int(370) }}
     availability_template: &availablity >
       {% set room = this.entity_id | regex_replace('light.|_template', '') %}
       {{
