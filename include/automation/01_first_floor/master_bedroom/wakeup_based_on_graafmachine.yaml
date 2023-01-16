@@ -1,0 +1,54 @@
+alias: "F1M - Wakeup based on timer Pepijn"
+id: "f94a2f5c-275b-493c-b3c7-bea38e4adf1e"
+mode: single
+trigger:
+  - platform: template
+    value_template: >
+      {% set end = today_at(states('input_datetime.pepijn_time_awake')) %}
+      {% set start = end - timedelta(seconds=states('input_number.leestijd_pepijn') | int * 60 + transition_seconds + out_of_bed_seconds) %}
+      {{ start < now() < end }}
+    id: transition
+  - platform: time
+    at: "21:00:00"
+    id: volume
+trigger_variables:
+  transition_seconds: 300
+  out_of_bed_seconds: 120
+condition:
+  - alias: "Boolean set to on"
+    condition: state
+    entity_id: input_boolean.wakeup_martijn_graafmachine
+    state: "on"
+action:
+  - if: "{{ trigger is defined and trigger.get('id') == 'volume' }}"
+    then:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.slaapkamer_hub
+        data:
+          volume_level: 0.1
+    else:
+      - service: script.turn_on
+        target:
+          entity_id: script.transition_lights
+        data:
+          variables:
+            lights:
+              - light.bedside_lamp_martijn
+            duration: "{{ transition_seconds }}"
+            br_start: 1
+            br_end_pct: 50
+            rgb_start:
+              - 255
+              - 160
+              - 0
+            rgb_end:
+              - 255
+              - 255
+              - 255
+      - service: media_player.play_media
+        target:
+          entity_id: media_player.slaapkamer_hub
+        data:
+          media_content_id: "media-source://media_source/local/misc/Rainforest-sounds.mp3"
+          media_content_type: "music"
