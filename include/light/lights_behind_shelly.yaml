@@ -46,7 +46,7 @@ lights:
             data:
               action: "on"
         else:
-          - service: swicht.toggle
+          - service: switch.toggle
             target:
               entity_id: >
                 {% set room = this.entity_id | regex_replace('light.|_template', '') %}
@@ -62,7 +62,7 @@ lights:
             data:
               action: "off"
         else:
-          - service: swicht.toggle
+          - service: switch.toggle
             target:
               entity_id: >
                 {% set room = this.entity_id | regex_replace('light.|_template', '') %}
