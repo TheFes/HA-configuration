@@ -38,6 +38,10 @@ condition:
       {%- set groups = integration_entities('group') | select('search', 'group.resume_script_active') | list %}
       {%- set entities = expand(groups) | map(attribute='entity_id') | list %}
       {{ not trigger.entity_id in entities }}
+  - alias: "After wake-up Pepijn"
+    value_template: >
+      {% set wakeup = today_at(states('input_datetime.pepijn_time_awake')) %}
+      {{ now() > wakeup }}
 variables:
   player: "{{ trigger.entity_id }}"
   device: "{{ trigger.entity_id | replace('media_player.', '') }}"
