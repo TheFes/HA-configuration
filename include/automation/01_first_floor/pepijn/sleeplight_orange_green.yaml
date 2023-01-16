@@ -31,10 +31,17 @@ action:
             use_ct: false
             duration: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - now()).seconds }}"
     else:
-      - service: light.turn_on
+      - service: script.turn_on
         target:
-          entity_id: light.graafmachine
+          entity_id: script.transition_lights
         data:
-          color_name: "{{ trigger.id }}"
-          brightness_pct: 100
-          transition: 5
+          variables:
+            lights:
+              - light.graafmachine
+            use_br: false
+            use_ct: false
+            rgb_end:
+              - 0
+              - 255
+              - 0
+            duration: 10
