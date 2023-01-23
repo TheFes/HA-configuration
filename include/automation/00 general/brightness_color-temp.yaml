@@ -36,7 +36,7 @@ condition:
     value_template: "{{ color_mode == 'color_temp' }}"
   - alias: "No transition active"
     condition: template
-    value_template: "{{ light not in state_attr('group.transition_active', 'entity_id') and light | replace('_template', '') not in state_attr('group.transition_active', 'entity_id') }}"
+    value_template: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | select('search', light | replace('_template', '')) | list | count == 0 }}"
 action:
   - alias: "Set color temperature based on brightness"
     service: light.turn_on

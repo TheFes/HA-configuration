@@ -161,6 +161,23 @@ transition_lights:
           max: 500
           step: 1
           unit_of_measurement: "step"
+    mode:
+      description: "What to do if there is already a transition active for the light, possible options are single, parallel and queued, default is single"
+      name: Tansition mode
+      default: single
+      selector:
+        select:
+          options:
+            - single
+            - parallel
+            - queued
+    split_service:
+      description: "split changes of eg brightness and color temperarture into seperate service calls"
+      name: Split service calls
+      default: false
+      required: false
+      selector:
+        boolean:
   sequence:
     - alias: Convert lights input to lists if it is a string
       variables:
@@ -188,6 +205,8 @@ transition_lights:
                 use_br: "{{ use_br | default(true) }}"
                 use_ct: "{{ use_ct | default(true) }}"
                 max_steps: "{{ max_steps | default(none) }}"
+                mode: "{{ mode | default('single') }}"
+                split_service: "{{ split_service | default(fasle) }}"
 
 transition_lights_perform_transition:
   alias: "00 - Perform transition light brightness, color temperature and/or RGB values (helper script)"
@@ -205,16 +224,20 @@ transition_lights_perform_transition:
             object_id: transition_active
     - alias: "Check if transition for this light is not already active"
       if: >
-        {{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}
+        {{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) or mode != 'single' }}
       then:
         - delay: "{{ 0.1 * (state_attr(this.entity_id, 'current') -1) }}"
+        - if: "{{ mode == 'queued' }}"
+          then:
+            - alias: "Wait until current transition is finished"
+              wait_template: "{{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
         - alias: "Add light to group"
           service: group.set
           data:
             object_id: transition_active
             name: Lights with transition active
             icon: mdi:lightbulb
-            entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list + [light] }}"
+            entities: "{{ (state_attr('group.transition_active', 'entity_id') | default([], true) | list + [light]) | unique | list }}"
         - alias: "Apply default settings if needed"
           variables:
             br_start_set: "{{ br_start is not none }}"
@@ -225,35 +248,64 @@ transition_lights_perform_transition:
             ct_max: "{{ state_attr(light, 'max_color_temp_kelvin') | default(0, true) }}"
             ct_diff: " {{ ct_max - ct_min }}"
             ct_start: "{{ [ct_min, ct_start] | max if ct_start is not none else (ct_min + (ct_start_pct | default(0, true)) / 100 * ct_diff) | round(0) }}"
-        - alias: "Turn on light with start settings"
-          service: light.turn_on
-          target:
-            entity_id: "{{ light }}"
-          data: >
-            {%- set br = dict(brightness=br_start) if br_start_set else {} %}
-            {%- set ct = dict(color_temp_kelvin=ct_start) if ct_start_set else {} %}
-            {%- set rgb = dict(rgb_color=rgb_start) if rgb_start else {} %}
-            {{ dict(dict(br, **ct), **rgb) }}
+        - if: "{{ split_service }}"
+          then:
+            - if: "{{ br_start_set }}"
+              then:
+                - alias: "Set start brigthness"
+                  service: light.turn_on
+                  target:
+                    entity_id: "{{ light }}"
+                  data:
+                    brightness: "{{ br_start }}"
+            - if: "{{ ct_start_set }}"
+              then:
+                - alias: "Set start color temperature"
+                  service: light.turn_on
+                  target:
+                    entity_id: "{{ light }}"
+                  data:
+                    color_temperature_kelvin: "{{ ct_start }}"
+            - if: "{{ iif(rgb_start) }}"
+              then:
+                - alias: "Set start RGB values"
+                  service: light.turn_on
+                  target:
+                    entity_id: "{{ light }}"
+                  data:
+                    rgb_color: "{{ rgb_start }}"
+            - if: "{{ not (br_start_set or ct_start_set or iif(rgb_start)) }}"
+              then:
+                - alias: "Set start RGB values"
+                  service: light.turn_on
+                  target:
+                    entity_id: "{{ light }}"
+          else:
+            - alias: "Turn on light with start settings"
+              service: light.turn_on
+              target:
+                entity_id: "{{ light }}"
+              data: >
+                {%- set br = dict(brightness=br_start) if br_start_set else {} %}
+                {%- set ct = dict(color_temp_kelvin=ct_start) if ct_start_set else {} %}
+                {%- set rgb = dict(rgb_color=rgb_start) if iif(rgb_start) else {} %}
+                {{ dict(dict(br, **ct), **rgb) }}
         - alias: "Wait until light is on"
           wait_template: "{{ is_state(light, 'on') }}"
+        - if: "{{ split_service }}"
+          then:
+            - delay: 0.5
         - alias: "Set variables for repeat and apply defaults if needed"
           variables:
             br: "{{ state_attr(light, 'brightness') }}"
             rgb_start: >
-              {{ rgb_start if rgb_start else state_attr(light, 'rgb_color') | default([]) }}
+              {{ state_attr(light, 'rgb_color') | default([]) }}
             rgb_end: >
               {{ rgb_end if rgb_start else [] }}
             use_rgb: "{{ iif(rgb_start) and iif(rgb_end) }}"
-            br_start: >
-              {%- if br is none %}
-                0
-              {%- elif br_start_set %}
-                {{ br_start }}
-              {%- else %}
-                {{ br }}
-              {%- endif %}
+            br_start: "{{ br or 0 }}"
             br_end: "{{ 0 if br is none else br_end }}"
-            ct_start: "{{ ct_start if ct_start_set else state_attr(light, 'color_temp_kelvin') | default(0, true) }}"
+            ct_start: "{{ state_attr(light, 'color_temp_kelvin') or 0 }}"
             ct_end: >
               {%- set ct_end_set = ct_end is not none or ct_end_pct is not none %}
               {%- set ct_end = ct_max if not ct_end_set else ct_end %}
@@ -263,16 +315,18 @@ transition_lights_perform_transition:
             br_change: "{{ br_end - br_start }}"
             ct_change: "{{ ct_end - ct_start if ct_end and ct_start else 0 }}"
             rgb_change: "{{ [rgb_end[0] - rgb_start[0], rgb_end[1] - rgb_start[1], rgb_end[2] - rgb_start[2]] | map('abs') | max if use_rgb else 0 }}"
-            steps: "{{ [[br_change | abs, ct_change | abs, rgb_change, 1] | max, max_steps] | min }}"
+            steps: "{{ [[br_change | abs, (ct_change / 100) | abs, rgb_change, 1] | max, max_steps] | min }}"
             br_step: "{{ (br_change / steps) }}"
             ct_step: "{{ (ct_change / steps) }}"
             rgb_step: >
-              {% if use_rgb %}
-                {% set rs, gs, bs = rgb_start %}
-                {% set re, ge, be = rgb_end %}
+              {%- if use_rgb %}
+                {%- set rs, gs, bs = rgb_start %}
+                {%- set re, ge, be = rgb_end %}
                 {{ [(re - rs) / steps, (ge - gs) / steps, (be - bs) / steps] }}
-              {% endif %}
-            delay: "{{ (duration / steps) | round(2) }}"
+              {%- else %}
+                {{ [0, 0, 0] }}
+              {%- endif %}
+            end_time: "{{ now() + timedelta(seconds=duration) }}"
         - alias: "Repeat until settings are reached"
           repeat:
             while:
@@ -282,14 +336,63 @@ transition_lights_perform_transition:
               - alias: "Stop when number of steps is reached"
                 condition: template
                 value_template: "{{ repeat.index <= steps }}"
+              - alias: "Check for unexepcted brightness change"
+                condition: template
+                value_template: >
+                  {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
+                  {{
+                    state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 1.5) | int, (br + br_step | abs * 1.5) | int + 1) if br else true
+                  }}
+              - alias: "Check for unexepcted color temperature change"
+                condition: template
+                value_template: >
+                  {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
+                  {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                  {{
+                    state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 1.5) | int, (ct + ct_step | abs * 1.5) | int + 1) if ct else true
+                  }}
+              - alias: "Check for unexepcted color RGB change"
+                condition: template
+                value_template: >
+                  {%- if use_rgb %}
+                      {%- set r, g, b = rgb_start %}
+                      {%- set rgb =
+                        [
+                          [255, [0, r + ((repeat.index - 1) * rgb_step[0]) | round(0)] | max] | min,
+                          [255, [0, g + ((repeat.index - 1) * rgb_step[1]) | round(0)] | max] | min,
+                          [255, [0, b + ((repeat.index - 1) * rgb_step[2]) | round(0)] | max] | min,
+                        ]
+                      %}
+                  {%- else %}
+                    {%- set rgb = false %}
+                  {%- endif %}
+                  {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                  {{
+                    (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 1.5) | int, (rgb[0] + rgb_step[0] | abs * 1.5) | int + 1) if rgb else true)
+                    and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 1.5) | int, (rgb[1] + rgb_step[1] | abs * 1.5) | int + 1) if rgb else true)
+                    and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 1.5) | int, (rgb[2] + rgb_step[2] | abs * 1.5) | int + 1) if rgb else true)
+                  }}
             sequence:
-              - delay: "{{ delay }}"
               - variables:
-                  br_next: "{{ [0, [255, (br_start + repeat.index * br_step) | round(0)] | min] | max }}"
-                  ct_next: "{{ [ct_min, [ct_max, (ct_start + repeat.index * ct_step) | round(0)] | min] | max }}"
+                  last_step: >
+                    {{
+                      repeat.index == steps
+                      or now() > as_datetime(end_time)
+                    }}
+                  br_next: >
+                    {{
+                      br_end if last_step else
+                      [0, [255, (br_start + repeat.index * br_step) | round(0)] | min] | max
+                    }}
+                  ct_next: >
+                    {{ ct_end if last_step else
+                      [ct_min, [ct_max, (ct_start + repeat.index * ct_step) | round(0)] | min] | max
+                    }}
                   rgb_next: >
-                    {%- if use_rgb %}
-                      {% set r, g, b = rgb_start %}
+                    {% if not use_rgb or last_step %}
+                      {{ rgb_end }}
+                    {%- else %}
+                      {%- set r, g, b = rgb_start %}
                       {{
                         [
                           [255, [0, r + (repeat.index * rgb_step[0]) | round(0)] | max] | min,
@@ -297,77 +400,98 @@ transition_lights_perform_transition:
                           [255, [0, b + (repeat.index * rgb_step[2]) | round(0)] | max] | min,
                         ]
                       }}
-                    {% endif %}
-              - alias: "Check if step count or target is reached"
-                if:
-                  - or:
-                      - "{{ repeat.index == steps }}"
-                      - and:
-                          - "{{ br_next == br_end }}"
-                          - "{{ ct_next == ct_end }}"
-                          - "{{ rgb_next == rgb_end }}"
-                      - "{{br_next == 0 }}"
+                    {%- endif %}
+              - if: "{{ as_datetime(end_time) > now() }}"
                 then:
-                  - alias: "Use light.turn_off when br_end is 0"
-                    if: "{{ br_change and use_br and br_end == 0 }}"
-                    then:
-                      - service: light.turn_off
+                  - delay:
+                      seconds: "{{ ((as_datetime(end_time) - now()).total_seconds() / (steps - (repeat.index - 1))) | round(2) }}"
+              - if:
+                  - alias: "Only continue when light is still on"
+                    condition: template
+                    value_template: "{{ is_state(light, 'on') }}"
+                  - alias: "Check for unexepcted brightness change"
+                    condition: template
+                    value_template: >
+                      {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
+                      {{
+                        state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 1.5) | int, (br + br_step | abs * 1.5) | int + 1) if br else true
+                      }}
+                  - alias: "Check for unexepcted color temperature change"
+                    condition: template
+                    value_template: >
+                      {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
+                      {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                      {{
+                        state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 1.5) | int, (ct + ct_step | abs * 1.5) | int + 1) if ct else true
+                      }}
+                  - alias: "Check for unexepcted color RGB change"
+                    condition: template
+                    value_template: >
+                      {%- if use_rgb %}
+                          {%- set r, g, b = rgb_start %}
+                          {%- set rgb =
+                            [
+                              [255, [0, r + ((repeat.index - 1) * rgb_step[0]) | round(0)] | max] | min,
+                              [255, [0, g + ((repeat.index - 1) * rgb_step[1]) | round(0)] | max] | min,
+                              [255, [0, b + ((repeat.index - 1) * rgb_step[2]) | round(0)] | max] | min,
+                            ]
+                          %}
+                      {%- else %}
+                        {%- set rgb = false %}
+                      {%- endif %}
+                      {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                      {{
+                        (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 1.5) | int, (rgb[0] + rgb_step[0] | abs * 1.5) | int + 1) if rgb else true)
+                        and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 1.5) | int, (rgb[1] + rgb_step[1] | abs * 1.5) | int + 1) if rgb else true)
+                        and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 1.5) | int, (rgb[2] + rgb_step[2] | abs * 1.5) | int + 1) if rgb else true)
+                      }}
+                then:
+                  - alias: "Peform actions"
+                    choose:
+                      - conditions: "{{ br_end == 0 }}"
+                        sequence:
+                          - alias: "Use light.turn_off when br_end is 0"
+                            if: "{{ br_change and use_br and br_end == 0 }}"
+                            then:
+                              - service: light.turn_off
+                                target:
+                                  entity_id: "{{ light }}"
+                      - conditions: "{{ split_service }}"
+                        sequence:
+                          - alias: "Set brightness if needed"
+                            if: "{{ br_change and use_br }}"
+                            then:
+                              - service: light.turn_on
+                                target:
+                                  entity_id: "{{ light }}"
+                                data:
+                                  brightness: "{{ br_next }}"
+                          - alias: "Set color temp if needed"
+                            if: "{{ ct_change and use_ct }}"
+                            then:
+                              - service: light.turn_on
+                                target:
+                                  entity_id: "{{ light }}"
+                                data:
+                                  color_temp_kelvin: "{{ ct_next }}"
+                          - alias: "Set RGB value if needed"
+                            if: "{{ use_rgb }}"
+                            then:
+                              - service: light.turn_on
+                                target:
+                                  entity_id: "{{ light }}"
+                                data:
+                                  rgb_color: "{{ rgb_next }}"
+                    default:
+                      - alias: "Set new values"
+                        service: light.turn_on
                         target:
                           entity_id: "{{ light }}"
-                    else:
-                      - alias: "Set brightness if needed"
-                        if: "{{ br_change and use_br }}"
-                        then:
-                          - service: light.turn_on
-                            target:
-                              entity_id: "{{ light }}"
-                            data:
-                              brightness: "{{ br_end }}"
-                      - alias: "Set color temp if needed"
-                        if: "{{ ct_change and use_ct }}"
-                        then:
-                          - service: light.turn_on
-                            target:
-                              entity_id: "{{ light }}"
-                            data:
-                              color_temp_kelvin: "{{ ct_end }}"
-                      - alias: "Set RGB value if needed"
-                        if: "{{ use_rgb }}"
-                        then:
-                          - service: light.turn_on
-                            target:
-                              entity_id: "{{ light }}"
-                            data:
-                              rgb_color: "{{ rgb_end }}"
-                else:
-                  - alias: "Set brightness if needed"
-                    if: "{{ br_change and use_br }}"
-                    then:
-                      - service: light.turn_on
-                        target:
-                          entity_id: "{{ light }}"
-                        data:
-                          brightness: "{{ br_next }}"
-                  - alias: "Set color temp if needed"
-                    if: "{{ ct_change and use_ct }}"
-                    then:
-                      - service: light.turn_on
-                        target:
-                          entity_id: "{{ light }}"
-                        data:
-                          color_temp_kelvin: "{{ ct_next }}"
-                  - alias: "Set RGB value if needed"
-                    if: "{{ use_rgb }}"
-                    then:
-                      - service: light.turn_on
-                        target:
-                          entity_id: "{{ light }}"
-                        data:
-                          rgb_color: "{{ rgb_next }}"
-                  - wait_template: "{{ is_state(light, 'off') }}"
-                    timeout:
-                      seconds: "{{ delay }}"
-                    continue_on_timeout: true
+                        data: >
+                          {%- set br = dict(brightness=br_next) if br_change and use_br else {} %}
+                          {%- set ct = dict(color_temp_kelvin=ct_next) if ct_change and use_ct else {} %}
+                          {%- set rgb = dict(rgb_color=rgb_next) if use_rgb else {} %}
+                          {{ dict(dict(br, **ct), **rgb) }}
         - alias: "Remove light from group"
           service: group.set
           data:
