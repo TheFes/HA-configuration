@@ -4,7 +4,7 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: cover.pepijn_tahoma
+    entity_id: cover.pepijn
     to: "unavailable"
 action:
   - alias: "Try to reset using plug"
@@ -27,7 +27,7 @@ action:
             - condition: not
               conditions:
                 - condition: state
-                  entity_id: cover.pepijn_tahoma
+                  entity_id: cover.pepijn
                   state: "unavailable"
             - alias: "Stop after 10 attempts.."
               condition: template

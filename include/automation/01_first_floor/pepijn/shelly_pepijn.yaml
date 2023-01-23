@@ -11,6 +11,16 @@ action:
   - variables:
       main: light.{{ trigger.event.data.device | lower }}_template
       group: light.groep_{{ trigger.event.data.device | lower }}
+  - if:
+      - alias: "Graafmachine off"
+        condition: state
+        entity_id: light.graafmachine
+        state: "off"
+      - "{{ trigger.event.data.click_type in ['short', 'double'] }}"
+    then:
+      - service: script.resume_transition_lights
+        data:
+          light: light.graafmachine
   - alias: "Click type?"
     choose:
       - conditions:

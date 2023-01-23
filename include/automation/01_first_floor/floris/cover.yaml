@@ -53,16 +53,16 @@ action:
         state: "on"
       - alias: "Screen (partly) open"
         condition: template
-        value_template: "{{ state_attr('cover.floris', 'current_position') != 0 }}"
+        value_template: "{{ state_attr('cover.floris_template', 'current_position') != 0 }}"
       - alias: "Close cover"
         service: cover.close_cover
         target:
-          entity_id: cover.floris
+          entity_id: cover.floris_template
     else:
       - alias: "Screen not completely open"
         condition: template
-        value_template: "{{ state_attr('cover.floris', 'current_position') != 100 }}"
+        value_template: "{{ state_attr('cover.floris_template', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:
-          entity_id: cover.floris
+          entity_id: cover.floris_template

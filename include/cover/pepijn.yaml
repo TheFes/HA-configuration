@@ -1,15 +1,15 @@
 platform: template
 covers:
-  pepijn:
+  pepijn_template:
     unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
     device_class: blind
-    availability_template: "{{ not states('cover.pepijn_tahoma') in ['unknown', 'unavailable'] }}"
+    availability_template: "{{ not states('cover.pepijn') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Pepijn"
     position_template: >
       {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
-        {{ 100 - state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
+        {{ 100 - state_attr('cover.pepijn', 'current_position') | float(0) }}
       {%- else %}
-        {{ state_attr('cover.pepijn_tahoma', 'current_position') | float(0) }}
+        {{ state_attr('cover.pepijn', 'current_position') | float(0) }}
       {%- endif %}
     open_cover:
       service: >
@@ -18,7 +18,7 @@ covers:
         {%- else %}
           cover.open_cover
         {%- endif %}
-      entity_id: cover.pepijn_tahoma
+      entity_id: cover.pepijn
     close_cover:
       service: >
         {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
@@ -26,13 +26,13 @@ covers:
         {%- else %}
           cover.close_cover
         {%- endif %}
-      entity_id: cover.pepijn_tahoma
+      entity_id: cover.pepijn
     stop_cover:
       service: cover.stop_cover
-      entity_id: cover.pepijn_tahoma
+      entity_id: cover.pepijn
     set_cover_position:
       service: cover.set_cover_position
-      entity_id: cover.pepijn_tahoma
+      entity_id: cover.pepijn
       data:
         position: >
           {%- if is_state('input_boolean.cover_pepijn_invert', 'on') %}
