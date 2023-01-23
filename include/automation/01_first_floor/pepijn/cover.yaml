@@ -53,16 +53,16 @@ action:
         state: "on"
       - alias: "Screen (partly) open"
         condition: template
-        value_template: "{{ state_attr('cover.pepijn', 'current_position') != 0 }}"
+        value_template: "{{ state_attr('cover.pepijn_template', 'current_position') != 0 }}"
       - alias: "Close cover"
         service: cover.close_cover
         target:
-          entity_id: cover.pepijn
+          entity_id: cover.pepijn_template
     else:
       - alias: "Screen not completely open"
         condition: template
-        value_template: "{{ state_attr('cover.pepijn', 'current_position') != 100 }}"
+        value_template: "{{ state_attr('cover.pepijn_template', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:
-          entity_id: cover.pepijn
+          entity_id: cover.pepijn_template

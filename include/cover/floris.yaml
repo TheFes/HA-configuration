@@ -1,15 +1,15 @@
 platform: template
 covers:
-  floris:
+  floris_template:
     unique_id: ee7631e8-3da3-4293-8fe9-5db75ceb76ce
     device_class: blind
-    availability_template: "{{ not states('cover.floris_tahoma') in ['unknown', 'unavailable'] }}"
+    availability_template: "{{ not states('cover.floris') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Floris"
     position_template: >
       {%- if is_state('input_boolean.cover_floris_invert', 'on') %}
-        {{ 100 - state_attr('cover.floris_tahoma', 'current_position') | float(0) }}
+        {{ 100 - state_attr('cover.floris', 'current_position') | float(0) }}
       {%- else %}
-        {{ state_attr('cover.floris_tahoma', 'current_position') | float(0) }}
+        {{ state_attr('cover.floris', 'current_position') | float(0) }}
       {%- endif %}
     open_cover:
       service: >
@@ -18,7 +18,7 @@ covers:
         {%- else %}
           cover.open_cover
         {%- endif %}
-      entity_id: cover.floris_tahoma
+      entity_id: cover.floris
     close_cover:
       service: >
         {%- if is_state('input_boolean.cover_floris_invert', 'on') %}
@@ -26,13 +26,13 @@ covers:
         {%- else %}
           cover.close_cover
         {%- endif %}
-      entity_id: cover.floris_tahoma
+      entity_id: cover.floris
     stop_cover:
       service: cover.stop_cover
-      entity_id: cover.floris_tahoma
+      entity_id: cover.floris
     set_cover_position:
       service: cover.set_cover_position
-      entity_id: cover.floris_tahoma
+      entity_id: cover.floris
       data:
         position: >
           {%- if is_state('input_boolean.cover_floris_invert', 'on') %}

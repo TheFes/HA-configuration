@@ -25,26 +25,26 @@ cards:
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
       - type: custom:mushroom-template-card
-        entity: cover.floris
-        badge_icon: "{{ 'mdi:alert' if is_state('cover.floris', 'unavailable')}}"
+        entity: cover.floris_template
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.floris_template', 'unavailable')}}"
         badge_color: red
         layout: vertical
         icon: >-
-          {%- if is_state('cover.floris_tahoma', 'opening') and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
+          {%- if is_state('cover.floris', 'opening') and not state_attr('cover.floris', 'current_position') in [0, 100] %}
             mdi:arrow-collapse-up
-          {%- elif is_state('cover.floris_tahoma', 'closing') and not is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
+          {%- elif is_state('cover.floris', 'closing') and not is_state_attr('cover.floris', 'current_position', 0) %}
             mdi:arrow-collapse-down
-          {%- elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr('cover.floris', 'current_position') | int(100) < 100 %}
             mdi:blinds
           {%- else %}
             mdi:blinds-open
           {%- endif %}
         icon_color: >-
-          {%- if states('cover.floris_tahoma') in [ 'opening', 'closing' ] and not state_attr('cover.floris_tahoma', 'current_position') in [0, 100] %}
+          {%- if states('cover.floris') in [ 'opening', 'closing' ] and not state_attr('cover.floris', 'current_position') in [0, 100] %}
             green
-          {%- elif is_state_attr('cover.floris_tahoma', 'current_position', 0) %}
+          {%- elif is_state_attr('cover.floris', 'current_position', 0) %}
             yellow
-          {%- elif state_attr('cover.floris_tahoma', 'current_position') | int(100) < 100 %}
+          {%- elif state_attr('cover.floris', 'current_position') | int(100) < 100 %}
             orange
           {%- endif %}
       - type: custom:mushroom-template-card
