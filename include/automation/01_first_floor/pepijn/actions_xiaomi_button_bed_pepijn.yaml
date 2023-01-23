@@ -52,6 +52,9 @@ action:
                     data:
                       color_temp_kelvin: 3000
                       brightness_pct: 20
+                  - service: script.resume_transition_lights
+                    data:
+                      light: light.graafmachine
             default:
               - service: light.turn_off
                 target:

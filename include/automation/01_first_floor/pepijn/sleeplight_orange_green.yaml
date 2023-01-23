@@ -1,5 +1,6 @@
 id: 55509fd0-bdce-4cd2-86dc-2a8bee22b1b0
 alias: "F1P - Turn graafmachine orange or green just before wake time"
+mode: queued
 trigger:
   - platform: template
     value_template: >
@@ -10,38 +11,139 @@ trigger:
   - platform: time
     at: input_datetime.pepijn_time_awake
     id: green
+  - platform: time
+    at: "21:00:00"
+    id: time_check
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "pepijn_alarm_reset"
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "pepijn_alarm_earlier"
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "pepijn_alarm_later"
+condition:
+  not:
+    - alias: "Not on holiday"
+      condition: state
+      entity_id: sensor.house_mode
+      state: "Vakantie"
 action:
-  - if: "{{ trigger.id == 'orange' }}"
-    then:
-      - service: light.turn_on
-        target:
-          entity_id: light.graafmachine
+  - choose:
+      - conditions: "{{ trigger is defined and  trigger.get('id') == 'orange' }}"
+        sequence:
+          - service: script.turn_on
+            target:
+              entity_id: script.transition_lights
+            data:
+              variables:
+                lights:
+                  - light.graafmachine
+                br_start: 1
+                br_end: 255
+                rgb_start:
+                  - 255
+                  - 165
+                  - 0
+                use_ct: false
+                duration: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - now()).seconds }}"
+                split_service: true
+                max_steps: 90
+      - conditions: "{{ trigger is defined and trigger.get('id') == 'green' }}"
+        sequence:
+          - service: script.turn_on
+            target:
+              entity_id: script.transition_lights
+            data:
+              variables:
+                lights:
+                  - light.graafmachine
+                use_br: false
+                use_ct: false
+                br_start: 255
+                rgb_start:
+                  - 255
+                  - 165
+                  - 0
+                rgb_end:
+                  - 0
+                  - 255
+                  - 0
+                duration: 10
+                mode: parallel
+                split_service: true
+    default:
+      - delay: "{{ 0.5 if trigger is defined and trigger.get('platform') == 'event' else 0 }}"
+      - alias: "Notificatie to phone Martijn"
+        service: notify.mobile_app_pixel_7_pro
         data:
-          brightness_pct: 1
-          color_name: "orange"
-      - service: script.turn_on
-        target:
-          entity_id: script.transition_lights
-        data:
-          variables:
-            lights:
-              - light.graafmachine
-            br_start_pct: 1
-            br_end_pct: 100
-            use_ct: false
-            duration: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - now()).seconds }}"
-    else:
-      - service: script.turn_on
-        target:
-          entity_id: script.transition_lights
-        data:
-          variables:
-            lights:
-              - light.graafmachine
-            use_br: false
-            use_ct: false
-            rgb_end:
-              - 0
-              - 255
-              - 0
-            duration: 10
+          title: "Wekker Pepijn"
+          message: >
+            {% set t = today_at(states('input_datetime.pepijn_time_awake')) %}
+            {% set o = (t - timedelta(minutes=states('input_number.leestijd_pepijn')|int)).strftime('%H:%M') %}
+            {% set w = t.strftime('%H:%M') %}
+            {% if trigger is defined and trigger.get('platform') == 'event' %}
+              Wektijd is nu {{ w }} en orange vanaf {{ o }}. Oke zo?
+            {% else %}
+              De wekker van Pepijn staat ingesteld op {{ w }}. Om {{ o }} wordt hij orange. Klopt dat?
+            {% endif %}
+          data:
+            channel: WakeupPepijn
+            tag: wakeuppepijn
+            ttl: 0
+            priority: high
+            notification_icon: mdi:alarm
+            clickAction: "/lovelace/pepijn"
+            actions:
+              - action: "pepijn_alarm_reset"
+                title: "Reset"
+              - action: "pepijn_alarm_earlier"
+                title: "Eerder"
+              - action: "pepijn_alarm_later"
+                title: "Later"
+            timeout: "01:00:00"
+      - alias: "Wait for a response"
+        wait_for_trigger:
+          - platform: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "pepijn_alarm_reset"
+          - platform: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "pepijn_alarm_earlier"
+          - platform: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "pepijn_alarm_later"
+          - platform: event
+            event_type: mobile_app_notification_cleared
+            event_data:
+              tag: wakeuppepijn
+      - alias: "Perform the action"
+        choose:
+          - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_reset' }}"
+            sequence:
+              - service: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.pepijn_time_awake
+                data:
+                  time: "06:45:00"
+          - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_earlier' }}"
+            sequence:
+              - service: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.pepijn_time_awake
+                data:
+                  time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=15)).strftime('%H:%M:%S') }}"
+          - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_later' }}"
+            sequence:
+              - service: input_datetime.set_datetime
+                target:
+                  entity_id: input_datetime.pepijn_time_awake
+                data:
+                  time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) + timedelta(minutes=15)).strftime('%H:%M:%S') }}"

@@ -11,16 +11,6 @@ action:
   - variables:
       main: light.{{ trigger.event.data.device | lower }}_template
       group: light.groep_{{ trigger.event.data.device | lower }}
-  - if:
-      - alias: "Graafmachine off"
-        condition: state
-        entity_id: light.graafmachine
-        state: "off"
-      - "{{ trigger.event.data.click_type in ['short', 'double'] }}"
-    then:
-      - service: script.resume_transition_lights
-        data:
-          light: light.graafmachine
   - alias: "Click type?"
     choose:
       - conditions:
@@ -39,6 +29,9 @@ action:
                 service: light.turn_on
                 target:
                   entity_id: "{{ main }}"
+              - service: script.resume_transition_lights
+                data:
+                  light: light.graafmachine
       - conditions:
           - alias: "Double?"
             condition: template
@@ -46,7 +39,7 @@ action:
         sequence:
           - if: "{{ main in state_attr('group.transition_active') or main | replace('_template', '') in state_attr('group.transition_active') }}"
             then:
-              - service: light.turn_on
+              - service: light.turn_off
                 target:
                   entity_id: "{{ main }}"
               - wait_template: "{{ not (main in state_attr('group.transition_active') or main | replace('_template', '') in state_attr('group.transition_active')) }}"
@@ -57,6 +50,9 @@ action:
             data:
               brightness: 255
               color_temp: "{{ state_attr(main | replace('_template', ''), 'min_mireds') }}"
+          - service: script.resume_transition_lights
+            data:
+              light: light.graafmachine
       - conditions:
           - alias: "Long"
             condition: template
@@ -69,3 +65,13 @@ action:
             data:
               color_temp_kelvin: 3000
               brightness_pct: 20
+          - delay: 0.5
+          - if:
+              - alias: "Graafmachine on"
+                condition: state
+                entity_id: light.graafmachine
+                state: "on"
+            then:
+              - service: script.resume_transition_lights
+                data:
+                  light: light.graafmachine
