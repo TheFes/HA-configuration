@@ -8,7 +8,7 @@ lights:
     temperature_template: "{{ state_attr('light.zolder_bol', 'color_temp') | default(140, True) }}"
     min_mireds_template: "{{ state_attr('light.zolder_bol', 'min_mireds') | int(140) }}"
     max_mireds_template: "{{ state_attr('light.zolder_bol', 'max_mireds') | int(650) }}"
-    availability_template: "{{ states('light.zolder_bol') | bool('na') is boolean and states('switch.bureau_marleen') | bool('na') is boolean }}"
+    availability_template: "{{ states('light.zolder_bol') | bool('na') is boolean or states('switch.bureau_marleen') | bool('na') is boolean }}"
     turn_on:
       - if:
           - alias: "Desk plug off?"

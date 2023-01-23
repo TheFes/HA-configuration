@@ -11,6 +11,10 @@ condition:
     condition: state
     entity_id: switch.afzuigkap
     state: "off"
+  - alias: "Daytime"
+    condition: time
+    after: " 06:00:00"
+    before: " 21:00:00"
 action:
   - alias: "Turn plug back on"
     service: switch.turn_on
