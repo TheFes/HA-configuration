@@ -1,7 +1,12 @@
 charge_tablet:
   name: "Charge Tablet"
-  title: "Laad de tablet op"
-  message: "De batterij is nog voor {{ states('sensor.tablet_battery_level') }}% vol"
+  title: "Batterij tablet"
+  message: >
+    {% if states('sensor.tablet_battery_level') | float(0) == 100 %}
+      De batterij van de tablet is weer vol!
+    {% else %}
+      De batterij van de tablet is nog maar {{ states('sensor.tablet_battery_level') | int }}%. Hang hem snel aan de lader!
+    {% endif %}
   entity_id: binary_sensor.charge_tablet
   state: "on"
   repeat: 120
