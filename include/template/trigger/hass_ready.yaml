@@ -1,0 +1,12 @@
+- trigger:
+    - platform: homeassistant
+      event: start
+      id: "true"
+    - platform: homeassistant
+      event: shutdown
+      id: "false"
+  binary_sensor:
+    - unique_id: binary_sensor_ha_started
+      name: HA started
+      state: "{{ trigger.id | bool }}"
+      device_class: running
