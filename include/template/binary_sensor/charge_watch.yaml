@@ -5,7 +5,7 @@
       state: >-
         {{
           (
-            states('sensor.google_pixel_watch_battery_level') | float(0) <= 25
+            states('sensor.google_pixel_watch_battery_level') | float <= 25
             and is_state('sensor.google_pixel_watch_battery_state', 'discharging')
           )
           or
@@ -15,3 +15,5 @@
           )
           and is_state('person.martijn', 'home')
         }}
+      availability: >
+        {{ states('sensor.google_pixel_watch_battery_level') | is_number }}
