@@ -3,6 +3,10 @@
       unique_id: ee67de73-5c72-40d5-a7f1-dd68b23fc5f8
       device_class: update
       press:
-        - service: update.install
-          target:
-            entity_id: "{{ states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}"
+        - repeat:
+            for_each: "{{ states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}"
+            sequence:
+              - service: update.install
+                target:
+                  entity_id: "{{ repeat.item }}"
+              - wait_template: "{{ is_state(repeat.item, 'off') }}"
