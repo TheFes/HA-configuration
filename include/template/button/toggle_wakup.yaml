@@ -2,4 +2,48 @@
     - name: Wakeup Graafmachine
       unique_id: 3c7d3a02-e772-46b7-9199-5086c399f671
       icon: mdi:weather-sunset-up
-      press: []
+      press:
+        - alias: "Notificatie to phone Martijn"
+          service: notify.mobile_app_pixel_7_pro
+          data:
+            title: "Wakup voor Pepijn"
+            message: >
+              De wake-up functie staat nu {{ 'Aan' if is_state('input_boolean.wakeup_martijn_graafmachine', 'on') else 'Uit' }}
+            data:
+              channel: WakeupPepijn
+              tag: wakeupmartijn
+              ttl: 0
+              priority: high
+              notification_icon: mdi:weather-sunset-up
+              actions:
+                - action: "martijn_wakeup_on"
+                  title: "Zet aan"
+                - action: "martijn_wakeup_off"
+                  title: "Zet uit"
+              timeout: "01:00:00"
+        - alias: "Wait for a response"
+          wait_for_trigger:
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "martijn_wakeup_on"
+            - platform: event
+              event_type: mobile_app_notification_action
+              event_data:
+                action: "martijn_wakeup_off"
+            - platform: event
+              event_type: mobile_app_notification_cleared
+              event_data:
+                tag: wakeupmartijn
+        - alias: "Perform the action"
+          choose:
+            - conditions: "{{ wait.trigger.event.data.action == 'martijn_wakeup_on' }}"
+              sequence:
+                - service: input_boolean.turn_on
+                  target:
+                    entity_id: input_boolean.wakeup_martijn_graafmachine
+            - conditions: "{{ wait.trigger.event.data.action == 'martijn_wakeup_off' }}"
+              sequence:
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.wakeup_martijn_graafmachine
