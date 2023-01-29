@@ -1,8 +1,5 @@
 - button:
-    - name: "{{ 'Wakeup Graafmachine' if this.state == 'unknown' else 'Aan' if is_state('input_boolean.wakeup_martijn_graafmachine', 'on') else 'Uit' }}"
+    - name: Wakeup Graafmachine
       unique_id: 3c7d3a02-e772-46b7-9199-5086c399f671
       icon: mdi:weather-sunset-up
-      press:
-        - service: input_boolean.toggle
-          target:
-            entity_id: input_boolean.wakeup_martijn_graafmachine
+      press: []
