@@ -58,6 +58,10 @@
                     entity_id: input_datetime.pepijn_time_awake
                   data:
                     time: "06:45:00"
+                - delay: 0.5
+                - service: button.press
+                  target:
+                    entity_id: "{{ this.entity_id }}"
             - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_earlier' }}"
               sequence:
                 - service: input_datetime.set_datetime
@@ -65,6 +69,10 @@
                     entity_id: input_datetime.pepijn_time_awake
                   data:
                     time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=15)).strftime('%H:%M:%S') }}"
+                - delay: 0.5
+                - service: button.press
+                  target:
+                    entity_id: "{{ this.entity_id }}"
             - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_later' }}"
               sequence:
                 - service: input_datetime.set_datetime
@@ -72,3 +80,4 @@
                     entity_id: input_datetime.pepijn_time_awake
                   data:
                     time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) + timedelta(minutes=15)).strftime('%H:%M:%S') }}"
+        - delay: 0.5

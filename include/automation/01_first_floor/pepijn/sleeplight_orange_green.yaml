@@ -14,20 +14,6 @@ trigger:
   - platform: time
     at: "21:00:00"
     id: time_check
-  - platform: state
-    entity_id: button.set_time
-  - platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: "pepijn_alarm_reset"
-  - platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: "pepijn_alarm_earlier"
-  - platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: "pepijn_alarm_later"
 condition:
   not:
     - alias: "Not on holiday"
@@ -79,7 +65,6 @@ action:
                 mode: parallel
                 split_service: true
     default:
-      - delay: "{{ 0.5 if trigger is defined and trigger.get('platform') == 'event' else 0 }}"
       - service: button.press
         target:
           entity_id: button.set_time
