@@ -14,6 +14,8 @@ trigger:
   - platform: time
     at: "21:00:00"
     id: time_check
+  - platform: state
+    entity_id: button.set_time
   - platform: event
     event_type: mobile_app_notification_action
     event_data:
