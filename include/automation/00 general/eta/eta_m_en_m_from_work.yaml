@@ -29,9 +29,9 @@ variables:
   eta: >
     {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
     {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
-  work_martijn: !secret work_martijn
-  work_marleen: !secret work_marleen
-  work: "{{ work_martijn if name == 'martijn' else work_marleen }}"
+  work:
+    martijn: !secret work_martijn
+    marleen: !secret work_marleen
 action:
   - if: "{{ trigger.id == 'reset' }}"
     then:
@@ -60,7 +60,7 @@ action:
       - if: "{{ vehicle == 'auto' }}"
         then:
           - repeat:
-              until: "{{ is_state(trigger.entity_id, [work, 'home']) }}"
+              until: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
               sequence:
                 - service: homeassistant.update_entity
                   target:
@@ -69,8 +69,7 @@ action:
                     eta: "{{ (now() + timedelta(minutes=states(sensor))|float).timestamp() }}"
                 - wait_for_trigger:
                     - platform: template
-                      value_template: "{{ is_state(trigger.entity_id, [work, 'home']) }}"
-                      id: home
+                      value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
                     - platform: template
                       value_template: "{{ ((now() + timedelta(minutes=states(sensor))|float).timestamp() - eta) > 300 }}"
                       id: delay
