@@ -188,16 +188,20 @@ states:
                         {%- else %}
                           Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
                         {%- endif %}
-                    - type: "custom:auto-entities"
+                    - type: custom:auto-entities
                       card:
-                        type: entities
-                        show_header_toggle: false
+                        type: custom:vertical-stack-in-card
+                      card_param: cards
                       filter:
-                        template: >
-                          {{
-                            states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list
-                            + ([ 'button.update_alles' ] if is_state('binary_sensor.updates_available', 'on') else [])
-                          }}
+                        include:
+                          - entity_id: update.*
+                            state: "on"
+                            options:
+                              type: custom:mushroom-update-card
+                    - type: entities
+                      show_header_toggle: false
+                      entities:
+                        - entity: button.update_alles
   user:
     type: custom:mushroom-chips-card
     alignment: center

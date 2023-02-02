@@ -59,11 +59,20 @@ action:
                   - 0
                 rgb_end:
                   - 0
-                  - 255
+                  - 237
                   - 0
                 duration: 10
                 mode: parallel
                 split_service: true
+          - delay: 10
+          - service: light.turn_on
+            target:
+              entity_id: light.graafmachine
+            data:
+              rgb_color:
+                - 0
+                - 237
+                - 0
     default:
       - service: button.press
         target:

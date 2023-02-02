@@ -112,12 +112,6 @@
           {%- endif %}
           {{ dict(message=message | default(''), level='info') }}
         eta_martijn: >-
-          {%- if iif(states('input_text.eta_martijn')) %}
-            {%- set message = states('input_text.eta_martijn') %}
-          {%- endif %}
-          {{ dict(message=message | default(''), level='info') }}
+          {{ dict(message=state_attr('sensor.variables', 'variables').get('eta_martijn', ''), level='info') }}
         eta_marleen: >-
-          {%- if iif(states('input_text.eta_marleen')) %}
-            {%- set message = states('input_text.eta_marleen') %}
-          {%- endif %}
-          {{ dict(message=message | default(''), level='info') }}
+          {{ dict(message=state_attr('sensor.variables', 'variables').get('eta_marleen', ''), level='info') }}

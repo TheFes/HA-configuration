@@ -5,29 +5,42 @@ max_exceeded: silent
 trigger:
   - platform: state
     entity_id:
-      - light.eettafel_template
-      - light.pepijn_template
-      - light.floris_template
-      - light.tv_lamp_template
-      - light.speelhoek_template
+      - light.eettafel
+      - light.pepijn
+      - light.floris
+      - light.tv_lamp
+      - light.speelhoek
       - light.bedside_lamp_martijn
     attribute: brightness
 variables:
+  name: "{{ trigger.to_state.object_id }}"
   overrides:
-    light.example_light:
+    example_light:
       min_ct: 2000
       max_ct: 6500
-  name: "{{ trigger.to_state.object_id | replace('_template', '') }}"
+    eettafel:
+      min_br: 37
+    pepijn:
+      min_br: 37
+    floris:
+      min_br: 37
+    tv_lamp:
+      min_br: 37
+    speelhoek:
+      min_br: 37
   input_boolean_dimmed: "{{ 'input_boolean.dimmed_' + name }}"
   light: "{{ trigger.entity_id }}"
-  max_ct: "{{ overrides.get(light, {}).get('max_ct') | default(state_attr(light, 'max_color_temp_kelvin'), true) }}"
-  min_ct: "{{ overrides.get(light, {}).get('min_ct') | default(state_attr(light, 'min_color_temp_kelvin'), true) }}"
+  max_ct: "{{ overrides.get(name, {}).get('max_ct') | default(state_attr(light, 'max_color_temp_kelvin'), true) }}"
+  min_ct: "{{ overrides.get(name, {}).get('min_ct') | default(state_attr(light, 'min_color_temp_kelvin'), true) }}"
+  min_br: "{{ overrides.get(name, {}).get('min_br') | default(1, true) }}"
+  max_br: "{{ overrides.get(name, {}).get('max_br') | default(255, true) }}"
   br: "{{ state_attr(trigger.entity_id, 'brightness') }}"
   color_mode: "{{ state_attr(light, 'color_mode') | default('color_temp', true) }}"
+
 condition:
   - alias: "Light on?"
     condition: template
-    value_template: "{{ is_state(light, 'on') }}"
+    value_template: "{{ trigger.to_state.state == 'on' and trigger.from_state.state == 'on' }}"
   - alias: "Already dimmed before?"
     condition: template
     value_template: "{{ not is_state(input_boolean_dimmed, 'off') }}"
@@ -44,4 +57,4 @@ action:
       entity_id: "{{ light }}"
     data:
       color_temp_kelvin: >
-        {{ [max_ct, min_ct + ((br-1) * (max_ct - min_ct) / 254) | int] | min }}
+        {{ [max_ct, min_ct + ((br-min_br) * (max_ct - min_ct) / (max_br-min_br)) | int] | min }}

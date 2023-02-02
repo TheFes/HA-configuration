@@ -1,0 +1,10 @@
+- button:
+    - name: All lights off
+      unique_id: 1cdd0b82-7fc1-4148-b131-77ba7d08894a
+      icon: mdi:lightbulb-group-off
+      press:
+        - service: light.turn_off
+          target:
+            entity_id:
+              - light.groep_huis
+              - light.wc
