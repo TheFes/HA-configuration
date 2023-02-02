@@ -5,11 +5,11 @@ max_exceeded: silent
 trigger:
   - platform: state
     entity_id: person.marleen
-    from: "TRN"
+    from: !secret work_marleen
     to: "not_home"
   - platform: state
     entity_id: person.martijn
-    from: "Fujifilm"
+    from: !secret work_martijn
     to: "not_home"
   - platform: state
     entity_id:
@@ -17,40 +17,72 @@ trigger:
       - person.marleen
     to:
       - "home"
-      - "TRN"
-      - "Fujifilm"
+      - !secret work_marleen
+      - !secret work_martijn
     id: "reset"
 variables:
   name: "{{ states[trigger.entity_id].object_id }}"
   notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "sensor.{{ name }}_naar_huis"
+  vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and if_state('binary_sensor.pixel_7_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
   eta: >
-    {%- set delta = 40 if is_state('input_boolean.martijn_fiets', 'on') and name == 'martijn' else states(sensor) | float %}
+    {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
     {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
+  work_martijn: !secret work_martijn
+  work_marleen: !secret work_marleen
+  work: "{{ work_martijn if name == 'martijn' else work_marleen }}"
 action:
   - if: "{{ trigger.id == 'reset' }}"
     then:
-      - alias: "Set input_text"
-        service: input_text.set_value
-        target:
-          entity_id: "input_text.eta_{{ name }}"
-        data:
-          value: ""
+      - event: remove_variable
+        event_data:
+          key: "eta_{{ name }}"
     else:
+      - service: homeassistant.update_entity
+        target:
+          entity_id: "{{ sensor }}"
       - alias: "Send notification to phone"
         service: "{{ notify }}"
         data:
-          title: "{{ name | capitalize }} is onderweg"
+          title: "{{ name | capitalize }} is onderweg {{ (' met de ' ~ vehicle) if name == 'martijn' else ''}}"
           message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
           data:
             channel: ETA
             ttl: 0
             priority: high
-            notification_icon: mdi:car
-      - alias: "Set input_text"
-        service: input_text.set_value
-        target:
-          entity_id: "input_text.eta_{{ name }}"
-        data:
-          value: "🚗 ETA {{ name | capitalize }}: {{ eta }}"
+            notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
+      - event: set_variable
+        event_data:
+          key: "eta_{{ name }}"
+          value: "{{ eta }}"
+          set_timestamp: false
+      - if: "{{ vehicle == 'auto' }}"
+        then:
+          - repeat:
+              until: "{{ is_state(trigger.entity_id, [work, 'home']) }}"
+              sequence:
+                - service: homeassistant.update_entity
+                  target:
+                    entity_id: "{{ sensor }}"
+                - variables:
+                    eta: "{{ (now() + timedelta(minutes=states(sensor))|float).timestamp() }}"
+                - wait_for_trigger:
+                    - platform: template
+                      value_template: "{{ is_state(trigger.entity_id, [work, 'home']) }}"
+                      id: home
+                    - platform: template
+                      value_template: "{{ ((now() + timedelta(minutes=states(sensor))|float).timestamp() - eta) > 300 }}"
+                      id: delay
+                - if: "{{ wait.trigger.id == 'delay' }}"
+                  then:
+                    - alias: "Send notification to phone"
+                      service: "{{ notify }}"
+                      data:
+                        title: "{{ name | capitalize }} is vertraagd"
+                        message: "{{ gender | capitalize }} zou er nu rond {{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }} moeten zijn"
+                        data:
+                          channel: ETA
+                          ttl: 0
+                          priority: high
+                          notification_icon: mdi:car
