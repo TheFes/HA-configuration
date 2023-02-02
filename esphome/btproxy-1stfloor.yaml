@@ -1,11 +1,10 @@
 substitutions:
-  name: "btproxy-1"
+  name: "btproxy-1stfloor"
 packages:
   esphome.bluetooth-proxy: github://esphome/bluetooth-proxies/esp32-generic.yaml@main
 esphome:
   name: ${name}
   name_add_mac_suffix: false
-
 
 wifi:
   ssid: !secret wifi_ssid
