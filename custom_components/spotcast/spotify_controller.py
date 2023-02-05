@@ -101,10 +101,9 @@ class SpotifyController(BaseController):
             counter += 1
 
         if not self.is_launched:
-            # raise LaunchError(
-            #     "Timeout when waiting for status response from Spotify app"
-            # )
-            self.logger.warning("Timeout when waiting for status response from Spotify app")
+            raise LaunchError(
+                "Timeout when waiting for status response from Spotify app"
+            )
 
     # pylint: disable=too-many-locals
     def quick_play(self, **kwargs):
