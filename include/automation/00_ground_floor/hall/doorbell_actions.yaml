@@ -42,6 +42,17 @@ variables:
         | reject('in', hue + esphome)
         | list
     }}
+  birthday_today: >
+    {% set m = state_attr('calendar.m_m', 'message') | lower %}
+    {{
+      '0' in birthday | map('states') | list
+      or
+      (
+        is_state('calendar.m_m', 'on')
+        and 'verjaardag' in m
+        and m.split(' ')[1] in ['martijn', 'marleen', 'floris', 'pepijn']
+      )
+    }}
 condition:
   - alias: "Prevent running too much"
     condition: template
@@ -193,22 +204,25 @@ action:
       ha_url: !secret ha_url
   - alias: "TTS announcement in case of birthday"
     if:
-      - "{{ '0' in birthday | map('states') | list }}"
+      - "{{ birthday_today }}"
       - alias: "Someone home"
         condition: numeric_state
         entity_id: zone.home
         above: 0
     then:
       - variables:
-          name: >
+          name_a: >
             {{
               expand(birthday)
                 | selectattr('state', 'eq', '0')
                 | map(attribute='object_id')
+                | map('replace', 'anniversary_', '')
                 | join
-                | replace('anniversary_', '')
-                | title
             }}
+          name_c: >
+            {% set m = state_attr('calendar.m_m', 'message') | lower %}
+            {{ m.split(' ') | last | title }}
+          name: "{{ name_a or name_c }}"
       - service: script.turn_on
         target:
           entity_id: script.google_home_resume
@@ -248,4 +262,4 @@ action:
                     large_text: "Hoera, de bel!"
                     small_text: "Misschien is het wel visite voor {{ name }}"
                     picture_url: "http://192.168.2.3:8123/local/pictures/tts/party-popper.jpg"
-                  volume: 0.5
+                  volume: 0.6
