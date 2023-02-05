@@ -3,7 +3,7 @@
 - [Description](#description)
 - [This script supports](#this-script-supports)
 - [Latest changes](#latest-changes)
-    - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
+    - [2023.2](#20232)
       - [🐛 Bug fixes](#-bug-fixes)
 - [The automation for automatic resume](#the-automation-for-automatic-resume)
 - [How to use the script](#how-to-use-the-script)
@@ -29,11 +29,13 @@ ___
 
 # Latest changes
 
-### 2023.1 Best wishes for 2023! 
+### 2023.2
+
+Only a small update with a small bugfix right now :)
 
 #### 🐛 Bug fixes
 
-* Fix for `target_list` in case multiple targets are provided as string
+* Fix error in resume helper when no volume was stored
 
 Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 

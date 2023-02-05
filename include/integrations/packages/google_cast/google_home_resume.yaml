@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: &ver 2023.1.0
+          version: &ver 2023.2.0
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -835,8 +835,8 @@ script:
                     timeout: "00:00:30"
                   - variables:
                       state_changed: "{{ wait.completed }}"
-                      current_volume: "{{ state_attr(player.entity_id, 'volume_level') | round(2, default=0) }}"
-                      data_volume: "{{ player.volume_level | round(2, default=0) }}"
+                      current_volume: "{{ state_attr(player.entity_id, 'volume_level') | round(2, default=0.0) }}"
+                      data_volume: "{{ player.get('volume_level', 0.0) | round(2) }}"
                   - alias: "Add entity to the restore active group"
                     service: group.set
                     data:

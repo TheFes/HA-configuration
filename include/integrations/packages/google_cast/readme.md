@@ -7,13 +7,9 @@
   - [Background](#background)
 - [🚨 SPOTIFY RESUME ISSUES 🚨](#-spotify-resume-issues-)
   - [Latest version](#latest-version)
-    - [2023.1 Best wishes for 2023!](#20231-best-wishes-for-2023)
-    - [🌐 GENERAL](#-general)
-      - [🌟 Improvements](#-improvements)
+    - [2023.2](#20232)
     - [:recycle: RESUME SCRIPT](#recycle-resume-script)
       - [🐛 Bug fixes](#-bug-fixes)
-    - [🎭 EVENT SCRIPT](#-event-script)
-      - [🐛 Bug fixes](#-bug-fixes-1)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
@@ -48,38 +44,21 @@ All these scripts are now combined in one package
 ___
 
 #  🚨 SPOTIFY RESUME ISSUES 🚨
-
-There are currently issues with resuming Spotify, this is not caused by the script, but something which is caused by Spotify, which makes Spotcast unable to perform the resume.
-The issue you will see (as error in the trace of the helper script, or your log, will be something like `Error executing script. Error for if at pos 2: Could not find device with name Kitchen Google Display`
-
-For me the suggestions provided in this [spotcast issue](https://github.com/fondberg/spotcast/issues/365#issuecomment-1356797204) on GitHub helped. I've done these changes in my spotcast files, and for me resume works fine now. The changed files can be found [here](https://github.com/TheFes/HA-configuration/tree/main/custom_components/spotcast).
-
-If that doesn't work, you might wat to try the changes from this [spotcast PR](https://github.com/fondberg/spotcast/pull/366). Haven't applied those mysef, because for me it seems to work now.
+Update Spotcast to version 3.7.0. This should resolve the issues.
 
 ___
 
 ## Latest version
 
-### 2023.1 Best wishes for 2023!
-Only a small update with some bugfixes right now :)
+### 2023.2
 
-### 🌐 GENERAL
-
-#### 🌟 Improvements
-
-* Some changes in how the version numbers are copied over to the different scripts (using YAML anchors)
+Only a small update with a small bugfix right now :)
 
 ### :recycle: RESUME SCRIPT
 
 #### 🐛 Bug fixes
 
-* Fix for `target_list` in case multiple targets are provided as string
-
-### 🎭 EVENT SCRIPT
-
-#### 🐛 Bug fixes
-
-* Fix for `target_list` which was not working if a target was specified
+* Fix error in resume helper when no volume was stored
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)

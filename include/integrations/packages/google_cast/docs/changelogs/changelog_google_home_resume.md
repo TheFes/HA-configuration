@@ -3,6 +3,18 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.2.0
+
+#### 🐛 Bug fixes
+
+* Fix error in resume helper when no volume was stored
+
+### 2023.1.0
+
+#### 🐛 Bug fixes
+
+* Fix for `target_list` in case multiple targets are provided as string
+
 ### Version 2022.12.3
 
 #### 🌟 Improvements
