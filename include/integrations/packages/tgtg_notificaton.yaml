@@ -32,21 +32,20 @@ automation:
       - "{{ entity != 'none' and from | is_number and to | is_number }}"
     action:
       - alias: "Send or dismiss"
-        choose:
-          - conditions: "{{ to == '0' }}"
-            sequence:
-              - alias: "Dismiss notification"
-                service: notify.mobile_app_pixel_7_pro
-                data:
-                  message: "clear_notification"
-                  data:
-                    tag: TGTG-{{ entity }}
-        default:
+        if: "{{ to == 0 }}"
+        then:
+          - alias: "Dismiss notification"
+            service: notify.mobile_app_pixel_7_pro
+            data:
+              message: "clear_notification"
+              data:
+                tag: TGTG-{{ entity }}
+        else:
           - alias: "Send notification"
             service: notify.mobile_app_pixel_7_pro
             data:
               title: "{{ box}} beschikbaar"
-              message: "Er {{ iif(to == '1','is', 'zijn') }} er nog {{ to }}"
+              message: "Er {{ iif(to == 1,'is', 'zijn') }} er nog {{ to }}"
               data:
                 tag: TGTG-{{ entity }}
                 channel: TGTG
