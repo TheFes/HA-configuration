@@ -25,9 +25,9 @@ automation:
       entity: >
         {% set changed = trigger.to_state.attributes.get('boxes', []) | reject('in', trigger.from_state.attributes.get('boxes', [])) | list %}
         {{ (changed | first).entity_id if iif(changed) else 'none' }}
-      box: "{{ trigger.from_state.attributes.boxes[entity].box }}"
-      from: "{{ trigger.from_state.attributes.boxes[entity].state }}"
-      to: "{{ trigger.to_state.attributes.boxes[entity].state }}"
+      box: "{{ trigger.from_state.attributes.boxes | selectattr('entity_id', 'eq', entity) | map(attribute='box') | join }}"
+      from: "{{ trigger.from_state.attributes.boxes | selectattr('entity_id', 'eq', entity) | map(attribute='state') | join }}"
+      to: "{{ trigger.to_state.attributes.boxes | selectattr('entity_id', 'eq', entity) | map(attribute='state') | join }}"
     condition:
       - "{{ entity != 'none' and from | is_number and to | is_number }}"
     action:
