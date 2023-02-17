@@ -7,10 +7,23 @@ trigger:
     event_type: "deconz_event"
     event_data:
       device_id: f448ab96c13a02e1e4ed6dc679d693c5
+variables:
+  pepijn: >
+    {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}
+    {% set out = today_at(states('input_datetime.pepijn_time_awake')) %}
+    {% set awake = out - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
+    {% if now() > sleep or now() < awake %}
+      sleeping
+    {% elif awake < now() < out %}
+      awake
+    {% else %}
+      out
+    {% endif %}
 action:
   - alias: "Which click type"
     choose:
-      - conditions:
+      - alias: "Actions with short press"
+        conditions:
           - alias: "Short"
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
@@ -19,16 +32,9 @@ action:
             choose:
               - conditions: >
                   {{
-                    (
-                      is_state('sun.sun', 'below_horizon')
-                      or states('sensor.pepijn_lux') | float(0) < 10 
-                    )
-                    and
-                      (
-                        now() > today_at(states('input_datetime.pepijn_time_bed'))
-                        or now() < today_at(states('input_datetime.pepijn_time_awake'))
-                      )
-                    and is_state('light.groep_bed_pepijn', 'off') 
+                    states('sensor.pepijn_lux') | float(0) < 10
+                    and pepijn == 'sleeping'
+                    and is_state('light.groep_bed_pepijn', 'off')
                   }}
                 sequence:
                   - service: light.turn_on
@@ -38,13 +44,15 @@ action:
                       color_name: red
                       brightness: 30
                   - delay: >
-                      {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes =states('input_number.leestijd_pepijn')| int) %}
+                      {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
                       {% set next = next + timedelta(days=1) if now() > next else next %}
                       {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
                   - service: light.turn_off
                     target:
                       entity_id: light.graafmachine
-              - conditions: "{{ is_state('light.bed_pepijn', 'off') }}"
+              - conditions: >
+                  {% set s = expand('light.groep_bed_pepijn') %}
+                  {{ s | selectattr('state', 'eq', 'on') | list | count < s | list | count }}
                 sequence:
                   - service: light.turn_on
                     target:
