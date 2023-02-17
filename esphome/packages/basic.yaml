@@ -50,15 +50,15 @@ sensor:
     icon: mdi:wifi-strength-2
     update_interval: 60s
 
-# restart button
 button:
+  # restart button
   - platform: restart
     name: "${device_name} ${device_type} Restart"
 
-# safe mode switch
-switch:
+  # safe mode button
   - platform: safe_mode
     name: "${device_name} ${device_type} Safe Mode"
+    entity_category: diagnostic
 
 binary_sensor:
   - platform: status
