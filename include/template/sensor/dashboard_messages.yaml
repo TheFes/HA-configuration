@@ -112,6 +112,8 @@
           {%- endif %}
           {{ dict(message=message | default(''), level='info') }}
         eta_martijn: >-
-          {{ dict(message=state_attr('sensor.variables', 'variables').get('eta_martijn', ''), level='info') }}
+          {% set eta = (state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_martijn', '') %}
+          {{ dict(message=eta, level='info') }}
         eta_marleen: >-
-          {{ dict(message=state_attr('sensor.variables', 'variables').get('eta_marleen', ''), level='info') }}
+          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_marleen', '') %}
+          {{ dict(message=eta, level='info') }}

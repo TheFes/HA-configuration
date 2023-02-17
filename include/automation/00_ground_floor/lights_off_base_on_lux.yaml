@@ -26,12 +26,9 @@ action:
             service: light.turn_off
             target:
               entity_id:
-                - light.booglamp
-                - light.tv_lamp
-                - light.speelhoek
-                - light.woonkamer_plafond
+                - light.groep_woonkamer
+                - light.groep_speelhoek
                 - light.keuken
-                - light.speelhoek
     default:
       - alias: "Turn off all lights"
         service: light.turn_off

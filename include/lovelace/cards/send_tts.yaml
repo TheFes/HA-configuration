@@ -140,7 +140,7 @@ cards:
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
         entity: input_boolean.huis_groep
         badge_icon: &badge >
-          {% set radio_icon = 
+          {% set radio_icon =
             {
               "NPO Radio 2": "mdi:numeric-2-circle-outline",
               "Radio Veronica": "mdi:alpha-v-circle-outline",
@@ -156,7 +156,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Zolder"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -165,7 +165,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Boven"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -174,7 +174,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Beneden"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -183,7 +183,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Martijn"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -192,7 +192,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Marleen"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -201,7 +201,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "M&M"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -210,7 +210,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Pepijn"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -219,7 +219,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Floris"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -228,7 +228,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Keuken"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -237,7 +237,7 @@ cards:
         tap_action:
           action: toggle
       - type: custom:mushroom-template-card
-        secondary: "{{ state_attr(entity, 'friendly_name') }}"
+        secondary: "Woonkamer"
         icon: "{{ state_attr(entity, 'icon') }}"
         layout: vertical
         icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
@@ -251,7 +251,7 @@ cards:
             state: "on"
         card:
           type: custom:mushroom-template-card
-          secondary: "{{ 'Verstuur TTS' if is_state('input_select.tts_or_radio', 'TTS') else 'Start radio' }}"
+          secondary: "{{ 'Stuur' if is_state('input_select.tts_or_radio', 'TTS') else 'Start' }}"
           icon: "{{ 'mdi:send' if is_state('input_select.tts_or_radio', 'TTS') else 'mdi:radio' }}"
           layout: vertical
           icon_color: "{{ 'green' if is_state('script.google_tts_radio_dashboard', 'on') else 'blue' if is_state('group.tts_selection', 'on') else states('input_text.tts_icon_color') }}"

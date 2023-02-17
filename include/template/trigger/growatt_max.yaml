@@ -16,7 +16,6 @@
         this.state if trigger.id == 'initial' and this.state | is_number
         else states('sensor.growatt_total_energy_today')
       }}
-    device_class: energy
     unit_of_measurement: "kWh"
     state_class: measurement
     attributes:

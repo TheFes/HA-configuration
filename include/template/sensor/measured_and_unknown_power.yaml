@@ -29,9 +29,8 @@
           {{ states.sensor
               | selectattr('entity_id', 'search', 'power')
               | rejectattr('entity_id', 'in', reject_entities)
-              | rejectattr('entity_id', 'in', integration_entities('onesmartcontrol'))
-              | rejectattr('entity_id', 'in', integration_entities('dsmr'))
-              | rejectattr('entity_id', 'search', 'ble_measured_power')
+              | rejectattr('entity_id', 'in', integration_entities('onesmartcontrol') + integration_entities('dsmr'))
+              | rejectattr('entity_id', 'search', 'ble_measured_power|battery')
               | selectattr('attributes.state_class', 'defined')
               | selectattr('attributes.state_class', 'eq', 'measurement')
               | selectattr('state', 'is_number')

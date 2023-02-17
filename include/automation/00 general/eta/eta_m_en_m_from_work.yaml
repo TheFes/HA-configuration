@@ -55,7 +55,7 @@ action:
       - event: set_variable
         event_data:
           key: "eta_{{ name }}"
-          value: "{{ eta }}"
+          value: "{{ '🚴‍♂️' if vehicle == 'fiets' else '🚗'}} ETA {{ name | title }}: {{ eta }}"
           set_timestamp: false
       - if: "{{ vehicle == 'auto' }}"
         then:
