@@ -1,11 +1,18 @@
 substitutions:
   name: "btproxy-1stfloor"
-packages:
-  esphome.bluetooth-proxy: github://esphome/bluetooth-proxies/esp32-generic.yaml@main
+  ip: 192.168.2.47
+  device_name: 1stfloor
+  device_type: bt_proxy
+  friendly_name: BT Proxy 1st Floor
+
 esphome:
   name: ${name}
-  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+  project:
+    name: esphome.bluetooth-proxy
+    version: "1.0"
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+packages:
+  minimal: !include packages/minimal.yaml
+  basic: !include packages/basic.yaml
+  bt_proxy: !include packages/bt_proxy.yaml

@@ -1,9 +1,11 @@
 substitutions:
   device_name: doorbell
+  friendly_name : Doorbell
   device_type: ''
   ip: 192.168.2.44
 
 esphome:
+  friendly_name: ${friendly_name}
   name: doorbell
   
 esp8266:
