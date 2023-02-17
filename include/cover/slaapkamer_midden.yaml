@@ -3,7 +3,7 @@ covers:
   slaapkamer_midden_template:
     unique_id: 38ab5b16-02dc-450a-be78-4cd67f6b5d1b
     friendly_name: "Screens Slaapkamer Midden"
-    device_class: blind
+    device_class: shade
     position_template: >
       {%- set s = state_attr('cover.slaapkamer_midden', 'current_position') %}
       {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}

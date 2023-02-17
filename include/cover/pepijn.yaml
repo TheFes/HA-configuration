@@ -2,7 +2,7 @@ platform: template
 covers:
   pepijn_template:
     unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
-    device_class: blind
+    device_class: shade
     availability_template: "{{ not states('cover.pepijn') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Pepijn"
     position_template: >

@@ -3,7 +3,7 @@ covers:
   slaapkamer_links_template:
     unique_id: 9fb1001e-76e9-45e7-a75f-a4927fd86989
     friendly_name: "Screens Slaapkamer Links"
-    device_class: blind
+    device_class: shade
     position_template: >
       {%- set s = state_attr('cover.slaapkamer_links', 'current_position') %}
       {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}

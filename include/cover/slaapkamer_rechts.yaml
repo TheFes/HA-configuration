@@ -3,7 +3,7 @@ covers:
   slaapkamer_rechts_template:
     unique_id: 1eda2946-e054-4a2b-83bf-3fdeaf93484a
     friendly_name: "Screens Slaapkamer Rechts"
-    device_class: blind
+    device_class: shade
     position_template: >
       {%- set s = state_attr('cover.slaapkamer_rechts', 'current_position') %}
       {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}

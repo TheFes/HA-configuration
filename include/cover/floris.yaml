@@ -2,7 +2,7 @@ platform: template
 covers:
   floris_template:
     unique_id: ee7631e8-3da3-4293-8fe9-5db75ceb76ce
-    device_class: blind
+    device_class: shade
     availability_template: "{{ not states('cover.floris') in ['unknown', 'unavailable'] }}"
     friendly_name: "Screen Floris"
     position_template: >
