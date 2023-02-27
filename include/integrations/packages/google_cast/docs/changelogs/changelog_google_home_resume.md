@@ -7,7 +7,7 @@
 
 #### 🌟 Improvements
 
-* (2022.2.1) Only perform `spotcast.start` once, unless Spotify is not playing after 10 seconds
+* Only perform `spotcast.start` once, unless Spotify is not playing after 10 seconds
 
 ### 2023.2.0
 
