@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: &ver 2023.2.0
+          version: &ver 2023.2.1
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -971,14 +971,10 @@ script:
                                     force_playback: true
                                   account_data:
                                     account: "{{ player.spotcast }}"
-                              - repeat:
-                                  count: 2
-                                  sequence:
-                                    - alias: "Resume spotify"
-                                      service: spotcast.start
-                                      data: >
-                                        {{ service_data if player.spotcast == 'primary_account' else dict(service_data, **account_data) }}
-                                    - delay: "{{ 0 if repeat.last else 0.5 }}"
+                              - alias: "Resume spotify"
+                                service: spotcast.start
+                                data: >
+                                  {{ service_data if player.spotcast == 'primary_account' else dict(service_data, **account_data) }}
                               - alias: "Wait until song is playing"
                                 wait_template: >
                                   {{ is_state_attr(player.entity_id, 'app_name', 'Spotify') and iif(state_attr(player.entity_id, 'media_position')) }}
@@ -986,6 +982,18 @@ script:
                               - alias: "Go to the right position in the track when resume is performed"
                                 if: "{{ wait.completed }}"
                                 then: *seek
+                                else:
+                                  - alias: "Resume spotify"
+                                    service: spotcast.start
+                                    data: >
+                                      {{ service_data if player.spotcast == 'primary_account' else dict(service_data, **account_data) }}
+                                  - alias: "Wait until song is playing"
+                                    wait_template: >
+                                      {{ is_state_attr(player.entity_id, 'app_name', 'Spotify') and iif(state_attr(player.entity_id, 'media_position')) }}
+                                    timeout: "00:00:10"
+                                  - alias: "Go to the right position in the track when resume is performed"
+                                    if: "{{ wait.completed }}"
+                                    then: *seek
                           - alias: "Google Podcast?"
                             conditions: "{{ podcast }}"
                             sequence:

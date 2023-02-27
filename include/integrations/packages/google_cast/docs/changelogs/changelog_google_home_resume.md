@@ -3,6 +3,12 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.2.1
+
+#### 🌟 Improvements
+
+* (2022.2.1) Only perform `spotcast.start` once, unless Spotify is not playing after 10 seconds
+
 ### 2023.2.0
 
 #### 🐛 Bug fixes

@@ -9,6 +9,7 @@
   - [Latest version](#latest-version)
     - [2023.2](#20232)
     - [:recycle: RESUME SCRIPT](#recycle-resume-script)
+      - [🌟 Improvements](#-improvements)
       - [🐛 Bug fixes](#-bug-fixes)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
@@ -52,13 +53,17 @@ ___
 
 ### 2023.2
 
-Only a small update with a small bugfix right now :)
+Only a small update with a small bugfix right and a small improvement
 
 ### :recycle: RESUME SCRIPT
 
+#### 🌟 Improvements
+
+* (2022.2.1) Only perform `spotcast.start` once, unless Spotify is not playing after 10 seconds
+
 #### 🐛 Bug fixes
 
-* Fix error in resume helper when no volume was stored
+* (2022.2.0) Fix error in resume helper when no volume was stored
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)
