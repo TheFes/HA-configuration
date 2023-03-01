@@ -30,3 +30,22 @@
           {%- set previous = this.attributes.departure_history | default([]) %}
           {%- set new = [dict(who = names, at = now().isoformat())] if who else [] %}
           {{ new + previous[:9] if who else previous }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.test
+        - input_boolean.hide_header
+      to: "on"
+  sensor:
+    - name: Last input boolean triggered
+      unique_id: 563caa69-50be-4449-8aad-b56879913c4d
+      state: "{{ states[trigger.entity_id].last_changed.strftime('%X') }}"
+      icon: mdi:toggle-switch-variant
+      attributes:
+        history: >
+          {%- set what = states[trigger.entity_id].name %}
+          {%- set at = states[trigger.entity_id].last_changed.strftime('%X') %}
+          {%- set previous = this.attributes.history | default([]) %}
+          {%- set new = [dict(what = what, at = at)] %}
+          {{ new + previous[:4] }}
