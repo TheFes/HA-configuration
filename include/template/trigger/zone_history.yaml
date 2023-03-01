@@ -18,7 +18,7 @@
                               | list
           %}
           {%- set names = expand(who) | map(attribute='name') | join(', ') %}
-          {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
+          {%- set previous = this.attributes.arrival_history | default([]) %}
           {%- set new = [dict(who = names, at = now().isoformat())] if who else [] %}
           {{ new + previous[:9] if who else previous }}
         departure_history: >
@@ -27,6 +27,6 @@
                             | list
           %}
           {%- set names = expand(who) | map(attribute='name') | join(', ') %}
-          {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
+          {%- set previous = this.attributes.departure_history | default([]) %}
           {%- set new = [dict(who = names, at = now().isoformat())] if who else [] %}
           {{ new + previous[:9] if who else previous }}
