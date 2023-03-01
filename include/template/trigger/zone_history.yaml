@@ -15,16 +15,18 @@
         arrival_history: >
           {%- set who = trigger.to_state.attributes.persons
                               | reject('in', trigger.from_state.attributes.persons)
-                              | join(', ')
+                              | list
           %}
+          {%- set names = expand(who) | map(attribute='name') | join(', ') %}
           {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
-          {%- set new = [dict(who = states[who].name, at = now().isoformat())] if who else [] %}
+          {%- set new = [dict(who = names, at = now().isoformat())] if who else [] %}
           {{ new + previous[:9] if who else previous }}
         departure_history: >
           {%- set who = trigger.from_state.attributes.persons
                             | reject('in', trigger.to_state.attributes.persons)
-                            | join(', ')
+                            | list
           %}
+          {%- set names = expand(who) | map(attribute='name') | join(', ') %}
           {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
-          {%- set new = [dict(who = states[who].name, at = now().isoformat())] if who else [] %}
+          {%- set new = [dict(who = names, at = now().isoformat())] if who else [] %}
           {{ new + previous[:9] if who else previous }}
