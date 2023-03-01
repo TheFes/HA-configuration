@@ -12,31 +12,19 @@
           mdi:home-outline
         {%- endif %}
       attributes:
-        last_arrival: >
-          {%- set arrived = trigger.to_state.attributes.persons
-                              | reject('in', trigger.from_state.attributes.persons)
-                              | join(', ')
-          %}
-          {%- set previous = this.get('attributes', {}).get('last_arrival', dict(person = 'no one yet', at = now().isoformat())) %}
-          {{ dict(person = arrived, at = now().isoformat()) if iif(arrived) else previous }}
-        last_departure: >
-          {%- set left = trigger.from_state.attributes.persons
-                            | reject('in', trigger.to_state.attributes.persons)
-                            | join(', ')
-          %}
-          {%- set previous = this.get('attributes', {}).get('last_departure', dict(person = 'no one yet', at = now().isoformat())) %}
-          {{ dict(person = left, at = now().isoformat()) if iif(left) else previous }}
         arrival_history: >
-          {%- set arrived = trigger.to_state.attributes.persons
+          {%- set who = trigger.to_state.attributes.persons
                               | reject('in', trigger.from_state.attributes.persons)
                               | join(', ')
           %}
           {%- set previous = this.get('attributes', {}).get('arrival_history', []) %}
-          {{ [ this.attributes.last_arrival ] + previous[:9] if iif(arrived) else previous }}
+          {%- set new = [dict(who = states[who].name, at = now().isoformat())] if who else [] %}
+          {{ new + previous[:9] if who else previous }}
         departure_history: >
-          {%- set left = trigger.from_state.attributes.persons
+          {%- set who = trigger.from_state.attributes.persons
                             | reject('in', trigger.to_state.attributes.persons)
                             | join(', ')
           %}
           {%- set previous = this.get('attributes', {}).get('departure_history', []) %}
-          {{ [ this.attributes.last_departure ] + previous[:9] if iif(left) else previous }}
+          {%- set new = [dict(who = states[who].name, at = now().isoformat())] if who else [] %}
+          {{ new + previous[:9] if who else previous }}
