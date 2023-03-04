@@ -2,7 +2,7 @@ id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
 alias: "F1F - Open cover Floris when needed"
 trigger:
   - platform: state
-    entity_id: binary_sensor.floris_light_inside
+    entity_id: binary_sensor.pepijn_light_inside
     to: "on"
   - platform: state
     entity_id: binary_sensor.trend_pepijn_temp
@@ -49,7 +49,7 @@ action:
         above: 20
       - alias: "Light inside"
         condition: state
-        entity_id: binary_sensor.floris_light_inside
+        entity_id: binary_sensor.pepijn_light_inside
         state: "on"
       - alias: "Screen (partly) open"
         condition: template

@@ -2,7 +2,7 @@ id: dd78d7db-7bd2-48ce-9543-64ee16d98732
 alias: "F1P - Open cover Pepijn when needed"
 trigger:
   - platform: state
-    entity_id: binary_sensor.floris_light_inside
+    entity_id: binary_sensor.pepijn_light_inside
     to: "on"
   - platform: state
     entity_id: binary_sensor.trend_floris_temp
@@ -49,7 +49,7 @@ action:
         above: 20
       - alias: "Light inside"
         condition: state
-        entity_id: binary_sensor.floris_light_inside
+        entity_id: binary_sensor.pepijn_light_inside
         state: "on"
       - alias: "Screen (partly) open"
         condition: template
