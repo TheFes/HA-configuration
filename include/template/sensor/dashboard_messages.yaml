@@ -14,7 +14,9 @@
         anniversaries: >-
           {%- set days_to_show = 14 %}
           {%-set ns = namespace(a=[], message=[]) %}
-          {%- for item in expand(integration_entities('anniversaries')) %}
+          {%- for item in expand(integration_entities('anniversaries'))
+            | selectattr('domain', 'eq', 'sensor')
+          %}
             {%- set d_h = item.attributes.get('days_until_half_anniversary', 999) %}
             {%- set h = d_h < item.state | int %}
             {%- set d = [item.state | int, d_h] | min %}
@@ -45,9 +47,9 @@
               {%- endif %}
             {%- elif d <= days_to_show %}
               {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set ns.message = ns.message + [icon ~ ' In ' ~ d ~ ' day' ~ ('s' if d > 1 ) ~': ' ~ n ~ ((' (' ~ y ~ ' years)') if y)] %}
+                {%- set ns.message = ns.message + [icon ~ ' In ' ~ d ~ ' days' ~': ' ~ n ~ ((' (' ~ y ~ ' years)') if y)] %}
               {%- else %}
-                {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dag' ~ ('en' if d > 1 ) ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
+                {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dagen' ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
               {%- endif %}
             {%- endif %}
           {%- endfor %}
