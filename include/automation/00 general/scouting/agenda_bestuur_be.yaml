@@ -6,7 +6,11 @@ trigger:
 condition:
   - alias: "2 weeks before next board meeting"
     condition: template
-    value_template: "{{ (as_datetime(state_attr('calendar.bestuur_be', 'start_time')) - timedelta(days = 14)).date() == now().date() }}"
+    value_template: >
+      {{
+        state_attr('calendar.bestuur_be', 'start_time') is not none and
+        (as_datetime(state_attr('calendar.bestuur_be', 'start_time')) - timedelta(days = 14)).date() == now().date()
+      }}
 action:
   - service: notify.mail_bestuur_be
     data:
