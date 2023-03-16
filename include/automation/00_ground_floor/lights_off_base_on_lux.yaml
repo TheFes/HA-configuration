@@ -13,8 +13,8 @@ trigger:
     above: 400
 condition:
   - condition: sun
-    after: sunrise
-    after_offset: "03:00:00"
+    before: sunrise
+    before_offset: "03:00:00"
 action:
   - alias: "Light or very light?"
     choose:
