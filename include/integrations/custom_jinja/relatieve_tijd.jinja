@@ -1,0 +1,60 @@
+{% macro relatieve_tijd(date, parts, week, verbose) %}
+  {#- set defaults for input if not entered #}
+    {%- set date = date | as_datetime if date is string or date is number else date %}
+  {#- check for valid datetime (using as_timestamp) #}
+    {%- if as_timestamp(date, default='error') != 'error' %}
+      {%- set date = date | as_local %}
+      {%- set parts = parts | default(1) | int(1) %}
+      {%- set week = week | default(true) | bool(true) %}
+      {%- set verbose = verbose | default(false) | bool(false) %}
+      {%- set n = now() %}
+      {%- set a = [n, date] | max %}
+      {%- set b = [n, date] | min %}
+    {#- set time periods in seconds #}
+      {%- set m, h, d, w = 60, 3600, 86400, 604800 %}
+    {#- set numer of years, and set n to value using this number of years #}
+      {%- set yrs = a.year - b.year - (1 if a.replace(year=b.year) < b else 0) %}
+      {%- set a = a.replace(year=a.year - yrs) %}
+    {#- set numer of months, and set n to value using this number of months #}
+      {%- set mth = (a.month - b.month - (1 if a.day < b.day else 0) + 12) % 12 %}
+      {%- set month_new = (((a.month - mth) + 12) % 12) | default(12, true) %}
+      {%- set day_max = ((a.replace(day=1, month=month_new) + timedelta(days=31)).replace(day=1) - timedelta(days=1)).day %}
+      {%- set a_temp = a.replace(month=month_new, day=[a.day, day_max]|min) %}
+      {%- set a = a_temp if a_temp <= a else a_temp.replace(year=a.year-1) %}
+    {#- set other time period variables #}
+      {%- set s = (a - b).total_seconds() %}
+      {%- set wks = (s // w) | int if week else 0 %}
+      {%- set day = ((s - wks * w) // d) | int %}
+      {%- set hrs = ((s - wks * w - day * d) // h) | int %}
+      {%- set min = ((s - wks * w - day * d - hrs * h) // m) | int %}
+      {%- set sec = (s - wks * w - day * d - hrs * h - min * m) | int %}
+    {#- create mapping used for filtering, and singular/plural names #}
+      {%- set dur = dict(
+                         yrs = dict(a=yrs, d='jr' if verbose else 'jaar'),
+                         mth = dict(a=mth, d='mnd' if verbose else 'maand' ~ ('en' if mth > 1)),
+                         wks = dict(a=wks, d='wk' if verbose else 'week' if wks == 1 else 'weken'),
+                         day = dict(a=day, d='dg' if verbose else 'dag' ~ ('en' if day > 1)),
+                         hrs = dict(a=hrs, d='u' if verbose else 'uur'),
+                         min = dict(a=min, d='min' if verbose else 'minuut' if min == 1 else 'minuten'),
+                         sec = dict(a=sec, d='sec' if verbose else 'seconde' ~ ('n' if sec > 1))
+                       )
+      %}
+    {#- find first non zero time period #}
+      {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first %}
+    {#- set variable to reject weeks if set and find index of first non zero time period #}
+      {%- set week_reject = 'wks' if not week %}
+      {%- set index = (dur.keys() | reject('eq', week_reject) | list).index(first) %}
+    {#-select non zero items based on input #}
+      {%- set items = (dur.keys() | reject('eq', week_reject) | list)[index:index + parts] %}
+      {%- set selection = dur.items() | selectattr('0', 'in', items) | rejectattr('1.a', 'eq', 0) | list %}
+    {#- create list of texts per selected time period #}
+      {%- set ns = namespace(text = []) %}
+      {%- for i in selection -%}
+        {%- set ns.text = ns.text + [ i[1].a ~ ' ' ~ i[1].d] %} 
+      {%- endfor %}
+    {#- join texts in a string, using "en" for the last item #}
+      {{ ns.text[:-1] | join(', ') ~ ' en ' ~ ns.text[-1] if ns.text | count > 1 else ns.text | first }}
+    {%- else %}
+      Geen correcte datum
+    {%- endif %}
+ {%- endmacro %}
