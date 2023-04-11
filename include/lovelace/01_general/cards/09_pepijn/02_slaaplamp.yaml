@@ -1,19 +1,125 @@
 type: grid
-title: Instellingen slaaplamp
+title: Instellingen Wake-up Graafmachine
 square: false
-columns: 2
+columns: 4
 cards:
   - type: custom:mushroom-template-card
-    entity: input_number.leestijd_pepijn
-    primary: "Leestijd"
-    secondary: "{{ states(entity) | int }} minuten"
+    entity: input_boolean.pepijn_graafmachine
+    primary: "{{ 'Aan' if is_state(entity, 'on') else 'Uit' }}"
+    secondary: "{{ 'ㅤ' }}"
+    icon: mdi:power
+    icon_color: "{{ 'green' if is_state(entity, 'on') else 'red' }}"
+    layout: vertical
+    fill_container: true
     tap_action:
-      action: more-info
+      action: toggle
+  - type: custom:mushroom-template-card
+    entity: input_number.leestijd_pepijn
+    primary: "Oranje"
+    secondary: >
+      {{ (today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn') | int)).strftime('%H:%M') }}
+    icon_color: "{{ 'orange' if is_state('input_boolean.pepijn_graafmachine', 'on') }}"
+    layout: vertical
+    fill_container: true
+    tap_action:
+      action: none
     icon: mdi:book-open-page-variant
   - type: custom:mushroom-template-card
     entity: input_datetime.pepijn_time_awake
-    primary: "Pepijn uit bed"
+    primary: "Groen"
     secondary: "{{ today_at(states(entity)).strftime('%-H:%M') }}"
+    icon_color: "{{ 'green' if is_state('input_boolean.pepijn_graafmachine', 'on') }}"
+    layout: vertical
+    fill_container: true
     icon: mdi:sun-clock
     tap_action:
-      action: more-info
+      action: none
+  - type: custom:mushroom-template-card
+    icon: mdi:cog
+    primary: Instellen
+    secondary: "{{ 'ㅤ' }}"
+    layout: vertical
+    icon_color: blue
+    fill_container: true
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          content:
+            type: custom:vertical-stack-in-card
+            cards:
+              - type: entities
+                entities:
+                  - entity: input_boolean.pepijn_graafmachine
+                title: Wekker Pepijn
+              - type: custom:time-picker-card
+                entity: input_datetime.pepijn_time_awake
+                link_values: true
+                name: Graafmachine groen
+                layout:
+                  align_controls: center
+              - type: custom:mushroom-number-card
+                entity: input_number.leestijd_pepijn
+                icon_color: orange
+              - type: custom:mushroom-template-card
+                primary: Lamp orange
+                secondary: >-
+                  {{ (today_at(states('input_datetime.pepijn_time_awake')) -
+                  timedelta(minutes=states('input_number.leestijd_pepijn') |
+                  int)).strftime('%H:%M') }}
+                icon: mdi:weather-sunset-up
+                icon_color: orange
+              - type: custom:mushroom-template-card
+                primary: Start nu
+                secondary: Start graafmachine nu
+                icon: mdi:clock
+                icon_color: red
+                tap_action:
+                  action: call-service
+                  service: button.press
+                  data:
+                    entity_id: button.set_graafmachine_now
+              - type: custom:mushroom-template-card
+                primary: Reset
+                secondary: Reset tijd naar standaard
+                icon: mdi:cached
+                icon_color: blue
+                tap_action:
+                  action: call-service
+                  service: button.press
+                  data:
+                    entity_id: button.reset_graafmachine_time
+              - square: true
+                columns: 2
+                type: grid
+                cards:
+                  - type: custom:time-picker-card
+                    entity: input_datetime.pepijn_awake_normal
+                    hour_mode: 24
+                    hour_step: 1
+                    minute_step: 5
+                    layout:
+                      hour_mode: double
+                      align_controls: center
+                      name: header
+                    hide:
+                      seconds: true
+                    name: Standaard tijd normaal
+                  - type: custom:time-picker-card
+                    entity: input_datetime.pepijn_awake_weekend
+                    hour_mode: 24
+                    hour_step: 1
+                    minute_step: 5
+                    layout:
+                      hour_mode: double
+                      align_controls: center
+                      name: header
+                    hide:
+                      seconds: true
+                    name: Standaard tijd weekend
+              - type: entities
+                entities:
+                  - entity: input_boolean.wakeup_martijn_graafmachine
+                    name: Lamp & geluid Martijn
+                title: Wekker Martijn
