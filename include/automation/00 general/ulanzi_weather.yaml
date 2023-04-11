@@ -1,0 +1,23 @@
+id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
+alias: "00 - Ulanzi weather"
+trigger:
+  - platform: state
+    entity_id: weather.combined_hourly
+    to: ~
+  - platform: state
+    entity_id: weather.combined_hourly
+    attribute: temperature
+action:
+  - alias: "Update weather app"
+    service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_dd3300/custom/weather
+      payload: >
+        {{
+          dict(
+                text = state_attr('weather.combined_hourly', 'temperature') ~ ' °C',
+                icon = states('weather.combined_hourly')
+              ) | to_json
+        }}
