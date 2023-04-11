@@ -20,7 +20,8 @@
             {%- set d_h = item.attributes.get('days_until_half_anniversary', 999) %}
             {%- set h = d_h < item.state | int %}
             {%- set d = [item.state | int, d_h] | min %}
-            {%- set y = item.attributes.get('current_years') %}
+            {%- set c = item.attributes.get('current_years') %}
+            {%- set y = c + (0 if item.state == '0' or h else 1) if c else none %}
             {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
             {%- set ns.a = ns.a + [ dict(n=item.name, d=d, y=y, h=h)] %}
           {%- endfor %}

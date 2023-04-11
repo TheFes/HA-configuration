@@ -15,7 +15,7 @@
               and is_state('sensor.google_pixel_watch_battery_state', 'charging')
             )
           )
-          and is_state('person.martijn', 'home')
+          and is_state('person.martijn', ['Fujifilm', 'home'])
         }}
       availability: >
         {{ states('sensor.google_pixel_watch_battery_level') | is_number }}

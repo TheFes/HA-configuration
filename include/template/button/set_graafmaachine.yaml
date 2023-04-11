@@ -5,4 +5,31 @@
       press:
         - service: script.turn_on
           target:
-            entity_id: script.set_time_graafmachine
+            entity_id: script.wakeup_graafmachine
+          data:
+            variables:
+              action: set_time
+    - name: Reset Graafmachine time
+      unique_id: 7fb14279-4f91-4f28-bbb2-8cdaf999833d
+      icon: mdi:excavator
+      press:
+        - service: input_datetime.set_datetime
+          target:
+            entity_id: input_datetime.pepijn_time_awake
+          data:
+            time: >
+              {% set normal = today_at(states('input_datetime.pepijn_awake_normal')) %}
+              {% set weekend = today_at(states('input_datetime.pepijn_awake_weekend')) %}
+              {% set current = today_at(states('input_datetime.pepijn_time_awake')) %}
+              {% set today = now() < current %}
+              {% set day = (now().weekday() + (0 if today else 1)) % 7 %}
+              {{ (weekend if day >= 5 else normal).strftime('%X') }}
+    - name: Set Graafmachine now
+      unique_id: 9912507b-15f0-492a-8e85-b891393defc4
+      icon: mdi:excavator
+      press:
+        - service: input_datetime.set_datetime
+          target:
+            entity_id: input_datetime.pepijn_time_awake
+          data:
+            time: "{{ (now() + timedelta(minutes=states('input_number.leestijd_pepijn') | int)).strftime('%X') }}"
