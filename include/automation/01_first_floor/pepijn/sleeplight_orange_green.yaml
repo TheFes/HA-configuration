@@ -15,11 +15,19 @@ trigger:
     at: "21:00:00"
     id: time_check
 condition:
-  not:
-    - alias: "Not on holiday"
-      condition: state
-      entity_id: sensor.house_mode
-      state: "Vakantie"
+  - not:
+      - alias: "Not on holiday"
+        condition: state
+        entity_id: sensor.house_mode
+        state: "Vakantie"
+  - alias: "Someone at home"
+    condition: numeric_state
+    entity_id: zone.home
+    above: 0
+  - alias: "Wakeup on"
+    condition: state
+    entity_id: input_boolean.pepijn_graafmachine
+    state: "on"
 action:
   - choose:
       - conditions: "{{ trigger is defined and  trigger.get('id') == 'orange' }}"
@@ -73,7 +81,12 @@ action:
                 - 0
                 - 237
                 - 0
-    default:
-      - service: button.press
-        target:
-          entity_id: button.set_time
+          - wait_template: "{{ is_state('light.graafmachine', 'off')}}"
+          - service: button.press
+            data:
+              entity_id: button.reset_graafmachine_time
+      - conditions: "{{ trigger is defined and trigger.get('id') == 'time_check' }}"
+        sequence:
+          - service: button.press
+            target:
+              entity_id: button.set_time

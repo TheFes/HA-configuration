@@ -29,6 +29,14 @@ condition:
     condition: state
     entity_id: input_boolean.wakeup_martijn_graafmachine
     state: "on"
+  - alias: "Wakeup Pepijn on"
+    condition: state
+    entity_id: input_boolean.pepijn_graafmachine
+    state: "on"
+  - alias: "Martijn at home"
+    condition: state
+    entity_id: person.martijn
+    state: "home"
 variables:
   light_on: >
     {% set end = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(seconds=states('input_number.leestijd_pepijn') | int * 60 + out_of_bed_seconds) %}
