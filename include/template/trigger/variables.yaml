@@ -1,3 +1,6 @@
+# trigger based template sensor to store variables
+# for more info, see https://community.home-assistant.io/t/wth-cant-input-helpers-be-read-only-in-ui/467562/32
+
 - trigger:
     - platform: event
       event_type: set_variable
@@ -11,7 +14,7 @@
         default_timestamp: false
         variables: >
           {%- set current = this.attributes.get('variables', {}) %}
-          {%- if trigger.event.event_type == 'set_variable' %}
+          {%- if trigger.event.event_type == 'set_variable' and trigger.event.data.key is defined and trigger.event.data.value is defined %}
             {%- if trigger.event.data.get('set_timestamp', this.attributes.get('default_timestamp', false)) %}
               {%- set new = {trigger.event.data.key: {'value': trigger.event.data.value, 'timestamp': now().isoformat()}} %}
             {%- else %}
@@ -19,5 +22,7 @@
             {%- endif %}
             {{ dict(current, **new) }}
           {%- elif trigger.event.event_type == 'remove_variable' %}
-            {{ dict(current.items() | rejectattr('0', 'eq', trigger.event.data.key)) }}
+            {{ dict(current.items() | rejectattr('0', 'eq', trigger.event.data.get('key'))) }}
+          {%- else %}
+            {{ current }}
           {%- endif %}
