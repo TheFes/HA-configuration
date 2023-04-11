@@ -16,12 +16,17 @@ condition:
     condition: time
     weekday:
       - "mon"
+  - alias: "Vacuum working"
+    condition: state
+    entity_id: binary_sensor.vacuum
+    state: "on"
   - condition: not
     conditions:
       - alias: "Not on holiday"
         condition: state
         entity_id: sensor.house_mode
         state: "Vakantie"
+  - "{{ not is_state('vacuum.rockrobo_vacuum_v1', ['unavailable', 'unknown']) }}"
 action:
   - alias: "Action?"
     choose:
@@ -35,10 +40,6 @@ action:
           - alias: "Na 9u?"
             condition: time
             after: "09:00:00"
-          - alias: "Input Boolean off"
-            condition: state
-            entity_id: input_boolean.no_vacuum_today
-            state: "off"
         sequence:
           - if:
               - alias: "Input Boolean off"
