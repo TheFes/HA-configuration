@@ -1,43 +1,75 @@
-{# set phrases to be used in the relative_time_period macro #}
+{#
+  set phrases to be used in the relative_time_period macro
+  one list item per language, each time fraction contains a list with the singular, plural and verbose phrase
+  combine contains the text to combine the last time fraction, and error the text to display on wrong date input
+#}
 {%- set time_period_phrases = [
-                              {
-                                'language': 'nl',
+                                {
+                                  'language': 'en',
+                                  'phrases':
+                                  {
+                                    'year': ['year', 'years', 'yr'],
+                                    'month': ['month', 'months', 'mth'],
+                                    'week': ['week', 'weeks', 'wk'],
+                                    'day': ['day', 'days', 'day'],
+                                    'hour': ['hour', 'hours', 'hr'],
+                                    'minute': ['minute', 'minutes', 'min'],
+                                    'second': ['second', 'seconds', 'sec'],
+                                    'combine': ' and ',
+                                    'error': 'Incorrect date'
+                                  }
+                                },
+                                {
+                                'language': 'it',
                                 'phrases':
                                 {
-                                  'year': ['jaar', 'jaar', 'jr'],
-                                  'month': ['maand', 'maanden', 'mnd'],
-                                  'week': ['week', 'weken', 'wk'],
-                                  'day': ['dag', 'dagen', 'dg'],
-                                  'hour': ['uur', 'uren', 'u'],
-                                  'minute': ['minuut', 'minuten', 'min'],
-                                  'second': ['seconde', 'seconden', 'sec'],
-                                  'combine': ' en ',
-                                  'error': 'Incorrecte datum'
+                                'year': ['anno', 'anni', 'aa'],
+                                'month': ['mese', 'mesi', 'mm'],
+                                'week': ['settimana', 'settimane', 'set'],
+                                'day': ['giorno', 'giorni', 'gg'],
+                                'hour': ['ora', 'ore', 'h'],
+                                'minute': ['minuto', 'minuti', 'min'],
+                                'second': ['secondo', 'secondi', 'sec'],
+                                'combine': ' e ',
+                                'error': 'Data non valida'
                                 }
-                              },
-                              {
-                                'language': 'en',
-                                'phrases':
+                                },
                                 {
-                                  'year': ['year', 'years', 'yr'],
-                                  'month': ['month', 'months', 'mth'],
-                                  'week': ['week', 'weeks', 'wk'],
-                                  'day': ['day', 'days', 'day'],
-                                  'hour': ['hour', 'hours', 'hr'],
-                                  'minute': ['minute', 'minutes', 'min'],
-                                  'second': ['second', 'seconds', 'sec'],
-                                  'combine': ' and ',
-                                  'error': 'Incorrect date'
+                                  'language': 'nl',
+                                  'phrases':
+                                  {
+                                    'year': ['jaar', 'jaar', 'jr'],
+                                    'month': ['maand', 'maanden', 'mnd'],
+                                    'week': ['week', 'weken', 'wk'],
+                                    'day': ['dag', 'dagen', 'dg'],
+                                    'hour': ['uur', 'uren', 'u'],
+                                    'minute': ['minuut', 'minuten', 'min'],
+                                    'second': ['seconde', 'seconden', 'sec'],
+                                    'combine': ' en ',
+                                    'error': 'Incorrecte datum'
+                                  }
+                                },
+                                {
+                                  'language': 'de',
+                                  'phrases':
+                                  {
+                                    'year': ['Jahr', 'Jahre', 'J.'],
+                                    'month': ['Monat', 'Monate', 'M.'],
+                                    'week': ['Woche', 'Wochen', 'Wo.'],
+                                    'day': ['Tag', 'Tage', 'Tg.'],
+                                    'hour': ['Stunde', 'Stunden', 'Std.'],
+                                    'minute': ['Minute', 'Minuten', 'Min.'],
+                                    'second': ['Sekunde', 'Sekunden', 'Sek.'],
+                                    'combine': ' und ',
+                                    'error': 'Falsches Datum'
+                                  }
                                 }
-                              },
-                            ]
+                              ]
 %}
 
-{# macro to split a timedelta in years, months, weeks, days, hours, minutes, seconds #}
-{# mandatory: date (datetime) #}
-{# optional:
-    time (boolan, default=true)
-    compare_date (datetime, default=now())
+{#
+  macro to split a timedelta in years, months, weeks, days, hours, minutes, seconds
+  used by the relative time plus macro, set up as a seperate macro so it can be reused
 #}
 {%- macro time_split(date, time, compare_date) %}
   {# set defaults for variables #}
@@ -70,17 +102,7 @@
 {%- endmacro %}
 
 {# macro to output a timedelta in a readable format #}
-{# mandatory: date (datetime, datetime string or timestamp) #}
-{# optional:
-    parts(int, default=1)
-    week(boolean, default=true)
-    time (boolan, default=true)
-    verbose (boolean, default=false)
-    time (boolean, default=true)
-    language(string, default is first provided)
-    compare_date (datetime, default=now())
-#}
-{%- macro relative_time_period(date, parts, week, time, verbose, language, compare_date) %}
+{%- macro relative_time_plus(date, parts, week, time, verbose, language, compare_date) %}
   {#- set defaults for input if not entered #}
     {%- set date = date | as_datetime if date is string or date is number else date %}
     {%- set compare_date = compare_date if compare_date is defined else now() %}
