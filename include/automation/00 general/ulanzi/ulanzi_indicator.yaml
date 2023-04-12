@@ -1,0 +1,25 @@
+id: 52dd10e9-7bf6-4778-b4b7-a8967a4b5fb8
+alias: "00 - Ulanzi indicators"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.whatsapp_notification_active
+    to: ~
+    variables:
+      action: "{{ trigger.to_state.state }}"
+      indicator: 1
+      color_name: green
+action:
+  - if: "{{ action | bool(true) }}"
+    then:
+      - alias: Turn indicator on
+        service: light.turn_on
+        target:
+          entity_id: light.indicator_{{ indicator }}
+        data:
+          brightness: "{{ state_attr('light.matrix', 'brightness') }}"
+          color_name: "{{ color }}"
+    else:
+      - alias: Turn indicator off
+        service: light.turn_off
+        target:
+          entity_id: light.indicator_{{ indicator }}

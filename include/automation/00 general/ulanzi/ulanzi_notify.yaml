@@ -20,6 +20,8 @@ trigger:
           {{ trigger.to_state.attributes['android.text'] }}
         {% endif %}
       repeat: 2
+      textCase: 2
+      pushIcon: 2
   - platform: state
     entity_id: binary_sensor.doorbell_button
     to: "on"
@@ -35,4 +37,13 @@ action:
       qos: 0
       retain: false
       topic: awtrix_dd3300/notify
-      payload: "{{ dict(text=text, repeat=repeat | default(3), rainbow=rainbow | default(false), icon=icon) | to_json }}"
+      payload: >
+        {{ dict(
+                text=text,
+                repeat=repeat | default(3),
+                rainbow=rainbow | default(false),
+                icon=icon,
+                pushIcon=pushIcon | default(0),
+                textCase=textCase | default(2)
+                ) | to_json
+        }}

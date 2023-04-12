@@ -1,0 +1,31 @@
+id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
+alias: "00 - Ulanzi custom app"
+trigger:
+  - platform: state
+    entity_id: weather.combined_hourly
+    to: ~
+    variables: &weather
+      app: weather
+      text: "{{ state_attr('weather.combined_hourly', 'temperature') }} °C"
+      icon: "{{ states('weather.combined_hourly') }}"
+  - platform: state
+    entity_id: weather.combined_hourly
+    attribute: temperature
+    variables: *weather
+action:
+  - alias: "Update custom app"
+    service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_dd3300/custom/{{ app }}
+      payload: >
+        {{
+          dict(
+                text = text,
+                icon = icon
+                rainbow=rainbow | default(false),
+                pushIcon=pushIcon | default(0),
+                textCase=textCase | default(2)
+              ) | to_json
+        }}

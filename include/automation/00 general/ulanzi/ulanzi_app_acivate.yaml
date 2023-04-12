@@ -1,0 +1,25 @@
+id: 98e424f3-e458-4061-8562-c9e2700e0c3a
+alias: "00 - Ulanzi activate or deactivate app"
+trigger:
+  - platform: state
+    entity_id: sensor.battery
+    to: ~
+    variables:
+      show: "{{ trigger.to_state.state != '100' }}"
+      app: bat
+action:
+  - alias: "Activate or deactivate app"
+    service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_dd3300/apps
+      payload: >
+        {{
+          [
+            dict(
+                name = app,
+                show = show
+              )
+          ] | to_json
+        }}
