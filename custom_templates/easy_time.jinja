@@ -279,6 +279,146 @@
       'November',
       'Dezember',
     ]
+  },
+  'da':{
+    '_language': 'Dansk',
+    'and': 'og',
+    'in': 'i',
+    'ago': 'siden',
+    'now': 'nu',
+    'lose': 'mister',
+    'gain': 'tilføjer',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'Å',
+        'år',
+        'år',
+      ],
+      'week': [
+        'u',
+        'uge',
+        'uger',
+      ],
+      'day': [
+        'd',
+        'dag',
+        'dage',
+      ],
+      'hour': [
+        't',
+        'time',
+        'timer',
+      ],
+      'minute': [
+        'min',
+        'minut',
+        'minutter',
+      ],
+      'second': [
+        'sek',
+        'sekund',
+        'sekunder',
+      ],
+    },
+    'delta':{
+      'today': 'i dag',
+      'tomorrow': 'i morgen',
+      'yesterday': 'i går',
+    },
+    'days':[
+      "mandag",
+      "tirsdag",
+      "onsdag",
+      "torsdag",
+      "fredag",
+      "lørdag",
+      "søndag",
+    ],
+    'months':[
+      'januar',
+      'februar',
+      'marts',
+      'april',
+      'maj',
+      'juni',
+      'juli',
+      'august',
+      'september',
+      'oktober',
+      'november',
+      'december',
+    ]
+  },
+  'fr':{
+    '_language': 'Français',
+    'and': 'et',
+    'in': 'dans',
+    'ago': 'il y a',
+    'now': 'maintenant',
+    'lose': 'perdre',
+    'gain': 'gagner',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'an',
+        'an',
+        'ans',
+      ],
+      'week': [
+        'sem.',
+        'semaine',
+        'semaines',
+      ],
+      'day': [
+        'j',
+        'jour',
+        'jours',
+      ],
+      'hour': [
+        'h',
+        'heure',
+        'heures',
+      ],
+      'minute': [
+        'min',
+        'minute',
+        'minutes',
+      ],
+      'second': [
+        's',
+        'seconde',
+        'secondes',
+      ],
+    },
+    'delta':{
+      'today': "aujourd'hui",
+      'tomorrow': 'demain',
+      'yesterday': 'hier',
+    },
+    'days':[
+      "lundi",
+      "mardi",
+      "mercredi",
+      "jeudi",
+      "vendredi",
+      "samedi",
+      "dimanche",
+    ],
+    'months':[
+      'janvier',
+      'février',
+      'mars',
+      'avril',
+      'mai',
+      'juin',
+      'juillet',
+      'août',
+      'septembre',
+      'octobre',
+      'novembre',
+      'décembre',
+    ]
   }
 } %}
 
@@ -510,6 +650,48 @@
 {%- set adjust = (day - temp.isoweekday()) % 7 %}
 {%- set temp = temp + timedelta(days=adjust) -%}
 {{- (temp).isoformat() }}
+{%- endmacro %}
+
+{%- macro _next_weekday(weekday, offset) %}
+{%- set wd = (weekday - 1) % 7 %}
+{%- set t = today_at() %}
+{{- t + timedelta(days=(wd - t.weekday()) + offset) }}
+{%- endmacro %}
+
+{%- macro next_weekday(weekday) %}
+{{- _next_weekday(weekday, 7) }}
+{%- endmacro %}
+
+{%- macro this_weekday(weekday) %}
+{{- _next_weekday(weekday, 0) }}
+{%- endmacro %}
+
+{%- macro last_weekday(weekday) %}
+{{- _next_weekday(weekday, -7) }}
+{%- endmacro %}
+
+{%- macro days_in_month(month=None) %}
+{%- set today = today_at() %}
+{%- set input = month if month is not none else today.month %}
+{%- set input = (input - 1) % 12 + 1 %}
+{%- set t = today.replace(day=1, month=input) %}
+{%- set inc = t.month + 1 %}
+{%- set next_month = inc if inc <= 12 else 1 %}
+{%- set next_year = t.year + 1 if inc > 12 else t.year %}
+{%- set next = t.replace(month=next_month, year=next_year) %}
+{{- (next - t).days }}
+{%- endmacro %}
+
+{%- macro _days_offset_month(offset) %}
+{{- days_in_month(today_at().month + offset) }}
+{%- endmacro %}
+
+{%- macro days_next_month(offset=1) %}
+{{- _days_offset_month(offset) }}
+{%- endmacro %}
+
+{%- macro days_last_month(offset=1) %}
+{{- _days_offset_month(-1 * offset) }}
 {%- endmacro %}
 
 {# easter day as an iso timestamp #}
