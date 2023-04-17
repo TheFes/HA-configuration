@@ -1,0 +1,52 @@
+id: 4bb21af8-4d55-444d-b25d-32cda5990025
+alias: "00 - Ulanzi graph"
+trigger:
+  - platform: state
+    entity_id: sensor.neerslag_buienalarm_regen_data
+    to: ~
+    variables:
+      # optional - icon to be used
+      # default - no icon
+      icon: rainy
+
+      # required - list with integers to be plotted
+      graph_data: >
+        {{
+          state_attr('sensor.neerslag_buienalarm_regen_data', 'data').precip
+          if 'sensor.neerslag_buienalarm_regen_data' | has_value
+          else []
+        }}
+
+      # optional - either 'bar' or 'line'
+      # default - bar
+      graph_type: bar
+
+      # optional - graph color, either RGB array, or hex value
+      # default - white
+      color: [0, 0, 255]
+
+      # optional - either the name of the custom app (eg rain_forecast) or notify
+      # default - notify
+      app: notify
+
+      # optional - template which should return true or false, message will be sent only when true
+      # if not added, default is true
+      update: "{{ graph_data | sum }}"
+condition:
+  - "{{ update | default(true, true) }}"
+  - "{{ graph_data and graph_data is not string and graph_data is iterable }}"
+action:
+  - alias: "Send message to Ulanzi clock"
+    service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('/custom/' ~ app) }}"
+      payload: >
+        {% set icon = icon | default() %}
+        {% set graph_type = graph_type | default('bar') %}
+        {% set color = color | default() %}
+        {% set graph_data = graph_data[:11] if icon else graph_data[:16] %}
+        {% set data = dict(graph_data = graph_data, icon=icon, graph_type = graph_type, color=color) %}
+        {% set data = dict(data.items() | selectattr('1')) %}
+        {{ data | to_json }}
