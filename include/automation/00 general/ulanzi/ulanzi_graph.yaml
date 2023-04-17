@@ -33,7 +33,7 @@ trigger:
       # if not added, default is true
       update: "{{ graph_data | sum > 0 }}"
 condition:
-  - "{{ update | default(true, true) }}"
+  - "{{ update | default(true) | bool(true) }}"
   - "{{ graph_data and graph_data is not string and graph_data is iterable }}"
 action:
   - alias: "Send message to Ulanzi clock"

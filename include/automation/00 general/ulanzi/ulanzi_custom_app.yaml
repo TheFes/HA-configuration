@@ -15,7 +15,7 @@ trigger:
     attribute: temperature
     variables: *weather
 condition:
-  - "{{ update | default(true, true) }}"
+  - "{{ update | default(true) | bool(true) }}"
 action:
   - alias: "Update custom app"
     service: mqtt.publish
