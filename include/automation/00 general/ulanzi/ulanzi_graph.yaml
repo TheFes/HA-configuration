@@ -31,7 +31,7 @@ trigger:
 
       # optional - template which should return true or false, message will be sent only when true
       # if not added, default is true
-      update: "{{ graph_data | sum }}"
+      update: "{{ graph_data | sum > 0 }}"
 condition:
   - "{{ update | default(true, true) }}"
   - "{{ graph_data and graph_data is not string and graph_data is iterable }}"
@@ -41,12 +41,12 @@ action:
     data:
       qos: 0
       retain: false
-      topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('/custom/' ~ app) }}"
+      topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('/custom/' ~ app) }}
       payload: >
         {% set icon = icon | default() %}
         {% set graph_type = graph_type | default('bar') %}
         {% set color = color | default() %}
-        {% set graph_data = graph_data[:11] if icon else graph_data[:16] %}
-        {% set data = dict(graph_data = graph_data, icon=icon, graph_type = graph_type, color=color) %}
+        {% set graph_data = { graph_type: graph_data[:11] if icon else graph_data[:16] }%}
+        {% set data = dict(graph_data, icon=icon, color=color) %}
         {% set data = dict(data.items() | selectattr('1')) %}
         {{ data | to_json }}
