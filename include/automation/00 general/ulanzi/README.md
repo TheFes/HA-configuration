@@ -101,6 +101,6 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 |action|boolean|yes|`true`|`true` to enable the screen, `false` to disable it.|
 
 ## Other entities used in these automations
-* [House Mode](/config/include/template/trigger/house_mode.yaml) - Trigger based template sensor used to determine what's going on in the house
-* [Combined Weather Hourly](/config/include/integrations/packages/combined_weather.yaml) - Template weather to combine multiple weather integrations
-* [Whatsapp binary sensor](/config/include/template/trigger/whatsapp_notification.yaml) - Binary sensor to indicate if there is an active Whatsapp notification on my phone
+* [House Mode](../../../template/trigger/house_mode.yaml) - Trigger based template sensor used to determine what's going on in the house
+* [Combined Weather Hourly](../../../integrations/packages/combined_weather.yaml) - Template weather to combine multiple weather integrations
+* [Whatsapp binary sensor](../../../template//trigger/whatsapp_notification.yaml) - Binary sensor to indicate if there is an active Whatsapp notification on my phone
