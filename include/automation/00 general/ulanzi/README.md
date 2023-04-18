@@ -2,12 +2,10 @@
   - [General](#general)
   - [App Activate/Deactivate](#app-activatedeactivate)
     - [Trigger variables](#trigger-variables)
-  - [Graph](#graph)
-    - [Trigger variables](#trigger-variables-1)
   - [Indicator](#indicator)
+    - [Trigger variables](#trigger-variables-1)
+  - [Notifications and Custom Apps (both for text and graphs)](#notifications-and-custom-apps-both-for-text-and-graphs)
     - [Trigger variables](#trigger-variables-2)
-  - [Notifications and Custom Apps](#notifications-and-custom-apps)
-    - [Trigger variables](#trigger-variables-3)
   - [Screen Activate/Deactivate](#screen-activatedeactivate)
 
 
@@ -47,24 +45,6 @@ Do note that custom apps can not be activated using this automation,
 |show|boolean|yes|`true`|`true` to activate the app `false` to deactivate it|
 |app|string|yes|NA|The name of the app which should be activated or deactivate. See the [docs](https://blueforcer.github.io/awtrix-light/#/api?id=addremove-and-rearange-apps) for the default app names
 
-## Graph
-
-This automation can be used to show a graph (either line graph or bar chart) on the clock.
-
-### Trigger variables
-
-|Variable|Type|Required|Default|Description|
-|---|---|---|---|---|
-|graph_data|list|yes|[]|A list with numeric values to be shown on the screen. AWTRIX expects integers, so the values are rounded to 0 decimals and converted to an integer. If you have small values, you might need to multiply them in this variable.
-|graph_type|string|no|`bar`|Either `bar` or `line`|
-|graph_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
-|text|string|no|`none`|Text to be displayed when there is no graph data, if there is no text provided, and no graph_data as well, there will be no update|
-|text_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
-|rainbow|boolean|no|`false`|set to `true` for text in rainbow effect|
-|icon|string|no|`none`|icon to be shown next to the graph|
-|app|string|no|`notifiy`|name of the custom app to be updated, if no app is entered the graph will be sent as a notification|
-|update|boolean|no|`true`|Use this to provide a template when to update the graph. Eg do not update when the source sensor is unavailable|
-
 ## Indicator
 
 This automation can be used to display indicators at the upper and lower right corners of the clock. For this automation the light entities provided by the MQTT are used.
@@ -80,18 +60,21 @@ It uses the standard entity_ids provided by that integration.
 |brightness|integer|no|current matrix brightness|Integer between `0` and `255` to be used as brightness for the indicator|
 |update|boolean|no|`true`|Use this to provide a template when to update the graph. Eg do not update when the source sensor is unavailable|
 
-## Notifications and Custom Apps
+## Notifications and Custom Apps (both for text and graphs)
 
 ### Trigger variables
 
 |Variable|Type|Required|Default|Description|
 |---|---|---|---|---|
 |text|string|yes|`none`|Text to be displayed on the screen|
-|color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
+|text_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
 |rainbow|boolean|no|`false`|set to `true` for text in rainbow effect|
+|textCase|integer|no|`2`|`0` = global setting, `1` = forces uppercase, `2` = shows as it sent|
 |icon|string|no|`none`|icon to be shown next to the graph|
 |pushIcon|integer|no|`0`|`0` = Icon doesn't move, `1` = Icon moves with text and will not appear again, `2` = Icon moves with text but appears again when the text starts to scroll again|
-|textCase|integer|no|`2`|`0` = global setting, `1` = forces uppercase, `2` = shows as it sent|
+|graph_data|list|yes|[]|A list with numeric values to be shown on the screen. AWTRIX expects integers, so the values are rounded to 0 decimals and converted to an integer. If you have small values, you might need to multiply them in this variable.
+|graph_type|string|no|`bar`|Either `bar` or `line`|
+|graph_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
 |app|string|no|`notifiy`|name of the custom app to be updated, if no app is entered the graph will be sent as a notification|
 |update|boolean|no|`true`|Use this to provide a template when to update the graph. Eg do not update when the source sensor is unavailable|
 

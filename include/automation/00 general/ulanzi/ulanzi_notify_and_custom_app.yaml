@@ -1,8 +1,8 @@
 id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
 alias: "00 - Ulanzi notificatons and custom apps"
-mode: parallel
+mode: queued
 trigger:
-  # apps
+  # apps - text
   - platform: state
     entity_id: weather.combined_hourly
     to: ~
@@ -15,7 +15,7 @@ trigger:
     entity_id: weather.combined_hourly
     attribute: temperature
     variables: *weather
-  # notifications
+  # notifications - text
   - platform: state
     entity_id: sensor.pixel_7_pro_last_notification
     to: ~
@@ -43,21 +43,44 @@ trigger:
     variables:
       icon: dingdong
       text: Ding Dong!
+  # notify - graph
+  - platform: state
+    entity_id: sensor.neerslag_buienalarm_regen_data
+    to: ~
+    variables:
+      icon: rainy
+      graph_data: >
+        {% set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+        {% set data = data.precip if data is not none else [] %}
+        {{ data | map('multiply', 100) | list }}
+      graph_type: bar
+      graph_color: [0, 0, 255]
+      app: notify
+      update: "{{ graph_data | sum > 0 }}"
+variables:
+  plot_graph: "{{ graph_data is defined and graph_data is not string and graph_data is iterable }}"
 condition:
-  - "{{ update | default(true) | bool(true) and iif(text | default()) }}"
+  - "{{ update | default(true) | bool(true) }}"
+  - "{{ plot_graph or text is defined }}"
 action:
-  - alias: "Update custom app"
+  - alias: "Update custom app or send notification"
     service: mqtt.publish
     data:
       qos: 0
       retain: false
       topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('custom/' ~ app) }}
       payload: >
+        {% set graph_type = graph_type | default('bar') %}
+        {% set color = graph_color | default() if plot_graph else text_color | default() %}
+        {% set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
+        {% set data = data | select('is_number') | map('round', 0) | map('int') | list %}
+        {% set graph_data = { graph_type: (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] }%}
         {% set data = dict(
-                          text=text,
+                          graph_data,
+                          text=text if not plot_graph else none,
                           repeat=repeat | default(3 if app == 'notify'),
-                          rainbow=rainbow | default(),
-                          icon=icon | default(),
+                          rainbow=rainbow | default(none),
+                          icon=icon | default(none),
                           pushIcon=pushIcon | default(0),
                           textCase=textCase | default(2),
                           color=color | default()
