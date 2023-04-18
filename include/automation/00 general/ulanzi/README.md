@@ -62,6 +62,8 @@ It uses the standard entity_ids provided by that integration.
 
 ## Notifications and Custom Apps (both for text and graphs)
 
+This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create custom apps and notifications. You can create both graphs (either line or bar) or text notifications.
+
 ### Trigger variables
 
 |Variable|Type|Required|Default|Description|
@@ -70,6 +72,7 @@ It uses the standard entity_ids provided by that integration.
 |text_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
 |rainbow|boolean|no|`false`|set to `true` for text in rainbow effect|
 |textCase|integer|no|`2`|`0` = global setting, `1` = forces uppercase, `2` = shows as it sent|
+|repeat|integer|no|`3` for notifications, `none` for apps|How many times the text should be repeated|
 |icon|string|no|`none`|icon to be shown next to the graph|
 |pushIcon|integer|no|`0`|`0` = Icon doesn't move, `1` = Icon moves with text and will not appear again, `2` = Icon moves with text but appears again when the text starts to scroll again|
 |graph_data|list|yes|[]|A list with numeric values to be shown on the screen. AWTRIX expects integers, so the values are rounded to 0 decimals and converted to an integer. If you have small values, you might need to multiply them in this variable.
