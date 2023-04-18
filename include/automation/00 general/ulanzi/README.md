@@ -35,7 +35,7 @@ trigger: []
 
 ## App Activate/Deactivate
 
-This automation can be used to activate and deactivate (custom) apps. For example do not show the battery app, when the battery is full.
+This [automation](./ulanzi_app_activate_remove.yaml) can be used to activate and deactivate (custom) apps. For example do not show the battery app, when the battery is full.
 Do note that custom apps can not be activated using this automation, 
 
 ### Trigger variables
@@ -47,7 +47,7 @@ Do note that custom apps can not be activated using this automation,
 
 ## Indicator
 
-This automation can be used to display indicators at the upper and lower right corners of the clock. For this automation the light entities provided by the MQTT are used.
+This [automation](./ulanzi_indicator.yaml) can be used to display indicators at the upper and lower right corners of the clock. For this automation the light entities provided by the MQTT are used.
 It uses the standard entity_ids provided by that integration.
 
 ### Trigger variables
@@ -83,7 +83,7 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 
 ## Screen Activate/Deactivate
 
-Automation to enable or disable the matrix screen
+[Automation](./ulanzi_screen.yaml) to enable or disable the matrix screen
 
 |Variable|Type|Required|Default|Description|
 |---|---|---|---|---|

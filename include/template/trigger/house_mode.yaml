@@ -11,9 +11,6 @@
       entity_id: sensor.de_buurvrouw_battery_state
       to: "Charging"
     - platform: state
-      entity_id: sensor.house_mode
-      to: ~
-    - platform: state
       entity_id: light.groep_beneden
       to: "off"
     - platform: homeassistant
@@ -56,7 +53,6 @@
                 is_state('sensor.de_buurvrouw_battery_state', 'Charging')
                 or not is_state('person.marleen', 'home')
               )
-            
           %}
           Slapen
         {%- else %}

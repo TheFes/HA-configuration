@@ -12,7 +12,7 @@
             or
             (
               states('sensor.google_pixel_watch_battery_level') | float(0) == 100
-              and is_state('sensor.google_pixel_watch_battery_state', 'charging')
+              and is_state('sensor.google_pixel_watch_battery_state', 'full')
             )
           )
           and is_state('person.martijn', ['Fujifilm', 'home'])
