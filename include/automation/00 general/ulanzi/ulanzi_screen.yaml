@@ -25,8 +25,13 @@ trigger:
           if states('sensor.house_mode') == 'Slapen'
           else 'on'
         }}
+  - platform: state
+    entity_id: zone.home
+    to: ~
+    variables:
+      action: "{{ trigger.to_state.state != '0' }}"
 action:
   - alias: "Turn matrix on or off"
-    service: light.turn_{{ action | default(true) | bool(true) }}
+    service: light.turn_{{ 'on' if action | default(true) | bool(true) else 'off' }}
     target:
       entity_id: light.matrix
