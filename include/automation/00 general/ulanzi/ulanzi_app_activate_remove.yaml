@@ -7,6 +7,8 @@ trigger:
     variables:
       show: "{{ trigger.to_state.state != '100' }}"
       app: bat
+condition:
+  - "{{ app is defined and app is not none }}"
 action:
   - alias: "Activate or deactivate app"
     service: mqtt.publish
@@ -19,7 +21,7 @@ action:
           [
             dict(
                 name = app,
-                show = show
+                show = show | default(true) | bool(true)
               )
           ] | to_json
         }}

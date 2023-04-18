@@ -26,6 +26,6 @@ trigger:
         }}
 action:
   - alias: "Turn matrix on or off"
-    service: light.turn_{{ action }}
+    service: light.turn_{{ action | default(true) | bool(true) }}
     target:
       entity_id: light.matrix
