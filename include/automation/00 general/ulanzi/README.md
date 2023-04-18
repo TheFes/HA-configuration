@@ -1,5 +1,7 @@
 - [Ulanzi Automations](#ulanzi-automations)
   - [General](#general)
+    - [Using these automations in your own HA setup](#using-these-automations-in-your-own-ha-setup)
+    - [🚨 Important 🚨](#-important-)
   - [App Activate/Deactivate](#app-activatedeactivate)
     - [Trigger variables](#trigger-variables)
   - [Indicator](#indicator)
@@ -7,6 +9,7 @@
   - [Notifications and Custom Apps (both for text and graphs)](#notifications-and-custom-apps-both-for-text-and-graphs)
     - [Trigger variables](#trigger-variables-2)
   - [Screen Activate/Deactivate](#screen-activatedeactivate)
+  - [Other entities used in these automations](#other-entities-used-in-these-automations)
 
 
 # Ulanzi Automations
@@ -17,9 +20,11 @@ Smart Home Junkie has a nice video about this clock, in which he uses Blueprints
 ## General
 
 My automations use trigger variables to provide the information needed for the communication with the Ulanzi Clock. This is a more advanced feature, and only available if you switch to YAML mode while creating the trigger. I only use YAML for automations (which also makes it possible to put them in separate files, like I did here).
-You should be able to copy the complete content of one of these automations, and paste them in the YAML editor of the Automation GUI. If you want to paste it in automations.yaml, you need to indent everything with two spaces, and add a hyphen (`-`) before the first line.
 
 The approach I used makes it possible to use any trigger you can use in an automation to send a command to the clock, and doesn't require creation of helpers.
+
+### Using these automations in your own HA setup
+You should be able to copy the complete content of one of these automations, and paste them in the YAML editor of the Automation GUI. If you want to paste it in automations.yaml, you need to indent everything with two spaces, and add a hyphen (`-`) before the first line.
 
 ```yaml
 # My file:
@@ -32,6 +37,12 @@ trigger: []
   alias: "00 - Ulanzi example"
   trigger: []
 ```
+
+### 🚨 Important 🚨
+
+* Change the topic in the service call for each automation to the right topic for your Ulanzi clock
+* Most probably the triggers won't work for your setup, so it might be best to remove them, and add your own triggers from scratch
+* Some of these automations use `!secret`, this is not allowed in the GUI, so if you copy it to the GUI, you need to remove those lines before you can save the automation
 
 ## App Activate/Deactivate
 
@@ -88,3 +99,8 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 |Variable|Type|Required|Default|Description|
 |---|---|---|---|---|
 |action|boolean|yes|`true`|`true` to enable the screen, `false` to disable it.|
+
+## Other entities used in these automations
+* [House Mode](/config/include/template/trigger/house_mode.yaml) - Trigger based template sensor used to determine what's going on in the house
+* [Combined Weather Hourly](/config/include/integrations/packages/combined_weather.yaml) - Template weather to combine multiple weather integrations
+* [Whatsapp binary sensor](/config/include/template/trigger/whatsapp_notification.yaml) - Binary sensor to indicate if there is an active Whatsapp notification on my phone
