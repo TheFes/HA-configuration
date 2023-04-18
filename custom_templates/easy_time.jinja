@@ -283,7 +283,7 @@
   'da':{
     '_language': 'Dansk',
     'and': 'og',
-    'in': 'i',
+    'in': 'om',
     'ago': 'siden',
     'now': 'nu',
     'lose': 'mister',
@@ -419,6 +419,76 @@
       'novembre',
       'décembre',
     ]
+  },
+  'es':{
+    '_language': 'Español',
+    'and': 'y',
+    'in': 'en',
+    'ago': 'hace',
+    'now': 'ahora',
+    'lose': 'perder',
+    'gain': 'ganar',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'a',
+        'año',
+        'años',
+      ],
+      'week': [
+        'sem.',
+        'semana',
+        'semanas',
+      ],
+      'day': [
+        'd',
+        'día',
+        'días',
+      ],
+      'hour': [
+        'h',
+        'hora',
+        'horas',
+      ],
+      'minute': [
+        'm',
+        'minuto',
+        'minutos',
+      ],
+      'second': [
+        's',
+        'segundo',
+        'segundos',
+      ],
+    },
+    'delta':{
+      'today': 'hoy',
+      'tomorrow': 'mañana',
+      'yesterday': 'ayer',
+    },
+    'days':[
+      'lunes', 
+      'martes', 
+      'miércoles', 
+      'jueves', 
+      'viernes',
+      'sábado', 
+      'domingo'
+    ],
+    'months':[
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto' 
+      'septiembre', 
+      'octubre', 
+      'noviembre', 
+      'diciembre'
+    ]
   }
 } %}
 
@@ -445,125 +515,170 @@
   '12-hr': '%-I:%M %p',
   '24-hr': '%H:%M',
 } %}
+{% set _default_time_format = _time_formats.get('24-hr') %}
 
 {% set _default_values = _durations.keys() | list %}
 
-{%- macro _get_language_time_format(override) %}
+{%- macro _get_language_time_format(override, language) %}
 {%- set lang_fmat = languages.get(language, {}).get('time', {}).get('format', _bad_value) %}
-{%- set fmat = _time_formats.get(override) if override in _time_formats.keys() else lang_fmat %}
+{%- set fmat = _time_formats.get(override, _default_time_format) if override in _time_formats.keys() else _time_formats.get(lang_fmat, _default_time_format) %}
+{{- fmat }}
 {%- endmacro %}
 
 {%- macro _delta_seconds(a, b) %}
 {{- (b - a).total_seconds() | round(0) }}
 {%- endmacro %}
 
-{%- macro _toutc(time, dt) %}
-{%- set offset = time.utcoffset() - time.dst() if time.dst() else time.utcoffset() %}
-{{- _delta_seconds(time, dt.astimezone(utcnow().tzinfo) + offset) }}
-{%- endmacro%}
+{#- this function isn't needed, I only created it to keep the 'delta' consistent with _delta_seconds #}
+{%- macro _delta_timedelta(a, b) %}
+{{- b - a }}
+{%- endmacro %}
 
-{# TODO: easy abbreviated times #}
+{%- macro _to_utc(dt) -%}
+{%- set time = now() -%}
+{%- set offset = time.utcoffset() - time.dst() if time.dst() else time.utcoffset() -%}
+{{- dt.astimezone(utcnow().tzinfo) + offset -}}
+{%- endmacro -%}
 
-{#- macro find the total seconds between now and input #}
-{%- macro _toseconds(time, uptime, attribute, utc) %}
-{%- if uptime is callable or uptime is mapping or (uptime is iterable and uptime is not string) or uptime is boolean %}
-  {{- None }}
-{%- elif uptime is integer or uptime is float %}
-  {{ uptime | float }}
-{# uptime is a string, handle all string cases that should work. #}
-{%- elif uptime is string %}
-  {#- Test entity_id #}
-  {%- if uptime | regex_search('^(?!.+__)(?!_)[\da-z_]+(?<!_)\.(?!_)[\da-z_]+(?<!_)$') %}
-    {%- if attribute is not none and attribute is string %}
-      {{- _toseconds(time, state_attr(uptime, attribute), None, utc) }}
+{%- macro _to_datetime(input, attribute=None, utc=False) -%}
+{#- Already a datetime -#}
+{%- if input.date is defined and input.date is callable -%}
+  {%- if input.tzinfo is none and utc -%}
+    {{- _toutc(input) -}}
+  {%- elif input.tzinfo is none -%}
+    {{- input | as_local -}}
+  {%- else -%}
+    {{- input -}}
+  {%- endif -%}
+{#- assume time in seconds -#}
+{%- elif input is integer or input is float -%}
+  {{- input | as_datetime -}}
+{#- assume time as string or entity_id -#}
+{%- elif input is string -%}
+  {#- if entity_id -#}
+  {%- if input | regex_search('^(?!.+__)(?!_)[\da-z_]+(?<!_)\.(?!_)[\da-z_]+(?<!_)$') -%}
+    {%- if attribute is not none and attribute is string -%}
+      {{- _to_datetime(state_attr(input, attribute), None) -}}
+    {%- elif input.startswith('input_datetime') and is_state_attr(input, 'has_date', False) -%}
+      {{- today_at(states(input)) }}
+    {%- elif input.startswith('calendar') and attribute is none %}
+      {{- _to_datetime(state_attr(input, 'start_time'), None) -}}
     {%- else %}
-      {{- _toseconds(time, states(uptime), None, utc) }}
+      {{- _to_datetime(states(input), None) -}}
     {%- endif %}
-  {%- else %}
-    {#- Test datetime as a string #}
-    {%- set _is_datetime = uptime | as_datetime %}
-    {%- if _is_datetime %}
-      {%- if uptime | regex_search('(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$') %}
-        {#- TZ Aware #}
-        {{- _delta_seconds(time, _is_datetime) }}
-      {%- elif utc %}
-        {# UTC #}
-        {{- _toseconds(time, uptime ~ '+00:00', attribute, utc) }}
-      {%- else %}
-        {# Local #}
-        {{- _delta_seconds(time, _is_datetime | as_local) }}
-      {%- endif %}
-    {%- else %}
-      {{- None }}
-    {%- endif %}
-  {%- endif %}
-{# uptime is a datetime #}
-{%- elif uptime.date is defined and uptime.date is callable %}
-  {%- if uptime.tzinfo is none and utc %}
-    {{- _toutc(time, uptime) }}
-  {%- elif uptime.tzinfo is none %}
-    {{- _delta_seconds(time, uptime | as_local) }}
-  {%- else %}
-    {{- _delta_seconds(time, uptime) }}
-  {%- endif %}
-{%- else %}
-  {{- None }}
-{%- endif %}
+  {%- else -%}
+    {#- Test datetime as a string -#}
+    {%- set _is_datetime = input | as_datetime -%}
+    {%- if _is_datetime -%}
+      {%- if input | regex_search('(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$') -%}
+        {#- TZ Aware -#}
+        {{- _is_datetime -}}
+      {%- elif utc -%}
+        {#- UTC -#}
+        {{- input ~ '+00:00' | as_datetime }}
+      {%- else -%}
+        {#- Local -#}
+        {{- _is_datetime | as_local -}}
+      {%- endif -%}
+    {%- else -%}
+      {{- None -}}
+    {%- endif -%}
+  {%- endif -%}
+{%- else -%}
+  {{- None -}}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro _get_period_value(id, uptime_seconds) %}
+{%- set duration = _durations.get(id, 1) %}
+{%- set period = _periods.get(id) %}
+{{- ((uptime_seconds // duration) % (period if period else duration)) | int }}
+{%- endmacro %}
+
+{%- macro _get_period_max(id, uptime_seconds) %}
+{%- set duration = _durations.get(id, 1) %}
+{%- set period = _periods.get(id) %}
+{{- uptime_seconds // duration }}
 {%- endmacro %}
 
 {# macro to generate a time #}
-{%- macro _phrase(id, uptime_seconds, language) %}
+{%- macro _phrase(id, uptime_seconds, language, max, raw) %}
 {%- set lang = languages.get(language, {}).get('time', {}).get(id, [_bad_value]*3) %}
 {%- set abbr, single, plural = lang %}
-{%- set duration = _durations.get(id, 1) %}
-{%- set period = _periods.get(id) %}
-{%- set value = ((uptime_seconds // duration) % (period if period else duration)) | int %}
-{%- set name = plural if value > 1 else single %}
-{{- '{} {}'.format(value, name) if value | int > 0 else '' -}}
+{%- set func = _get_period_max if max else _get_period_value %}
+{%- set value = func(id, uptime_seconds) | int %}
+{%- set name = plural if value != 1 else single %}
+{{- '{} {}'.format(value, name) if value | int > 0 or raw else '' -}}
 {% endmacro %}
 
-{# macro to generate a friendly phrase #}
-{%- macro _just_time(seconds, language, values, biggest, utc) %}
+{%- macro _time_dict(uptime_seconds) %}
 {%- set ns = namespace(ret=[]) %}
 {%- for item in _default_values %}
-  {%- set phrase = _phrase(item, seconds, language) %}
+  {%- set ns.ret = ns.ret + [(item, _get_period_value(item, uptime_seconds) | int)] %}
+{%- endfor %}
+{{- dict.from_keys(ns.ret) | to_json }}
+{%- endmacro %}
+
+{%- macro _phrases(seconds, values, language, raw) %}
+{%- set ns = namespace(ret=[]) %}
+{#- ensure we have a list of values #}
+{%- set values = [ values ] if values is string else values %}
+{#- filter values to only have items in _default_values #}
+{%- set values = values | select('in', _default_values) | list %}
+{#- this should be a good list of values if the previous 2 filters didn't remove anything #}
+{%- set values = _default_values | select('in', values) | list if values else _default_values %}
+{%- set biggest = values | first | default %}
+{%- set index = values.index(biggest) %}
+{%- for item in values[index:] %}
+  {%- set phrase = _phrase(item, seconds, language, loop.first, raw) %}
   {%- if phrase %}
-    {%- set ns.ret = ns.ret + [{'id': item, 'phrase': phrase }] %}
+    {%- set ns.ret = ns.ret + [phrase] %}
   {%- endif %}
 {%- endfor %}
-{%- if ns.ret | length > 0 %}
-  {%- set phrases = ns.ret | map(attribute='phrase') | list %}
-  {%- set selected_phrases = ns.ret | selectattr('id', 'in', values) | map(attribute='phrase') | list %}
-  {%- if selected_phrases | length > 0 %}
+{{- ns.ret | to_json }}
+{%- endmacro %}
+
+{# macro to generate a friendly phrase #}
+{%- macro _just_time(seconds, language, values, biggest, raw=False) %}
+{%- if seconds < 1 %}
+  {{- languages.get(language, {}).get('now', _bad_value) }}
+{%- else %}
+  {%- set phrases = _phrases(seconds, values, language, raw) | from_json %}
+  {%- if phrases | length > 0 %}
     {%- if biggest %}
-      {{- selected_phrases[0] }}
+      {{- phrases[0] }}
     {%- else %}
       {%- set word_for_and = languages.get(language, {}).get('and', _bad_value) %}
-      {{- selected_phrases[:-1] | join(', ') ~ ' ' ~ word_for_and ~ ' ' ~ selected_phrases[-1] if selected_phrases | length > 1 else selected_phrases | first  | default }}
+      {{- phrases[:-1] | join(', ') ~ ' ' ~ word_for_and ~ ' ' ~ phrases[-1] if phrases | length > 1 else phrases | first  | default }}
     {%- endif %}
   {%- else %}
-    {{- phrases[0] }}
+    {{- _just_time(seconds, language, values, biggest, True) }}
   {%- endif %}
-{%- else %}
-  {{- languages.get(language, {}).get('now', _bad_value) }}
 {%- endif %}
 {%- endmacro %}
 
 {# macro to generate a friendly time phrase #}
-{%- macro _time(uptime, attribute, language, values, biggest, utc) %}
-{%- set value = _toseconds(now(), uptime, attribute, utc) | int %}
-{%- set seconds = value | abs %}
-{{- _just_time(seconds, language, values, biggest, utc) }}
+{%- macro _time(input, attribute, language, values, biggest, utc) %}
+{%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
+{%- if uptime %}
+  {%- set value = _delta_seconds(now(), uptime) | int %}
+  {%- set seconds = value | abs %}
+  {{- _just_time(seconds, language, values, biggest) }}
+{%- else %}
+  {{- _bad_value }}
+{%- endif %}
 {%- endmacro %}
 
 {# Returns the most significant time.  e.g.  3 hours #}
-{%- macro easy_time(uptime, attribute=None, language=default_language, utc=False) %}
-{{- _time(uptime, attribute, language, _default_values, True, utc) }}
+{%- macro easy_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{{- _time(uptime, attribute, language, values, True, utc) }}
 {%- endmacro %}
 
 {# Returns a large time phrase without missing any detail.  e.g.  3 hours, 4 minutes and 1 second #}
-{%- macro big_time(uptime, attribute=None, language=default_language, utc=False) %}
-{{- _time(uptime, attribute, language, _default_values, False, utc) }}
+{%- macro big_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{{- _time(uptime, attribute, language, values, False, utc) }}
 {%- endmacro %}
 
 {# Returns a time phrase with only the details you care about most of the time.  e.g.  3 hours and 4 minutes #}
@@ -586,26 +701,33 @@
 {%- endmacro %}
 
 {# macro to generate a friendly relative time phrase #}
-{%- macro _relative_time(uptime, attribute, language, values, biggest, utc)  %}
-{%- set value = _toseconds(now(), uptime, attribute, utc) | int %}
-{%- set seconds = value | abs %}
-{%- set future = value / seconds > 0 %}
-{%- set items = _just_time(seconds, language, values, biggest, utc) %}
-{%- if future %}
-  {{- languages.get(language, {}).get('in', _bad_value) }} {{ items }}
+{%- macro _relative_time(input, attribute, language, values, biggest, utc)  %}
+{%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
+{%- if uptime %}
+  {%- set value = _delta_seconds(now(), uptime) | int %}
+  {%- set seconds = value | abs %}
+  {%- set future = value / seconds > 0 %}
+  {%- set items = _just_time(seconds, language, values, biggest) %}
+  {%- if future %}
+    {{- languages.get(language, {}).get('in', _bad_value) }} {{ items }}
+  {%- else %}
+    {{- items }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+  {%- endif %}
 {%- else %}
-  {{- items }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+  {{- _bad_value }}
 {%- endif %}
 {%- endmacro %}
 
 {# Returns the most significant time.  e.g.  in 3 hours #}
-{%- macro easy_relative_time(uptime, attribute=None, language=default_language, utc=False) %}
-{{- _relative_time(uptime, attribute, language, _default_values, True, utc) }}
+{%- macro easy_relative_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{{- _relative_time(uptime, attribute, language, values, True, utc) }}
 {%- endmacro %}
 
 {# Returns a large time phrase without missing any detail.  e.g.  in 3 hours, 4 minutes and 1 second #}
-{%- macro big_relative_time(uptime, attribute=None, language=default_language, utc=False) %}
-{{- _relative_time(uptime, attribute, language, _default_values, False, utc) }}
+{%- macro big_relative_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{{- _relative_time(uptime, attribute, language, values, False, utc) }}
 {%- endmacro %}
 
 {# Returns a time phrase with only the details you care about most of the time.  e.g.  in 3 hours and 4 minutes #}
@@ -770,8 +892,8 @@
 {{- (next - today_at()).days if next is not none else 0 }}
 {%- endmacro %}
 
-{%- macro clock(fmat=None) %}
-{{- now().strftime(_get_language_time_format(fmat)) }}
+{%- macro clock(fmat=None, language=default_language) %}
+{{- now().strftime(_get_language_time_format(fmat, language)) }}
 {%- endmacro %}
 
 {%- macro month(month=None, language=default_language) %}
