@@ -44,7 +44,7 @@ trigger:
       icon: dingdong
       text: Ding Dong!
 condition:
-  - "{{ update | default(true) | bool(true) }}"
+  - "{{ update | default(true) | bool(true) and iif(text | default()) }}"
 action:
   - alias: "Update custom app"
     service: mqtt.publish

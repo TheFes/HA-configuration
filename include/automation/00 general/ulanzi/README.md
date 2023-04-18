@@ -86,7 +86,7 @@ It uses the standard entity_ids provided by that integration.
 
 |Variable|Type|Required|Default|Description|
 |---|---|---|---|---|
-|text|string|no|`none`|Text to be displayed when there is no graph data, if there is no text provided, and no graph_data as well, there will be no update|
+|text|string|yes|`none`|Text to be displayed on the screen|
 |color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
 |rainbow|boolean|no|`false`|set to `true` for text in rainbow effect|
 |icon|string|no|`none`|icon to be shown next to the graph|
