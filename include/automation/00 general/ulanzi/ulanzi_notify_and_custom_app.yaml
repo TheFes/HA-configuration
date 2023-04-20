@@ -15,6 +15,7 @@ trigger:
     entity_id: weather.combined_hourly
     attribute: temperature
     variables: *weather
+
   # notifications - text
   - platform: state
     entity_id: sensor.pixel_7_pro_last_notification
@@ -26,6 +27,7 @@ trigger:
           trigger.to_state.attributes['package'] is defined
           and trigger.to_state.attributes['package'] == 'com.whatsapp'
           and trigger.to_state.attributes['android.title'] == sender_name
+          and is_state('person.martijn', 'home')
         }}
       icon: whatsapp
       text: >
@@ -43,6 +45,7 @@ trigger:
     variables:
       icon: dingdong
       text: Ding Dong!
+
   # notify - graph
   - platform: state
     entity_id: sensor.neerslag_buienalarm_regen_data
@@ -51,11 +54,10 @@ trigger:
       icon: rainy
       graph_max: >
         {%- set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {{ data.levels.heavy if data is not none else 1 }}
+        {{ data.levels.heavy if data is not none else 8 }}
       graph_data: >
         {%- set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {%- set data = data.precip if data is not none else [] %}
-        {{ data | map('multiply', 8/graph_max) | list }}
+        {{ data = data.precip if data is not none else [] }}
       graph_type: bar
       graph_color: [0, 0, 255]
       graph_round: ceil
@@ -77,17 +79,18 @@ action:
         {%- set graph_type = graph_type | default('bar') %}
         {%- set graph_round = graph_round | default('common') %}
         {%- set grap_round = graph_round if graph_round in [ 'common', 'ceil', 'floor'] else 'common' %}
+        {%- set autoscale = not iif(graph_max | default(none)) if plot_graph else none %}
         {%- set icon = icon | default() %}
         {%- set color = graph_color | default() if plot_graph else text_color | default() %}
         {%- set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
         {%- set data = data
                         | select('is_number')
+                        | map('multiply', 8/graph_max | default(8))
                         | map('round', 0, graph_round)
                         | map('int')
                         | list
         %}
         {%- set graph_data = { graph_type: (data[:11] if icon else data[:16]) if plot_graph else [] }%}
-        {%- set autoscale = not iif(graph_max | default(none)) if plot_graph else none %}
         {%- set data = dict(
                           graph_data,
                           autoscale = autoscale,
