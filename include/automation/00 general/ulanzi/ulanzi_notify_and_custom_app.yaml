@@ -10,7 +10,7 @@ trigger:
       app: weather
       text: "{{ state_attr('weather.combined_hourly', 'temperature') }} °C"
       icon: "{{ states('weather.combined_hourly') }}"
-      update: "{{ state_attr('weather.combined_hourly', 'temperature') is not none and 'weather.combined_hourly' | has_value }}"
+      update: "{{ state_attr('weather.combined_hourly', 'temperature') is not none }}"
   - platform: state
     entity_id: weather.combined_hourly
     attribute: temperature
