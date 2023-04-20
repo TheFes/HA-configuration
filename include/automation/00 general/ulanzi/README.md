@@ -92,6 +92,7 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 |graph_data|list|yes|[]|A list with numeric values to be shown on the screen. AWTRIX expects integers, so the values are rounded to 0 decimals and converted to an integer. If you have small values, you might need to multiply them in this variable.
 |graph_type|string|no|`bar`|Either `bar` or `line`|
 |graph_max|float|no|`none`|The value provided here wil be used as base for a full bar (8 pixels), so if you use `4` as `graph_max` a value of `2` will be mapped to `4` pixels. This automatically disables `autoscale` on the graph. `autoscale` is enabled (default setting) when no `graph_max` is provided. 
+|graph_round|string|no|`common`|How to round the values for the graphs, using `ceil` will round everything up, so even small values will be displayed as one pixel, `floor` will round everything down, `common` is the default.
 |graph_color|string or list|no|`none`|Either a RGB array with integers, or a hexidecimal color|
 |background|string or list|no|`none`|Either a RGB array with integers, or a hexidecimal color to be used as background color|
 |app|string|no|`notifiy`|name of the custom app to be updated, if no app is entered the graph will be sent as a notification|
@@ -116,4 +117,5 @@ In case the default value is `none`, the device default will be used.
 ### 2023-04-20
 * Added support for background color using variable `background`
 * Added support for `graph_max` variable
+* Added variable `graph_round` to determine how values are rounded
 * Changed various defaults to `none` to use the device default setting
