@@ -29,11 +29,11 @@ trigger:
         }}
       icon: whatsapp
       text: >
-        {% if trigger.to_state.attributes['android.textLines'] is defined %}
+        {%- if trigger.to_state.attributes['android.textLines'] is defined %}
           {{ trigger.to_state.attributes['android.textLines'] | last }}
-        {% else %}
+        {%- else %}
           {{ trigger.to_state.attributes['android.text'] }}
-        {% endif %}
+        {%- endif %}
       repeat: 2
       textCase: 2
       pushIcon: 2
@@ -49,10 +49,13 @@ trigger:
     to: ~
     variables:
       icon: rainy
+      graph_max: >
+        {%- set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+        {{ data.levels.heavy if data is not none else 1 }}
       graph_data: >
-        {% set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {% set data = data.precip if data is not none else [] %}
-        {{ data | map('multiply', 100) | list }}
+        {%- set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+        {%- set data = data.precip if data is not none else [] %}
+        {{ data | map('multiply', 8/graph_max) | list }}
       graph_type: bar
       graph_color: [0, 0, 255]
       app: notify
@@ -70,12 +73,14 @@ action:
       retain: false
       topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('custom/' ~ app) }}
       payload: >
-        {% set graph_type = graph_type | default('bar') %}
-        {% set color = graph_color | default() if plot_graph else text_color | default() %}
-        {% set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
-        {% set data = data | select('is_number') | map('round', 0) | map('int') | list %}
-        {% set graph_data = { graph_type: (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] }%}
-        {% set data = dict(
+        {%- set graph_type = graph_type | default('bar') %}
+        {%- set icon = icon | default() %}
+        {%- set color = graph_color | default() if plot_graph else text_color | default() %}
+        {%- set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
+        {%- set data = data | select('is_number') | map('round', 0) | map('int') | list %}
+        {%- set graph_data = { graph_type: (data[:11] if icon else data[:16]) if plot_graph else [] }%}
+        {%- set autoscale = not iif(graph_max | default(none)) if plot_graph else none %}
+        {%- set data = dict(
                           graph_data,
                           text=text if not plot_graph else none,
                           repeat=repeat | default(3 if app == 'notify'),
@@ -83,8 +88,9 @@ action:
                           icon=icon | default(none),
                           pushIcon=pushIcon | default(0),
                           textCase=textCase | default(2),
-                          color=color | default()
+                          color=color | default(),
+                          autoscale = autoscale
                           )
         %}
-        {% set data = dict(data.items() | selectattr('1')) %}
+        {%- set data = dict(data.items() | selectattr('1')) %}
         {{ data | to_json }}

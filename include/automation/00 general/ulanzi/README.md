@@ -10,6 +10,8 @@
     - [Trigger variables](#trigger-variables-2)
   - [Screen Activate/Deactivate](#screen-activatedeactivate)
   - [Other entities used in these automations](#other-entities-used-in-these-automations)
+  - [Changelog:](#changelog)
+    - [2023-04-20](#2023-04-20)
 
 
 # Ulanzi Automations
@@ -43,6 +45,7 @@ trigger: []
 * Change the topic in the service call for each automation to the right topic for your Ulanzi clock
 * Most probably the triggers won't work for your setup, so it might be best to remove them, and add your own triggers from scratch
 * Some of these automations use `!secret`, this is not allowed in the GUI, so if you copy it to the GUI, you need to remove those lines before you can save the automation
+* To test the automation, you can not use the `RUN ACTIONS` button in the Automation GUI, as these automations rely on trigger variables, and there is no trigger when you press that button
 
 ## App Activate/Deactivate
 
@@ -67,8 +70,8 @@ It uses the standard entity_ids provided by that integration.
 |---|---|---|---|---|
 |action|boolean|yes|`true`|`true` to display the indicator, `false` to remove it.|
 |indicator|integer|no|`1`|`1` for the top right corner, `2` for bottom right corner.|
-|color_name|string|no|`white`|The color name to be used for the indicator|
-|brightness|integer|no|current matrix brightness|Integer between `0` and `255` to be used as brightness for the indicator|
+|color_name|string|no|`none`|The color name to be used for the indicator|
+|brightness|integer|`none`|current matrix brightness|Integer between `0` and `255` to be used as brightness for the indicator|
 |update|boolean|no|`true`|Use this to provide a template when to update the graph. Eg do not update when the source sensor is unavailable|
 
 ## Notifications and Custom Apps (both for text and graphs)
@@ -80,17 +83,21 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 |Variable|Type|Required|Default|Description|
 |---|---|---|---|---|
 |text|string|yes|`none`|Text to be displayed on the screen|
-|text_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
+|text_color|string or list|no|`none`|Either a RGB array with integers, or a hexidecimal color|
 |rainbow|boolean|no|`false`|set to `true` for text in rainbow effect|
-|textCase|integer|no|`2`|`0` = global setting, `1` = forces uppercase, `2` = shows as it sent|
-|repeat|integer|no|`3` for notifications, `none` for apps|How many times the text should be repeated|
+|textCase|integer|no|`none`|`0` = global setting, `1` = forces uppercase, `2` = shows as it sent|
+|repeat|integer|no|`none`|How many times the text should be repeated|
 |icon|string|no|`none`|icon to be shown next to the graph|
-|pushIcon|integer|no|`0`|`0` = Icon doesn't move, `1` = Icon moves with text and will not appear again, `2` = Icon moves with text but appears again when the text starts to scroll again|
+|pushIcon|integer|no|`none`|`0` = Icon doesn't move, `1` = Icon moves with text and will not appear again, `2` = Icon moves with text but appears again when the text starts to scroll again|
 |graph_data|list|yes|[]|A list with numeric values to be shown on the screen. AWTRIX expects integers, so the values are rounded to 0 decimals and converted to an integer. If you have small values, you might need to multiply them in this variable.
 |graph_type|string|no|`bar`|Either `bar` or `line`|
-|graph_color|string or list|no|clock default|Either a RGB array with integers, or a hexidecimal color|
+|graph_max|float|no|`none`|The value provided here wil be used as base for a full bar (8 pixels), so if you use `4` as `graph_max` a value of `2` will be mapped to `4` pixels. This automatically disables `autoscale` on the graph. `autoscale` is enabled (default setting) when no `graph_max` is provided. 
+|graph_color|string or list|no|`none`|Either a RGB array with integers, or a hexidecimal color|
+|background|string or list|no|`none`|Either a RGB array with integers, or a hexidecimal color to be used as background color|
 |app|string|no|`notifiy`|name of the custom app to be updated, if no app is entered the graph will be sent as a notification|
 |update|boolean|no|`true`|Use this to provide a template when to update the graph. Eg do not update when the source sensor is unavailable|
+
+In case the default value is `none`, the device default will be used.
 
 ## Screen Activate/Deactivate
 
@@ -104,3 +111,9 @@ This [automation](./ulanzi_notify_and_custom_app.yaml) can be used to create cus
 * [House Mode](../../../template/trigger/house_mode.yaml) - Trigger based template sensor used to determine what's going on in the house
 * [Combined Weather Hourly](../../../integrations/packages/combined_weather.yaml) - Template weather to combine multiple weather integrations
 * [Whatsapp binary sensor](../../../template//trigger/whatsapp_notification.yaml) - Binary sensor to indicate if there is an active Whatsapp notification on my phone
+
+## Changelog:
+### 2023-04-20
+* Added support for background color using variable `background`
+* Added support for `graph_max` variable
+* Changed various defaults to `none` to use the device default setting
