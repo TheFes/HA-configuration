@@ -57,7 +57,7 @@ trigger:
         {{ data.levels.heavy if data is not none else 8 }}
       graph_data: >
         {%- set data = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {{ data = data.precip if data is not none else [] }}
+        {{ data.precip if data is not none else [] }}
       graph_type: bar
       graph_color: [0, 0, 255]
       graph_round: ceil
@@ -81,7 +81,7 @@ action:
         {%- set grap_round = graph_round if graph_round in [ 'common', 'ceil', 'floor'] else 'common' %}
         {%- set autoscale = not iif(graph_max | default(none)) if plot_graph else none %}
         {%- set icon = icon | default() %}
-        {%- set color = graph_color | default() if plot_graph else text_color | default() %}
+        {%- set color = graph_color | default(none) if plot_graph else text_color | default(none) %}
         {%- set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
         {%- set data = data
                         | select('is_number')
@@ -90,7 +90,7 @@ action:
                         | map('int')
                         | list
         %}
-        {%- set graph_data = { graph_type: (data[:11] if icon else data[:16]) if plot_graph else [] }%}
+        {%- set graph_data = { graph_type: (data[:11] if icon else data[:16]) if plot_graph else none }%}
         {%- set data = dict(
                           graph_data,
                           autoscale = autoscale,

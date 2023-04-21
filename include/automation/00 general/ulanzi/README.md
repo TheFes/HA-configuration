@@ -12,6 +12,7 @@
   - [Other entities used in these automations](#other-entities-used-in-these-automations)
   - [Changelog:](#changelog)
     - [2023-04-20](#2023-04-20)
+    - [2023-04-21](#2023-04-21)
 
 
 # Ulanzi Automations
@@ -114,8 +115,14 @@ In case the default value is `none`, the device default will be used.
 * [Whatsapp binary sensor](../../../template//trigger/whatsapp_notification.yaml) - Binary sensor to indicate if there is an active Whatsapp notification on my phone
 
 ## Changelog:
+
 ### 2023-04-20
+
 * Added support for background color using variable `background`
 * Added support for `graph_max` variable
 * Added variable `graph_round` to determine how values are rounded
 * Changed various defaults to `none` to use the device default setting
+
+### 2023-04-21
+
+* Fix weather app settings and some fixes in defining the payload
