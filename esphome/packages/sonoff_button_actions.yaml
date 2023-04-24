@@ -1,0 +1,188 @@
+select:
+  - platform: template
+    name: Button Type ${device_name}
+    id: button_type_select
+    entity_category: config
+    options:
+      - Detached
+      - Momentary
+      - Toggle
+    optimistic: true
+    restore_value: true
+    on_value:
+      then:
+        - text_sensor.template.publish:
+            id: button_type_state
+            state: !lambda "return id(button_type_select).state;"
+
+switch:
+  - platform: gpio
+    name: ${device_name} Relay
+    pin:
+      number: GPIO26
+      # inverted: false
+    id: relay
+    on_turn_on:
+      - light.turn_on: relay_led
+    on_turn_off:
+      - light.turn_off: relay_led
+    restore_mode: restore_default_off
+
+output:
+  - platform: gpio
+    pin: GPIO19
+    inverted: True
+    id: relay1_led_gpio
+
+light:
+  - platform: binary
+    name: "Relay LED"
+    id: relay_led
+    internal: true
+    output: relay1_led_gpio
+
+binary_sensor:
+  - platform: gpio
+    internal: true
+    pin:
+      number: GPIO27
+      inverted: true
+      mode: INPUT_PULLUP
+    name: ${device_name} Switch
+    on_state:
+      - if:
+          condition:
+            - text_sensor.state:
+                id: button_type_state
+                state: "Toggle"
+          then:
+            - switch.toggle: relay
+    on_multi_click:
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                or:
+                  - text_sensor.state:
+                      id: button_type_state
+                      state: "Detached"
+                  - text_sensor.state:
+                      id: button_type_state
+                      state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: triple
+                - switch.toggle: relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay
+                - or:
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Detached"
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: double
+              else:
+                - switch.toggle: relay
+      - timing:
+          - ON for at least 1.5s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay
+                - or:
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Detached"
+                    - text_sensor.state:
+                        id: button_type_state
+                        state: "Momentary"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: long
+              else:
+                - switch.toggle: relay
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.25s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay
+                - text_sensor.state:
+                    id: button_type_state
+                    state: "Detached"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${device_name}
+                      click_type: short
+              else:
+                - if:
+                    condition:
+                      or:
+                        - text_sensor.state:
+                            id: button_type_state
+                            state: "Detached"
+                        - text_sensor.state:
+                            id: button_type_state
+                            state: "Momentary"
+                    then:
+                      - switch.toggle: relay
+    on_release:
+      then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${device_name}
+              click_type: release
+
+  - platform: gpio
+    internal: true
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: false
+    name: ${device_name} Button
+    on_press:
+      - switch.toggle: relay
+
+text_sensor:
+  - platform: homeassistant
+    entity_id: ${connected_light}
+    id: light_status
+    internal: true
+  - platform: template
+    internal: true
+    id: button_type_state
+    lambda: |-
+      return id(button_type_select).state;
