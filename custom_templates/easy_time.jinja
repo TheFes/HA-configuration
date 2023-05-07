@@ -45,6 +45,8 @@
       'today': 'today',
       'tomorrow': 'tomorrow',
       'yesterday': 'yesterday',
+      'next': 'next',
+      'last': 'last',
     },
     'days':[
       "Monday",
@@ -354,7 +356,7 @@
     '_language': 'Français',
     'and': 'et',
     'in': 'dans',
-    'ago': 'il y a',
+    'ago': 'il y a %s',
     'now': 'maintenant',
     'lose': 'perdre',
     'gain': 'gagner',
@@ -489,6 +491,148 @@
       'noviembre', 
       'diciembre'
     ]
+  },
+  'it':{
+    '_language': 'Italiano',
+    'and': 'e',
+    'in': 'in',
+    'ago': 'fa',
+    'now': 'ora',
+    'lose': 'perdita',
+    'gain': 'guadagno',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'a.',
+        'anno',
+        'anni',
+      ],
+      'week': [
+        'set.',
+        'settimana',
+        'settimane',
+      ],
+      'day': [
+        'g',
+        'giorno',
+        'giorni',
+      ],
+      'hour': [
+        'h',
+        'ora',
+        'ore',
+      ],
+      'minute': [
+        'min',
+        'minuto',
+        'minuti',
+      ],
+      'second': [
+        's',
+        'secondo',
+        'secondi',
+      ],
+    },
+    'delta':{
+      'today': 'oggi',
+      'tomorrow': 'domani',
+      'yesterday': 'ieri',
+    },
+    'days':[
+      "lunedì",
+      "martedì",
+      "mercoledì",
+      "giovedì",
+      "venerdì",
+      "sabato",
+      "domenica",
+    ],
+    'months':[
+      'gennaio',
+      'febbraio',
+      'marzo',
+      'aprile',
+      'maggio',
+      'giugno',
+      'luglio',
+      'agosto',
+      'settembre',
+      'ottobre',
+      'novembre',
+      'dicembre',
+    ]
+  },
+  'pt':{
+    '_language': 'Português',
+    'and': 'e',
+    'in': 'em',
+    'ago': 'antes',
+    'now': 'agora',
+    'lose': 'perde',
+    'gain': 'ganha',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'aa',
+        'ano',
+        'anos',
+      ],
+      'week': [
+        'sem',
+        'semana',
+        'semanas',
+      ],
+      'day': [
+        'd',
+        'dia',
+        'dias',
+      ],
+      'hour': [
+        'h',
+        'hora',
+        'horas',
+      ],
+      'minute': [
+        'min',
+        'minuto',
+        'minutos',
+      ],
+      'second': [
+        'seg',
+        'segundo',
+        'segundos',
+      ],
+    },
+    'delta':{
+      'today': 'hoje',
+      'tomorrow': 'amanhã',
+      'yesterday': 'ontem',
+      'next': 'seguinte',
+      'last': 'anterior',
+    },
+    'days':[
+      "Segunda",
+      "Terça",
+      "Quarta",
+      "Quinta",
+      "Sexta",
+      "Sábado",
+      "Somingo",
+    ],
+    'months':[
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ]
   }
 } %}
 
@@ -510,6 +654,12 @@
   'minute': 60,
   'second': 60,
 } %}
+{%- set _duration_sensor = {
+  'd': 86400,
+  'h': 3600,
+  'min': 60,
+  's': 1,
+} %}
 
 {% set _time_formats = {
   '12-hr': '%-I:%M %p',
@@ -518,6 +668,12 @@
 {% set _default_time_format = _time_formats.get('24-hr') %}
 
 {% set _default_values = _durations.keys() | list %}
+
+{%- macro _catchup(n) %}
+{%- for i in range(n) %}
+-
+{%- endfor %}
+{%- endmacro %}
 
 {%- macro _get_language_time_format(override, language) %}
 {%- set lang_fmat = languages.get(language, {}).get('time', {}).get('format', _bad_value) %}
@@ -540,6 +696,16 @@
 {{- dt.astimezone(utcnow().tzinfo) + offset -}}
 {%- endmacro -%}
 
+{%- macro _check_for_duration_sensor(input) %}
+{%- if input is string and input | regex_search('^(?!.+__)(?!_)[\da-z_]+(?<!_)\.(?!_)[\da-z_]+(?<!_)$') and input.startswith('sensor') and states[input] is not none and states[input].attributes.device_class is defined and states[input].attributes.unit_of_measurement is defined -%}
+  {%- set obj = states[input] -%}
+  {%- set divisor = _duration_sensor.get(obj.attributes.unit_of_measurement) -%}
+  {{- (obj.state | float / divisor) | string | as_timedelta -}}
+{%- else %}
+  {{- '' -}}
+{%- endif -%}
+{%- endmacro -%}
+
 {%- macro _to_datetime(input, attribute=None, utc=False) -%}
 {#- Already a datetime -#}
 {%- if input.date is defined and input.date is callable -%}
@@ -554,7 +720,7 @@
 {%- elif input is integer or input is float -%}
   {{- input | as_datetime -}}
 {#- assume time as string or entity_id -#}
-{%- elif input is string -%}
+{%- elif input is string and input not in ['', 'None'] -%}
   {#- if entity_id -#}
   {%- if input | regex_search('^(?!.+__)(?!_)[\da-z_]+(?<!_)\.(?!_)[\da-z_]+(?<!_)$') -%}
     {%- if attribute is not none and attribute is string -%}
@@ -659,15 +825,31 @@
 
 {# macro to generate a friendly time phrase #}
 {%- macro _time(input, attribute, language, values, biggest, utc) %}
-{%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
-{%- if uptime %}
-  {%- set value = _delta_seconds(now(), uptime) | int %}
-  {%- set seconds = value | abs %}
+{%- set duration_sensor = _check_for_duration_sensor(input) %}
+{%- if duration_sensor %}
+  {%- set seconds = as_timedelta(duration_sensor).total_seconds() %}
   {{- _just_time(seconds, language, values, biggest) }}
 {%- else %}
-  {{- _bad_value }}
+  {%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
+  {%- if uptime %}
+    {%- set value = _delta_seconds(now(), uptime) | int %}
+    {%- set seconds = value | abs %}
+    {{- _just_time(seconds, language, values, biggest) }}
+  {%- else %}
+    {{- _bad_value }}
+  {%- endif %}
 {%- endif %}
 {%- endmacro %}
+
+{%- macro _time_between(func, input1, attr1, utc1, input2, attr2, utc2) -%}
+{%- set t1 = _to_datetime(input1, attr1, utc1) | as_datetime -%}
+{%- set t2 = _to_datetime(input2, attr2, utc2) | as_datetime -%}
+{%- if t1 is not none and t2 is not none -%}
+  {{- func(t1, t2) -}}
+{%- else -%}
+  {{- None -}}
+{%- endif -%}
+{%- endmacro -%}
 
 {# Returns the most significant time.  e.g.  3 hours #}
 {%- macro easy_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
@@ -700,6 +882,28 @@
 {%- endif %}
 {%- endmacro %}
 
+{%- macro easy_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
+{{- _just_time(seconds, language, values, True) }}
+{%- endmacro %}
+
+{%- macro big_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
+{%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
+{{- _just_time(seconds, language, values, False) }}
+{%- endmacro %}
+
+{%- macro custom_time_between(t1, t2, values='', attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- set values = values.replace(' ','').split(',') | list if values is string else [] %}
+{%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
+{{- _just_time(seconds, language, values, False) }}
+{%- endmacro %}
+
+{%- macro time_between(t1, t2, attr1=None, attr2=None, utc1=False, utc2=False) %}
+{{- _time_between(_delta_timedelta, t1, attr1, utc1, t2, attr2, utc2) }}
+{%- endmacro %}
+
 {# macro to generate a friendly relative time phrase #}
 {%- macro _relative_time(input, attribute, language, values, biggest, utc)  %}
 {%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
@@ -711,7 +915,12 @@
   {%- if future %}
     {{- languages.get(language, {}).get('in', _bad_value) }} {{ items }}
   {%- else %}
-    {{- items }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+    {%- set t = languages.get(language, {}).get('ago', _bad_value) %}
+    {%- if '%s' in t %}
+      {{ t % items }}
+    {%- else %}
+      {{- items }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+    {%- endif %}
   {%- endif %}
 {%- else %}
   {{- _bad_value }}
@@ -896,12 +1105,60 @@
 {{- now().strftime(_get_language_time_format(fmat, language)) }}
 {%- endmacro %}
 
+{%- set _clock_icon = ['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven'] %}
+
+{%- macro clock_icon(hour=None) -%}
+{%- if hour is none or hour is not integer -%}
+  {%- set t = now() -%}
+  {%- set h = (t.hour + t.minute // 30) % 12 %}
+  {{- 'mdi:clock-time-' ~ _clock_icon[h] -}}
+{%- else -%}
+  {{- 'mdi:clock-time-' ~ _clock_icon[hour % 12] -}}
+{%- endif -%}
+{%- endmacro -%}
+
 {%- macro month(month=None, language=default_language) %}
 {%- set idx = (month - 1) % 12 if month is integer and month > 0 else now().month - 1 %}
 {{- languages.get(language, {}).get('months', [_bad_value]*12)[idx] }}
 {%- endmacro %}
 
 {%- macro weekday(weekday=None, language=default_language) %}
-{%- set idx = (weekday - 1) % 7 if weekday is integer and day > 0 else now().weekday() %}
+{%- set idx = (weekday - 1) % 7 if weekday is integer and weekday > 0 else now().weekday() %}
 {{- languages.get(language, {}).get('days', [_bad_value]*7)[idx] }}
+{%- endmacro %}
+
+{%- macro count_the_days(input, attr, utc=False) %}
+{%- set input = _to_datetime(input, attr, utc) | as_datetime %}
+{%- set midnight = today_at() %}
+{{ (input - midnight).days }}
+{%- endmacro %}
+
+{%- macro speak_the_days(input, attr, language=default_language, utc=False) %}
+{%- set lang_fmat = languages.get(language, {}).get('delta', {}) %}
+{%- set _days = {'-1': lang_fmat.get('yesterday', _bad_value), '0': lang_fmat.get('today', _bad_value), '1': lang_fmat.get('tomorrow', _bad_value)} %}
+{%- set midnight = today_at() %}
+{%- set ns = namespace(days=[]) %}
+{%- for i in range(-7, 14) %}
+  {%- set strindex = i | string %}
+  {%- set prefix = lang_fmat.get('last', _bad_value) ~ ' ' if i < -1 else lang_fmat.get('next', _bad_value) ~ ' ' if i > 6 else '' %}
+  {%- set ns.days = ns.days + [ (strindex, prefix ~  _days.get(strindex, weekday(midnight.weekday() + i + 1, language))) ] %}
+{%- endfor %}
+{%- set collection = dict.from_keys(ns.days) %}
+{%- set days = count_the_days(input, attr, utc) %}
+{%- if days in collection %}
+  {{- collection.get(days) }}
+{%- else %}
+  {%- set days = days | int %}
+  {%- set ret = _phrase('day', days | abs * 86400, language, 'day', True) %}
+  {%- if days > 0 %}
+    {{- languages.get(language, {}).get('in', _bad_value) }} {{ ret }}
+  {%- else %}
+    {%- set t = languages.get(language, {}).get('ago', _bad_value) %}
+    {%- if '%s' in t %}
+      {{- t % ret }}
+    {%- else %}
+      {{- ret }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+    {%- endif %}
+  {%- endif %}
+{%- endif %}
 {%- endmacro %}
