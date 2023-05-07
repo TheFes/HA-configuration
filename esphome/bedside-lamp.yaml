@@ -43,12 +43,3 @@ packages:
 esphome:
   friendly_name: ${friendly_name}
   name: ${name}
-
-esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
-    sdkconfig_options:
-      CONFIG_FREERTOS_UNICORE: y
-    advanced:
-      ignore_efuse_mac_crc: true

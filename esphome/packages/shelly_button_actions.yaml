@@ -17,7 +17,7 @@ select:
 
 switch:
   - platform: gpio
-    name: Shelly1 ${device_name}
+    name: ${device_type} ${device_name}
     pin: ${switch_pin}
     id: shelly_relay
     restore_mode: restore_default_off
