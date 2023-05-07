@@ -61,18 +61,6 @@ action:
             service: switch.turn_off
             target:
               entity_id: switch.tv_meubel
-  - alias: "Turn off plug for dryer if not active"
-    choose:
-      - conditions:
-          - alias: "Droger verbruikt weinig power"
-            condition: numeric_state
-            entity_id: sensor.droger_power
-            below: 40
-        sequence:
-          - alias: "Droger switch uit"
-            service: switch.turn_off
-            target:
-              entity_id: switch.droger
   - alias: "Turn of desk Marleen if not active"
     choose:
       - conditions:
