@@ -3,6 +3,12 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.5.0
+
+#### 🌟 Improvements
+
+* Target determination now only works if Home Assistant speaker groups are used in the `speaker_groups` setting.
+
 ### 2023.2.1
 
 #### 🌟 Improvements

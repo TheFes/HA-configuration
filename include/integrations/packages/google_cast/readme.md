@@ -5,12 +5,11 @@
 - [Google Home Resume Package](#google-home-resume-package)
   - [Table of contents](#table-of-contents)
   - [Background](#background)
-- [🚨 SPOTIFY RESUME ISSUES 🚨](#-spotify-resume-issues-)
+- [🚨 USAGE OF THE AUTOMATION 🚨](#-usage-of-the-automation-)
   - [Latest version](#latest-version)
-    - [2023.2](#20232)
+    - [2023.5.0](#202350)
     - [:recycle: RESUME SCRIPT](#recycle-resume-script)
       - [🌟 Improvements](#-improvements)
-      - [🐛 Bug fixes](#-bug-fixes)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
@@ -44,26 +43,21 @@ All these scripts are now combined in one package
 
 ___
 
-#  🚨 SPOTIFY RESUME ISSUES 🚨
-Update Spotcast to version 3.7.0. This should resolve the issues.
+#  🚨 USAGE OF THE AUTOMATION 🚨
+The automation to start the resume is intended to be used as a backup. If you already know you are going to send (like a TTS or mp3) and know you want to resume what was playing afterwards, I strongly advice to start the script yourself, and not rely on the automation, as it is a bit flaky.
+See [here](docs/google_home_resume.md#how-to-use-the-script) for instructions how to do that.
 
 ___
 
 ## Latest version
 
-### 2023.2
-
-Only a small update with a small bugfix right and a small improvement
+### 2023.5.0
 
 ### :recycle: RESUME SCRIPT
 
 #### 🌟 Improvements
 
-* (2022.2.1) Only perform `spotcast.start` once, unless Spotify is not playing after 10 seconds
-
-#### 🐛 Bug fixes
-
-* (2022.2.0) Fix error in resume helper when no volume was stored
+* (2022.5.0) Target determination now only works if Home Assistant speaker groups are used in the `speaker_groups` setting.
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)

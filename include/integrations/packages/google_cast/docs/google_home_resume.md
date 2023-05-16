@@ -2,9 +2,8 @@
 - [Table of contents](#table-of-contents)
 - [Description](#description)
 - [This script supports](#this-script-supports)
-- [Latest changes](#latest-changes)
-    - [2023.2](#20232)
-      - [🐛 Bug fixes](#-bug-fixes)
+    - [2023.5](#20235)
+      - [🌟 Improvements](#-improvements)
 - [The automation for automatic resume](#the-automation-for-automatic-resume)
 - [How to use the script](#how-to-use-the-script)
 - [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
@@ -27,15 +26,11 @@ ___
 
 ___
 
-# Latest changes
+### 2023.5
 
-### 2023.2
+#### 🌟 Improvements
 
-Only a small update with a small bugfix right now :)
-
-#### 🐛 Bug fixes
-
-* Fix error in resume helper when no volume was stored
+* (2022.5.0) Target determination now only works if Home Assistant speaker groups are used in the `speaker_groups` setting.
 
 Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 

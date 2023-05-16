@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: &ver 2023.2.1
+          version: &ver 2023.5.0
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -360,9 +360,9 @@ script:
                 {%- set e = ((e | replace(' ', '')).split(',') if e is string else e) | select('in', cast_entities) | list %}
               {# add targets based on actions #}
                 {# entities #}
-                  {% set ns = namespace(e=e) %}
-                  {% for call in service_calls %}
-                    {% set e = [
+                  {%- set ns = namespace(e=e) %}
+                  {%- for call in service_calls %}
+                    {%- set e = [
                                 call.get('entity_id', []),
                                 call.get('data', {}).get('entity_id', []),
                                 call.get('target', {}).get('entity_id', []),
@@ -370,13 +370,13 @@ script:
                                 call.get('data', {}).get('script_extra', {}).get('entity_id', [])
                               ] %}
                     {%- set e = ([e | select('string') | join(',')] + e | reject('string') | sum(start=[])) | join(',') %}
-                    {% set ns.e = [ns.e, e ] | select() | join(',') %}
-                  {% endfor %}
-                  {% set entity_list = (ns.e | replace(' ', '')).split(',') | select('in', entities_check) | unique | list %}
+                    {%- set ns.e = [ns.e, e ] | select() | join(',') %}
+                  {%- endfor %}
+                  {%- set entity_list = (ns.e | replace(' ','')).split(',') | unique | list %}
                 {# devices #}
-                  {% set ns = namespace(d=d) %}
-                  {% for call in service_calls %}
-                    {% set d = [
+                  {%- set ns = namespace(d=d) %}
+                  {%- for call in service_calls %}
+                    {%- set d = [
                                 call.get('device_id', []),
                                 call.get('data', {}).get('device_id', []),
                                 call.get('target', {}).get('device_id', []),
@@ -384,13 +384,13 @@ script:
                                 call.get('data', {}).get('script_extra', {}).get('device_id', [])
                               ] %}
                     {%- set d = ([d | select('string') | join(',')] + d | reject('string') | sum(start=[])) | join(',') %}
-                    {% set ns.d = [ns.d, d ] | select() | join(',') %}
-                  {% endfor %}
-                  {% set device_list = (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
+                    {%- set ns.d = [ns.d, d ] | select() | join(',') %}
+                  {%- endfor %}
+                  {%- set device_list = (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
                 {# areas #}
-                  {% set ns = namespace(a=a) %}
-                  {% for call in service_calls %}
-                    {% set a = [
+                  {%- set ns = namespace(a=a) %}
+                  {%- for call in service_calls %}
+                    {%- set a = [
                                 call.get('area_id', []),
                                 call.get('data', {}).get('area_id', []),
                                 call.get('target', {}).get('area_id', []),
@@ -398,20 +398,22 @@ script:
                                 call.get('data', {}).get('script_extra', {}).get('area_id', [])
                               ] %}
                     {%- set a = ([a | select('string') | join(',')] + a | reject('string') | sum(start=[])) | join(',') %}
-                    {% set ns.a = [ns.a, a ] | select() | join(',') %}
-                  {% endfor %}
-                  {% set area_list = (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
+                    {%- set ns.a = [ns.a, a ] | select() | join(',') %}
+                  {%- endfor %}
+                  {%- set area_list = (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
               {# create entity list based on device/area input #}
                 {# determine entities of areas #}
-                  {%- set area_list = area_list | map('area_entities') | sum(start=[]) | select('in', entities_check) | list %}
+                  {%- set area_list = area_list | map('area_entities') | sum(start=[]) | list %}
                 {# determine entities of devices #}
-                  {%- set device_list = device_list | map('device_entities') | sum(start=[]) | select('in', entities_check) | list %}
+                  {%- set device_list = device_list | map('device_entities') | sum(start=[]) | list %}
               {# create list with all cast and mass entities #}
                 {%- set total_list = (area_list + device_list + entity_list) | unique | list %}
-            {% endif %}
+                {%- set m = speaker_groups.items() | selectattr('0', 'in', total_list) | map(attribute='1') | sum(start=[]) %}
+                {%- set total_list = (total_list + m) | select('in', entities_check) | list %}
+            {%- endif %}
             {# replace mass entities with cast entities #}
               {%- if mass_entities and total_list | select('search', '.mass_') | list %}
-                {% set no_mass = total_list | map('replace', '.mass_', '.') | list %}
+                {%- set no_mass = total_list | map('replace', '.mass_', '.') | list %}
                 {%- set total_list = no_mass | select('in', cast_entities) | unique | list %}
               {%- endif %}
             {# avoid to target both complete speaker groups and single members #}
