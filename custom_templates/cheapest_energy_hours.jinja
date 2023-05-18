@@ -3,14 +3,24 @@
         {%- set today = state_attr(sensor, 'raw_today') -%}
         {%- set tomorrow = state_attr(sensor, 'raw_tomorrow') -%}
         {%- set m = mode | default('start') -%}
-        {%- set h = hours | default(1) | int(1) -%}
         {%- set wp = no_weight_points | default(1) | int(1) -%}
+        {%- set h = hours | default(1) | int(1) -%}
         {%- set w = weight | default(none) -%}
         {%- set w = w | map('int', none) | reject('none') | list
                     if w is iterable and w is not string
                     else none
         -%}
-        {%- set w = w + [0] * (h*wp - w | count) if w else none -%}
+    {# set number of hours based on weight points in case hours setting is not provided #}
+        {%- set h_wp = (w | count / wp) | round(0, 'ceil') | int if w is not none else h -%}
+        {%- set h = h if hours is defined else h_wp -%}
+    {# set weight points based on number of hours (either add zeros, or remove unneeded part) #}
+        {%- if w is not none -%}
+            {%- if h_wp <= h -%}
+                {%- set w = w + [0] * (h*wp - w | count) -%}
+            {%- else -%}
+                {%- set w = w[:h*wp] %}
+            {%- endif -%}
+        {%- endif -%}
     {# Check if data is available and mode is correct#}
         {%- if not today and not tomorrow -%}
             No valid data in selected sensor

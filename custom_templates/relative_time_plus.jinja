@@ -101,61 +101,61 @@
   macro to split a timedelta in years, months, weeks, days, hours, minutes, seconds
   used by the relative time plus macro, set up as a seperate macro so it can be reused
 #}
-{%- macro time_split(date, time, compare_date) %}
+{%- macro time_split(date, time, compare_date) -%}
   {# set defaults for variables #}
-    {%- set date = date | as_local %}
-    {%- set time = time | default(true) | bool(true) %}
-    {%- set n = compare_date if compare_date is defined else now() %}
-    {%- set n = n if time else today_at() %}
-    {%- set a = [n, date] | max %}
-    {%- set b = [n, date] | min %}
+    {%- set date = date | as_local -%}
+    {%- set time = time | default(true) | bool(true) -%}
+    {%- set n = compare_date if compare_date is defined else now() -%}
+    {%- set n = n if time else today_at() -%}
+    {%- set a = [n, date] | max -%}
+    {%- set b = [n, date] | min -%}
   {#- set time periods in seconds #}
-    {%- set m, h, d, w = 60, 3600, 86400, 604800 %}
+    {%- set m, h, d, w = 60, 3600, 86400, 604800 -%}
   {#- set numer of years, and set n to value using this number of years #}
-    {%- set yrs = a.year - b.year - (1 if a.replace(year=b.year) < b else 0) %}
-    {%- set a = a.replace(year=a.year - yrs) %}
+    {%- set yrs = a.year - b.year - (1 if a.replace(year=b.year) < b else 0) -%}
+    {%- set a = a.replace(year=a.year - yrs) -%}
   {#- set numer of months, and set n to value using this number of months #}
-    {%- set mth = (a.month - b.month - (1 if a.day < b.day else 0) + 12) % 12 %}
-    {%- set month_new = (((a.month - mth) + 12) % 12) | default(12, true) %}
-    {%- set day_max = ((a.replace(day=1, month=month_new) + timedelta(days=31)).replace(day=1) - timedelta(days=1)).day %}
-    {%- set a_temp = a.replace(month=month_new, day=[a.day, day_max]|min) %}
-    {%- set a = a_temp if a_temp <= a else a_temp.replace(year=a.year-1) %}
+    {%- set mth = (a.month - b.month - (1 if a.day < b.day else 0) + 12) % 12 -%}
+    {%- set month_new = (((a.month - mth) + 12) % 12) | default(12, true) -%}
+    {%- set day_max = ((a.replace(day=1, month=month_new) + timedelta(days=31)).replace(day=1) - timedelta(days=1)).day -%}
+    {%- set a_temp = a.replace(month=month_new, day=[a.day, day_max]|min) -%}
+    {%- set a = a_temp if a_temp <= a else a_temp.replace(year=a.year-1) -%}
   {#- set other time period variables #}
-    {%- set s = (a - b).total_seconds() %}
-    {%- set wks = (s // w) | int %}
-    {%- set day = ((s - wks * w) // d) | int %}
-    {%- set hrs = ((s - wks * w - day * d) // h) | int %}
-    {%- set min = ((s - wks * w - day * d - hrs * h) // m) | int %}
-    {%- set sec = (s - wks * w - day * d - hrs * h - min * m) | int %}
+    {%- set s = (a - b).total_seconds() -%}
+    {%- set wks = (s // w) | int -%}
+    {%- set day = ((s - wks * w) // d) | int -%}
+    {%- set hrs = ((s - wks * w - day * d) // h) | int -%}
+    {%- set min = ((s - wks * w - day * d - hrs * h) // m) | int -%}
+    {%- set sec = (s - wks * w - day * d - hrs * h - min * m) | int -%}
   {# output result #}
-    {{ dict(y=yrs, mo=mth, w=wks, d=day, h=hrs, m=min, s=sec) | to_json }}
-{%- endmacro %}
+    {{- dict(y=yrs, mo=mth, w=wks, d=day, h=hrs, m=min, s=sec) | to_json -}}
+{%- endmacro -%}
 
 {# macro to output a timedelta in a readable format #}
-{%- macro relative_time_plus(date, parts, week, time, verbose, language, compare_date) %}
+{%- macro relative_time_plus(date, parts, week, time, verbose, language, compare_date) -%}
   {#- set defaults for input if not entered #}
-    {%- set date = date | as_datetime if date is string or date is number else date %}
-    {%- set compare_date = compare_date if compare_date is defined else now() %}
-    {%- set compare_date = compare_date | as_datetime if compare_date is string or compare_date is number else compare_date %}
-    {%- set phrases = time_period_phrases %}
+    {%- set date = date | as_datetime if date is string or date is number else date -%}
+    {%- set compare_date = compare_date if compare_date is defined else now() -%}
+    {%- set compare_date = compare_date | as_datetime if compare_date is string or compare_date is number else compare_date -%}
+    {%- set phrases = time_period_phrases -%}
   {#- select correct phrases bases on language input #}
-    {%- set language = language | default() %}
-    {%- set languages = phrases | map(attribute='language') | list %}
-    {%- set language = iif(language in languages, language, languages | first) %}
-    {%- set phr = phrases | selectattr('language', 'eq', language) | map(attribute='phrases') | list | first %}
+    {%- set language = language | default() -%}
+    {%- set languages = phrases | map(attribute='language') | list -%}
+    {%- set language = iif(language in languages, language, languages | first) -%}
+    {%- set phr = phrases | selectattr('language', 'eq', language) | map(attribute='phrases') | list | first -%}
   {#- check for valid datetime (using as_timestamp) #}
-    {%- if as_timestamp(date, default='error') != 'error' %}
-      {%- set date = date | as_local %}
-      {%- set parts = parts | default(1) | int(1) %}
-      {%- set week = week | default(true) | bool(true) %}
-      {%- set time = time | default(true) | bool(true) %}
-      {%- set verbose = verbose | default(false) | bool(false) %}
-      {%- set language = language | default('first') %}
-      {%- set date = date if time else today_at().replace(year=date.year, month=date.month, day=date.day) %}
-      {%- set tp = time_split(date, time, compare_date) | from_json %}
+    {%- if as_timestamp(date, default='error') != 'error' -%}
+      {%- set date = date | as_local -%}
+      {%- set parts = parts | default(1) | int(1) -%}
+      {%- set week = week | default(true) | bool(true) -%}
+      {%- set time = time | default(true) | bool(true) -%}
+      {%- set verbose = verbose | default(false) | bool(false) -%}
+      {%- set language = language | default('first') -%}
+      {%- set date = date if time else today_at().replace(year=date.year, month=date.month, day=date.day) -%}
+      {%- set tp = time_split(date, time, compare_date) | from_json -%}
     {#- create mapping #}
-      {%- set wk = tp.w if week else 0 %}
-      {%- set dy = tp.d if week else tp.d + tp.w * 7 %}
+      {%- set wk = tp.w if week else 0 -%}
+      {%- set dy = tp.d if week else tp.d + tp.w * 7 -%}
       {%- set dur = dict(
                           yrs = dict(a=tp.y, d=phr.year[2] if verbose else phr.year[1] if tp.y > 1 else phr.year[0]),
                           mth = dict(a=tp.mo, d=phr.month[2] if verbose else phr.month[1] if tp.mo > 1 else phr.month[0]),
@@ -165,23 +165,23 @@
                           min = dict(a=tp.m, d=phr.minute[2] if verbose else phr.minute[1] if tp.m > 1 else phr.minute[0]),
                           sec = dict(a=tp.s, d=phr.second[2] if verbose else phr.second[1] if tp.s > 1 else phr.second[0])
                         )
-      %}
+      -%}
     {#- find first non zero time period #}
-      {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first %}
+      {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first -%}
     {#- set variable to reject weeks if set and find index of first non zero time period #}
-      {%- set week_reject = 'wks' if not week %}
-      {%- set index = (dur.keys() | reject('eq', week_reject) | list).index(first) %}
+      {%- set week_reject = 'wks' if not week -%}
+      {%- set index = (dur.keys() | reject('eq', week_reject) | list).index(first) -%}
     {#-select non zero items based on input #}
-      {%- set items = (dur.keys() | reject('eq', week_reject) | list)[index:index + parts] %}
-      {%- set selection = dur.items() | selectattr('0', 'in', items) | rejectattr('1.a', 'eq', 0) | list %}
+      {%- set items = (dur.keys() | reject('eq', week_reject) | list)[index:index + parts] -%}
+      {%- set selection = dur.items() | selectattr('0', 'in', items) | rejectattr('1.a', 'eq', 0) | list -%}
     {#- create list of texts per selected time period #}
-      {%- set ns = namespace(text = []) %}
+      {%- set ns = namespace(text = []) -%}
       {%- for i in selection -%}
-        {%- set ns.text = ns.text + [ i[1].a ~ ' ' ~ i[1].d] %} 
-      {%- endfor %}
+        {%- set ns.text = ns.text + [ i[1].a ~ ' ' ~ i[1].d] -%} 
+      {%- endfor -%}
     {#- join texts in a string, using phr.combine for the last item #}
-      {{ ns.text[:-1] | join(', ') ~ phr.combine ~ ns.text[-1] if ns.text | count > 1 else ns.text | first }}
-    {%- else %}
-      {{ phr.error }}
-    {%- endif %}
-{%- endmacro %}
+      {{- ns.text[:-1] | join(', ') ~ phr.combine ~ ns.text[-1] if ns.text | count > 1 else ns.text | first -}}
+    {%- else -%}
+      {{- phr.error -}}
+    {%- endif -%}
+{%- endmacro -%}
