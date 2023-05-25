@@ -22,7 +22,7 @@ condition:
     condition: time
     after: "10:00:00"
 action:
-  - if: "{{ trigger.id != 'open' }}"
+  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_slaapkamer_manual', 'on') }}"
     then:
       - alias: "After sunrise"
         condition: state

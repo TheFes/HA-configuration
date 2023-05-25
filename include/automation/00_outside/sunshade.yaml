@@ -18,7 +18,7 @@ trigger:
     at: "16:00:00"
     id: "close"
 action:
-  - if: "{{ state_attr('sun.sun', 'rising') }}"
+  - if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
     then:
       - alias: "Warm day"
         condition: template

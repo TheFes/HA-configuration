@@ -1,0 +1,48 @@
+- trigger:
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_rechts.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_midden.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_links.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_rechts_template.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_midden_template.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.slaapkamer_links_template.context.user_id is not none }}"
+  binary_sensor:
+    - unique_id: 4b62943a-ee6b-4f23-a3b5-15a8da23d94d
+      name: "Screen Slaapkamer manual"
+      state: "{{ true }}"
+      auto_off: "01:00:00"
+- trigger:
+    - platform: template
+      value_template: "{{ states.cover.pepijn.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.pepijn_template.context.user_id is not none }}"
+  binary_sensor:
+    - unique_id: 9c94b737-a7a4-4616-888c-d6a3658397f0
+      name: "Screen Pepijn manual"
+      state: "{{ true }}"
+      auto_off: "01:00:00"
+- trigger:
+    - platform: template
+      value_template: "{{ states.cover.floris.context.user_id is not none }}"
+    - platform: template
+      value_template: "{{ states.cover.floris_template.context.user_id is not none }}"
+  binary_sensor:
+    - unique_id: 0f886f29-f2c7-4dee-8971-3723a0b507b5
+      name: "Screen Floris manual"
+      state: "{{ true }}"
+      auto_off: "01:00:00"
+- trigger:
+    - platform: template
+      value_template: "{{ states.cover.veranda.context.user_id is not none }}"
+  binary_sensor:
+    - unique_id: ed19a4be-2a67-4100-b63f-3e9fa69905fa
+      name: "Screen Veranda manual"
+      state: "{{ true }}"
+      auto_off: "01:00:00"

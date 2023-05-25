@@ -18,7 +18,7 @@ trigger:
     at: "18:00:00"
     id: open
 action:
-  - if: "{{ trigger.id != 'open' }}"
+  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_floris_manual', 'on') }}"
     then:
       - alias: "Warm day"
         condition: template
