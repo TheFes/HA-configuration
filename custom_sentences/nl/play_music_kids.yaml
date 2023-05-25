@@ -1,0 +1,26 @@
+language: "nl"
+intents:
+  play_music_kids:
+    data:
+      - sentences:
+          - "(Speel|luister naar) [muziek|[een] liedje[s] [van]] {artist} [[in|op|bij] [de|het] {room}]"
+          - "(Speel|luister) [[in|op|bij] {room}] [naar] [muziek|[een] liedje[s] [van]] {artist}"
+          - "[muziek|liedje[s]] {artist} [[in|op|bij] [de|het] {room}]"
+          - "{artist} [muziek|liedje[s]] [[in|op|bij] [de|het] {room}]"
+lists:
+  artist:
+    values:
+      - Bollo
+      - Bobo
+      - Juf Roos
+      - Knuffie Koala
+      - Knuffel Koala
+      - Knuffy Koala
+  room:
+    values:
+      - in: slaapkamer
+        out: media_player.slaapkamer_hub
+      - in: beneden
+        out: media_player.beneden_groep
+      - in: keuken
+        out: media_player.keuken_hub
