@@ -1,0 +1,20 @@
+dinner_time:
+  action:
+    - alias: "Send message to Ulanzi clock"
+      service: mqtt.publish
+      data:
+        qos: 0
+        retain: false
+        topic: awtrix_dd3300/notify
+        payload: >
+          {{ dict(
+                  text= 'Dinner time!',
+                  repeat=2,
+                  rainbow=true,
+                  icon='food',
+                  pushIcon=0,
+                  textCase=1
+                  ) | to_json
+          }}
+  speech:
+    text: "Bericht verstuurd"
