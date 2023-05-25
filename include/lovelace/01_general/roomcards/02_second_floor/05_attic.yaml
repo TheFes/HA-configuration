@@ -3,9 +3,9 @@ cards:
   - type: custom:mushroom-template-card
     entity: light.groep_zolder
     primary: >
-      {% set title = { "NL": "Zolder", "EN": "Second Floor" } %}
+      {% set title = { "NL": "Vliering", "EN": "Attic" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
-    icon: mdi:home-floor-2
+    icon: mdi:home-floor-3
     icon_color: blue
     layout: horizontal
     secondary: >
@@ -33,28 +33,3 @@ cards:
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
-      - type: conditional
-        conditions:
-          - entity: sensor.wasmachine
-            state: "on"
-        card:
-          type: custom:mushroom-template-card
-          icon: mdi:washing-machine
-          entity: sensor.wasmachine
-          layout: vertical
-          icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'yellow' }}"
-      - type: conditional
-        conditions:
-          - entity: media_player.groep_zolder
-            state_not: "off"
-          - entity: media_player.groep_zolder
-            state_not: "idle"
-        card:
-          type: custom:mushroom-template-card
-          layout: vertical
-          entity: media_player.groep_zolder
-          icon: mdi:cast
-          icon_color: >-
-            {{ 'yellow' if 'playing' in expand(entity) | map(attribute='state') | list }}
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red

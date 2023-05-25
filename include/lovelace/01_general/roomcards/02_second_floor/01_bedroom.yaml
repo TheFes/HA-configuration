@@ -1,0 +1,35 @@
+type: custom:vertical-stack-in-card
+cards:
+  - type: custom:mushroom-template-card
+    entity: light.groep_zolder
+    primary: >
+      {% set title = { "NL": "Slaapkamer", "EN": "Bedroom" } %}
+      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    icon: mdi:bed-empty
+    icon_color: blue
+    layout: horizontal
+    secondary: >
+      {% set hum = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'humidity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
+      {% set temp = (area_entities(area_id(entity)) | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'temperature') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
+      {% set lux = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'illuminance') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
+      {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
+    tap_action:
+      action: navigate
+      navigation_path: zolder
+  - type: custom:vertical-stack-in-card
+    horizontal: true
+    cards:
+      - type: custom:mushroom-template-card
+        entity: light.groep_zolder
+        layout: vertical
+        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
+      - type: custom:mushroom-template-card
+        entity: switch.groep_zolder
+        layout: vertical
+        icon: "{{ 'mdi:toggle-switch-variant' if is_state(entity, 'on') else 'mdi:toggle-switch-variant-off' }}"
+        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_color: red
