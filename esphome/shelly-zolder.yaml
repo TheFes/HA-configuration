@@ -11,7 +11,7 @@ substitutions:
 esphome:
   name: shelly-zolder
   friendly_name: ${device_name}
-  comment: Shelly Dimmer 2
+
 
 esp8266:
   board: esp01_1m
@@ -234,14 +234,16 @@ binary_sensor:
                     - logger.log: "Physical long press (dim_up) trigger (1 button mode)"
                     - script.execute: script_dim_up_timer
                     - script.execute: script_dim_up
-                    - lambda: !lambda |-
-                        id(dim_action).publish_state("down");
+                    - select.set:
+                        id: dim_action_select
+                        option: "down"
                   else:
                     - logger.log: "Physical long press (dim_down) trigger (1 button mode)"
                     - script.execute: script_dim_down_timer
                     - script.execute: script_dim_down
-                    - lambda: !lambda |-
-                        id(dim_action).publish_state("up");
+                    - select.set:
+                        id: dim_action_select
+                        option: "up"
     on_release:
       then:
         - if:
