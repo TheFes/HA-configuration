@@ -1,24 +1,24 @@
-id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
-alias: "F1F - Open cover Floris when needed"
+id: dd78d7db-7bd2-48ce-9543-64ee16d98732
+alias: "F1P - Open cover Floris when needed"
 trigger:
   - platform: state
-    entity_id: binary_sensor.pepijn_light_inside
+    entity_id: binary_sensor.curtain_floris_open
     to: "on"
   - platform: state
-    entity_id: binary_sensor.trend_pepijn_temp
+    entity_id: binary_sensor.trend_floris_temp
     to: "on"
   - platform: template
     value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
   - platform: template
     value_template: "{{ state_attr('weather.combined_hourly', 'forecast')[0].condition in [ 'sunny', 'partlycloudy'] if state_attr('weather.combined_daily', 'forecast') else false }}"
   - platform: numeric_state
-    entity_id: sensor.pepijn_temp
+    entity_id: sensor.floris_temp
     above: 20
   - platform: time
     at: "18:00:00"
     id: open
 action:
-  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_pepijn_manual', 'on') }}"
+  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_floris_manual', 'on') }}"
     then:
       - alias: "Warm day"
         condition: template
@@ -41,11 +41,11 @@ action:
         state: true
       - alias: "Temperature rising"
         condition: state
-        entity_id: binary_sensor.trend_pepijn_temp
+        entity_id: binary_sensor.trend_floris_temp
         state: "on"
       - alias: "Warm inside"
         condition: numeric_state
-        entity_id: sensor.pepijn_temp
+        entity_id: sensor.floris_temp
         above: 20
       - alias: "Light inside"
         condition: state
@@ -53,16 +53,16 @@ action:
         state: "on"
       - alias: "Screen (partly) open"
         condition: template
-        value_template: "{{ state_attr('cover.pepijn_template', 'current_position') != 0 }}"
+        value_template: "{{ state_attr('cover.floris_template', 'current_position') != 0 }}"
       - alias: "Close cover"
         service: cover.close_cover
         target:
-          entity_id: cover.pepijn_template
+          entity_id: cover.floris_template
     else:
       - alias: "Screen not completely open"
         condition: template
-        value_template: "{{ state_attr('cover.pepijn_template', 'current_position') != 100 }}"
+        value_template: "{{ state_attr('cover.floris_template', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:
-          entity_id: cover.pepijn_template
+          entity_id: cover.floris_template
