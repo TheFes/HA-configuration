@@ -469,12 +469,12 @@
       'yesterday': 'ayer',
     },
     'days':[
-      'lunes', 
-      'martes', 
-      'miércoles', 
-      'jueves', 
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
       'viernes',
-      'sábado', 
+      'sábado',
       'domingo'
     ],
     'months':[
@@ -485,10 +485,10 @@
       'mayo',
       'junio',
       'julio',
-      'agosto' 
-      'septiembre', 
-      'octubre', 
-      'noviembre', 
+      'agosto'
+      'septiembre',
+      'octubre',
+      'noviembre',
       'diciembre'
     ]
   },
@@ -632,6 +632,78 @@
       'Outubro',
       'Novembro',
       'Dezembro',
+    ]
+  },
+  'hr':{
+    '_language': 'Hrvatski',
+    'and': 'i',
+    'in': 'u',
+    'ago': 'prije',
+    'now': 'sad',
+    'lose': 'gubiš',
+    'gain': 'dobijaš',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        'g',
+        'godina',
+        'godine',
+      ],
+      'week': [
+        'tj',
+        'tjedan',
+        'tjedana',
+      ],
+      'day': [
+        'd',
+        'dan',
+        'dana',
+      ],
+      'hour': [
+        'h',
+        'sat',
+        'sati',
+      ],
+      'minute': [
+        'm',
+        'minuta',
+        'minuta',
+      ],
+      'second': [
+        's',
+        'sekunda',
+        'sekundi',
+      ],
+    },
+    'delta':{
+      'today': 'danas',
+      'tomorrow': 'sutra',
+      'yesterday': 'jučer',
+      'next': 'slijedeći',
+      'last': 'prošli',
+    },
+    'days':[
+      "Ponedjeljak",
+      "Utorak",
+      "Srijeda",
+      "Četvrtak",
+      "Petak",
+      "Subota",
+      "Nedjelja",
+    ],
+    'months':[
+      'Siječanj',
+      'Veljača',
+      'Ožujak',
+      'Travanj',
+      'Svibanj',
+      'Lipanj',
+      'Srpanj',
+      'Kolovoz',
+      'Rujan',
+      'Listopad',
+      'Studeni',
+      'Prosinac',
     ]
   }
 } %}
@@ -1044,13 +1116,13 @@
 {%- macro _hms(t) %}
 {%- set dststr = t.dst() | string if t.dst() is not none else "00:00:00" %}
 {%- set h, m, s = dststr.split(':') | map('int') %}
-{{- h * 60 * 60 + m * 60 + s }}   
+{{- h * 60 * 60 + m * 60 + s }}
 {%- endmacro %}
-      
+
 {%- macro _is_dst(t) %}
 {{- _hms(t) | int != 0 }}
 {%- endmacro %}
-      
+
 {%- macro _finddst(t, kwarg, rng) %}
 {%- set ns = namespace(previous=_is_dst(t), found=none) %}
 {%- for i in range(rng) %}
