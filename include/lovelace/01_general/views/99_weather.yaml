@@ -75,15 +75,18 @@ cards:
       - type: "custom:mini-graph-card"
         name: Zonnepanelen
         entities:
-          - entity: sensor.growatt_total_output_power
+          - entity: sensor.ecu_current_power
         hour24: true
         line_color: green
         points_per_hour: 12
         show:
           labels: true
       - type: entity
-        entity: sensor.growatt_total_energy_today
+        entity: sensor.ecu_today_energy
         name: Vandaag opgewekte energie
+      - type: entity
+        entity: sensor.solar_max
+        name: Record opgewekte energie op één dag
   - type: "custom:sun-card"
     language: nl
     showAzimuth: true

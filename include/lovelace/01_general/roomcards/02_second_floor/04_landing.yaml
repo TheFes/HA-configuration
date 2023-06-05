@@ -1,7 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    entity: light.groep_zolder
+    entity: light.groep_landing_2
     primary: >
       {% set title = { "NL": "Overloop", "EN": "Landing" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -15,21 +15,14 @@ cards:
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     tap_action:
       action: navigate
-      navigation_path: zolder
+      navigation_path: overloop_zolder
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
-        entity: light.groep_zolder
+        entity: light.groep_landing_2
         layout: vertical
         icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
-        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
-        badge_color: red
-      - type: custom:mushroom-template-card
-        entity: switch.groep_zolder
-        layout: vertical
-        icon: "{{ 'mdi:toggle-switch-variant' if is_state(entity, 'on') else 'mdi:toggle-switch-variant-off' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
@@ -43,18 +36,3 @@ cards:
           entity: sensor.wasmachine
           layout: vertical
           icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'yellow' }}"
-      - type: conditional
-        conditions:
-          - entity: media_player.groep_zolder
-            state_not: "off"
-          - entity: media_player.groep_zolder
-            state_not: "idle"
-        card:
-          type: custom:mushroom-template-card
-          layout: vertical
-          entity: media_player.groep_zolder
-          icon: mdi:cast
-          icon_color: >-
-            {{ 'yellow' if 'playing' in expand(entity) | map(attribute='state') | list }}
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red

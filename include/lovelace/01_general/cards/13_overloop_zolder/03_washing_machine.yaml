@@ -1,0 +1,52 @@
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Wasmachine
+  - type: custom:stack-in-card
+    cards:
+      - type: custom:mushroom-template-card
+        icon: mdi:washing-machine
+        entity: sensor.wasmachine
+        icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'blue' if is_state(entity, 'on') }}"
+        primary: >-
+          {{ 'Uit' if is_state(entity, 'off') else
+          state_attr(entity, 'current_course')}}
+        secondary: >-
+          {%- set h, m, s = state_attr(entity, 'remain_time').split(':') | map('int') %}
+          {%- set error = is_state('binary_sensor.wasmachine_error_state', 'on') %}
+          {{ state_attr('sensor.wasmachine', 'error_message') if error else relative_time(now() - timedelta(hours=h, minutes=m, seconds=s)) if is_state(entity, 'on') }}
+        card_mod:
+          style:
+            mushroom-shape-icon$: |
+              ha-icon {
+                {%- if is_state('sensor.wasmachine', 'on') %}
+                  clip-path: polygon(0 0, 0 100%, 35% 100%, 34% 68%, 60% 41%, 71% 56%, 65% 74%, 47% 79%, 32% 69%, 35% 100%, 100% 100%, 100% 0);
+                {%- endif %}
+              }
+      - type: custom:mushroom-template-card
+        icon: mdi:washing-machine
+        entity: sensor.wasmachine
+        icon_color: "{{ 'red' if is_state('binary_sensor.wasmachine_error_state', 'on') else 'blue' if is_state(entity, 'on') }}"
+        card_mod:
+          style:
+            mushroom-shape-icon$: |
+              ha-icon {
+                {%- if is_state('sensor.wasmachine', 'on') %}
+                  --icon-animation: spin 1s linear infinite;
+                  transform-origin: 50% 58%;
+                  clip-path: circle(21.7% at 50% 58%);
+                {%- endif %}
+              }
+              .shape {
+                --shape-color: none;
+              }
+            .: |
+              ha-card {
+                width: 66px;
+                top: -66px;
+              }
+    card_mod:
+      style: |
+        ha-card {
+          height: 66px;
+        }

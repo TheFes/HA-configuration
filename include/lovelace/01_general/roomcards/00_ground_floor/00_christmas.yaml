@@ -31,34 +31,26 @@ card:
           layout: horizontal
           tap_action:
             action: none
-    - type: custom:vertical-stack-in-card
-      horizontal: true
-      cards:
-        - type: custom:mushroom-template-card
-          layout: vertical
-          entity: switch.kerstboom
-          icon: mdi:pine-tree
-          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red
-        - type: custom:mushroom-template-card
-          layout: vertical
-          entity: switch.kerstster
-          icon: mdi:star
-          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red
-        - type: custom:mushroom-template-card
-          layout: vertical
-          entity: switch.kerstvaas
-          icon: mdi:post-lamp
-          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red
-        - type: custom:mushroom-template-card
-          layout: vertical
-          entity: switch.fotoboek
-          icon: mdi:sheep
-          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red
+    - type: custom:auto-entities
+      card:
+        type: custom:vertical-stack-in-card
+        horizontal: true
+      card_param: cards
+      filter:
+        include:
+          - entity_id: switch.kerst*
+            options:
+              type: custom:mushroom-template-card
+              entity: this.entity_id
+              icon: "{{ state_attr(entity, 'icon') | default('mdi:light-switch', true)}}"
+              icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+              badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+              badge_color: red
+          - entity_id: switch.fotoboek
+            options:
+              type: custom:mushroom-template-card
+              entity: this.entity_id
+              icon: mdi:sheep
+              icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+              badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+              badge_color: red

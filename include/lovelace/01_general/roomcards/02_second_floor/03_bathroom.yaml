@@ -1,7 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    entity: light.groep_zolder
+    entity: light.groep_badkamer_zolder
     primary: >
       {% set title = { "NL": "WC", "EN": "Bathroom" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -20,16 +20,16 @@ cards:
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
-        entity: light.groep_zolder
         layout: vertical
-        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        entity: light.badkamer
+        icon: "{{ 'mdi:ceiling-light-multiple' if is_state(entity, 'on') else 'mdi:ceiling-light-multiple-outline' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
       - type: custom:mushroom-template-card
-        entity: switch.groep_zolder
+        entity: light.badkamerspiegel
         layout: vertical
-        icon: "{{ 'mdi:toggle-switch-variant' if is_state(entity, 'on') else 'mdi:toggle-switch-variant-off' }}"
+        icon: mdi:mirror-rectangle
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-        badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red

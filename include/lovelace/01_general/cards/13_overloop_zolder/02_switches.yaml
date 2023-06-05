@@ -1,0 +1,63 @@
+type: grid
+title: Schakelaars
+square: false
+columns: 2
+cards:
+  - type: custom:mushroom-template-card
+    entity: switch.wasmachine
+    primary: Wasmachine
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.wasmachine', 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state('switch.wasmachine', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.wasmachine_power') ~ ' W') if is_state('switch.wasmachine', 'on') }}
+    icon: >-
+      {%- if is_state('binary_sensor.wasmachine_error_state', 'on') %}
+        mdi:washing-machine-alert
+      {%- elif is_state('switch.wasmachine', 'on') %}
+        mdi:washing-machine
+      {%- else %}
+        mdi:washing-machine-off
+      {%- endif %}
+    icon_color: >-
+      {%- if is_state('binary_sensor.wasmachine_error_state', 'on') %}
+        red
+      {%- elif is_state('switch.wasmachine', 'on') %}
+        blue
+      {%- endif %}
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: script.confirmation_popup
+        data:
+          browser_id: THIS
+          toggle_entity: switch.wasmachine
+          check_entity: sensor.wasmachine
+          on_state: "on"
+          popup_type: confirmation
+          message: "De wasmachine staat aan, weet je zeker dat deze schakelaar uit mag?"
+  - type: custom:mushroom-template-card
+    entity: switch.droger
+    primary: Droger
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.droger', 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state('switch.droger', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.droger_power') ~ ' W') if is_state('switch.droger', 'on') }}
+    icon: >-
+      {{ 
+        'mdi:tumble-dryer' if is_state('switch.droger', 'on')
+        else 'mdi:tumble-dryer-off'
+      }}
+    icon_color: "{{ 'blue' if is_state('switch.droger', 'on') }}"
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: script.confirmation_popup
+        data:
+          browser_id: THIS
+          toggle_entity: switch.droger
+          check_entity: sensor.droger_power
+          on_state: "above 50"
+          popup_type: confirmation
+          message: "De droger staat aan, weet je zeker dat deze schakelaar uit mag?"

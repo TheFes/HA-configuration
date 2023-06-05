@@ -26,18 +26,6 @@ cards:
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
-      - type: conditional
-        conditions:
-          - entity: input_boolean.christmas_time
-            state: "on"
-        card:
-          type: custom:mushroom-template-card
-          layout: vertical
-          entity: switch.ijspegels
-          icon: mdi:snowflake
-          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
-          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
-          badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.veranda
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"

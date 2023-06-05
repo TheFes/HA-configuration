@@ -1,7 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    entity: light.landing
+    entity: light.overloop
     primary: >
       {% set title = { "NL": "Overloop", "EN": "Landing" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -21,7 +21,7 @@ cards:
     cards:
       - type: custom:mushroom-template-card
         layout: vertical
-        entity: light.landing_osc
+        entity: light.overloop
         icon: "{{ 'mdi:ceiling-light' if is_state(entity, 'on') else 'mdi:ceiling-light-outline' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
