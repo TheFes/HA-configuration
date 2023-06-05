@@ -1,0 +1,25 @@
+substitutions:
+  binary_sensor_pin: GPIO27
+  switch_pin: GPIO26
+  led_pin: GPIO19
+
+esphome:
+  name: ${lower_name}
+  friendly_name: ${device_type} ${device_name}
+  on_boot:
+    priority: 250
+    then:
+      - select.set:
+          id: button_type_select
+          option: ${default_button_type}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+packages:
+  minimal: !include minimal.yaml
+  basic: !include basic.yaml
+  bt_proxy: !include bt_proxy.yaml
+  sonoff: !include sonoff_button_actions.yaml

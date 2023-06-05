@@ -2,17 +2,9 @@ substitutions:
   device_name: Voordeur
   device_type: Shelly1
   device_lower: voordeur
+  lower_name: shelly1-voordeur
   ip: 192.168.2.15
-
-esphome:
-  friendly_name: ${device_type} ${device_name}
-  name: shelly-voordeur
-  
-esp8266:
-  board: esp01_1m
+  default_button_type: Momentary
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
-  switch: !include packages/shelly1.yaml
-  arduino: !include packages/arduino.yaml
+  shelly: !include packages/shelly1.yaml

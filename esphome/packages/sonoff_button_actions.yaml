@@ -19,7 +19,7 @@ switch:
   - platform: gpio
     name: ${device_name} Relay
     pin:
-      number: GPIO26
+      number: ${switch_pin}
       # inverted: false
     id: relay
     on_turn_on:
@@ -30,7 +30,7 @@ switch:
 
 output:
   - platform: gpio
-    pin: GPIO19
+    pin: ${led_pin}
     inverted: True
     id: relay1_led_gpio
 
@@ -45,7 +45,7 @@ binary_sensor:
   - platform: gpio
     internal: true
     pin:
-      number: GPIO27
+      number: ${binary_sensor_pin}
       inverted: true
     name: ${device_name} Switch
     on_state:
