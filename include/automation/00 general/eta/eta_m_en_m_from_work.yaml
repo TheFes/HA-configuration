@@ -25,7 +25,7 @@ variables:
   notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "sensor.{{ name }}_naar_huis"
-  vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and if_state('binary_sensor.pixel_7_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
+  vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_7_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
   eta: >
     {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
     {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}

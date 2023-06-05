@@ -1,0 +1,7 @@
+- binary_sensor:
+    - unique_id: 89453b1c-c0a9-474d-971a-673ec54595c2
+      name: Net Power Consumption
+      state: >
+        {{ (states('sensor.power_consumption') | float - states('sensor.electricity_meter_power_production') | float) > 0 }}
+      availability: >
+        {{ states('sensor.power_consumption') | is_number and states('sensor.electricity_meter_power_production') | is_number }}
