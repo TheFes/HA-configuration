@@ -13,7 +13,10 @@
     name: "Solar Max daily"
     state: >
       {{
-        this.state if trigger.id == 'initial' and this.state | is_number
+        this.state
+        if
+          trigger.id == 'initial'
+          and this.state | is_number
         else states('sensor.ecu_today_energy')
       }}
     unit_of_measurement: "kWh"
@@ -21,6 +24,9 @@
     attributes:
       date: >
         {{
-          this.attributes.date if trigger.id == 'initial' and this.attributes.get('date') is not none
+          this.attributes.date
+          if
+            trigger.id == 'initial'
+            and this.attributes.get('date') is not none
           else now().date()
         }}
