@@ -1,18 +1,18 @@
 substitutions:
-  name: "btproxy-2ndfloor"
+  lower_name: "btproxy-2ndfloor"
   ip: 192.168.2.48
-  device_name: 2ndfloor
-  device_type: bt_proxy
+  name: 2ndfloor
+  type: BT Proxy
   friendly_name: BT Proxy 2nd Floor
 
 esphome:
   friendly_name: ${friendly_name}
-  name: ${name}
+  name: ${lower_name}
   project:
     name: esphome.bluetooth-proxy
     version: "1.0"
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
-  bt_proxy: !include packages/bt_proxy.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
+  bt_proxy: !include packages/0_general/bt_proxy.yaml

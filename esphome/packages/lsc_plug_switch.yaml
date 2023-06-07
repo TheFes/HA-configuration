@@ -3,13 +3,13 @@ esp8266:
 
 binary_sensor:
   - platform: status
-    name: ${device_name} Status
+    name: Status
   - platform: gpio
     pin:
       number: GPIO14
       mode: INPUT_PULLUP
       inverted: true
-    name: ${device_name} Button
+    name: Button
     internal: true
     id: button_press
     on_press:
@@ -25,7 +25,7 @@ output:
 light:
   - platform: monochromatic
     id: status_led
-    name: ${device_name} Light
+    name: ${name} Light
     output: led
     internal: true
 
@@ -34,7 +34,7 @@ switch:
     id: relay
     pin: GPIO12
   - platform: template
-    name: ${device_name}
+    name: ""
     icon: ${icon}
     optimistic: true
     id: relay_and_light

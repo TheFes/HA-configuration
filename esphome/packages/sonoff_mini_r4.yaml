@@ -5,7 +5,7 @@ substitutions:
 
 esphome:
   name: ${lower_name}
-  friendly_name: ${device_type} ${device_name}
+  friendly_name: ${type} ${name}
   on_boot:
     priority: 250
     then:
@@ -19,7 +19,7 @@ esp32:
     type: esp-idf
 
 packages:
-  minimal: !include minimal.yaml
-  basic: !include basic.yaml
-  bt_proxy: !include bt_proxy.yaml
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
+  bt_proxy: !include 0_general/bt_proxy.yaml
   sonoff: !include sonoff_button_actions.yaml

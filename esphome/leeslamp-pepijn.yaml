@@ -1,17 +1,17 @@
 substitutions:
-  device_name: Pepijn Leeslamp
-  device_type: Light
+  name: Pepijn Leeslamp
+  type: Light
   ip: 192.168.2.40
 
 esphome:
-  friendly_name: ${device_name}
+  friendly_name: ${name}
   name: leeslamp-pepijn
   
 esp8266:
   board: esp01_1m
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
   light: !include packages/lsc_rgbcw_e14.yaml
-  arduino: !include packages/arduino.yaml
+  arduino: !include packages/0_general/arduino.yaml

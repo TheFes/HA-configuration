@@ -3,7 +3,7 @@ substitutions:
   switch_pin: GPIO26
 
 esphome:
-  friendly_name: ${device_type} ${device_name}
+  friendly_name: ${type} ${name}
   name: ${lower_name}
   platformio_options:
     board_build.f_cpu: 160000000L
@@ -18,15 +18,15 @@ esp32:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ: "160"
 
 packages:
-  minimal: !include minimal.yaml
-  basic: !include basic.yaml
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
   button_actions: !include shelly_button_actions.yaml
 
 # Shelly 1 Plus specific settings
 sensor:
   - platform: ntc
     sensor: temp_resistance_reading
-    name: "${device_name} Temperature"
+    name: "${name} Temperature"
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     icon: "mdi:thermometer"
@@ -49,7 +49,7 @@ sensor:
     attenuation: 11db
 
   - platform: adc
-    name: "${device_name} Relay Supply Voltage"
+    name: "${name} Relay Supply Voltage"
     pin: GPIO33
     attenuation: 11db
     filters:

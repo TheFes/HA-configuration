@@ -1,26 +1,19 @@
 substitutions:
-  name: "btproxy-1stfloor"
+  lower_name: "btproxy-1stfloor"
   ip: 192.168.2.47
-  device_name: 1stfloor
-  device_type: bt_proxy
+  name: 1stfloor
+  type: BT Proxy
   friendly_name: BT Proxy 1st Floor
 
 esphome:
-  name: ${name}
   friendly_name: ${friendly_name}
+  name: ${lower_name}
   project:
     name: esphome.bluetooth-proxy
     version: "1.0"
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
-  bt_proxy: !include packages/bt_proxy.yaml
-
-sensor:
-  - platform: xiaomi_miscale
-    mac_address: '50:FB:19:17:34:96'
-    weight:
-      name: "Xiaomi Mi Scale Weight"
-    impedance:
-      name: "Xiaomi Mi Scale Impedance"
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
+  bt_proxy: !include packages/0_general/bt_proxy.yaml
+  scale: !include packages/scale.yaml

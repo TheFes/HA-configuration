@@ -1,6 +1,6 @@
 substitutions:
-  device_name: Kerstboom
-  device_type: Plug
+  name: Kerstboom
+  type: Plug
   ip: 192.168.2.34
   icon: mdi:pine-tree
 
@@ -8,7 +8,7 @@ esphome:
   name: kerstboom
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
   switch: !include packages/neo_coolcam16_switch.yaml
-  arduino: !include packages/arduino.yaml
+  arduino: !include packages/0_general/arduino.yaml

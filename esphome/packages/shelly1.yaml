@@ -3,7 +3,7 @@ substitutions:
   switch_pin: GPIO4
 
 esphome:
-  friendly_name: ${device_type} ${device_name}
+  friendly_name: ${type} ${name}
   name: ${lower_name}
   on_boot:
     priority: 250
@@ -16,7 +16,7 @@ esp8266:
   board: esp01_1m
 
 packages:
-  minimal: !include minimal.yaml
-  basic: !include basic.yaml
-  arduino: !include arduino.yaml
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
+  arduino: !include 0_general/arduino.yaml
   button_actions: !include shelly_button_actions.yaml

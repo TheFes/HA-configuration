@@ -13,15 +13,15 @@ time:
 text_sensor:
   - platform: version
     hide_timestamp: true
-    name: "${device_name} ${device_type} ESPHome Version"
+    name: "ESPHome Version"
     entity_category: diagnostic
   - platform: wifi_info
     ip_address:
-      name: "${device_name} ${device_type} IP Address"
+      name: "IP Address"
       icon: mdi:wifi
       entity_category: diagnostic
     ssid:
-      name: "${device_name} ${device_type} Connected SSID"
+      name: "Connected SSID"
       icon: mdi:wifi-strength-2
       entity_category: diagnostic
 
@@ -33,7 +33,7 @@ sensor:
   # Uptime timestamp
   - platform: template
     id: sensor_uptime_timestamp
-    name: "${device_name} ${device_type} Uptime"
+    name: "Uptime"
     device_class: "timestamp"
     accuracy_decimals: 0
     update_interval: never
@@ -46,21 +46,22 @@ sensor:
 
   # WiFi Signal sensor.
   - platform: wifi_signal
-    name: ${device_name} ${device_type} WiFi Signal
+    name: WiFi Signal
     icon: mdi:wifi-strength-2
     update_interval: 60s
 
 button:
   # restart button
   - platform: restart
-    name: "${device_name} ${device_type} Restart"
+    name: "Restart"
+    id: restart_button
 
   # safe mode button
   - platform: safe_mode
-    name: "${device_name} ${device_type} Safe Mode"
+    name: "Safe Mode"
     entity_category: diagnostic
 
 binary_sensor:
   - platform: status
-    name: ${device_name} ${device_type} Status
+    name: Status
     entity_category: diagnostic

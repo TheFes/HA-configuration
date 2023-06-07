@@ -11,7 +11,7 @@ switch:
   - platform: gpio
     id: relay
     inverted: true
-    name: ${device_name} Chime
+    name: Chime
     pin: GPIO0
 
   # Switch to turn on/off chime when
@@ -20,7 +20,7 @@ switch:
   # It creates a "virtual" switch based
   # on a global variable.
   - platform: template
-    name: ${device_name} Chime Active
+    name: Chime Active
     id: chime_active
     restore_state: false
     turn_on_action:
@@ -38,7 +38,7 @@ switch:
 binary_sensor:
   - platform: gpio
     id: doorbell_press
-    name: ${device_name} Button
+    name: Button
     pin:
       # Connected to GPIO on the ESP-01S.
       number: GPIO2

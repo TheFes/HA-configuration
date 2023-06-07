@@ -1,8 +1,8 @@
 substitutions:
-  device_name: Bedside Lamp Martijn
-  device_type: ""
+  name: Bedside Lamp Martijn
+  type: ""
   ip: 192.168.2.97
-  name: bedside-lamp
+  lower_name: bedside-lamp
   friendly_name: Bedside Lamp Martijn
   #light_name: ${friendly_name} RGBWW Light
   #light_mode_text_sensor_name: ${friendly_name} Light Mode
@@ -36,10 +36,10 @@ packages:
       - packages/activate_preset_svc.yaml
     refresh: 0s
   default_amended: !include packages/bedside_lamp/behaviour_default.yaml
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
-  # bt_proxy: !include packages/bt_proxy.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
+  # bt_proxy: !include packages/0_general/bt_proxy.yaml
 
 esphome:
   friendly_name: ${friendly_name}
-  name: ${name}
+  name: ${lower_name}

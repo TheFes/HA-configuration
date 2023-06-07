@@ -1,6 +1,6 @@
 substitutions:
-  device_name: Kerstvaas
-  device_type: Plug
+  name: Kerstvaas
+  type: Plug
   ip: 192.168.2.30
   icon: mdi:post-lamp
 
@@ -8,7 +8,7 @@ esphome:
   name: kerstvaas
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
   switch: !include packages/lsc_plug_switch.yaml
-  arduino: !include packages/arduino.yaml
+  arduino: !include packages/0_general/arduino.yaml

@@ -10,20 +10,20 @@ binary_sensor:
     pin:
       number: GPIO0
       inverted: True
-    name: "${device_name} ${device_type} button"
+    name: "${name} ${type} button"
     internal: true
     on_press:
       - switch.toggle: relay
 
 switch:
   - platform: gpio
-    name: "${device_name} ${device_type} Led"
+    name: "${name} ${type} Led"
     pin: GPIO13
     inverted: True
     id: red_led
     internal: true
   - platform: gpio
-    name: "${device_name}"
+    name: ""
     icon: "${icon}"
     pin: GPIO14
     id: relay
@@ -42,19 +42,19 @@ sensor:
     current_resistor: ${current_res}
     voltage_divider: ${voltage_div}
     current:
-      name: "${device_name} ${device_type} Amperage"
+      name: "Amperage"
       unit_of_measurement: A
     voltage:
-      name: "${device_name} ${device_type} Voltage"
+      name: "Voltage"
       unit_of_measurement: V
     power:
-      name: "${device_name} ${device_type} Power"
+      name: "Power"
       unit_of_measurement: W
       id: "wattage"
     change_mode_every: 8
     update_interval: 10s
   - platform: total_daily_energy
-    name: "${device_name} ${device_type} Total Daily Energy"
+    name: "Total Daily Energy"
     power_id: "wattage"
     filters:
       # Multiplication factor from W to kW is 0.001

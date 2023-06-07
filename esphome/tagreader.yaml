@@ -1,14 +1,14 @@
 substitutions:
   devicename: tagreader-ha
-  name: tagreader
+  lower_name: tagreader
   friendly_name: TagReader
-  device_type: tag-reader
-  device_name: TagReader
+  type: tag-reader
+  name: TagReader
   ip: 192.168.2.43
 
 esphome:
   friendly_name: ${friendly_name}
-  name: $name
+  name: $lower_name
   project:
     name: adonno.tag_reader
     version: "1.4"
@@ -17,7 +17,7 @@ esp8266:
   board: d1_mini
 
 packages:
-  minimal: !include packages/minimal.yaml
-  basic: !include packages/basic.yaml
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
   switch: !include packages/tagreader.yaml
-  arduino: !include packages/arduino.yaml
+  arduino: !include packages/0_general/arduino.yaml
