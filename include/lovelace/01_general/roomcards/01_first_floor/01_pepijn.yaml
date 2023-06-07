@@ -30,21 +30,21 @@ cards:
         badge_color: red
         layout: vertical
         icon: >-
-          {%- if is_state('cover.pepijn', 'opening') and not state_attr('cover.pepijn', 'current_position') in [0, 100]  %}
+          {%- if is_state(entity | replace('_template', ''), 'opening') and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
             mdi:arrow-collapse-down
-          {%- elif is_state('cover.pepijn', 'closing') and not state_attr('cover.pepijn', 'current_position') in [0, 100]  %}
+          {%- elif is_state(entity | replace('_template', ''), 'closing') and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
             mdi:arrow-collapse-up
-          {%- elif state_attr('cover.pepijn', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr(entity | replace('_template', ''), 'current_position') | int(0) > 0 %}
             mdi:blinds
           {%- else %}
             mdi:blinds-open
           {%- endif %}
         icon_color: >-
-          {%- if states('cover.pepijn') in [ 'opening', 'closing' ] and not state_attr('cover.pepijn', 'current_position') in [0, 100]  %}
+          {%- if states(entity | replace('_template', '')) in [ 'opening', 'closing' ] and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
             green
-          {%- elif is_state_attr('cover.pepijn', 'current_position', 100) %}
+          {%- elif is_state_attr(entity | replace('_template', ''), 'current_position', 100) %}
             yellow
-          {%- elif state_attr('cover.pepijn', 'current_position') | int(0) > 0 %}
+          {%- elif state_attr(entity | replace('_template', ''), 'current_position') | int(0) > 0 %}
             orange
           {%- endif %}
       - type: conditional

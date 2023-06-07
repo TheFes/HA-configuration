@@ -15,7 +15,7 @@ cards:
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     tap_action:
       action: navigate
-      navigation_path: zolder
+      navigation_path: werkkamer_zolder
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:

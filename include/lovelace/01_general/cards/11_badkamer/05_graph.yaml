@@ -1,0 +1,27 @@
+type: custom:mini-graph-card
+name: Badkamer
+icon: mdi:shower
+hour24: true
+align_header: left
+align_icon: left
+font_size: 80
+points_per_hour: 2
+show:
+  extrema: true
+entities:
+  - entity: sensor.badkamer_temp
+  - entity: sensor.badkamer_vocht
+    show_graph: false
+    show_state: true
+  - entity: binary_sensor.night
+    name: Nacht
+    color: grey
+    show_line: false
+    show_points: false
+    show_legend: false
+    y_axis: secondary
+state_map:
+  - value: "off"
+    label: Dag
+  - value: "on"
+    label: Nacht

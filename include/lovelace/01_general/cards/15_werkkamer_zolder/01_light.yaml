@@ -4,12 +4,7 @@ square: false
 columns: 2
 cards:
   - type: custom:mushroom-light-card
-    entity: light.zolder
-    show_brightness_control: true
-    collapsible_controls: true
-    fill_container: true
-  - type: custom:mushroom-light-card
-    entity: light.wasmachinehoek
+    entity: light.werkkamer_martijn_plafond
     show_brightness_control: true
     collapsible_controls: true
     fill_container: true
@@ -18,7 +13,7 @@ cards:
       browser_mod:
         service: browser_mod.popup
         data:
-          title: Spots Wasmachinehoek
+          title: Spots Plafond Werkkamer
           content:
             type: vertical-stack
             cards:
@@ -28,15 +23,22 @@ cards:
                 columns: 2
                 cards:
                   - type: custom:mushroom-light-card
-                    entity: light.wasmachinehoek_1
+                    entity: light.werkkamer_zolder_01
                     name: Spot 1
                     use_light_color: true
                     show_brightness_control: true
                     collapsible_controls: true
                     fill_container: true
                   - type: custom:mushroom-light-card
-                    entity: light.wasmachinehoek_2
+                    entity: light.werkkamer_zolder_02
                     name: Spot 2
+                    use_light_color: true
+                    show_brightness_control: true
+                    collapsible_controls: true
+                    fill_container: true
+                  - type: custom:mushroom-light-card
+                    entity: light.werkkamer_zolder_03
+                    name: Spot 3
                     use_light_color: true
                     show_brightness_control: true
                     collapsible_controls: true

@@ -1,0 +1,63 @@
+type: grid
+title: Lampen
+square: false
+columns: 2
+cards:
+  - type: custom:mushroom-light-card
+    entity: light.slaapkamer_plafond
+    name: Slaapkamer Plafond
+    use_light_color: true
+    show_brightness_control: true
+    collapsible_controls: true
+    fill_container: true
+    double_tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Spots Plafond Slaapkamer
+          content:
+            type: vertical-stack
+            cards:
+              - type: grid
+                title: Lampen
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:mushroom-light-card
+                    entity: light.slaapkamer_plafond_1
+                    name: Spot 1
+                    use_light_color: true
+                    show_brightness_control: true
+                    collapsible_controls: true
+                    fill_container: true
+                  - type: custom:mushroom-light-card
+                    entity: light.slaapkamer_plafond_2
+                    name: Spot 2
+                    use_light_color: true
+                    show_brightness_control: true
+                    collapsible_controls: true
+                    fill_container: true
+                  - type: custom:mushroom-light-card
+                    entity: light.slaapkamer_plafond_3
+                    name: Spot 3
+                    use_light_color: true
+                    show_brightness_control: true
+                    collapsible_controls: true
+                    fill_container: true
+                  - type: custom:mushroom-light-card
+                    entity: light.slaapkamer_plafond_4
+                    name: Spot 4
+                    use_light_color: true
+                    show_brightness_control: true
+                    collapsible_controls: true
+                    fill_container: true
+  - type: custom:mushroom-light-card
+    entity: light.bedside_lamp_martijn
+    name: Nachtkastje Martijn
+    use_light_color: true
+    show_color_control: true
+    show_brightness_control: true
+    show_color_temp_control: true
+    collapsible_controls: true
+    fill_container: true

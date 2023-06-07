@@ -1,7 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    entity: light.groep_landing_2
+    entity: light.groep_overloop_zolder
     primary: >
       {% set title = { "NL": "Overloop", "EN": "Landing" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -20,12 +20,35 @@ cards:
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
-        entity: light.groep_landing_2
+        entity: light.groep_overloop_zolder
         layout: vertical
         icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
+      - type: custom:mushroom-template-card
+        entity: cover.overloop_zolder_template
+        layout: vertical
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+        badge_color: red
+        icon: >-
+          {%- if is_state(entity | replace('_template', ''), 'opening') and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
+            mdi:arrow-collapse-down
+          {%- elif is_state(entity | replace('_template', ''), 'closing') and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
+            mdi:arrow-collapse-up
+          {%- elif state_attr(entity | replace('_template', ''), 'current_position') | int(0) > 0 %}
+            mdi:blinds
+          {%- else %}
+            mdi:blinds-open
+          {%- endif %}
+        icon_color: >-
+          {%- if states(entity | replace('_template', '')) in [ 'opening', 'closing' ] and not state_attr(entity | replace('_template', ''), 'current_position') in [0, 100]  %}
+            green
+          {%- elif is_state_attr(entity | replace('_template', ''), 'current_position', 100) %}
+            yellow
+          {%- elif state_attr(entity | replace('_template', ''), 'current_position') | int(0) > 0 %}
+            orange
+          {%- endif %}
       - type: conditional
         conditions:
           - entity: sensor.wasmachine

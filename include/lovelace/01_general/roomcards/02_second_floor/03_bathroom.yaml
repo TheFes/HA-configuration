@@ -15,19 +15,19 @@ cards:
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     tap_action:
       action: navigate
-      navigation_path: zolder
+      navigation_path: badkamer_zolder
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
         layout: vertical
-        entity: light.badkamer
-        icon: "{{ 'mdi:ceiling-light-multiple' if is_state(entity, 'on') else 'mdi:ceiling-light-multiple-outline' }}"
+        entity: light.badkamer_zolder
+        icon: "{{ 'mdi:wall-sconce-flat' if is_state(entity, 'on') else 'mdi:wall-sconce-flat-outline' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
       - type: custom:mushroom-template-card
-        entity: light.badkamerspiegel
+        entity: light.badkamerspiegel_zolder
         layout: vertical
         icon: mdi:mirror-rectangle
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"

@@ -1,0 +1,70 @@
+type: grid
+title: Schakelaars
+square: false
+columns: 2
+cards:
+  # - type: custom:mushroom-template-card
+  #   entity: switch.bureau_martijn_template
+  #   primary: Bureau Martijn (PC)
+  #   badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn', 'unavailable') }}"
+  #   badge_color: red
+  #   secondary: >-
+  #     {{ 'Aan' if is_state('switch.bureau_martijn', 'on') else 'Uit' }}
+  #     {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
+  #   icon: mdi:human-male
+  #   icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
+  #   tap_action:
+  #     action: fire-dom-event
+  #     browser_mod:
+  #       service: script.confirmation_popup
+  #       data:
+  #         browser_id: THIS
+  #         toggle_entity: switch.bureau_martijn
+  #         passcode: !secret passcode_pc
+  #         on_state: "on"
+  #         popup_type: code
+  - type: custom:mushroom-template-card
+    entity: switch.bureau_martijn_2
+    primary: Bureau Martijn (Netwerk)
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn_2', 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state('switch.bureau_martijn_2', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
+    icon: mdi:human-male-male
+    icon_color: "{{ 'blue' if is_state('switch.bureau_martijn_2', 'on') }}"
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: script.confirmation_popup
+        data:
+          browser_id: THIS
+          toggle_entity: switch.bureau_martijn_2
+          passcode: !secret passcode_pc
+          on_state: "on"
+          popup_type: code
+          message: "Let op, als deze schakelaar uit staat, heeft de server geen internet meer"
+  - type: custom:mushroom-template-card
+    entity: switch.server
+    primary: Server
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.server', 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state('switch.server', 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.server_power') ~ ' W') if is_state('switch.server', 'on') }}
+    icon: >-
+      {{ 
+        'mdi:server' if is_state('switch.server', 'on')
+        else 'mdi:server-off'
+      }}
+    icon_color: "{{ 'blue' if is_state('switch.server', 'on') }}"
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: script.confirmation_popup
+        data:
+          browser_id: THIS
+          toggle_entity: switch.server
+          passcode: !secret passcode_server
+          on_state: "on"
+          popup_type: code

@@ -1,0 +1,29 @@
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Computers
+  - type: grid
+    square: true
+    columns: 4
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Server
+        icon: mdi:desktop-classic
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state('binary_sensor.server', 'on') }}"
+      - type: custom:mushroom-template-card
+        primary: PC
+        entity: switch.computer_zolder
+        icon: mdi:desktop-classic
+        layout: vertical
+        icon_color: "{{ 'blue' if is_state('binary_sensor.computer_zolder', 'on') }}"
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            service: script.confirmation_popup
+            data:
+              browser_id: THIS
+              toggle_entity: switch.computer_zolder
+              passcode: !secret passcode_pc
+              on_state: "on"
+              popup_type: code
