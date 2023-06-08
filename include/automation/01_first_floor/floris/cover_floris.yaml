@@ -58,7 +58,8 @@ action:
         service: cover.close_cover
         target:
           entity_id: cover.floris_template
-    else:
+  - if: "{{ trigger.id == 'open' }}"
+    then:
       - alias: "Screen not completely open"
         condition: template
         value_template: "{{ state_attr('cover.floris_template', 'current_position') != 100 }}"

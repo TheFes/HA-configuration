@@ -1,5 +1,5 @@
 id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
-alias: "F1F - Open cover Pepijn when needed"
+alias: "F1P - Open cover Pepijn when needed"
 trigger:
   - platform: state
     entity_id: binary_sensor.pepijn_light_inside
@@ -58,7 +58,8 @@ action:
         service: cover.close_cover
         target:
           entity_id: cover.pepijn_template
-    else:
+  - if: "{{ trigger.id == 'open' }}"
+    then:
       - alias: "Screen not completely open"
         condition: template
         value_template: "{{ state_attr('cover.pepijn_template', 'current_position') != 100 }}"
