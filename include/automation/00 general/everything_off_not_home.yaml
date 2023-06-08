@@ -61,37 +61,37 @@ action:
             service: switch.turn_off
             target:
               entity_id: switch.tv_meubel
-  - alias: "Turn of desk Marleen if not active"
-    choose:
-      - conditions:
-          - alias: "Computer Marleen uit"
-            condition: state
-            entity_id: binary_sensor.mbp_werk_marleen
-            state: "off"
-          - condition: not
-            conditions:
-              - alias: "Printer actief"
-                condition: state
-                entity_id: sensor.dcp_l2530dw_status
-                state: "printing"
-          - alias: "Weinig verbruik"
-            condition: numeric_state
-            entity_id: sensor.bureau_marleen_power
-            below: 20
-        sequence:
-          - alias: "Bureau Marleen uit"
-            service: switch.turn_off
-            target:
-              entity_id: switch.bureau_marleen
-  - alias: "Turn off desk Martijn if not active"
-    choose:
-      - conditions:
-          - alias: "Computer Martijn uit"
-            condition: state
-            entity_id: binary_sensor.computer_zolder
-            state: "off"
-        sequence:
-          - alias: "Bureau Martijn uit"
-            service: switch.turn_off
-            target:
-              entity_id: switch.bureau_martijn
+  # - alias: "Turn of desk Marleen if not active"
+  #   choose:
+  #     - conditions:
+  #         - alias: "Computer Marleen uit"
+  #           condition: state
+  #           entity_id: binary_sensor.mbp_werk_marleen
+  #           state: "off"
+  #         - condition: not
+  #           conditions:
+  #             - alias: "Printer actief"
+  #               condition: state
+  #               entity_id: sensor.dcp_l2530dw_status
+  #               state: "printing"
+  #         - alias: "Weinig verbruik"
+  #           condition: numeric_state
+  #           entity_id: sensor.bureau_marleen_power
+  #           below: 20
+  #       sequence:
+  #         - alias: "Bureau Marleen uit"
+  #           service: switch.turn_off
+  #           target:
+  #             entity_id: switch.bureau_marleen
+  # - alias: "Turn off desk Martijn if not active"
+  #   choose:
+  #     - conditions:
+  #         - alias: "Computer Martijn uit"
+  #           condition: state
+  #           entity_id: binary_sensor.computer_zolder
+  #           state: "off"
+  #       sequence:
+  #         - alias: "Bureau Martijn uit"
+  #           service: switch.turn_off
+  #           target:
+  #             entity_id: switch.bureau_martijn
