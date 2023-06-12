@@ -1,5 +1,5 @@
 id: 8a906376-bc15-443a-9932-381bab653331
-alias: "F2 - Toggle light washing machine toghether with attic light"
+alias: "F2 - Toggle light washing machine area with attic light"
 trigger:
   - platform: state
     entity_id: light.zolder
@@ -7,7 +7,7 @@ action:
   - alias: "On or off"
     choose:
       - conditions:
-          - alias: "Lamp uit?"
+          - alias: "Light off?"
             condition: state
             entity_id: light.zolder
             state: "off"
@@ -15,11 +15,9 @@ action:
           - alias: "Turn off washing machine light and desk light"
             service: light.turn_off
             target:
-              entity_id:
-                - light.zolder_bol
-                - light.wasmachinelamp
+              entity_id: light.wasmachinehoek
       - conditions:
-          - alias: "Lamp in?"
+          - alias: "Light on?"
             condition: state
             entity_id: light.zolder
             state: "on"
@@ -27,6 +25,6 @@ action:
           - alias: "Turn on washing machine light with matching brightness"
             service: light.turn_on
             target:
-              entity_id: light.wasmachinelamp
+              entity_id: light.wasmachinehoek
             data:
               brightness: "{{ state_attr('light.zolder' ,'brightness') }}"

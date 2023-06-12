@@ -1,0 +1,219 @@
+platform: template
+lights:
+  eettafel_template:
+    unique_id: 847f5495-8971-4656-8fde-7a636e983735
+    friendly_name: "Eettafel Template"
+    level_template: &level >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {% if light in integration_entities('esphome') %}
+        {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
+      {% else %}
+        {{ state_attr(light, 'brightness') | int(255) }}
+      {% endif %}
+    value_template: &value >
+      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+      {{
+        is_state('light.' ~ room, 'on')
+        or 
+          (
+            not states('light.' ~ room) | bool('na') is boolean
+            and 
+              (
+                is_state('switch.shelly1_' ~ room, 'on')
+                or is_state('switch.sonoff_' ~ room, 'on')
+              )
+          )
+      }}
+    temperature_template: &temperature >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
+    min_mireds_template: &min_mireds >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ state_attr(light, 'min_mireds') | int(153) }}
+    max_mireds_template: &max_mireds >
+      {% set light = this.entity_id | regex_replace('_template', '') %}
+      {{ state_attr(light, 'max_mireds') | int(370) }}
+    availability_template: &availablity >
+      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+      {{
+        states('light.' ~ room) | bool('na') is boolean
+        or states('switch.shelly1_' ~ room) | bool('na') is boolean
+      }}
+    turn_on: &turn_on
+      - variables:
+          room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+      - if: >
+          {{ states('light.' ~ room) | bool('na') is boolean }}
+        then:
+          - variables:
+              script: "{{ 'script.' ~ room ~ '_toggle' }}"
+          - if: "{{ script | has_value }}"
+            then:
+              - service: >
+                  {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                  script.{{ room }}_toggle
+                data:
+                  action: "on"
+            else:
+              - service: light.turn_on
+                target:
+                  entity_id: light.{{ room }}
+        else:
+          - service: switch.toggle
+            target:
+              entity_id: >
+                {{ 
+                  [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
+                    | reject('is_state', 'unavailable')
+                    | reject('is_state', 'unknown')
+                    | list
+                }}
+    turn_off: &turn_off
+      - variables:
+          room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+      - if: >
+          {{ states('light.' ~ room) | bool('na') is boolean }}
+        then:
+          - variables:
+              script: "{{ 'script.' ~ room ~ '_toggle' }}"
+          - if: "{{ script | has_value }}"
+            then:
+              - service: >
+                  {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                  script.{{ room }}_toggle
+                data:
+                  action: "off"
+            else:
+              - service: light.turn_off
+                target:
+                  entity_id: light.{{ room }}
+        else:
+          - service: switch.toggle
+            target:
+              entity_id: >
+                {{ 
+                  [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
+                    | reject('is_state', 'unavailable')
+                    | reject('is_state', 'unknown')
+                    | list
+                }}
+    set_level: &set_level
+      - service: light.turn_on
+        data:
+          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
+          brightness: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {% if light in integration_entities('esphome') %}
+              {{ (brightness | float * 0.855 + 255*0.145) | round }}
+            {% else %}
+              {{ brightness }}
+            {% endif %}
+    set_temperature: &set_temperature
+      - service: light.turn_on
+        data:
+          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
+          color_temp: "{{ color_temp }}"
+
+  slaapkamer_template:
+    unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c1
+    friendly_name: "Slaapkamer Template"
+    level_template: *level
+    value_template: *value
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+
+  pepijn_template:
+    unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
+    friendly_name: "Pepijn Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  floris_template:
+    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+    friendly_name: "Floris Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  trapkast_template:
+    unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
+    friendly_name: "Trapkast Template"
+    level_template: *level
+    value_template: *value
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+
+  slaapkamer_plafond_template:
+    unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
+    friendly_name: "Slaapkamer Plafond Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  werkkamer_martijn_plafond_template:
+    unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
+    friendly_name: "Werkkamer Martijn Plafond Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  wasmachinehoek_template:
+    unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
+    friendly_name: "Wasmachinehoek Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature
+
+  badkamer_zolder_template:
+    unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
+    friendly_name: "Badkamer Zolder Template"
+    level_template: *level
+    value_template: *value
+    temperature_template: *temperature
+    min_mireds_template: *min_mireds
+    max_mireds_template: *max_mireds
+    availability_template: *availablity
+    turn_on: *turn_on
+    turn_off: *turn_off
+    set_level: *set_level
+    set_temperature: *set_temperature

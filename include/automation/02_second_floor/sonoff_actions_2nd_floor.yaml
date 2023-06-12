@@ -1,0 +1,90 @@
+id: d6878855-2179-46fa-a1f2-069c6311746f
+alias: "F2M - Actions with Sonoff"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+variables:
+  lights:
+    - light.slaapkamer_plafond
+    - light.badkamer_zolder
+    - light.werkkamer_martijn_plafond
+    - light.wasmachinehoek
+  light: "light.{{ trigger.event.data.device | slugify }}"
+condition:
+  - "{{ light in lights }}"
+action:
+  - variables:
+      overrides: {}
+      max_ct: "{{ overrides.get(name, {}).get('max_ct') | default(state_attr(light, 'max_mireds'), true) }}"
+      min_ct: "{{ overrides.get(name, {}).get('min_ct') | default(state_attr(light, 'min_mireds'), true) }}"
+      min_br: "{{ overrides.get(name, {}).get('min_br') | default(1, true) }}"
+      max_br: "{{ overrides.get(name, {}).get('max_br') | default(255, true) }}"
+      br: "{{ state_attr(light, 'brightness') }}"
+      targets: >
+        {% set t = states.light | selectattr('entity_id', 'search', light) | map(attribute='entity_id') | reject('in', [light, light~'_template']) | list %}
+        {{ iif(t, t, light) }}
+  - alias: "Click type?"
+    choose:
+      - conditions:
+          - alias: "Short?"
+            condition: template
+            value_template: "{{ trigger.event.data.click_type == 'short' }}"
+        sequence:
+          - if: "{{ is_state(light, 'on') }}"
+            then:
+              - alias: "Turn off light"
+                service: light.turn_off
+                target:
+                  entity_id: "{{ light }}"
+            else:
+              - alias: "Turn on light"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ light }}"
+      - conditions:
+          - alias: "Double?"
+            condition: template
+            value_template: "{{ trigger.event.data.click_type == 'double' }}"
+        sequence:
+          - alias: "Light to 100% brightness"
+            service: light.turn_on
+            target:
+              entity_id: "{{ targets }}"
+            data:
+              brightness: 255
+          - alias: "Set color temperature based on brightness"
+            service: light.turn_on
+            target:
+              entity_id: "{{ targets }}"
+            data:
+              color_temp: "{{ min_ct }}"
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.click_type == 'long' }}"
+        sequence:
+          - if: "{{ is_state(light, 'on')}}"
+            then:
+              - alias: "Decrease brightness"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ targets }}"
+                data:
+                  brightness: >
+                    {{ [1, 52, 103, 154, 205] | select('<', br) | max }}
+              - delay: 0.5
+              - alias: "Set color temperature based on brightness"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ targets }}"
+                data:
+                  color_temp: >
+                    {% set ct_diff = max_ct - min_ct %}
+                    {{ [min_ct, max_ct - ((br-min_br) * (ct_diff) / (max_br-min_br)) | int] | max }}
+            else:
+              - alias: "Turn on light"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ light }}"

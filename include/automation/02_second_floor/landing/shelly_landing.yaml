@@ -1,0 +1,82 @@
+id: ba3e3952-dcc9-4ccd-bbe6-8361a92d0bdd
+alias: "F2L - Actions with Shelly Landing"
+mode: parallel
+max_exceeded: silent
+trigger:
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Zolder
+    id: button_press
+  - platform: state
+    entity_id: light.zolder
+    attribute: brightness
+    id: brightness
+action:
+  - variables:
+      main: light.zolder
+  - if: "{{ trigger.id == 'button_press' }}"
+    then:
+      - alias: "Click type?"
+        choose:
+          - conditions:
+              - alias: "Short?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            sequence:
+              - if: "{{ is_state(main, 'on') }}"
+                then:
+                  - alias: "Turn off main light and wasmachinehoek"
+                    service: light.turn_off
+                    target:
+                      entity_id: "{{ main }}"
+                else:
+                  - alias: "Turn on main light and wasmachinehoek"
+                    service: light.turn_on
+                    target:
+                      entity_id: "{{ main }}"
+          - conditions:
+              - alias: "Double?"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            sequence:
+              - alias: "Light to 100% brightness"
+                service: light.turn_on
+                target:
+                  entity_id: "{{ main }}"
+                data:
+                  brightness: 255
+          - conditions:
+              - alias: "Long"
+                condition: template
+                value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            sequence:
+              - alias: "Change brightness"
+                service: button.press
+                target:
+                  entity_id: button.zolder_shelly_dim_{{ states('select.zolder_shelly_dim_action') }}
+              - wait_for_trigger:
+                  - platform: template
+                    value_template: "{{ not 5 < state_attr(main, 'brightness') | default(100, true) < 254 }}"
+                  - platform: event
+                    event_type: esphome.button_pressed
+                    event_data:
+                      device: Zolder
+                      click_type: release
+              - alias: "Change brightness"
+                service: button.press
+                target:
+                  entity_id: button.zolder_shelly_dim_stop
+              - alias: "Switch dim option"
+                service: select.select_next
+                target:
+                  entity_id: select.zolder_shelly_dim_action
+    else:
+      - if: "{{ trigger.to_state.state == 'on' }}"
+        then:
+          - if: "{{ not 5 < trigger.to_state.attributes.brightness < 254 }}"
+            then:
+              - alias: "Switch dim option"
+                service: select.select_next
+                target:
+                  entity_id: select.zolder_shelly_dim_action

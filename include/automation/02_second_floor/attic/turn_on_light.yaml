@@ -1,0 +1,16 @@
+id: 06666ef4-abec-4f74-8282-1cf575c64c8f
+alias: F3A - Turn on light based on trapdoor
+trigger:
+  - platform: state
+    entity_id: binary_sensor.vlieringluik
+    from:
+      - "on"
+      - "off"
+    to:
+      - "on"
+      - "off"
+action:
+  - alias: "Turn on light"
+    service: light.turn_{{ trigger.to_state.state }}
+    target:
+      entity_id: light.vliering_led

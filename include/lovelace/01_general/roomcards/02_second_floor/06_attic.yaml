@@ -1,7 +1,6 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    entity: light.groep_zolder
     primary: >
       {% set title = { "NL": "Vliering", "EN": "Attic" } %}
       {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
@@ -13,16 +12,19 @@ cards:
       {% set temp = (area_entities(area_id(entity)) | select('in', area_entities(area_id(entity))) | select('is_state_attr', 'device_class', 'temperature') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
       {% set lux = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'illuminance') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
+    entity: binary_sensor.vlieringluik
+    badge_icon: "{{ 'mdi:door-open' if is_state(entity, 'on') }}"
+    badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     tap_action:
       action: navigate
-      navigation_path: zolder
+      navigation_path: vliering
   - type: custom:vertical-stack-in-card
     horizontal: true
     cards:
       - type: custom:mushroom-template-card
-        entity: light.groep_zolder
+        entity: light.vliering_led
         layout: vertical
-        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
+        icon: "{{ 'mdi:led-strip-variant' if is_state('light.vliering_led', 'on') else 'mdi:led-strip-variant-off' }}"
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
