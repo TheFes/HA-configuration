@@ -1,0 +1,132 @@
+substitutions:
+  lower_name: "vliering-led"
+  ip: 192.168.2.48
+  name: Vliering
+  type: LED
+  friendly_name: Vliering LED
+
+esphome:
+  friendly_name: ${friendly_name}
+  name: ${lower_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+packages:
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
+
+light:
+  - platform: neopixelbus
+    variant: WS2812X
+    pin: GPIO26
+    num_leds: 300
+    type: GRB
+    name: ""
+    id: vliering_led
+    effects: &effects
+      - addressable_fireworks:
+      - addressable_rainbow:
+      - addressable_flicker:
+      - addressable_twinkle:
+      - addressable_random_twinkle:
+      - addressable_scan:
+      - addressable_color_wipe:
+        
+  - platform: partition
+    name: "01"
+    segments:
+      - id: vliering_led
+        from: 0
+        to: 29
+    effects: *effects
+
+  - platform: partition
+    name: "02"
+    segments:
+      - id: vliering_led
+        from: 30
+        to: 59
+    effects: *effects
+
+  - platform: partition
+    name: "01"
+    segments:
+      - id: vliering_led
+        from: 0
+        to: 29
+    effects: *effects
+
+  - platform: partition
+    name: "02"
+    segments:
+      - id: vliering_led
+        from: 30
+        to: 59
+    effects: *effects
+
+  - platform: partition
+    name: "03"
+    segments:
+      - id: vliering_led
+        from: 60
+        to: 89
+    effects: *effects
+
+  - platform: partition
+    name: "04"
+    segments:
+      - id: vliering_led
+        from: 90
+        to: 119
+    effects: *effects
+
+  - platform: partition
+    name: "05"
+    segments:
+      - id: vliering_led
+        from: 120
+        to: 149
+    effects: *effects
+
+  - platform: partition
+    name: "06"
+    segments:
+      - id: vliering_led
+        from: 150
+        to: 179
+    effects: *effects
+
+  - platform: partition
+    name: "07"
+    segments:
+      - id: vliering_led
+        from: 180
+        to: 209
+    effects: *effects
+
+  - platform: partition
+    name: "08"
+    segments:
+      - id: vliering_led
+        from: 210 
+        to: 239
+    effects: *effects
+
+  - platform: partition
+    name: "09"
+    segments:
+      - id: vliering_led
+        from: 240
+        to: 269
+    effects: *effects
+
+  - platform: partition
+    name: "10"
+    segments:
+      - id: vliering_led
+        from: 270 
+        to: 299
+    effects: *effects

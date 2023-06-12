@@ -6,7 +6,7 @@ esp8266:
   board: esp01_1m
 
 esphome:
-  friendly_name: ${type} ${name}
+  friendly_name: ${name}
   name: ${lower_name}
   on_boot:
     priority: 250
@@ -28,7 +28,7 @@ sensor:
     cf1_pin: GPIO13 # not used because it is not available on the 1PM but it is needed to compile
     sel_pin: GPIO14 # not used because it is not available on the 1PM but it is needed to compile
     power:
-      name: "${name} power"
+      name: "Power"
       unit_of_measurement: W
       id: "shelly1pm_power"
       device_class: power
@@ -50,7 +50,7 @@ sensor:
     update_interval: 10s
 
   - platform: total_daily_energy
-    name: "${name} daily energy"
+    name: "Energy"
     power_id: "shelly1pm_power"
     device_class: energy
     state_class: total_increasing
@@ -60,7 +60,7 @@ sensor:
 
   - platform: ntc
     sensor: temp_resistance_reading
-    name: "${name} temperature"
+    name: "Temperature"
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     device_class: temperature

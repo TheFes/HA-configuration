@@ -1,0 +1,28 @@
+substitutions:
+  name: "Zolder"
+  type: Dimmer
+  lower_name: dimmer-zolder
+  ip: 192.168.2.18
+  max_temp: "70" # °C
+  dim_lenght: "10s"
+  restore_mode: "restore_default_off"
+  min_brightness: "470"
+  max_brightness: "1000"
+  leading_edge: "false"
+  gamma_correct: "0"
+
+# ESPhome generic config
+esphome:
+  name: ${lower_name}
+  friendly_name: ${name}
+
+esp8266:
+  board: esp01_1m
+
+# load packages with default settings
+packages:
+  minimal: !include packages/0_general/minimal.yaml
+  basic: !include packages/0_general/basic.yaml
+  arduino: !include packages/0_general/arduino.yaml
+  dimmer: !include packages/shelly_dimmer.yaml
+
