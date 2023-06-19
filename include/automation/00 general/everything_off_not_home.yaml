@@ -83,15 +83,23 @@ action:
   #           service: switch.turn_off
   #           target:
   #             entity_id: switch.bureau_marleen
-  # - alias: "Turn off desk Martijn if not active"
-  #   choose:
-  #     - conditions:
-  #         - alias: "Computer Martijn uit"
-  #           condition: state
-  #           entity_id: binary_sensor.computer_zolder
-  #           state: "off"
-  #       sequence:
-  #         - alias: "Bureau Martijn uit"
-  #           service: switch.turn_off
-  #           target:
-  #             entity_id: switch.bureau_martijn
+  - alias: "Turn off desk Martijn if not active"
+    choose:
+      - conditions:
+          - alias: "Computer Martijn uit"
+            condition: state
+            entity_id: device_tracker.martijn_desktop
+            state: "not_home"
+          - alias: "Laptop werkt uit"
+            condition: state
+            entity_id: device_tracker.laptop_werk_martijn
+            state: "not_home"
+          - alias: "Laptop werkt uit"
+            condition: state
+            entity_id: device_tracker.laptop_werk_martijn_wifi
+            state: "not_home"
+        sequence:
+          - alias: "Bureau Martijn uit"
+            service: switch.turn_off
+            target:
+              entity_id: switch.bureau_martijn

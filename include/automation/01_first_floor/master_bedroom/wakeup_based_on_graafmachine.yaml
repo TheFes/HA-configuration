@@ -15,7 +15,7 @@ trigger:
       {{ start < now() < end }}
     id: sounds
   - platform: state
-    entity_id: light.bedside_lamp_martijn
+    entity_id: light.bedside_lamp
     from: "unavailable"
     id: transition
   - platform: time
@@ -60,7 +60,7 @@ action:
             data:
               variables:
                 lights:
-                  - light.bedside_lamp_martijn
+                  - light.bedside_lamp
                 duration: "{{ transition_seconds }}"
                 max_steps: 100
                 br_start: 1

@@ -83,11 +83,10 @@ action:
   - alias: "Google Home attic active or someone there"
     if:
       - or:
-          - alias: "Speaker on attic playing"
+          - alias: "Speaker Martijn playing"
             condition: state
             entity_id:
-              - media_player.zolder_mini_martijn
-              - media_player.zolder_mini_marleen
+              - media_player.zolder_werkkamer_stereo
             match: any
             state: "playing"
           - alias: "Someone on attic"
@@ -108,7 +107,7 @@ action:
               - alias: "Send TTS message"
                 service: tts.google_cloud_say
                 target:
-                  entity_id: media_player.zolder_mini_martijn
+                  entity_id: media_player.zolder_werkkamer_stereo
                 data:
                   message: "Ding Dong! Er staat iemand aan de deur!"
                 extra:

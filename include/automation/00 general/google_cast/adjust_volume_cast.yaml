@@ -6,24 +6,24 @@ trigger:
   - platform: state
     id: playing
     entity_id:
-      - media_player.woonkamer_mini
+      - media_player.woonkamer_home
       - media_player.keuken_hub
       - media_player.floris_mini
       - media_player.pepijn_mini
       - media_player.slaapkamer_hub
-      - media_player.zolder_mini_martijn
-      - media_player.zolder_mini_marleen
+      - media_player.zolder_werkkamer_stereo
+      - media_player.werkamer_marleen_mini
     to: "playing"
   - platform: state
     id: stopped_playing
     entity_id:
-      - media_player.woonkamer_mini
+      - media_player.woonkamer_home
       - media_player.keuken_hub
       - media_player.floris_mini
       - media_player.pepijn_mini
       - media_player.slaapkamer_hub
-      - media_player.zolder_mini_martijn
-      - media_player.zolder_mini_marleen
+      - media_player.zolder_werkkamer_stereo
+      - media_player.werkamer_marleen_mini
     to:
       - "off"
       - "idle"

@@ -22,15 +22,15 @@ action:
             condition: template
             value_template: >
               {{ 
-                state_attr('media_player.zolder_mini_martijn', 'media_artist') == 'NPO Radio 2'
-                or state_attr('media_player.zolder_mini_martijn', 'media_title') == 'NPO Radio 2'
+                state_attr('media_player.zolder_werkkamer_stereo', 'media_artist') == 'NPO Radio 2'
+                or state_attr('media_player.zolder_werkkamer_stereo', 'media_title') == 'NPO Radio 2'
               }}
         sequence:
           - alias: "Turn on Radio Veronica"
             service: media_player.play_media
             target:
               entity_id: >
-                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_mini_martijn') }}
+                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_werkkamer_stereo') }}
             data:
               media_content_id: "https://playerservices.streamtheworld.com/api/livestream-redirect/VERONICAAAC.aac?dist=tunein&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY0MzYzMjYxNywiaXNzIjoidGlzcnYifQ.OlnnADm_zLoI56zh6I0ITMdOEvwLcWs1X-T8HRhiccg"
               media_content_type: music
@@ -49,15 +49,15 @@ action:
             condition: template
             value_template: >
               {{ 
-                state_attr('media_player.zolder_mini_martijn', 'media_artist') == 'Radio Veronica'
-                or state_attr('media_player.zolder_mini_martijn', 'media_title') == 'Radio Veronica'
+                state_attr('media_player.zolder_werkkamer_stereo', 'media_artist') == 'Radio Veronica'
+                or state_attr('media_player.zolder_werkkamer_stereo', 'media_title') == 'Radio Veronica'
               }}
         sequence:
           - alias: "Turn on Radio 2"
             service: media_player.play_media
             target:
               entity_id: >
-                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_mini_martijn') }}
+                {{ iif(is_state('media_player.zolder_groep', 'playing'), 'media_player.zolder_groep', 'media_player.zolder_werkkamer_stereo') }}
             data:
               media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
               media_content_type: music

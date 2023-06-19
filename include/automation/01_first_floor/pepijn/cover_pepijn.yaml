@@ -58,7 +58,13 @@ action:
         service: cover.close_cover
         target:
           entity_id: cover.pepijn_template
-  - if: "{{ trigger.id == 'open' }}"
+  - if: >
+      {% set f = state_attr('weather.combined_daily', 'forecast') %}
+      {% set t = f | selectattr('datetime', 'eq', (today_at('0:00') + timedelta(days=1)).isoformat()) | map(attribute='temperature') | first if f else 20 %}
+      {% set trigger = trigger.id == 'open' %}
+      {% set rain = states('binary_sensor.rain_until_morning') | bool(true) %}
+      {% set temp_low = t <= 23 %}
+      {{ trigger and (rain or temp_low) }}
     then:
       - alias: "Screen not completely open"
         condition: template
