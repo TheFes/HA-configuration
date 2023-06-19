@@ -158,13 +158,20 @@ weather:
       {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | select() | unique | sort -%}
       {%- set ns = namespace(d=[], forecast=[], a=[], f=[], most_common={'item':none,'count':none}) -%}
       {%- for d in datetimes -%}
-        {%- set ns.d = ns.d + [as_local(as_datetime(d)).isoformat() ] -%}
+        {%- set dt = as_local(as_datetime(d)) %}
+        {%- set dt = dt.replace(hour=0) if type == 'daily' else dt %}
+        {%- set ns.d = ns.d + [dt.isoformat() ] -%}
       {%- endfor -%}
       {%- set datetimes = ns.d | unique | sort -%}
       {%- for d in datetimes -%}
         {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[])  -%}
         {%- for f in forecasts -%}
-          {%- if as_datetime(d) == as_datetime(f.datetime) -%}
+          {%- if (
+                    as_datetime(d) == as_datetime(f.datetime)
+                    if type == 'hourly'
+                    else as_local(as_datetime(d)).date() == as_local(as_datetime(f.datetime)).date()
+                  )
+          -%}
               {%- set ns.f = ns.f + [f] -%}
           {%- endif -%}
         {%- endfor -%}

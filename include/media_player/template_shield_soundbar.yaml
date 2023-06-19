@@ -1,64 +1,64 @@
-platform: media_player_template
-media_players:
-  shield_and_soundbar:
-    friendly_name: Shield and Soundbar
-    unique_id: 9159f7c0-b33a-4e03-9e3b-a16b2b1a4e84
-    device_class: tv
-    current_source_template: >
-      {{ state_attr('media_player.samsung_soundbar', 'source') if is_state('media_player.nvidia_shield', 'off') else state_attr('media_player.shield', 'source') }}
-    value_template: >
-      {{ states('media_player.nvidia_shield') | replace('off', states('media_player.samsung_soundbar')) }}
-    turn_on:
-      - service: media_player.turn_on
-        target:
-          entity_id: media_player.nvidia_shield
-    turn_off:
-      - service: media_player.turn_off
-        target:
-          entity_id:
-            - media_player.samsung_soundbar
-            - media_player.shield
-    volume_up:
-      service: media_player.volume_set
-      target:
-        entity_id: media_player.samsung_soundbar
-      data:
-        volume_level: "{{ [0.2, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.01] | min | round(2) }}"
-    volume_down:
-      service: media_player.volume_set
-      target:
-        entity_id: media_player.samsung_soundbar
-      data:
-        volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.01] | max | round(2) }}"
-    set_volume:
-      service: media_player.volume_set
-      target:
-        entity_id: media_player.samsung_soundbar
-      data:
-        volume_level: "{{ [0.2, volume / 5] | min | round(2) }}"
-    mute:
-      service: media_player.volume_mute
-      target:
-        entity_id: media_player.samsung_soundbar
-      data:
-        is_volume_muted: "{{ not state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
-    # inputs:
-    #   source 1:
-    #     service: input_boolean.turn_on
-    #     data_template:
-    #       entity_id: input_boolean.source_1
-    #   source 2:
-    #     service: input_boolean.turn_on
-    #     data_template:
-    #       entity_id: input_boolean.source_2
-    current_volume_template: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') * 5 }}"
-    current_is_muted_template: >
-      {{ state_attr('media_player.samsung_soundbar', 'is_muted') }}
-    # album_art_template: "{{ states('input_text.album_art') }}"
-    title_template: >
-      {% set a = 'media_title' %}
-      {{ state_attr('media_player.nvidia_shield', a) | default(state_attr('media_player.samsung_soundbar', a), true) }}
-    # album_template: "{{ states('input_text.album') }}"
-    artist_template: >
-      {% set a = 'media_artist' %}
-      {{ state_attr('media_player.nvidia_shield', a) | default(state_attr('media_player.samsung_soundbar', a), true) }}
+# platform: media_player_template
+# media_players:
+#   shield_and_soundbar:
+#     friendly_name: Shield and Soundbar
+#     unique_id: 9159f7c0-b33a-4e03-9e3b-a16b2b1a4e84
+#     device_class: tv
+#     current_source_template: >
+#       {{ state_attr('media_player.samsung_soundbar', 'source') if is_state('media_player.nvidia_shield', 'off') else state_attr('media_player.shield', 'source') }}
+#     value_template: >
+#       {{ states('media_player.nvidia_shield') | replace('off', states('media_player.samsung_soundbar')) }}
+#     turn_on:
+#       - service: media_player.turn_on
+#         target:
+#           entity_id: media_player.nvidia_shield
+#     turn_off:
+#       - service: media_player.turn_off
+#         target:
+#           entity_id:
+#             - media_player.samsung_soundbar
+#             - media_player.shield
+#     volume_up:
+#       service: media_player.volume_set
+#       target:
+#         entity_id: media_player.samsung_soundbar
+#       data:
+#         volume_level: "{{ [0.2, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.01] | min | round(2) }}"
+#     volume_down:
+#       service: media_player.volume_set
+#       target:
+#         entity_id: media_player.samsung_soundbar
+#       data:
+#         volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.01] | max | round(2) }}"
+#     set_volume:
+#       service: media_player.volume_set
+#       target:
+#         entity_id: media_player.samsung_soundbar
+#       data:
+#         volume_level: "{{ [0.2, volume / 5] | min | round(2) }}"
+#     mute:
+#       service: media_player.volume_mute
+#       target:
+#         entity_id: media_player.samsung_soundbar
+#       data:
+#         is_volume_muted: "{{ not state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
+#     # inputs:
+#     #   source 1:
+#     #     service: input_boolean.turn_on
+#     #     data_template:
+#     #       entity_id: input_boolean.source_1
+#     #   source 2:
+#     #     service: input_boolean.turn_on
+#     #     data_template:
+#     #       entity_id: input_boolean.source_2
+#     current_volume_template: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') * 5 }}"
+#     current_is_muted_template: >
+#       {{ state_attr('media_player.samsung_soundbar', 'is_muted') }}
+#     # album_art_template: "{{ states('input_text.album_art') }}"
+#     title_template: >
+#       {% set a = 'media_title' %}
+#       {{ state_attr('media_player.nvidia_shield', a) | default(state_attr('media_player.samsung_soundbar', a), true) }}
+#     # album_template: "{{ states('input_text.album') }}"
+#     artist_template: >
+#       {% set a = 'media_artist' %}
+#       {{ state_attr('media_player.nvidia_shield', a) | default(state_attr('media_player.samsung_soundbar', a), true) }}

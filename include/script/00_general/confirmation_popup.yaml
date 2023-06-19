@@ -51,7 +51,7 @@ confirmation_popup:
       then:
         - alias: "Create check_entity variable if not defined"
           variables:
-            check_entity: "{{ check_entity or toggle_entity }}"
+            check_entity: "{{ check_entity | default(toggle_entity) }}"
         - alias: "Check if current state matches the provided on_state"
           if: >
             {%- if on_state is not defined or not on_state %}
