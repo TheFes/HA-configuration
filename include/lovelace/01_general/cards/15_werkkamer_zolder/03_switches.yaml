@@ -24,26 +24,25 @@ cards:
   #         on_state: "on"
   #         popup_type: code
   - type: custom:mushroom-template-card
-    entity: switch.bureau_martijn_2
-    primary: Bureau Martijn (Netwerk)
-    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn_2', 'unavailable') }}"
+    entity: switch.bureau_martijn
+    primary: Bureau Martijn
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn', 'unavailable') }}"
     badge_color: red
     secondary: >-
-      {{ 'Aan' if is_state('switch.bureau_martijn_2', 'on') else 'Uit' }}
-      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
+      {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
     icon: mdi:human-male-male
-    icon_color: "{{ 'blue' if is_state('switch.bureau_martijn_2', 'on') }}"
+    icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
     tap_action:
       action: fire-dom-event
       browser_mod:
         service: script.confirmation_popup
         data:
           browser_id: THIS
-          toggle_entity: switch.bureau_martijn_2
+          toggle_entity: switch.bureau_martijn
           passcode: !secret passcode_pc
           on_state: "on"
           popup_type: code
-          message: "Let op, als deze schakelaar uit staat, heeft de server geen internet meer"
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
