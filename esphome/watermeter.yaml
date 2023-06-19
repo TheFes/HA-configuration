@@ -1,23 +1,9 @@
 substitutions:
   name: Watermeter
-  type: ''
-  device_lower: watermeter
+  lower_name: watermeter
   watermeterkit_version: "1.2"
   watermeterkit_model: "model-a"
   ip: 192.168.2.45
 
-esphome:
-  friendly_name: ${name}
-  name: watermeter
-  project:
-    name: dwainscheeren.watermeterkit
-    version: "${watermeterkit_version}"
-
-esp8266:
-  board: d1_mini
-
 packages:
-  minimal: !include packages/0_general/minimal.yaml
-  basic: !include packages/0_general/basic.yaml
-  switch: !include packages/watermeter.yaml
-  arduino: !include packages/0_general/arduino.yaml
+  watermeter: !include packages/watermeter.yaml

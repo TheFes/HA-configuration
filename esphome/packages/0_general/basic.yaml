@@ -1,20 +1,18 @@
-#Sync time
 time:
+  # Sync time with HA
   - platform: homeassistant
     id: time_homeassistant
     timezone: "Europe/Amsterdam"
     on_time_sync:
       - component.update: sensor_uptime_timestamp
 
-  - platform: sntp
-    id: time_sntp
-    timezone: "Europe/Amsterdam"
-
 text_sensor:
+  # ESPHome version
   - platform: version
     hide_timestamp: true
     name: "ESPHome Version"
     entity_category: diagnostic
+  # IP Address & SSID
   - platform: wifi_info
     ip_address:
       name: "IP Address"
@@ -43,7 +41,6 @@ sensor:
       );
       return timestamp;
     entity_category: diagnostic
-
   # WiFi Signal sensor.
   - platform: wifi_signal
     name: WiFi Signal
@@ -55,13 +52,13 @@ button:
   - platform: restart
     name: "Restart"
     id: restart_button
-
   # safe mode button
   - platform: safe_mode
     name: "Safe Mode"
     entity_category: diagnostic
 
 binary_sensor:
+  # API Connection status
   - platform: status
     name: Status
     entity_category: diagnostic

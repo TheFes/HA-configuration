@@ -1,32 +1,27 @@
-# ------------------------------------------------------------------------
-# Behavior: default
-#
-# * Presets that resemble the original Xiaomi firmware
-#   (one group of RGB colors, one group of white light colors)
-# * Tapping the power button, toggles the light
-# * Holding the power button, turns on night light mode
-# * Tapping the color button, activates the next preset
-# * Holding the color button, activates the next preset group
-# * Touching the slider sets the brightness level and turns on the lamp
-# * When the light is on, the front panel illumination is on
-# * When the night light is on, only the power button is illuminated
-# ------------------------------------------------------------------------
+substitutions:
+  friendly_name: ${name}
 
-# A global variable to keep track of the brightness level. This one is
-# used by the update_front_panel script to represent the brightness level
-# using the front panel illumination.
-#
-# This variable is used instead of querying the light component directly,
-# because that brightness level may vary during a light transition. The
-# behavior that I want: when you touch the front panel slider at 75%, then
-# the illumination rises directly to that level, while the light might do
-# a smooth transition.
+packages:
+  bslamp2:
+    url: https://github.com/mmakaay/esphome-xiaomi_bslamp2
+    ref: 2023.4.0
+    files:
+      - packages/core.yaml
+      - packages/ota_feedback.yaml
+      - packages/activate_preset_svc.yaml
+    refresh: 0s
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
+
+esphome:
+  friendly_name: ${name}
+  name: ${lower_name}
+
 globals:
   - id: current_brightness
     type: float
     initial_value: "0.0"
 
-# This script updates the front panel illumination.
 script:
   - id: update_front_panel
     mode: restart

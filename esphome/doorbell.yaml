@@ -1,18 +1,7 @@
 substitutions:
-  name: doorbell
-  friendly_name : Doorbell
-  type: ''
+  name: Doorbell
+  lower_name: doorbell
   ip: 192.168.2.44
 
-esphome:
-  friendly_name: ${friendly_name}
-  name: doorbell
-  
-esp8266:
-  board: esp01_1m
-
 packages:
-  minimal: !include packages/0_general/minimal.yaml
-  basic: !include packages/0_general/basic.yaml
   doorbell: !include packages/doorbell.yaml
-  arduino: !include packages/0_general/arduino.yaml

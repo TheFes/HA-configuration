@@ -1,19 +1,7 @@
 substitutions:
-  lower_name: "btproxy-1stfloor"
+  name: BT Proxy 1st Floor
+  lower_name: btproxy-1stfloor
   ip: 192.168.2.47
-  name: 1stfloor
-  type: BT Proxy
-  friendly_name: BT Proxy 1st Floor
-
-esphome:
-  friendly_name: ${friendly_name}
-  name: ${lower_name}
-  project:
-    name: esphome.bluetooth-proxy
-    version: "1.0"
 
 packages:
-  minimal: !include packages/0_general/minimal.yaml
-  basic: !include packages/0_general/basic.yaml
   bt_proxy: !include packages/0_general/bt_proxy.yaml
-  scale: !include packages/scale.yaml

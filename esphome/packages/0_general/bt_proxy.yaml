@@ -1,10 +1,18 @@
+esphome:
+  friendly_name: ${name}
+  name: ${lower_name}
+  project:
+    name: esphome.bluetooth-proxy
+    version: "1.0"
+
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
 
-improv_serial:
-# captive_portal:
+packages:
+  minimal: !include minimal.yaml
+  basic: !include basic.yaml
 
 esp32_ble_tracker:
   scan_parameters:

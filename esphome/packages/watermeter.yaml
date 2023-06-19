@@ -1,3 +1,20 @@
+# ESPHome settings
+esphome:
+  friendly_name: ${name}
+  name: ${lower_name}
+  project:
+    name: dwainscheeren.watermeterkit
+    version: "${watermeterkit_version}"
+
+esp8266:
+  board: d1_mini
+
+# Include packages with others settings
+packages:
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
+  arduino: !include 0_general/arduino.yaml
+
 # Status LED of ESP
 status_led:
   pin: D3
@@ -20,14 +37,14 @@ light:
 sensor:
   - platform: pulse_meter
     id: sensor_pulse_meter
-    name: "${name} Current Usage"
+    name: "Current Usage"
     icon: "mdi:water-pump"
     unit_of_measurement: "L/min"
     timeout: 2min
     accuracy_decimals: 1
     total:
       id: sensor_pulse_meter_total
-      name: "${name} Total Consumption"
+      name: "Total Consumption"
       unit_of_measurement: "m³"
       state_class: total_increasing
       device_class: water
@@ -43,23 +60,23 @@ sensor:
   - platform: shtcx
     temperature:
       id: sensor_temperature
-      name: "${name} Temperature"
+      name: "Temperature"
     humidity:
       id: sensor_humidity
-      name: "${name} Humidity"
+      name: "Humidity"
     update_interval: 600s
 
 text_sensor:
   # IP address #
   - platform: template
     id: text_sensor_watermeterkit_version
-    name: "${name} Version"
+    name: "Version"
     update_interval: 5h
     lambda: |-
       return {"${watermeterkit_version}"};
   - platform: template
     id: text_sensor_watermeterkit_model
-    name: "${name} Model"
+    name: "Model"
     update_interval: 5h
     lambda: |-
       return {"${watermeterkit_model}"};

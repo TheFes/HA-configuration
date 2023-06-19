@@ -1,17 +1,7 @@
 substitutions:
-  name: m5stack-atom-echo-d4e7f8
-  friendly_name: Atom Echo
+  name: Atom Echo
+  lower_name: atom-echo
+  ip: 192.168.2.82
+
 packages:
-  m5stack.atom-echo-voice-assistant: github://esphome/firmware/voice-assistant/m5stack-atom-echo.yaml@main
-esphome:
-  name: ${name}
-  name_add_mac_suffix: false
-  friendly_name: ${friendly_name}
-api:
-  encryption:
-    key: awbf9cwdjpzHcQ6Tci6reExiGAY+vlbnxKmu5HjUlhM=
-
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  atom_echo: !include packages/atom_echo.yaml

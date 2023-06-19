@@ -1,0 +1,115 @@
+esphome:
+  name: ${lower_name}
+  friendly_name: ${name}
+  name_add_mac_suffix: false
+  project:
+    name: m5stack.atom-echo
+    version: "1.0"
+  min_version: 2023.5.0
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
+
+packages:
+  minimal: !include 0_general/minimal.yaml
+  basic: !include 0_general/basic.yaml
+  arduino: !include 0_general/arduino.yaml
+
+i2s_audio:
+  i2s_lrclk_pin: GPIO33
+  i2s_bclk_pin: GPIO19
+
+microphone:
+  - platform: i2s_audio
+    id: echo_microphone
+    i2s_din_pin: GPIO23
+    adc_type: external
+    pdm: true
+
+voice_assistant:
+  microphone: echo_microphone
+  on_start:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        effect: none
+  on_tts_start:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+        effect: none
+  on_tts_end:
+    - media_player.play_media: !lambda return x;
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 0%
+        green: 100%
+        effect: pulse
+  on_end:
+    - delay: 1s
+    - wait_until:
+        not:
+          media_player.is_playing: media_out
+    - light.turn_off: led
+  on_error:
+    - light.turn_on:
+        id: led
+        blue: 0%
+        red: 100%
+        green: 0%
+        effect: none
+    - delay: 1s
+    - light.turn_off: led
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: true
+    name: Button
+    id: echo_button
+    on_multi_click:
+      - timing:
+          - ON FOR AT MOST 350ms
+          - OFF FOR AT LEAST 10ms
+        then:
+          - media_player.toggle: media_out
+      - timing:
+          - ON FOR AT LEAST 350ms
+        then:
+          - voice_assistant.start:
+      - timing:
+          - ON FOR AT LEAST 350ms
+          - OFF FOR AT LEAST 10ms
+        then:
+          - voice_assistant.stop:
+
+media_player:
+  - platform: i2s_audio
+    id: media_out
+    name: None
+    dac_type: external
+    i2s_dout_pin: GPIO22
+    mode: mono
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: led
+    name: None
+    pin: GPIO27
+    default_transition_length: 0s
+    chipset: SK6812
+    num_leds: 1
+    rgb_order: grb
+    rmt_channel: 0
+    effects:
+      - pulse:
+          transition_length: 250ms
+          update_interval: 250ms
