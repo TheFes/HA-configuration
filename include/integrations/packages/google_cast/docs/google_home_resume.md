@@ -2,8 +2,8 @@
 - [Table of contents](#table-of-contents)
 - [Description](#description)
 - [This script supports](#this-script-supports)
-    - [2023.5](#20235)
-      - [🌟 Improvements](#-improvements)
+    - [2023.6](#20236)
+      - [🐛 Bug fixes](#-bug-fixes)
 - [The automation for automatic resume](#the-automation-for-automatic-resume)
 - [How to use the script](#how-to-use-the-script)
 - [Questions/issues/bugs/feature requests?](#questionsissuesbugsfeature-requests)
@@ -26,11 +26,11 @@ ___
 
 ___
 
-### 2023.5
+### 2023.6
 
-#### 🌟 Improvements
+#### 🐛 Bug fixes
 
-* (2022.5.0) Target determination now only works if Home Assistant speaker groups are used in the `speaker_groups` setting.
+* (2022.6.0) Fix bug in target determination
 
 Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 

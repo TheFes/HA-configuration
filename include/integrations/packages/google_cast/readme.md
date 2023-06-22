@@ -7,9 +7,9 @@
   - [Background](#background)
 - [🚨 USAGE OF THE AUTOMATION 🚨](#-usage-of-the-automation-)
   - [Latest version](#latest-version)
-    - [2023.5.0](#202350)
+    - [2023.6.0](#202360)
     - [:recycle: RESUME SCRIPT](#recycle-resume-script)
-      - [🌟 Improvements](#-improvements)
+      - [🐛 Bug fixes](#-bug-fixes)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
@@ -51,13 +51,13 @@ ___
 
 ## Latest version
 
-### 2023.5.0
+### 2023.6.0
 
 ### :recycle: RESUME SCRIPT
 
-#### 🌟 Improvements
+#### 🐛 Bug fixes
 
-* (2022.5.0) Target determination now only works if Home Assistant speaker groups are used in the `speaker_groups` setting.
+* (2022.6.0) Fix bug in target determination
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)

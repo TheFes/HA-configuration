@@ -3,6 +3,12 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.6.0
+
+#### 🐛 Bug fixes
+
+* (2022.6.0) Fix bug in target determination
+
 ### 2023.5.0
 
 #### 🌟 Improvements
