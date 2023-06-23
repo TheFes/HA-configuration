@@ -100,7 +100,7 @@
       'hour': [
         'u',
         'uur',
-        'uren',
+        'uur',
       ],
       'minute': [
         'min',
@@ -225,7 +225,7 @@
       'year': [
         'J',
         'Jahr',
-        'Jahre',
+        'Jahren',
       ],
       'week': [
         'W',
@@ -235,7 +235,7 @@
       'day': [
         'T',
         'Tag',
-        'Tage',
+        'Tagen',
       ],
       'hour': [
         'h',
@@ -705,6 +705,78 @@
       'Studeni',
       'Prosinac',
     ]
+  },
+  'pl':{
+    '_language': 'Polski',
+    'and': 'i',
+    'in': 'w',
+    'ago': 'temu',
+    'now': 'teraz',
+    'lose': 'straciłeś',
+    'gain': 'zyskałeś',
+    'time':{
+      'format': '24-godz',
+      'year': [
+        'r',
+        'rok',
+        'lata',
+      ],
+      'week': [
+        'tyg',
+        'tydzień',
+        'tygodnie',
+      ],
+      'day': [
+        'd',
+        'dzień',
+        'dni',
+      ],
+      'hour': [
+        'godz',
+        'godzina',
+        'godziny',
+      ],
+      'minute': [
+        'min',
+        'minuta',
+        'minuty',
+      ],
+      'second': [
+        's',
+        'sekunda',
+        'sekundy',
+      ],
+    },
+    'delta':{
+      'today': 'dzisiaj',
+      'tomorrow': 'jutro',
+      'yesterday': 'wczoraj',
+      'next': 'następny',
+      'last': 'poprzedni',
+    },
+    'days':[
+      "Poniedziałek",
+      "Wtorek",
+      "Środa",
+      "Czwartek",
+      "Piątek",
+      "Sobota",
+      "Niedziela",
+    ],
+    'months':[
+      'Styczeń',
+      'Luty',
+      'Marzec',
+      'Kwiecień',
+      'Maj',
+      'Czerwiec',
+      'Lipiec',
+      'Sierpień',
+      'Wrzesień',
+      'Październik',
+      'Listopad',
+      'Grudzień',
+    ]
   }
 } %}
 
@@ -813,7 +885,7 @@
         {{- _is_datetime -}}
       {%- elif utc -%}
         {#- UTC -#}
-        {{- input ~ '+00:00' | as_datetime }}
+        {{- (input ~ '+00:00') | as_datetime }}
       {%- else -%}
         {#- Local -#}
         {{- _is_datetime | as_local -}}
@@ -1050,7 +1122,7 @@
 {%- set today = today_at() %}
 {%- set temp = today.replace(month=month, day=1) + timedelta(days=31) %}
 {%- set temp = temp.replace(day=1) - timedelta(days=7) %}
-{%- set adjust = (day - temp.isoweekday()) % 7 %}
+{%- set adjust = (weekday - temp.isoweekday()) % 7 %}
 {%- set temp = temp + timedelta(days=adjust) -%}
 {{- (temp).isoformat() }}
 {%- endmacro %}
