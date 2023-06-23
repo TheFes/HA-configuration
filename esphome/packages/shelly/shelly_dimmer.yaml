@@ -1,3 +1,19 @@
+# ESPhome generic config
+esphome:
+  name: ${lower_name}
+  friendly_name: ${name}
+  project:
+    name: thefes.shelly-dimmer-2
+    version: "1.0"
+
+esp8266:
+  board: esp01_1m
+
+# load packages with default settings
+packages:
+  minimal: !include ../0_general/minimal.yaml
+  basic: !include ../0_general/basic.yaml
+
 # based on the config of pimw from community post https://community.home-assistant.io/t/shelly-2-dimmer/232324/18
 uart:
   tx_pin: 1
@@ -6,7 +22,7 @@ uart:
 
 light:
   - platform: shelly_dimmer
-    name: ""
+    name: None
     id: dimmer
     leading_edge: ${leading_edge}
     min_brightness: ${min_brightness}
@@ -17,21 +33,6 @@ light:
     firmware:
       version: "51.6"
       update: true
-
-select:
-  - platform: template
-    id: dim_action_select
-    name: Dim Action
-    options:
-      - "up"
-      - "down"
-    optimistic: true
-    restore_value: true
-    on_value:
-      then:
-        - text_sensor.template.publish:
-            id: dim_action
-            state: !lambda "return id(dim_action).state;"
 
 sensor:
   - platform: ntc
@@ -82,11 +83,31 @@ sensor:
     id: temp_analog_reading
     pin: A0
 
-text_sensor:
+globals:
+  - id: dim_down
+    type: bool
+    restore_value: true
+    initial_value: "true"
+  - id: control_light
+    type: bool
+    restore_value: true
+    initial_value: "true"
+
+switch:
   - platform: template
-    id: dim_action
+    name: Control Light
+    id: control_light_active
+    restore_state: false
+    turn_on_action:
+      - globals.set:
+          id: control_light
+          value: "true"
+    turn_off_action:
+      - globals.set:
+          id: control_light
+          value: "false"
     lambda: |-
-      return id(dim_action_select).state;
+      return id(control_light);
 
 script:
   - id: script_dim_down_timer
@@ -104,7 +125,7 @@ script:
   - id: script_dim_down
     mode: single
     then:
-      - logger.log: "Dim-down script started"
+      - logger.log: "Start dimming down"
       - while:
           condition:
             and:
@@ -117,11 +138,14 @@ script:
                 relative_brightness: -0.5%
                 transition_length: 0.01s
             - delay: 0.01s
-      - logger.log: "Dim-down script finished"
+      - logger.log: "Dimming down stopped"
+      - globals.set:
+          id: dim_down
+          value: "false"
+      - logger.log: "Toggled dim action to dim up"
   - id: script_dim_up
     mode: single
     then:
-      - logger.log: "Dim-up script started"
       - while:
           condition:
             and:
@@ -134,7 +158,28 @@ script:
                 relative_brightness: 0.5%
                 transition_length: 0.01s
             - delay: 0.01s
-      - logger.log: "Dim-up script finished"
+      - logger.log: "Dimming up stopped"
+      - globals.set:
+          id: dim_down
+          value: "true"
+      - logger.log: "Toggled dim action to dim down"
+  - id: script_turn_on_off
+    mode: single
+    then:
+      - logger.log: "Turn_on_off script started"
+      - if:
+          condition:
+            light.is_on:
+              id: dimmer
+          then:
+            - light.turn_off:
+                id: dimmer
+            - logger.log: "Light turned off"
+          else:
+            - light.turn_on:
+                id: dimmer
+                brightness: !lambda |-
+                  return id(dimmer).remote_values.get_brightness();
 
 binary_sensor:
   - platform: gpio
@@ -174,86 +219,81 @@ binary_sensor:
           - ON for at most 1s
           - OFF for at least 0.2s
         then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: double
           - if:
               condition:
-                - api.connected:
+                or:
+                  - switch.is_on: control_light_active
+                  - not:
+                      - api.connected:
               then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: double
-                      button: "1"
-              else:
                 - light.turn_on:
                     id: dimmer
                     brightness: 100%
       - timing:
           - ON for at most 300ms
         then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: short
           - if:
               condition:
-                - api.connected:
+                or:
+                  - switch.is_on: control_light_active
+                  - not:
+                      - api.connected:
               then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: short
-                      button: "1"
-              else:
-                - light.toggle:
-                    id: dimmer
+                - script.execute: script_turn_on_off
       - timing:
           - ON for at least 300ms
         then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: long
           - if:
               condition:
-                - api.connected:
+                or:
+                  - switch.is_on: control_light_active
+                  - not:
+                      - api.connected:
               then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: long
-                      button: "1"
-              else:
                 - if:
                     condition:
-                      - text_sensor.state:
-                          id: dim_action
-                          state: "up"
+                      lambda: |-
+                        return id(dim_down);
                     then:
                       - script.execute: script_dim_up_timer
-                      - script.execute: script_dim_up
-                      - select.set:
-                          id: dim_action_select
-                          option: "down"
+                      - script.execute: script_dim_down
                     else:
                       - script.execute: script_dim_down_timer
-                      - script.execute: script_dim_down
-                      - select.set:
-                          id: dim_action_select
-                          option: "up"
+                      - script.execute: script_dim_up
     on_release:
       then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${name}
+              click_type: release
         - if:
             condition:
-              - api.connected:
+              or:
+                - switch.is_on: control_light_active
+                - not:
+                    - api.connected:
             then:
-              - homeassistant.event:
-                  event: esphome.button_pressed
-                  data:
-                    device: ${name}
-                    click_type: release
-                    button: "1"
-            else:
               - if:
                   condition:
                     light.is_on:
                       id: dimmer
                   then:
-                    - logger.log: "Physical dim_down release trigger"
                     - script.stop: script_dim_down_timer
 
 button:

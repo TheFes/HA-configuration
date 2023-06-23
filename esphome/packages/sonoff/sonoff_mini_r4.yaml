@@ -12,6 +12,9 @@ esphome:
       - select.set:
           id: button_type_select
           option: ${default_button_type}
+  project:
+    name: thefes.sonoff-mini-r4
+    version: "1.0"
 
 esp32:
   board: esp32dev
@@ -19,7 +22,7 @@ esp32:
     type: esp-idf
 
 packages:
-  minimal: !include 0_general/minimal.yaml
-  basic: !include 0_general/basic.yaml
-  bt_proxy: !include 0_general/bt_proxy.yaml
+  bt_proxy: !include ../0_general/bt_proxy.yaml
+  minimal: !include ../0_general/minimal.yaml
+  basic: !include ../0_general/basic.yaml
   sonoff: !include sonoff_button_actions.yaml

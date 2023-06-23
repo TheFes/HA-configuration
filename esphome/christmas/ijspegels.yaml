@@ -1,14 +1,8 @@
 substitutions:
   name: Kerst IJspegels
-  type: Plug
   ip: 192.168.2.41
   icon: mdi:snowflake
-
-esphome:
-  name: kerst-ijspegels
+  lower_name: kerst-ijspegels
 
 packages:
-  minimal: !include packages/0_general/minimal.yaml
-  basic: !include packages/0_general/basic.yaml
-  switch: !include packages/lsc_plug_switch.yaml
-  arduino: !include packages/0_general/arduino.yaml
+  switch: !include packages/lsc/lsc_plug_switch.yaml

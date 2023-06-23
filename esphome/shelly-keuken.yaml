@@ -1,8 +1,8 @@
 substitutions:
-  name: "Zolder"
+  name: "Keuken"
   type: Dimmer
-  lower_name: dimmer-zolder
-  ip: 192.168.2.18
+  lower_name: dimmer-keuken
+  ip: 192.168.2.72
   max_temp: "70" # °C
   dim_lenght: "10s"
   restore_mode: "restore_default_off"
@@ -13,4 +13,5 @@ substitutions:
 
 packages:
   dimmer: !include packages/shelly/shelly_dimmer.yaml
+  # minimal: !include packages/shelly/shelly_dimmer_minimal.yaml
 

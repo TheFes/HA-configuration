@@ -14,11 +14,14 @@ esphome:
       - select.set:
           id: button_type_select
           option: ${default_button_type}
+  project:
+    name: thefes.shelly-1-pm
+    version: "1.0"
 
 packages:
-  minimal: !include 0_general/minimal.yaml
-  basic: !include 0_general/basic.yaml
-  arduino: !include 0_general/arduino.yaml
+  minimal: !include ../0_general/minimal.yaml
+  basic: !include ../0_general/basic.yaml
+  arduino: !include ../0_general/arduino.yaml
   button_actions: !include shelly_button_actions.yaml
 
 # specific sensors for Shelly PM

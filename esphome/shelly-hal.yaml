@@ -1,9 +1,9 @@
 substitutions:
-  name: "Zolder"
+  name: "Hal"
   type: Dimmer
-  lower_name: dimmer-zolder
-  ip: 192.168.2.18
-  max_temp: "70" # °C
+  lower_name: dimmer-hal
+  ip: 192.168.2.73
+  max_temp: "73" # °C
   dim_lenght: "10s"
   restore_mode: "restore_default_off"
   min_brightness: "470"
@@ -13,4 +13,5 @@ substitutions:
 
 packages:
   dimmer: !include packages/shelly/shelly_dimmer.yaml
+  # minimal: !include packages/shelly/shelly_dimmer_minimal.yaml
 

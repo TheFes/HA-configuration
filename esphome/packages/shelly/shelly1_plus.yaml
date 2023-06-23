@@ -8,6 +8,9 @@ esphome:
   name: ${lower_name}
   platformio_options:
     board_build.f_cpu: 160000000L
+  project:
+    name: thefes.shelly-1-plus
+    version: "1.0"
 
 esp32:
   board: esp32doit-devkit-v1
@@ -19,8 +22,8 @@ esp32:
       CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ: "160"
 
 packages:
-  minimal: !include 0_general/minimal.yaml
-  basic: !include 0_general/basic.yaml
+  minimal: !include ../0_general/minimal.yaml
+  basic: !include ../0_general/basic.yaml
   button_actions: !include shelly_button_actions.yaml
 
 # Shelly 1 Plus specific settings

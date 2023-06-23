@@ -1,14 +1,17 @@
 esphome:
   friendly_name: ${name}
   name: ${lower_name}
+  project:
+    name: thefes.lsc-rgbcw-e14-light
+    version: "1.0"
 
 esp8266:
   board: esp01_1m
 
 packages:
-  minimal: !include 0_general/minimal.yaml
-  basic: !include 0_general/basic.yaml
-  arduino: !include 0_general/arduino.yaml
+  minimal: !include ../0_general/minimal.yaml
+  basic: !include ../0_general/basic.yaml
+  arduino: !include ../0_general/arduino.yaml
 
 sm2135:
   data_pin: GPIO12
