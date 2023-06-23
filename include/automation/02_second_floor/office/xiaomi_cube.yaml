@@ -1,52 +1,72 @@
 id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"
 alias: "F2 - Xiaomi Cube"
-use_blueprint:
-  path: /config/blueprints/automation/bergstrom/mi-magic-cube-deconz-45-actions.yaml
-  input:
-    remote: f6774ae0411495f22b9ffa91f9f11c0b
-    cube_shake:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.bureau_martijn
-      - wait_template: "{{ 'media_player.zolder_werkkamer_stereo' | has_value }}"
-      - alias: "Turn on radio if morning on workday"
-        choose:
-          - conditions:
-              - alias: "Morning"
-                condition: time
-                before: "10:00:00"
-              - alias: "Workday"
-                condition: state
-                entity_id: binary_sensor.workday_sensor
-                state: "on"
-            sequence:
-              - alias: "Turn on Radio 2"
-                service: media_player.play_media
+mode: parallel
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: f6774ae0411495f22b9ffa91f9f11c0b
+    variables:
+      event: "{{ trigger.event.data.event }}"
+      gesture: "{{ trigger.event.data.gesture}}"
+action:
+  - alias: "Which action"
+    choose:
+      - alias: "Actions with shake"
+        conditions: "{{ event == 7007 }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.bureau_martijn_2
+          - wait_template: "{{ 'media_player.zolder_werkkamer_stereo' | has_value }}"
+          - alias: "Turn on radio if morning on workday"
+            choose:
+              - conditions:
+                  - alias: "Morning"
+                    condition: time
+                    before: "10:00:00"
+                  - alias: "Workday"
+                    condition: state
+                    entity_id: binary_sensor.workday_sensor
+                    state: "on"
+                sequence:
+                  - alias: "Turn on Radio 2"
+                    service: media_player.play_media
+                    target:
+                      entity_id: media_player.zolder_werkkamer_stereo
+                    data:
+                      media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+                      media_content_type: music
+                      extra:
+                        metadata:
+                          metadataType: 3
+                          title: "Er is maar één NPO Radio 2"
+                          artist: "NPO Radio 2"
+                          images:
+                            - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
+      - alias: "Actions with rotate"
+        conditions: "{{ gesture in [7, 8] }}"
+        sequence:
+          - variables:
+              volume: "{{ state_attr('media_player.zolder_werkkamer_stereo', 'volume_level') }}"
+          - if: "{{ volume is not none }}"
+            then:
+              - service: media_player.volume_set
                 target:
                   entity_id: media_player.zolder_werkkamer_stereo
                 data:
-                  media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
-                  media_content_type: music
-                  extra:
-                    metadata:
-                      metadataType: 3
-                      title: "Er is maar één NPO Radio 2"
-                      artist: "NPO Radio 2"
-                      images:
-                        - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
-    rotate_clockwise:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.zolder_werkkamer_stereo
-        data:
-          volume_level:
-            "{{ [1, state_attr('media_player.zolder_werkkamer_stereo', 'volume_level')
-            | float + 0.05 ] | min | round(2) }}"
-    rotate_counter_clockwise:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.zolder_werkkamer_stereo
-        data:
-          volume_level:
-            "{{ [0, state_attr('media_player.zolder_werkkamer_stereo', 'volume_level')
-            | float - 0.05 ] | max | round(2) }}"
+                  volume_level: >
+                    {% set c = 0.05 if gesture == 7 else -0.05 %}
+                    {{ ([ 0, volume + c, 1] | sort)[1] | round(2) }}
+
+# Possible actions
+#   events (trigger.event.data.event)
+#     X00X: double tap X
+#     X00Y: Y to X
+#     X000: slide on X
+#     7000: cube wake
+#     7007: cube shake
+#     7008: cube fall
+#   gestures (trigger.event.data.gesture)
+#     7 rotate clockwise
+#     8 rotate counter clockwise
