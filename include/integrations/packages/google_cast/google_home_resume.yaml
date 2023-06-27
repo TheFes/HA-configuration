@@ -107,7 +107,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: &ver 2023.5.0
+          version: &ver 2023.6.1
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -369,7 +369,7 @@ script:
                                 call.get('extra', {}).get('entity_id', []),
                                 call.get('data', {}).get('script_extra', {}).get('entity_id', [])
                               ] %}
-                    {%- set e2 = ([e | select('string') | join(',')] | reject('string') | sum(start=[])) | join(',') %}
+                    {%- set e2 = ([e2 | select('string') | join(',')] | reject('string') | sum(start=[])) | join(',') %}
                     {%- set ns.e = [ns.e, e2 ] | select() | join(',') %}
                   {%- endfor %}
                   {%- set entity_list = e + (ns.e | replace(' ','')).split(',') | unique | list %}
@@ -386,7 +386,7 @@ script:
                     {%- set d2 = ([d2 | select('string') | join(',')] + d | reject('string') | sum(start=[])) | join(',') %}
                     {%- set ns.d = [ns.d, d2 ] | select() | join(',') %}
                   {%- endfor %}
-                  {%- set device_list = (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
+                  {%- set device_list = d + (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
                 {# areas #}
                   {%- set ns = namespace(a=a) %}
                   {%- for call in service_calls %}
@@ -400,7 +400,7 @@ script:
                     {%- set a = ([a2 | select('string') | join(',')] + a | reject('string') | sum(start=[])) | join(',') %}
                     {%- set ns.a = [ns.a, a2 ] | select() | join(',') %}
                   {%- endfor %}
-                  {%- set area_list = (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
+                  {%- set area_list = a + (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
               {# create entity list based on device/area input #}
                 {# determine entities of areas #}
                   {%- set area_list = area_list | map('area_entities') | sum(start=[]) | list %}
@@ -422,7 +422,7 @@ script:
                                   | map(attribute='members')
                                   | sum(start=[])
               %}
-              {{ total_list | reject('in', members) | list }}
+              {% set target_list = total_list | reject('in', members) | list %}
       - variables:
           players_to_resume: >
             {%- set target_list = players_to_resume if players_to_resume is defined else target_list %}
