@@ -1,3 +1,16 @@
+# set default substitutions if not defined in config
+substitutions:
+  name: "Shelly Dimmer 2"
+  lower_name: shelly-dimmer-2
+  max_temp: "70" # °C
+  dim_lenght: "10s"
+  restore_mode: "restore_default_off"
+  min_brightness: "470"
+  max_brightness: "1000"
+  leading_edge: "false"
+  gamma_correct: "0"
+  light_icon: mdi:lightbulb
+
 # ESPhome generic config
 esphome:
   name: ${lower_name}
@@ -10,6 +23,7 @@ esp8266:
   board: esp01_1m
 
 # load packages with default settings
+# see https://github.com/TheFes/HA-configuration/tree/main/esphome/packages/0_general
 packages:
   minimal: !include ../0_general/minimal.yaml
   basic: !include ../0_general/basic.yaml
@@ -24,6 +38,7 @@ light:
   - platform: shelly_dimmer
     name: None
     id: dimmer
+    icon: ${light_icon}
     leading_edge: ${leading_edge}
     min_brightness: ${min_brightness}
     max_brightness: ${max_brightness}
@@ -33,7 +48,22 @@ light:
     firmware:
       version: "51.6"
       update: true
-
+    # set the global for the dim action based on the brightness value
+    on_state:
+      - if:
+          condition:
+            - lambda: "return(id(dimmer).remote_values.get_brightness() == 1);"
+          then:
+            - globals.set:
+                id: dim_down_bool
+                value: "true"
+      - if:
+          condition:
+            - lambda: "return(id(dimmer).remote_values.get_brightness() < 0.013);"
+          then:
+            - globals.set:
+                id: dim_down_bool
+                value: "false"
 sensor:
   - platform: ntc
     sensor: temp_resistance_reading
@@ -83,8 +113,9 @@ sensor:
     id: temp_analog_reading
     pin: A0
 
+# globals for dim action and light control
 globals:
-  - id: dim_down
+  - id: dim_down_bool
     type: bool
     restore_value: true
     initial_value: "true"
@@ -93,7 +124,23 @@ globals:
     restore_value: true
     initial_value: "true"
 
+# switches to determine light control and dim action
 switch:
+  - platform: template
+    name: Dim Down
+    id: dim_down_active
+    restore_state: false
+    turn_on_action:
+      - globals.set:
+          id: dim_down_bool
+          value: "true"
+    turn_off_action:
+      - globals.set:
+          id: dim_down_bool
+          value: "false"
+    lambda: |-
+      return id(dim_down_bool);
+    entity_category: config
   - platform: template
     name: Control Light
     id: control_light_active
@@ -108,6 +155,7 @@ switch:
           value: "false"
     lambda: |-
       return id(control_light);
+    entity_category: config
 
 script:
   - id: script_dim_down_timer
@@ -140,7 +188,7 @@ script:
             - delay: 0.01s
       - logger.log: "Dimming down stopped"
       - globals.set:
-          id: dim_down
+          id: dim_down_bool
           value: "false"
       - logger.log: "Toggled dim action to dim up"
   - id: script_dim_up
@@ -160,7 +208,7 @@ script:
             - delay: 0.01s
       - logger.log: "Dimming up stopped"
       - globals.set:
-          id: dim_down
+          id: dim_down_bool
           value: "true"
       - logger.log: "Toggled dim action to dim down"
   - id: script_turn_on_off
@@ -183,7 +231,6 @@ script:
 
 binary_sensor:
   - platform: gpio
-    name: Dim Down
     id: sensor_button_1
     pin:
       number: GPIO14
@@ -268,12 +315,12 @@ binary_sensor:
                 - if:
                     condition:
                       lambda: |-
-                        return id(dim_down);
+                        return id(dim_down_bool);
                     then:
-                      - script.execute: script_dim_up_timer
+                      - script.execute: script_dim_down_timer
                       - script.execute: script_dim_down
                     else:
-                      - script.execute: script_dim_down_timer
+                      - script.execute: script_dim_up_timer
                       - script.execute: script_dim_up
     on_release:
       then:
