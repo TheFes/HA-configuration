@@ -58,6 +58,7 @@ ___
 #### 🐛 Bug fixes
 
 * (2022.6.0) Fix bug in target determination
+* (2022.6.1) Another bug fix in target determination
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)

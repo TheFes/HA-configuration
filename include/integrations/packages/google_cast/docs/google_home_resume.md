@@ -31,6 +31,7 @@ ___
 #### 🐛 Bug fixes
 
 * (2022.6.0) Fix bug in target determination
+* (2022.6.1) Another bug fix in target determination
 
 Older changes can be found [here](changelogs/changelog_google_home_resume.md)
 
