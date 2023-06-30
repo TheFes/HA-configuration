@@ -27,7 +27,7 @@ cards:
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
       - type: custom:mushroom-template-card
-        entity: cover.slaapkamer
+        entity: cover.werkkamer_marleen
         layout: vertical
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red

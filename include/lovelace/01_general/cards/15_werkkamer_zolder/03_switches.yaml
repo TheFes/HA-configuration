@@ -3,26 +3,6 @@ title: Schakelaars
 square: false
 columns: 2
 cards:
-  # - type: custom:mushroom-template-card
-  #   entity: switch.bureau_martijn_template
-  #   primary: Bureau Martijn (PC)
-  #   badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn', 'unavailable') }}"
-  #   badge_color: red
-  #   secondary: >-
-  #     {{ 'Aan' if is_state('switch.bureau_martijn', 'on') else 'Uit' }}
-  #     {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
-  #   icon: mdi:human-male
-  #   icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
-  #   tap_action:
-  #     action: fire-dom-event
-  #     browser_mod:
-  #       service: script.confirmation_popup
-  #       data:
-  #         browser_id: THIS
-  #         toggle_entity: switch.bureau_martijn
-  #         passcode: !secret passcode_pc
-  #         on_state: "on"
-  #         popup_type: code
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn
     primary: Bureau Martijn
@@ -30,19 +10,54 @@ cards:
     badge_color: red
     secondary: >-
       {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
-      {{ (' | ' ~ states('sensor.bureau_martijn_power') ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
+      {% set power = states('sensor.bureau_martijn_power') | float(0) - states('sensor.bureau_martijn_2_power') | float(0) %}
+      {{ (' | ' ~ power | round(0) | int ~ ' W') if is_state('switch.bureau_martijn', 'on') }}
     icon: mdi:human-male-male
     icon_color: "{{ 'blue' if is_state('switch.bureau_martijn', 'on') }}"
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: script.confirmation_popup
+        service: browser_mod.popup
         data:
-          browser_id: THIS
-          toggle_entity: switch.bureau_martijn
-          passcode: !secret passcode_pc
-          on_state: "on"
-          popup_type: code
+          content: Als deze schakelaar doen de lichtknoppen op zolder het niet goed meer, moet hij aan blijven?
+          left_button: "Ja"
+          right_button: "Nee"
+          left_button_action:
+            service: switch.turn_on
+            data:
+              entity_id: switch.bureau_martijn
+          right_button_action:
+            service: browser_mod.popup
+            data:
+              title: Weet je het HEEL HEEL zeker?
+              content: Super zeker?
+              right_button: "Ja"
+              left_button: "Nee"
+              right_button_action:
+                service: switch.turn_off
+                data:
+                  entity_id: switch.bureau_martijn
+              left_button_action:
+                service: switch.turn_on
+                data:
+                  entity_id: switch.bureau_martijn
+  - type: custom:mushroom-template-card
+    entity: switch.bureau_martijn_template
+    primary: Bureau Martijn 2
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn_2', 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
+    icon: mdi:human-male-male
+    icon_color: >
+      {% if is_state('script.computer_martijn_off' , 'on') %}
+        orange
+      {% elif is_state('switch.bureau_martijn_2', 'on') %}
+        blue
+      {% endif %}
+    tap_action:
+      action: toggle
   - type: custom:mushroom-template-card
     entity: switch.server
     primary: Server
@@ -60,10 +75,27 @@ cards:
     tap_action:
       action: fire-dom-event
       browser_mod:
-        service: script.confirmation_popup
+        service: browser_mod.popup
         data:
-          browser_id: THIS
-          toggle_entity: switch.server
-          passcode: !secret passcode_server
-          on_state: "on"
-          popup_type: code
+          content: Als de server uit staat werkt Home Assistant niet meer. Moet hij aan blijven?
+          left_button: "Ja"
+          right_button: "Nee"
+          left_button_action:
+            service: switch.turn_on
+            data:
+              entity_id: switch.server
+          right_button_action:
+            service: browser_mod.popup
+            data:
+              title: Weet je het HEEL HEEL zeker?
+              content: Super duper zeker?
+              left_button: "Ja"
+              right_button: "Nee"
+              left_button_action:
+                service: button.press
+                data:
+                  entity_id: button.node_pve_shutdown
+              right_button_action:
+                service: switch.turn_on
+                data:
+                  entity_id: switch.server
