@@ -22,7 +22,7 @@ condition:
     condition: time
     after: "10:00:00"
 action:
-  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_slaapkamer_manual', 'on') }}"
+  - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_werkkamer_manual', 'on') }}"
     then:
       - alias: "After sunrise"
         condition: state
@@ -60,34 +60,34 @@ action:
         then:
           - alias: "Screens not already correctly set"
             condition: template
-            value_template: "{{ not (16 > state_attr('cover.slaapkamer', 'current_position') > 17) }}"
+            value_template: "{{ not (16 > state_attr('cover.werkkamer_marleen', 'current_position') > 17) }}"
           - alias: "Close left and right cover"
             service: cover.close_cover
             target:
               entity_id:
-                - cover.slaapkamer_links_template
-                - cover.slaapkamer_midden_template
-                - cover.slaapkamer_rechts_template
+                - cover.werkkamer_marleen_links_template
+                - cover.werkkamer_marleen_midden_template
+                - cover.werkkamer_marleen_rechts_template
           - alias: "Set middle cover to 50%"
             service: cover.set_cover_position
             target:
-              entity_id: cover.slaapkamer_links_template
+              entity_id: cover.werkkamer_marleen_links_template
             data:
               position: 50
         else:
           - alias: "Screen (partly) open"
             condition: template
-            value_template: "{{ state_attr('cover.slaapkamer', 'current_position') != 0 }}"
+            value_template: "{{ state_attr('cover.werkkamer_marleen', 'current_position') != 0 }}"
           - alias: "Close cover"
             service: cover.close_cover
             target:
-              entity_id: cover.slaapkamer
+              entity_id: cover.werkkamer_marleen
   - if: "{{ trigger.id == 'open' }}"
     then:
       - alias: "Screen not completely open"
         condition: template
-        value_template: "{{ state_attr('cover.slaapkamer', 'current_position') != 100 }}"
+        value_template: "{{ state_attr('cover.werkkamer_marleen', 'current_position') != 100 }}"
       - alias: "Open cover"
         service: cover.open_cover
         target:
-          entity_id: cover.slaapkamer
+          entity_id: cover.werkkamer_marleen

@@ -1,7 +1,116 @@
 platform: template
 covers:
-  slaapkamer:
-    unique_id: d9194724-fece-44c8-9ec7-0b737d662f39
+  werkkamer_marleen_links_template:
+    unique_id: 05975c80-4d67-4e4e-a46c-6cb311ee62a4
+    friendly_name: "Screen Werkkamer Marleen Links"
+    device_class: shade
+    position_template: >
+      {%- set s = state_attr('cover.slaapkamer_links', 'current_position') %}
+      {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: >
+      {%- set s = ['unknown', 'unavailable'] %}
+      {{ not states('cover.slaapkamer_links') in s }}
+    open_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: cover.slaapkamer_links
+    close_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: cover.slaapkamer_links
+    stop_cover:
+      - service: cover.stop_cover
+        target:
+          entity_id: cover.slaapkamer_links
+    set_cover_position:
+      - service: cover.set_cover_position
+        target:
+          entity_id: cover.slaapkamer_links
+        data:
+          position: >
+            {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+            {{ 100 - position if i else position }}
+
+  werkkamer_marleen_midden_template:
+    unique_id: ee02ab08-7796-4746-a614-9e7f806fe3c6
+    friendly_name: "Screen Werkkamer Marleen Midden"
+    device_class: shade
+    position_template: >
+      {%- set s = state_attr('cover.slaapkamer_midden', 'current_position') %}
+      {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: >
+      {%- set s = ['unknown', 'unavailable'] %}
+      {{ not states('cover.slaapkamer_midden') in s }}
+    open_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: cover.slaapkamer_midden
+    close_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: cover.slaapkamer_midden
+    stop_cover:
+      - service: cover.stop_cover
+        target:
+          entity_id: cover.slaapkamer_midden
+    set_cover_position:
+      - service: cover.set_cover_position
+        target:
+          entity_id: cover.slaapkamer_midden
+        data:
+          position: >
+            {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+            {{ 100 - position if i else position }}
+
+  werkkamer_marleen_rechts_template:
+    unique_id: 67b29265-61f8-4d62-b4d0-ed41b26a7e6b
+    friendly_name: "Screen Werkkamer Marleen Rechts"
+    device_class: shade
+    position_template: >
+      {%- set s = state_attr('cover.slaapkamer_rechts', 'current_position') %}
+      {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: >
+      {%- set s = ['unknown', 'unavailable'] %}
+      {{ not states('cover.slaapkamer_rechts') in s }}
+    open_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: cover.slaapkamer_rechts
+    close_cover:
+      - service: >
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: cover.slaapkamer_rechts
+    stop_cover:
+      - service: cover.stop_cover
+        target:
+          entity_id: cover.slaapkamer_rechts
+    set_cover_position:
+      - service: cover.set_cover_position
+        target:
+          entity_id: cover.slaapkamer_rechts
+        data:
+          position: >
+            {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
+            {{ 100 - position if i else position }}
+
+  werkkamer_marleen:
+    unique_id: 8b526f8e-7df2-4d6b-b6b5-c4ef7e42774f
+    friendly_name: "Screens Werkkamer Marleen"
     availability_template: >
       {%- set s = ['unknown', 'unavailable'] %}
       {%- set covers = 
@@ -17,41 +126,40 @@ covers:
         mdi:arrow-collapse-up
       {%- elif is_state('sensor.cover_slaapkamer', 'closing') %}
         mdi:arrow-collapse-down
-      {%- elif is_state_attr('cover.slaapkamer', 'current_position', 100) %}
+      {%- elif is_state_attr('cover.werkkamer_marleen', 'current_position', 100) %}
         mdi:blinds-open
       {%- else %}
         mdi:blinds
       {%- endif %}
-    friendly_name: "Screens Slaapkamer"
     position_template: >
       {%- set covers = 
         [ 'cover.slaapkamer_links', 'cover.slaapkamer_midden', 'cover.slaapkamer_rechts']
       %}
       {%- set avg = expand(covers) | map(attribute='attributes.current_position') | average %}
-      {%- if is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+      {%- if is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
         {{ 100 - avg }}
       {%- else %}
         {{ avg }}
       {%- endif %}
     open_cover:
       service: >
-        {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+        {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
         {{ 'cover.close_cover' if i else 'cover.open_cover' }}
       target:
-        entity_id: cover.slaapkamer_groep
+        entity_id: cover.werkkamer_marleen_groep
     close_cover:
       service: >
-        {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+        {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
         {{ 'cover.open_cover' if i else 'cover.close_cover' }}
       target:
-        entity_id: cover.slaapkamer_groep
+        entity_id: cover.werkkamer_marleen_groep
     stop_cover:
       service: cover.stop_cover
-      entity_id: cover.slaapkamer_groep
+      entity_id: cover.werkkamer_marleen_groep
     set_cover_position:
       service: cover.set_cover_position
-      entity_id: cover.slaapkamer_groep
+      entity_id: cover.werkkamer_marleen_groep
       data:
         position: >
-          {%- set i = is_state('input_boolean.cover_slaapkamer_invert', 'on') %}
+          {%- set i = is_state('input_boolean.cover_werkkamer_marleen_invert', 'on') %}
           {{ 100 - position if i else position }}

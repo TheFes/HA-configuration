@@ -14,14 +14,21 @@ trigger:
           or now() < today_at('07:00')
           else 'on'
         }}
-      update: "{{ is_state('person.martijn', 'home') if action == 'on' else true }}"
+      update: &update >
+        {{
+          is_state('person.martijn', 'home')
+          and is_state('switch.bureau_martijn_2', 'on')
+          and is_state('script.computer_martijn_off', 'off')
+          if action == 'on'
+          else true
+        }}
   - platform: state
-    entity_id: switch.bureau_martijn
+    entity_id: switch.bureau_martijn_2
     to: ~
     variables:
       action: >
-        {{ trigger.to_state.state }}
-      update: "{{ is_state('person.martijn', 'home') if action == 'on' else true }}"
+        {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
+      update: *update
   - platform: time
     at:
       - "07:00"
@@ -30,10 +37,10 @@ trigger:
       action: >
         {{
           'off'
-          if states('sensor.house_mode') == 'Slapen'
+          if states('sensor.house_mode') == 'Slapen' or not is_state('person.martijn', 'home')
           else 'on'
         }}
-      update: "{{ is_state('person.martijn', 'home') }}"
+      update: *update
   - platform: state
     entity_id: person.martijn
     to: ~

@@ -1,7 +1,0 @@
-platform: template
-switches:
-  shutdown_server:
-    value_template: "{{ is_state('binary_sensor.server', 'on') }}"
-    turn_on: []
-    turn_off:
-      service: shell_command.shutdown_pve

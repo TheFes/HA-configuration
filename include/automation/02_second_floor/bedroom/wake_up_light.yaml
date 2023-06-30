@@ -17,7 +17,7 @@ trigger:
 condition:
   - alias: "Light off?"
     condition: state
-    entity_id: light.slaapkamer
+    entity_id: light.slaapkamer_plafond
     state: "off"
   - alias: "Wake up light enabled?"
     condition: state
@@ -27,15 +27,22 @@ action:
   - alias: "Light on dimmed"
     service: light.turn_on
     target:
-      entity_id: light.slaapkamer
+      entity_id: light.slaapkamer_plafond
     data:
       brightness: 1
+  - alias: "Light on dimmed"
+    service: light.turn_on
+    target:
+      entity_id: light.slaapkamer_plafond
+    data:
+      color_temp_kelvin: 2000
   - alias: "Turn on light using transition"
     service: light.turn_on
     target:
-      entity_id: light.slaapkamer
+      entity_id: light.slaapkamer_plafond
     data:
       brightness: 190
+      color_temp_kelvin: 6000
       transition: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"
   - alias: "Delay for last step during transtion"
     delay: "{{ (states('input_number.wakeup_start') | int(20) + states('input_number.wakeup_end') | int(20)) * 60 }}"

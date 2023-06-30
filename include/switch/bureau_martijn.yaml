@@ -1,22 +1,14 @@
 platform: template
 switches:
   bureau_martijn_template:
-    value_template: "{{ is_state('switch.bureau_martijn', 'on') }}"
+    value_template: "{{ is_state('switch.bureau_martijn_2', 'on') }}"
     turn_on:
       - service: switch.turn_on
         target:
-          entity_id: switch.bureau_martijn
+          entity_id: switch.bureau_martijn_2
     turn_off:
-      - variables:
-          pc_on: "{{ is_state('device_tracker.martijn_desktop', 'home') }}"
-      - if: "{{ pc_on }}"
-        then:
-          - service: hassio.addon_stdin
-            data:
-              addon: core_rpc_shutdown
-              input: computer_zolder
-      - wait_template: "{{ is_state('device_tracker.martijn_desktop', 'not_home') }}"
-      - delay: "{{ 30 if pc_on else 0 }}"
+      - service: script.computer_martijn_off
+      - delay: 10
       - service: switch.turn_off
         target:
-          entity_id: switch.bureau_martijn
+          entity_id: switch.bureau_martijn_2

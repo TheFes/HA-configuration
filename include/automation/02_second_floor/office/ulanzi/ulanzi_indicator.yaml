@@ -10,12 +10,19 @@ trigger:
       indicator: 1
       color_name: green
   - platform: state
+    entity_id: binary_sensor.raindata
+    to: ~
+    variables:
+      action: "{{ trigger.to_state.state }}"
+      indicator: 2
+      color_name: blue
+  - platform: state
     entity_id: binary_sensor.net_power_consumption
     to: ~
     variables:
       action: "{{ trigger.to_state.state in ['on', 'off'] }}"
       indicator: 3
-      color_name: "{{ 'yellow' if trigger.to_state.state == 'off' else 'blue' }}"
+      color_name: "{{ 'yellow' if trigger.to_state.state == 'off' else 'purple' }}"
 condition:
   - "{{ update | default(true) | bool(true) }}"
 action:

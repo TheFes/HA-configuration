@@ -11,15 +11,6 @@ trigger:
       - "idle"
       - "off"
     for: "00:30:00"
-  - platform: numeric_state
-    entity_id: sensor.battery
-    above: 95
-  - platform: template
-    value_template: >
-      {{
-        states('sensor.iphone_van_martijn_battery_level') | float(0) > 95
-        and is_state('binary_sensor.iphone_martijn_on_charger', 'on')
-      }}
 condition:
   - alias: "Everyting off?"
     condition: state
@@ -32,23 +23,8 @@ condition:
       - "idle"
       - "off"
     for: "00:30:00"
-  - condition: numeric_state
-    entity_id:
-      - sensor.battery
-    above: 95
-  - or:
-      - condition: template
-        value_template: >
-          {{
-            states('sensor.iphone_van_martijn_battery_level') | float(0) > 95
-            and is_state('binary_sensor.iphone_martijn_on_charger', 'on')
-          }}
-      - alias: "iPhone not on charger"
-        condition: state
-        entity_id: binary_sensor.iphone_martijn_on_charger
-        state: "off"
 action:
   - alias: "Turn off plug"
     service: switch.turn_off
     target:
-      entity_id: switch.bureau_martijn
+      entity_id: switch.bureau_martijn_2

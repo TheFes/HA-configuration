@@ -1,12 +1,18 @@
-id: 72fc0fda-dd3f-4c4e-8846-5115612e30e5
-alias: "F1M - Actions with Shelly"
+id: 5119f754-7461-4fcb-be4b-1380e656a450
+alias: "F2L - Actions with Shelly Zolder"
 mode: parallel
 max_exceeded: silent
 trigger:
   - platform: event
     event_type: esphome.button_pressed
     event_data:
-      device: Slaapkamer
+      device: Zolder
+  - platform: event
+    event_type: esphome.button_pressed
+    event_data:
+      device: Wasmachinehoek
+condition:
+  - "{{ is_state('switch.zolder_shelly_control_light', 'off') if trigger.event.data.device == 'Zolder' else true }}"
 action:
   - variables:
       main: light.{{ trigger.event.data.device | lower }}_template
@@ -18,37 +24,26 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - if: "{{ is_state(main, 'on') }}"
-            then:
-              - alias: "Turn off main light"
-                service: light.turn_off
-                target:
-                  entity_id: "{{ main }}"
-            else:
-              - alias: "Turn on main light"
-                service: light.turn_on
-                target:
-                  entity_id: "{{ main }}"
+          - alias: Toggle Overloop group
+            service: light.toggle
+            data:
+              entity_id: light.groep_overloop_zolder
       - conditions:
           - alias: "Double?"
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'double' }}"
         sequence:
-          - alias: "Light to 100% brightness"
+          - alias: Set overloop group to 100%
             service: light.turn_on
-            target:
-              entity_id: "{{ main }}"
             data:
+              entity_id: light.groep_overloop_zolder
               brightness: 255
-              color_temp: 325
       - conditions:
           - alias: "Long"
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'long' }}"
         sequence:
-          - alias: "Turn on light with low brightness"
-            service: light.turn_on
-            target:
-              entity_id: "{{ main }}"
+          - alias: Turn of all lights on 2nd floor and attic
+            service: light.turn_off
             data:
-              brightness_pct: 5
+              entity_id: light.groep_zolder

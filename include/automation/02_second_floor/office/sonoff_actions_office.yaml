@@ -1,5 +1,5 @@
 id: d6878855-2179-46fa-a1f2-069c6311746f
-alias: "F2M - Actions with Sonoff"
+alias: "F2O - Actions with Sonoff"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -7,10 +7,7 @@ trigger:
     event_type: esphome.button_pressed
 variables:
   lights:
-    - light.slaapkamer_plafond
-    - light.badkamer_zolder
     - light.werkkamer_martijn_plafond
-    - light.wasmachinehoek
   light: "light.{{ trigger.event.data.device | slugify }}"
 condition:
   - "{{ light in lights }}"

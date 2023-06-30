@@ -10,6 +10,7 @@ trigger:
       app: bat
 condition:
   - "{{ app is defined and app is not none }}"
+  - "{{ update | default(true) | bool(true) }}"
 action:
   - alias: "Activate or deactivate app"
     service: mqtt.publish

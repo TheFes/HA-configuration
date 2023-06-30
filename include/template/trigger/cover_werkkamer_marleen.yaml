@@ -6,7 +6,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.slaapkamer_groep
+          entity_id: cover.werkkamer_marleen_groep
     - platform: event
       event_type: call_service
       id: closing
@@ -14,7 +14,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.slaapkamer
+          entity_id: cover.werkkamer_marleen
     - platform: event
       event_type: call_service
       id: opening
@@ -22,7 +22,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.slaapkamer_groep
+          entity_id: cover.werkkamer_marleen_groep
     - platform: event
       event_type: call_service
       id: opening
@@ -30,9 +30,9 @@
         domain: cover
         service: open_cover
         service_data:
-          entity_id: cover.slaapkamer
+          entity_id: cover.werkkamer_marleen
     - platform: state
-      entity_id: cover.slaapkamer
+      entity_id: cover.werkkamer_marleen
       attribute: current_position
       id: idle
   sensor:

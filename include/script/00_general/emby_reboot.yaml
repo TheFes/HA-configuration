@@ -1,0 +1,42 @@
+emby_reboot:
+  alias: "00 - Reboot Emby VM"
+  icon: mdi:emby
+  mode: single
+  max_exceeded: silent
+  sequence:
+    - service: button.press
+      target:
+        entity_id: button.qemu_debian_emby_103_reboot
+    - wait_for_trigger:
+        - platform: state
+          entity_id: sensor.qemu_debian_emby_103_uptime
+          to: ~
+
+emby_start_stop:
+  alias: "00 - Start/Stop Emby VM"
+  icon: mdi:emby
+  mode: single
+  max_exceeded: silent
+  sequence:
+    - if: "{{ is_state('binary_sensor.qemu_debian_emby_103_status', 'on') }}"
+      then:
+        - alias: "Write variables to variables template sensor"
+          event: set_variable
+          event_data:
+            key: "emby_action"
+            value: "Aan het afsluiten"
+        - service: button.press
+          target:
+            entity_id: button.qemu_debian_emby_103_shutdown
+        - wait_template: "{{ is_state('binary_sensor.qemu_debian_emby_103_status', 'off') }}"
+      else:
+        - alias: "Write variables to variables template sensor"
+          event: set_variable
+          event_data:
+            key: "emby_action"
+            value: "Aan het opstarten"
+        - service: button.press
+          target:
+            entity_id: button.qemu_debian_emby_103_start
+        - wait_template: "{{ is_state('binary_sensor.qemu_debian_emby_103_status', 'on') }}"
+        - delay: 20

@@ -1,0 +1,67 @@
+id: b54906bf-51b0-4e0f-919a-ced9436588d6
+alias: "F2O - Xiaomi button Guest Bed"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      device_id: 8a2ea6de85f43628d4eb06833825f0bc
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - if: "{{ is_state('light.werkkamer_martijn_plafond', 'on') }}"
+            then:
+              - service: light.turn_off
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+            else:
+              - service: light.turn_on
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  brightness: 10
+              - service: light.turn_on
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  color_temp_kelvin: 2000
+      - conditions:
+          - alias: "Long"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1001 }}"
+        sequence:
+          - if: "{{ is_state('light.matrix', 'off') }}"
+            then:
+              - service: light.turn_on
+                target:
+                  entity_id: light.matrix
+                data:
+                  brightness: 10
+              - delay: 10
+          - service: light.turn_off
+            target:
+              entity_id: light.matrix
+      - conditions:
+          - alias: "Double"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1004 }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light.werkkamer_martijn_plafond
+            data:
+              brightness: 255
+          - service: light.turn_on
+            target:
+              entity_id: light.werkkamer_martijn_plafond
+            data:
+              color_temp_kelvin: 6535
+      - conditions:
+          - alias: "Release"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1003 }}"
+        sequence: []

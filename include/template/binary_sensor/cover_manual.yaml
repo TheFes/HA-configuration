@@ -1,6 +1,6 @@
 - trigger:
     - platform: template
-      value_template: "{{ states.cover.slaapkamer.context.user_id is not none }}"
+      value_template: "{{ states.cover.werkkamer_marleen.context.user_id is not none }}"
     - platform: template
       value_template: "{{ states.cover.slaapkamer_rechts.context.user_id is not none }}"
     - platform: template
@@ -8,14 +8,14 @@
     - platform: template
       value_template: "{{ states.cover.slaapkamer_links.context.user_id is not none }}"
     - platform: template
-      value_template: "{{ states.cover.slaapkamer_rechts_template.context.user_id is not none }}"
+      value_template: "{{ states.cover.werkkamer_marleen_rechts_template.context.user_id is not none }}"
     - platform: template
-      value_template: "{{ states.cover.slaapkamer_midden_template.context.user_id is not none }}"
+      value_template: "{{ states.cover.werkkamer_marleen_midden_template.context.user_id is not none }}"
     - platform: template
-      value_template: "{{ states.cover.slaapkamer_links_template.context.user_id is not none }}"
+      value_template: "{{ states.cover.werkkamer_marleen_links_template.context.user_id is not none }}"
   binary_sensor:
     - unique_id: 4b62943a-ee6b-4f23-a3b5-15a8da23d94d
-      name: "Screen Slaapkamer manual"
+      name: "Screen Werkkamer Marleen manual"
       state: "{{ true }}"
       auto_off: "01:00:00"
 - trigger:

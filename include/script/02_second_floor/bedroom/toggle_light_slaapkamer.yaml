@@ -1,6 +1,6 @@
-slaapkamer_toggle:
-  alias: "F1M - Actions for template light master bedroom"
-  icon: "mdi:ceiling-light"
+slaapkamer_plafond_toggle:
+  alias: "F2B - Actions for template light master bedroom"
+  icon: "mdi:light-flood-down"
   mode: restart
   sequence:
     - alias: "On"
@@ -25,27 +25,18 @@ slaapkamer_toggle:
                         - alias: "Turn on light dimmed"
                           service: light.turn_on
                           target:
-                            entity_id: light.slaapkamer
+                            entity_id: light.slaapkamer_plafond
                           data:
                             brightness: 1
-                            transition: 5
-                        - delay: 0.5
+                            color_temp_kelvin: 2000
+                        - delay: 0.1
                         - alias: "Increase brightness"
                           service: light.turn_on
                           target:
-                            entity_id: light.slaapkamer
+                            entity_id: light.slaapkamer_plafond
                           data:
-                            brightness_pct: 25
-                            transition: 30
-                        - delay: 30
-                        - alias: "Increase brightness"
-                          service: light.turn_on
-                          target:
-                            entity_id: light.slaapkamer
-                          data:
-                            brightness_pct: 50
-                            transition: 270
-                        - delay: 270
+                            brightness_pct: 100
+                            transition: 6535
                         - alias: "Turn on input_boolean"
                           service: input_boolean.turn_on
                           target:
@@ -62,16 +53,17 @@ slaapkamer_toggle:
                         - alias: "Light on"
                           service: light.turn_on
                           target:
-                            entity_id: light.slaapkamer
+                            entity_id: light.slaapkamer_plafond
                           data:
                             brightness: 128
-                        - delay: 0.5
+                        - delay: 0.1
                         - alias: "Dim light"
                           service: light.turn_on
                           target:
-                            entity_id: light.slaapkamer
+                            entity_id: light.slaapkamer_plafond
                           data:
-                            brightness_pct: 15
+                            brightness_pct: 10
+                            color_temp_kelvin: 2200
                             transition: 60
                         - delay: 60
                         - alias: "Turn on input_boolean"
@@ -82,9 +74,10 @@ slaapkamer_toggle:
                     - alias: "Light on 100% during daytime"
                       service: light.turn_on
                       target:
-                        entity_id: light.slaapkamer
+                        entity_id: light.slaapkamer_plafond
                       data:
                         brightness: 255
+                        color_temp_kelvin: 6535
                     - alias: "Turn on input_boolean"
                       service: input_boolean.turn_on
                       target:
@@ -93,7 +86,7 @@ slaapkamer_toggle:
             - alias: "Light on with current setting if it has already been turned on before"
               service: light.turn_on
               target:
-                entity_id: light.slaapkamer
+                entity_id: light.slaapkamer_plafond
       else:
         - alias: "Input boolean on"
           service: input_boolean.turn_on
@@ -108,11 +101,11 @@ slaapkamer_toggle:
               sequence:
                 - service: light.turn_on
                   target:
-                    entity_id: light.slaapkamer
+                    entity_id: light.slaapkamer_plafond
                   data:
                     brightness: 1
                     transition: 5
         - alias: "Light off"
           service: light.turn_off
           target:
-            entity_id: light.slaapkamer
+            entity_id: light.slaapkamer_plafond

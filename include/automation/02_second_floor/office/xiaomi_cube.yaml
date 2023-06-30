@@ -18,7 +18,7 @@ action:
           - service: switch.turn_on
             target:
               entity_id: switch.bureau_martijn_2
-          - wait_template: "{{ 'media_player.zolder_werkkamer_stereo' | has_value }}"
+          - wait_template: "{{ states('media_player.zolder_werkkamer_stereo') not in ['unknown', 'unavailable'] }}"
           - alias: "Turn on radio if morning on workday"
             choose:
               - conditions:
