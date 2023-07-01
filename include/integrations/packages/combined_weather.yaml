@@ -32,8 +32,7 @@ template:
             -%}
               {%- set f0 = as_datetime(w.attributes.forecast[0].datetime) -%}
               {%- set f1 = as_datetime(w.attributes.forecast[1].datetime) -%}
-              {%- set sec = (f1 - f0).total_seconds() -%}
-              {%- if sec < (60 * 60 * 23) -%}
+              {%- if f1 - f0 < timedelta(days=1) -%}
                 {%- set ns.hourly = ns.hourly + [ w.entity_id ] -%}
               {%- endif -%}
             {%- endfor -%}
@@ -137,6 +136,50 @@ weather:
           | list
       -%}
       {{ v | average | round(1) if v else none }}
+    cloud_coverage_template: &cloud_coverage >
+      {%- set type = 'daily' if 'hourly' in this.entity_id else 'hourly' %}
+      {%- set attr = "attributes.cloud_coverage" %}
+      {%- set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', type))
+          | selectattr(attr, 'defined')
+          | map(attribute=attr)
+          | select('is_number')
+          | list
+      -%}
+      {{ v | average | round(1) if v else none }}
+    wind_gust_speed_template: &wind_gust_speed >
+      {%- set type = 'daily' if 'hourly' in this.entity_id else 'hourly' %}
+      {%- set attr = "attributes.wind_gust_speed" %}
+      {%- set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', type))
+          | selectattr(attr, 'defined')
+          | map(attribute=attr)
+          | select('is_number')
+          | list
+      -%}
+      {{ v | average | round(1) if v else none }}
+    apparent_temperature_template: &apparent_temp >
+      {%- set type = 'daily' if 'hourly' in this.entity_id else 'hourly' %}
+      {%- set attr = "attributes.apparent_temperature" %}
+      {%- set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', type))
+          | selectattr(attr, 'defined')
+          | map(attribute=attr)
+          | select('is_number')
+          | list
+      -%}
+      {{ v | average | round(1) if v else none }}
+    dew_point_template: &dew_point >
+      {%- set type = 'daily' if 'hourly' in this.entity_id else 'hourly' %}
+      {%- set attr = "attributes.dew_point" %}
+      {%- set v = expand(state_attr('sensor.weather_entities', 'entities'))
+          | rejectattr('entity_id', 'in', state_attr('sensor.weather_entities', type))
+          | selectattr(attr, 'defined')
+          | map(attribute=attr)
+          | select('is_number')
+          | list
+      -%}
+      {{ v | average | round(1) if v else none }}
     temperature_unit: &temperature_unit "°C"
     pressure_unit: &pressure_unit "hPa"
     wind_speed_unit: &wind_speed_unit "km/h"
@@ -153,18 +196,33 @@ weather:
         Entities used: {{ (entities[:-1] | join(', ') ~ ' and ' ~ entities[-1]) if entities | count > 1 else entities[0] }}
       {%- endif -%}
     forecast_template: &forecast >
-      {%- set type = 'hourly' if 'hourly' in this.entity_id else 'daily' %}
-      {%- set entities = state_attr('sensor.weather_entities', type) -%}
-      {%- set datetimes = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list)| sum(start=[]) | map(attribute='datetime') | select() | unique | sort -%}
-      {%- set ns = namespace(d=[], forecast=[], a=[], f=[], most_common={'item':none,'count':none}) -%}
-      {%- for d in datetimes -%}
-        {%- set dt = as_local(as_datetime(d)) %}
-        {%- set dt = dt.replace(hour=0) if type == 'daily' else dt %}
-        {%- set ns.d = ns.d + [dt.isoformat() ] -%}
-      {%- endfor -%}
-      {%- set datetimes = ns.d | unique | sort -%}
-      {%- for d in datetimes -%}
-        {%- set forecasts = (expand(entities) | selectattr('attributes.forecast', 'defined') | map(attribute='attributes.forecast')| list) | sum(start=[])  -%}
+      {# determine forecast type #}
+        {%- set type = 'hourly' if 'hourly' in this.entity_id else 'daily' %}
+      {# create namespace to be used in for loops #}
+        {% set ns = namespace() %}
+      {# determine weather entities belonging to type #}
+        {%- set entities = state_attr('sensor.weather_entities', type) -%}
+      {# create list of forecasts of the weather entities #}
+        {%- set forecasts = expand(entities)
+                              | selectattr('attributes.forecast', 'defined')
+                              | map(attribute='attributes.forecast')
+                              | sum(start=[])
+        %}
+      {# determine unique datetimes used in the forecasts #}
+        {% set datetimes = forecasts | map(attribute='datetime') | select() | unique | list %}
+        {%- for d in datetimes -%}
+          {%- set dt = as_local(as_datetime(d)) %}
+          {%- set dt = dt.replace(hour=0) if type == 'daily' else dt %}
+          {%- set ns.d = ns.d | default([]) + [dt.isoformat() ] -%}
+        {%- endfor -%}
+        {%- set datetimes = ns.d | unique | sort -%}
+      {# create list of keys used in the forecasts #}
+        {% for f in forecasts %}
+          {% set ns.keys = ns.keys | default([]) + f.keys() | list %}
+        {% endfor %}
+        {% set keys = ns.keys | unique | list %}
+      {# create overview of forecasts #}
+      {% for d in datetimes %}
         {%- for f in forecasts -%}
           {%- if (
                     as_datetime(d) == as_datetime(f.datetime)
@@ -172,43 +230,33 @@ weather:
                     else as_local(as_datetime(d)).date() == as_local(as_datetime(f.datetime)).date()
                   )
           -%}
-              {%- set ns.f = ns.f + [f] -%}
+              {%- set ns.f = ns.f | default([]) + [f] -%}
           {%- endif -%}
         {%- endfor -%}
-        {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
-        {%- for item in call | unique -%}
-          {%- set cnt = call | select('eq', item) | list | length -%}
-          {%- if loop.first or cnt > ns.most_common.count -%}
-            {%- set ns.most_common = {'item':item,'count':cnt} -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- set c = ns.most_common.item -%}
-        {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
-        {%- set pp = ns.f | selectattr('precipitation_probability', 'defined') | map(attribute='precipitation_probability') | select('is_number')  | list -%}
-        {%- set pp = pp | average | round(1) if pp else 'nan' -%}
-        {%- set wb = ns.f | selectattr('wind_bearing', 'defined') | map(attribute='wind_bearing') | select('is_number')  | list -%}
-        {%- set wb = wb | average | round(1) if wb else 'nan' -%}
-        {%- set t = ns.f | selectattr('temperature', 'defined') | map(attribute='temperature') | select('is_number') | list -%}
-        {%- set t = t | average | round(1) if t else 'nan' -%}
-        {%- set ws = ns.f | selectattr('wind_speed', 'defined') | map(attribute='wind_speed') | select('is_number')  | list -%}
-        {%- set ws = ws | average | round(1) if ws else 'nan' -%}
-        {%- set p = ns.f | selectattr('precipitation', 'defined') | map(attribute='precipitation') | select('is_number') | list -%}
-        {%- set p = p | average | round(1) if p else 'nan' -%}
-        {%- set date = as_local(as_datetime(d)).isoformat() -%}
-        {%- for e in expand(entities) -%}
-          {%- for f in e.attributes.forecast -%}
-            {%- if as_datetime(f.datetime) == as_datetime(d) -%}
-              {%- set ns.a = ns.a + [ e.entity_id ] -%}
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
-        {%- set a = ns.a -%}
-        {%- set ns.a = [] -%}
-        {%- set f = dict(datetime = date, condition = c, condition_all = call, precipitation_probability = pp, wind_bearing = wb, temperature = t, wind_speed = ws, precipitation = p, entities = a) -%}
-        {%- set ns.forecast = ns.forecast + [ dict(f.items() | list | rejectattr('1', 'eq', 'nan')) ] -%}
-        {%- set ns.f = [] -%}
-        {%- set ns.most_common = {'item':none,'count':none} -%}
-      {%- endfor -%}
+        {% set ns.f_temp = dict({}, **{'datetime': d}) %}
+        {% for k in keys %}
+          {% if k == 'condition' %}
+            {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
+            {%- for item in call | unique -%}
+              {%- set cnt = call | select('eq', item) | list | length -%}
+              {%- if loop.first or cnt > ns.most_common.count -%}
+                {%- set ns.most_common = {'item':item,'count':cnt} -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- set c = ns.most_common.item -%}
+            {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
+            {%- set add = {k: c, 'condition_all': call} %}
+            {% set ns.f_temp = dict(ns.f_temp, **add) %}
+          {% elif k != 'datetime' %}
+            {% set values = ns.f | selectattr(k, 'defined') | map(attribute=k) | list %}
+            {% if values | count > 0 %}
+              {% set add = {k: values | average | round(2)} %}
+              {% set ns.f_temp = dict(ns.f_temp, **add) %}
+            {% endif %}
+          {% endif %}
+        {% endfor  %}
+        {% set ns.forecast = ns.forecast | default([]) + [ns.f_temp] %}
+      {% endfor %}
       {{ ns.forecast }}
 
   # Combined template weather entity using daily forecasts
@@ -223,6 +271,10 @@ weather:
     wind_speed_template: *wind_speed
     visibility_template: *visibility
     ozone_template: *ozone
+    dew_point_template: *dew_point
+    cloud_coverage_template: *cloud_coverage
+    wind_gust_speed_template: *wind_gust_speed
+    apparent_temperature_template: *apparent_temp
     temperature_unit: *temperature_unit
     pressure_unit: *pressure_unit
     wind_speed_unit: *wind_speed_unit
