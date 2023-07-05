@@ -1,6 +1,6 @@
 - trigger:
     - platform: state
-      entity_id: sensor.bt_proxy_1st_floor_xiaomi_mi_scale_weight
+      entity_id: sensor.sonoff_slaapkamer_plafond_xiaomi_mi_scale_weight
       not_to: "unavailable"
       for:
         seconds: 10
@@ -33,7 +33,7 @@
       state_class: measurement
       icon: mdi:omega
       state: &imp >
-        {%- set i = 'sensor.bt_proxy_1st_floor_xiaomi_mi_scale_impedance' %}
+        {%- set i = 'sensor.sonoff_slaapkamer_plafond_xiaomi_mi_scale_impedance' %}
         {%- set valid = states(i) | is_number and now() - states[i].last_changed < timedelta(seconds=30) %}
         {{ states(i) if name in this.entity_id and valid else this.state }}
     - unique_id: 3aa91cd3-c2b2-4910-be24-55f1fd379213

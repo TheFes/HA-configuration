@@ -11,14 +11,14 @@ input_boolean:
   floris_mini:
     name: Floris Mini
     icon: mdi:teddy-bear
-  woonkamer_mini:
-    name: Woonkamer Mini
+  woonkamer_home:
+    name: Woonkamer Home
     icon: mdi:sofa
   zolder_mini_marleen:
     name: Zolder Mini Marleen
     icon: mdi:human-female
-  zolder_mini_martijn:
-    name: Zolder Mini Martijn
+  zolder_werkkamer_stereo:
+    name: Werkkamer Zolder Stereo
     icon: mdi:human-male
   beneden_groep:
     name: Beneden Groep
@@ -44,13 +44,13 @@ group:
       - input_boolean.zolder_groep
       - input_boolean.boven_groep
       - input_boolean.beneden_groep
-      - input_boolean.zolder_mini_martijn
+      - input_boolean.zolder_werkkamer_stereo
       - input_boolean.zolder_mini_marleen
-      - input_boolean.slaapkamer_hub
+      - input_boolean.slaapkamer_home
       - input_boolean.floris_mini
       - input_boolean.pepijn_mini
       - input_boolean.keuken_hub
-      - input_boolean.woonkamer_mini
+      - input_boolean.woonkamer_home
 
 input_number:
   tts_volume:
@@ -95,6 +95,8 @@ script:
       default_selection: "Huis groep"
       reset_booleans: True
     sequence:
+      - service: script.google_home_settings
+        response_variable: settings
       - variables:
           target: >
             {%
@@ -104,7 +106,7 @@ script:
                             | map('replace', 'input_boolean', 'media_player')
                             | list
             %}
-            {% set speaker_groups = state_attr('script.google_home_resume', 'settings').speaker_groups %}
+            {% set speaker_groups = settings.speaker_groups %}
             {% set members_selected = speaker_groups.items() | selectattr('0', 'in', target) | map(attribute='1') | sum(start=[]) %}
             {{ target | reject('in', members_selected) |list }}
       - if:
