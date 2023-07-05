@@ -1480,6 +1480,46 @@ script:
               - event: store_data
                 event_data:
                   resume_data: "{{ resume_data }}"
+  tts_and_resume:
+    alias: "00 - Google Home Send TTS and resume"
+    description: Script for resuming Google Home speakers
+    icon: mdi:cast-audio
+    mode: parallel
+    fields:
+      target:
+        description: "Enter the targets for the TTS message"
+        required: true
+        selector:
+          target:
+            entity:
+              integration: cast
+              domain: media_player
+            device:
+              integration: cast
+      message:
+        description: "Message to be sent as TTS"
+        required: true
+        selector:
+          text:
+      tts_service:
+        description: "TTS service to use"
+        required: true
+        selector:
+          text:
+      large_text:
+        description: "Large text to be displayed during the TTS message"
+        selector:
+          text:
+      small_text:
+        description: "Small text to be displayed during the TTS message"
+        selector:
+          text:
+      image:
+        description: "Image to be displayed during the TTS message"
+        selector:
+          media:
+    sequence:
+      delay: 0
 
 # Template sensor to store the data for the event script
 template:
