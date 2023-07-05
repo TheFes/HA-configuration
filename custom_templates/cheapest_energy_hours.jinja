@@ -1,7 +1,7 @@
-{%- macro cheapest_energy_hours(sensor, hours, start, end, time_key, value_key, include_today, include_tomorrow, lowest, mode, look_ahead, time_format, no_weight_points, weight) -%}
+{%- macro cheapest_energy_hours(sensor, hours, start, end, attr_today, attr_tomorrow, time_key, value_key, include_today, include_tomorrow, lowest, mode, look_ahead, time_format, no_weight_points, weight) -%}
     {# Get data out of the selected entity #}
-        {%- set today = state_attr(sensor, 'raw_today') -%}
-        {%- set tomorrow = state_attr(sensor, 'raw_tomorrow') -%}
+        {%- set today = state_attr(sensor, attr_today | default('raw_today')) -%}
+        {%- set tomorrow = state_attr(sensor, attr_tomorrow | default('raw_tomorrow')) -%}
         {%- set m = mode | default('start') -%}
         {%- set wp = no_weight_points | default(1) | int(1) -%}
         {%- set h = hours | default(1) | int(1) -%}
@@ -24,7 +24,7 @@
     {# Check if data is available and mode is correct#}
         {%- if not today and not tomorrow -%}
             No valid data in selected sensor
-        {%- elif m not in ['min', 'max', 'average', 'start', 'end', 'list', 'weighted_average'] -%}
+        {%- elif m not in ['min', 'max', 'average', 'start', 'end', 'list', 'weighted_average','time_min','time_max'] -%}
             Invalid mode selected
         {%- else -%}
             {# Set defaults for variables which are not provided #}
@@ -63,7 +63,7 @@
                             {%- set values = ns.values -%}
                             {%- set str = false -%}
                             {%- endif -%}
-                        {%- set ns = namespace(average=none, start=none, min=none, max=none, weighted_average=none) -%}
+                        {%- set ns = namespace(average=none, start=none, min=none, max=none, weighted_average=none, time_min=none, time_max=none) -%}
                         {%- for i in values[:values|length-(h*wp-1)] -%}
                             {%- set ix = loop.index0 -%}
                             {%- set list = values[ix:ix+h*wp] | map(attribute=vk) | list  -%}
@@ -89,10 +89,15 @@
                                 {%- set ns.average = list | average -%}
                                 {%- set ns.start = as_datetime(i[tk]) if str else i[tk] -%}
                                 {%- set ns.end = ns.start + timedelta(hours=h) -%}
+                                {%- set index_min = ns.list.index(ns.min) -%}
+                                {%- set index_max = ns.list.index(max) -%}
+                                {%- set ns.time = values[ix:ix+h*wp] | map(attribute=tk) | list -%}
+                                {%- set ns.time_min = as_datetime(ns.time[index_min]) if str else ns.time[index_min] -%}
+                                {%- set ns.time_max = as_datetime(ns.time[index_max]) if str else ns.time[index_max] -%}
                             {%- endif -%}
                         {%- endfor -%}
                         {# output date based on the selected mode#}
-                            {%- if m in [ 'start', 'end'] -%}
+                            {%- if m in [ 'start', 'end','time_min','time_max'] -%}
                                 {%- if time_format is defined -%}
                                     {%- set format = dict(time12='%I:%M %p', time24='%H:%M') -%}
                                     {{- ns[m].strftime(format[time_format] | default(time_format)) -}}

@@ -15,20 +15,23 @@ template:
               states.weather
                 | rejectattr('state', 'in', [ 'unavailable', 'unknown'])
                 | map(attribute='entity_id')
-                | reject('search', 'combined')
+                | reject('in', integration_entities('template') + integration_entities('wundergroundpws'))
                 | list
             }}
           no_forecast: >
             {{
-              expand(this.attributes.get('entities',[]))
+              states.weather
+                | rejectattr('state', 'in', [ 'unavailable', 'unknown'])
                 | rejectattr('attributes.forecast', 'defined')
                 | map(attribute='entity_id')
+                | reject('in', integration_entities('template') + integration_entities('wundergroundpws'))
                 | list
             }}
           hourly: >
             {%- set ns = namespace(hourly=[]) -%}
-            {%- for w in expand(this.attributes.get('entities', []))
-                          | rejectattr('entity_id', 'in', this.attributes.get('no_forecast', []))
+            {%- for w in states.weather
+                          | selectattr('attributes.forecast', 'defined')
+                          | rejectattr('entity_id', 'in', integration_entities('template') + integration_entities('wundergroundpws'))
             -%}
               {%- set f0 = as_datetime(w.attributes.forecast[0].datetime) -%}
               {%- set f1 = as_datetime(w.attributes.forecast[1].datetime) -%}
@@ -38,13 +41,18 @@ template:
             {%- endfor -%}
             {{ ns.hourly }}
           daily: >
-            {%- set reject = this.attributes.get('no_forecast', []) + this.attributes.get('hourly', []) -%}
-            {{ expand(this.attributes.get('entities', []))
-                          | rejectattr('entity_id', 'in', reject)
-                          | selectattr('attributes.forecast')
-                          | map(attribute='entity_id')
-                          | list
-            }}
+            {%- set ns = namespace(daily=[]) -%}
+            {%- for w in states.weather
+                          | selectattr('attributes.forecast', 'defined')
+                          | rejectattr('entity_id', 'in', integration_entities('template') + integration_entities('wundergroundpws'))
+            -%}
+              {%- set f0 = as_datetime(w.attributes.forecast[0].datetime) -%}
+              {%- set f1 = as_datetime(w.attributes.forecast[1].datetime) -%}
+              {%- if f1 - f0 == timedelta(days=1) -%}
+                {%- set ns.daily = ns.daily + [ w.entity_id ] -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {{ ns.daily }}
 
 weather:
   # Combined template weather entity using hourly forecasts
@@ -208,61 +216,70 @@ weather:
                               | map(attribute='attributes.forecast')
                               | sum(start=[])
         %}
-      {# determine unique datetimes used in the forecasts #}
-        {%- if forecasts | count > 0 %}     
-          {%- set datetimes = forecasts | map(attribute='datetime') | select() | unique | list %}
-          {%- for d in datetimes -%}
-            {%- set dt = as_local(as_datetime(d)) %}
-            {%- set dt = dt.replace(hour=0) if type == 'daily' else dt %}
-            {%- set ns.d = ns.d | default([]) + [dt.isoformat() ] -%}
-          {%- endfor -%}
-          {%- set datetimes = ns.d | unique | sort -%}
-        {# create list of keys used in the forecasts #}
-          {%- for f in forecasts %}
-            {%- set ns.keys = ns.keys | default([]) + f.keys() | list %}
-          {%- endfor %}
-          {%- set keys = ns.keys | unique | list %}
-        {# create overview of forecasts #}
-        {%- for d in datetimes %}
-          {%- set ns.f = [] %}
-          {%- for f in forecasts -%}
-            {%- if (
-                      as_datetime(d) == as_datetime(f.datetime)
-                      if type == 'hourly'
-                      else as_local(as_datetime(d)).date() == as_local(as_datetime(f.datetime)).date()
-                    )
-            -%}
-                {%- set ns.f = ns.f | default([]) + [f] -%}
-            {%- endif -%}
-          {%- endfor -%}
-          {%- set ns.f_combine = dict(datetime= d) %}
-          {%- for k in keys %}
-            {%- if k == 'condition' %}
-              {%- set ns.condition_cnt = {} %}
-              {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
-              {%- for item in call | unique -%}
-                {%- set cnt = call | select('eq', item) | list | count -%}
-                  {%- set ns.condition_cnt = dict(ns.condition_cnt, **{item: cnt}) %}
+        {# check if there are forecasts, otherwise output none #}
+          {%- if forecasts | count > 0 %}
+            {# determine unique datetimes used in the forecasts #}
+              {%- set datetimes = forecasts | map(attribute='datetime') | select() | unique | list %}
+              {%- for d in datetimes -%}
+                {%- set dt = as_local(as_datetime(d)) %}
+                {%- set dt = dt.replace(hour=0) if type == 'daily' else dt %}
+                {%- set ns.d = ns.d | default([]) + [dt.isoformat() ] -%}
               {%- endfor -%}
-              {%- set c_sort = ns.condition_cnt.items() | sort(attribute='1', reverse=true) | list %}
-              {%- set c = c_sort | map(attribute='0') | first -%}
-              {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
-              {%- set add = {k: c, 'condition_all': dict(ns.condition_cnt.items() | sort(attribute='1', reverse=true))} %}
-              {%- set ns.f_combine = dict(ns.f_combine, **add) %}
-            {%- elif k != 'datetime' %}
-              {%- set values = ns.f | selectattr(k, 'defined') | map(attribute=k) | list %}
-              {%- if values | count > 0 %}
-                {%- set add = {k: values | average | round(2)} %}
-                {%- set ns.f_combine = dict(ns.f_combine, **add) %}
-              {%- endif %}
-            {%- endif %}
-          {%- endfor  %}
-          {%- set ns.forecast = ns.forecast | default([]) + [ns.f_combine] %}
-        {%- endfor %}
-        {{ ns.forecast }}
-      {%- else %}
-        none
-      {%- endif %}
+              {%- set datetimes = ns.d | unique | sort -%}
+            {# create overview of forecasts based on the unique datetimes #}
+              {%- for d in datetimes %}
+                {# find forecasts with the same timestamp #}
+                  {%- set ns.f = [] %}
+                  {%- for f in forecasts -%}
+                    {%- if (
+                              as_datetime(d) == as_datetime(f.datetime)
+                              if type == 'hourly'
+                              else as_local(as_datetime(d)).date() == as_local(as_datetime(f.datetime)).date()
+                            )
+                    -%}
+                        {%- set ns.f = ns.f | default([]) + [f] -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {# find keys used in these forecasts #}
+                  {%- set ns.keys = [] %}
+                  {%- for f in forecasts %}
+                    {%- set ns.keys = ns.keys | default([]) + f.keys() | list %}
+                  {%- endfor %}
+                  {%- set keys = ns.keys | unique | list %}
+                {# add datetime to forecast #}
+                  {%- set ns.f_combine = dict(datetime= d) %}
+                {# add other keys #}
+                {%- for k in keys %}
+                  {%- if k == 'condition' %}
+                    {# condition (both most common, and all of them with the relative count) #}
+                      {%- set ns.condition_cnt = {} %}
+                      {%- set call = ns.f | selectattr('condition', 'defined') | map(attribute='condition') | list -%}
+                      {%- for item in call | unique -%}
+                        {%- set cnt = call | select('eq', item) | list | count -%}
+                          {%- set ns.condition_cnt = dict(ns.condition_cnt, **{item: cnt}) %}
+                      {%- endfor -%}
+                      {%- set c_sort = ns.condition_cnt.items() | sort(attribute='1', reverse=true) | list %}
+                      {%- set c = c_sort | map(attribute='0') | first -%}
+                      {%- set call = call | unique | list if call | unique | list | count > 1 else 'nan' -%}
+                      {%- set add = {k: c, 'condition_all': dict(ns.condition_cnt.items() | sort(attribute='1', reverse=true))} %}
+                      {%- set ns.f_combine = dict(ns.f_combine, **add) %}
+                  {%- elif k != 'datetime' %}
+                    {# add average of other keys #}
+                      {%- set values = ns.f | selectattr(k, 'defined') | map(attribute=k) | list %}
+                      {%- if values | count > 0 %}
+                        {%- set add = {k: values | average | round(2)} %}
+                        {%- set ns.f_combine = dict(ns.f_combine, **add) %}
+                      {%- endif %}
+                  {%- endif %}
+                {%- endfor %}
+              {# add the forecasts for each datetime together #}
+                {%- set ns.forecast = ns.forecast | default([]) + [ns.f_combine] %}
+              {%- endfor %}
+            {# output the forecasts #}
+              {{ ns.forecast }}
+        {%- else %}
+          none
+        {%- endif %}
 
   # Combined template weather entity using daily forecasts
   - platform: template

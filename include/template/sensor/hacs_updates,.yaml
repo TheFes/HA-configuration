@@ -1,0 +1,22 @@
+- sensor:
+    - unique_id: 61cbbd80-1ede-4d9e-92ad-b4dfecb4612b
+      name: HACS Updates
+      state: >
+        {{
+          integration_entities('hacs')
+            | select('search', '^update.')
+            | select('is_state', 'on')
+            | list
+            | count
+        }}
+      icon: mdi:update
+      state_class: measurement
+      unit_of_measurement: "updates"
+      attributes:
+        entity_id: >
+          {{
+            integration_entities('hacs')
+              | select('search', '^update.')
+              | select('is_state', 'on')
+              | list
+          }}
