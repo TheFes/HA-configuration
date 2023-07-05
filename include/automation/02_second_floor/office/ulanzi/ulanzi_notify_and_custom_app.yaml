@@ -84,9 +84,9 @@ condition:
   - "{{ update | default(true) | bool(true) }}"
   - "{{ deactivate is defined or plot_graph is defined or text is defined }}"
 action:
-  - if: "{{ deactivate }}"
+  - if: "{{ deactivate | default(false) }}"
     then:
-      - alias: "Update custom app or send notification"
+      - alias: "Deactivate app"
         service: mqtt.publish
         data:
           qos: 0
