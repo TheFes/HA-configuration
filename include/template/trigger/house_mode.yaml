@@ -1,4 +1,7 @@
 - trigger:
+    - platform: event
+      event_type: set_house_mode
+      id: house_mode_event
     - platform: state
       entity_id:
         - input_boolean.vakantie
@@ -25,7 +28,9 @@
     - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
       name: House Mode
       state: >-
-        {%- if is_state('zone.home', '0')
+        {%- if trigger.id == 'hous_mode_event' %}
+          {{ trigger.event.data.mode }}
+        {%- elif is_state('zone.home', '0')
             and is_state('input_boolean.gast', 'off')
             and is_state('input_boolean.vakantie', 'on') %}
           Vakantie
