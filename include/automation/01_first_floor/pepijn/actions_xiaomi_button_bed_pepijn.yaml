@@ -19,6 +19,7 @@ variables:
     {% else %}
       out
     {% endif %}
+  sleep_color: "{{ 'red' if is_state('sensor.house_mode', 'Slapen') else 'pink' }}"
 action:
   - alias: "Which click type"
     choose:
@@ -41,7 +42,7 @@ action:
                     target:
                       entity_id: light.graafmachine
                     data:
-                      color_name: red
+                      color_name: "{{ sleep_color }}"
                       brightness: 30
                   - delay: >
                       {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}

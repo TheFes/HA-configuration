@@ -32,9 +32,9 @@
           {%- endif %}
         {%- else %}
           {%- if lang == 'EN' %}
-            {{ 'In ' ~ (days_until / 7) | round(0, 'ceiling') ~ ' weeks' }}
+            {{ 'In ' ~ (days_until / 7) | round(0, 'ceil') ~ ' weeks' }}
           {%- else %}
-            {{ 'Over ' ~ (days_until / 7) | round(0, 'ceiling') ~ ' weken' }}
+            {{ 'Over ' ~ (days_until / 7) | round(0, 'ceil') ~ ' weken' }}
           {%- endif %}
         {%- endif %}
       icon: mdi:trash-can
