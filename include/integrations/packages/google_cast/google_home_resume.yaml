@@ -369,13 +369,13 @@ script:
                 {%- set total_list = total_list | select('in', cast_entities) | list %}
             {%- endif %}
             {# avoid to target both complete speaker groups and single members #}
-              {{ total_list }}
               {%- set members = player_data
                                   | selectattr('entity_id', 'in', total_list)
                                   | map(attribute='members')
                                   | sum(start=[])
               %}
               {% set target_list = total_list | reject('in', members) | list %}
+              {{ target_list }}
       - variables:
           players_to_resume: >
             {%- set target_list = players_to_resume if players_to_resume is defined else target_list %}
@@ -760,7 +760,7 @@ script:
                         event_script
                         or ytube_resume
                         or (
-                            (states[player.entity_id].last_changed > as_datetime(start_time))
+                            (states[player.entity_id].last_updated > as_datetime(start_time))
                             and expand([player.entity_id] + player.members)
                                   | selectattr('state', 'eq', 'playing')
                                   | list | count > 0
@@ -1520,6 +1520,67 @@ script:
           media:
     sequence:
       delay: 0
+
+  play_and_resume:
+    alias: "00 - Google Home Play file and resume"
+    description: Script for resuming Google Home speakers
+    icon: mdi:cast-audio
+    mode: parallel
+    fields:
+      target:
+        description: "Enter the targets for the media file"
+        required: true
+        selector:
+          target:
+            entity:
+              integration: cast
+              domain: media_player
+            device:
+              integration: cast
+      title:
+        description: "Large text to be displayed while playing"
+        selector:
+          text:
+      artist:
+        description: "Small text to be displayed while playing"
+        selector:
+          text:
+      image:
+        description: "Image to be displayed while playing"
+        selector:
+          text:
+      file_media:
+        description: "Select file from your media folder"
+        required: true
+        selector:
+          media:
+    sequence:
+      - variables:
+          metadata: >
+            {% set ta = dict(dict(title=title | default(), artist = artist | default()).items() | selectattr('1')) %}
+            {% set p = dict(images = dict(url=image)) if image | default() else {} %}
+            {% set add = dict(ta, **p) %}
+            {{ dict(metadataType=3, **add) if add else {} }}
+          target_list: >
+            {% if target is defined and target.entity_id is defined %}
+              {% set add = (target.entity_id | replace(' ', '')).split(',') if target.entity_id is string else target.entity_id %}
+            {% endif %}
+            {{ [file_media.entity_id] + add | default([]) | unique | list }}
+      - alias: "Send to Google Home Resume script"
+        service: script.turn_on
+        data:
+          entity_id: script.google_home_resume
+          variables:
+            action:
+              - service: media_player.play_media
+                target:
+                  entity_id: "{{ target_list }}"
+                data:
+                  media_content_id: "{{ file_media.media_content_id }}"
+                  media_content_type: "{{ file_media.media_content_type }}"
+                  extra:
+                    metadata: "{{ metadata }}"
+            target_list: "{{ target_list }}"
 
 # Template sensor to store the data for the event script
 template:
