@@ -55,7 +55,7 @@ cards:
       cards:
         - type: grid
           square: false
-          columns: 4
+          columns: 5
           cards:
             - type: custom:mushroom-template-card
               secondary: Radio 2
@@ -76,7 +76,7 @@ cards:
                     background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'NPO Radio 2') }};
                   }
             - type: custom:mushroom-template-card
-              secondary: Radio Veronica
+              secondary: Veronica
               picture: /local/pictures/radio/radio_veronica.png
               layout: vertical
               icon_color: "{{ 'blue' if is_state(entity, 'Radio Veronica') }}"
@@ -129,6 +129,24 @@ cards:
                   ha-card { 
                     background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'KINK') }};
                   }
+            - type: custom:mushroom-template-card
+              secondary: StuBru
+              picture: /local/pictures/radio/stu_bru.png
+              layout: vertical
+              icon_color: "{{ 'blue' if is_state(entity, 'VRT Studio Brussel') }}"
+              entity: input_select.radio_channel
+              tap_action:
+                action: call-service
+                service: input_select.select_option
+                data:
+                  option: "VRT Studio Brussel"
+                target:
+                  entity_id: input_select.radio_channel
+              card_mod:
+                style: |
+                  ha-card { 
+                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'VRT Studio Brussel') }};
+                  }
   - type: grid
     square: false
     columns: 4
@@ -145,7 +163,8 @@ cards:
               "NPO Radio 2": "mdi:numeric-2-circle-outline",
               "Radio Veronica": "mdi:alpha-v-circle-outline",
               "Willy": "mdi:alpha-w-circle-outline",
-              "KINK": "mdi:alpha-k-circle-outline"
+              "KINK": "mdi:alpha-k-circle-outline",
+              "VRT Studio Brussel": "mdi:alpha-b-circle-outline"
             }
           %}
           {% if state_attr(entity | replace('input_boolean', 'media_player'), 'media_artist') in radio_icon.keys() | list %}
