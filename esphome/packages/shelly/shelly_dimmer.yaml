@@ -45,6 +45,13 @@ light:
     restore_mode: ${restore_mode}
     default_transition_length: 1s
     gamma_correct: ${gamma_correct}
+    effects:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "Slow Pulse"
     firmware:
       version: "51.6"
       update: true
