@@ -1,6 +1,6 @@
 {#
   set phrases to be used in the relative_time_period macro
-  one list item per language, each time fraction contains a list with the singular, plural and verbose phrase
+  one list item per language, each time fraction contains a list with the singular, plural and abbriviated phrase
   combine contains the text to combine the last time fraction, and error the text to display on wrong date input
 #}
 {%- set time_period_phrases = [
@@ -132,7 +132,7 @@
 {%- endmacro -%}
 
 {# macro to output a timedelta in a readable format #}
-{%- macro relative_time_plus(date, parts, week, time, verbose, language, compare_date) -%}
+{%- macro relative_time_plus(date, parts, week, time, abbr, language, compare_date, verbose) -%}
   {#- set defaults for input if not entered #}
     {%- set date = date | as_datetime if date is string or date is number else date -%}
     {%- set compare_date = compare_date if compare_date is defined else now() -%}
@@ -149,7 +149,7 @@
       {%- set parts = parts | default(1) | int(1) -%}
       {%- set week = week | default(true) | bool(true) -%}
       {%- set time = time | default(true) | bool(true) -%}
-      {%- set verbose = verbose | default(false) | bool(false) -%}
+      {%- set abbr = abbr | default(false) | bool(false) or verbose | default(false) | bool(false) -%}
       {%- set language = language | default('first') -%}
       {%- set date = date if time else today_at().replace(year=date.year, month=date.month, day=date.day) -%}
       {%- set tp = time_split(date, time, compare_date) | from_json -%}
@@ -157,13 +157,13 @@
       {%- set wk = tp.w if week else 0 -%}
       {%- set dy = tp.d if week else tp.d + tp.w * 7 -%}
       {%- set dur = dict(
-                          yrs = dict(a=tp.y, d=phr.year[2] if verbose else phr.year[1] if tp.y > 1 else phr.year[0]),
-                          mth = dict(a=tp.mo, d=phr.month[2] if verbose else phr.month[1] if tp.mo > 1 else phr.month[0]),
-                          wks = dict(a=wk, d=phr.week[2] if verbose else phr.week[1] if wk > 1 else phr.week[0]),
-                          day = dict(a=dy, d=phr.day[2] if verbose else phr.day[1] if dy > 1 else phr.day[0]),
-                          hrs = dict(a=tp.h, d=phr.hour[2] if verbose else phr.hour[1] if tp.h > 1 else phr.hour[0]),
-                          min = dict(a=tp.m, d=phr.minute[2] if verbose else phr.minute[1] if tp.m > 1 else phr.minute[0]),
-                          sec = dict(a=tp.s, d=phr.second[2] if verbose else phr.second[1] if tp.s > 1 else phr.second[0])
+                          yrs = dict(a=tp.y, d=phr.year[2] if abbr else phr.year[1] if tp.y > 1 else phr.year[0]),
+                          mth = dict(a=tp.mo, d=phr.month[2] if abbr else phr.month[1] if tp.mo > 1 else phr.month[0]),
+                          wks = dict(a=wk, d=phr.week[2] if abbr else phr.week[1] if wk > 1 else phr.week[0]),
+                          day = dict(a=dy, d=phr.day[2] if abbr else phr.day[1] if dy > 1 else phr.day[0]),
+                          hrs = dict(a=tp.h, d=phr.hour[2] if abbr else phr.hour[1] if tp.h > 1 else phr.hour[0]),
+                          min = dict(a=tp.m, d=phr.minute[2] if abbr else phr.minute[1] if tp.m > 1 else phr.minute[0]),
+                          sec = dict(a=tp.s, d=phr.second[2] if abbr else phr.second[1] if tp.s > 1 else phr.second[0])
                         )
       -%}
     {#- find first non zero time period #}
