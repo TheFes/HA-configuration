@@ -265,7 +265,7 @@ weather:
                       {%- set ns.f_combine = dict(ns.f_combine, **add) %}
                   {%- elif k != 'datetime' %}
                     {# add average of other keys #}
-                      {%- set values = ns.f | selectattr(k, 'defined') | map(attribute=k) | list %}
+                      {%- set values = ns.f | selectattr(k, 'defined') | map(attribute=k) | select('is_number') | list %}
                       {%- if values | count > 0 %}
                         {%- set add = {k: values | average | round(2)} %}
                         {%- set ns.f_combine = dict(ns.f_combine, **add) %}
