@@ -110,18 +110,22 @@ template:
                 {{ dict(c.items() | rejectattr('0', 'eq', d)) }}
               {%- else -%}
                 {%- if st == 'first' -%}
-                  {%- set p = {d: dict(data=[], state=s, no_weight_points=wp, complete=false)} -%}
+                  {%- set p = {d: dict(data=[], state=s, start=s, no_weight_points=wp, complete=false)} -%}
                 {%- elif st == 'complete' -%}
-                  {%- set data = c.get(d, {}).get('data', []) -%}
+                  {%- set values = c.get(d, {}) -%}
+                  {%- set data = values.get('data', []) -%}
+                  {%- set u = values.get('state', 0) - values.get('start', 0) -%}
                   {%- set no_zero = data | select() | list -%}
                   {%- set factor = 1 / no_zero | min if no_zero else 0 -%}
                   {%- set data = data | map('multiply', factor) | map('round', 3) | list -%}
-                  {%- set p = {d: dict(data=data, no_weight_points=wp, complete=true)} -%}
+                  {%- set p = {d: dict(data=data, kwh_used=u, no_weight_points=wp, complete=true)} -%}
                 {%- elif st == 'ongoing' -%}
-                  {%- set data = c.get(d, {}).get('data', []) -%}
-                  {%- set u = s - c.get(d, {}).get('state', 0) -%}
+                  {%- set values = c.get(d, {}) -%}
+                  {%- set data = values.get('data', []) -%}
+                  {%- set u = s - values.get('state', 0) -%}
+                  {%- set start = values.get('start', 0) -%}
                   {%- set data = data + [u | round(3)] -%}
-                  {%- set p = {d: dict(data=data, state=s, no_weight_points=wp, complete=false)} -%}
+                  {%- set p = {d: dict(data=data, state=s, start=start, no_weight_points=wp, complete=false)} -%}
                 {%- else -%}
                   {%- set p = {} -%}
                 {%- endif -%}
@@ -134,7 +138,7 @@ template:
 ## AUTOMATION TO START THE SCRIPT ##
 automation:
   - id: 2794cd64-a5d0-48e3-9edb-08527ac231bc
-    alias: "F02 - Plot Wasmachine Energy"
+    alias: "F2L - Plot Wasmachine Energy"
     trigger:
       - platform: state
         entity_id: sensor.wasmachine
@@ -155,3 +159,23 @@ automation:
             stop_state: "off"
             sensor: sensor.wasmachine_energy
             stop_entity: sensor.wasmachine
+
+  - id: d334a854-86b4-4c8e-87b4-5c43b28fb042
+    alias: "F0K - Plot Dishwasher Energy"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_active
+        from: "off"
+        to: "on"
+    action:
+      - service: script.turn_on
+        target:
+          entity_id: script.plot_energy_usage
+        data:
+          variables:
+            description: >
+              {{ states('input_select.dishwasher_program')}} - {{ states('input_select.dishwasher_program_extra')}}
+            no_weight_points: 4
+            stop_state: "off"
+            sensor: sensor.vaatwasser_energy
+            stop_entity: binary_sensor.dishwasher_active
