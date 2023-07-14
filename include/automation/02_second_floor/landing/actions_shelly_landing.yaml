@@ -12,7 +12,7 @@ trigger:
     event_data:
       device: Wasmachinehoek
 condition:
-  - "{{ is_state('switch.zolder_shelly_control_light', 'off') if trigger.event.data.device == 'Zolder' else true }}"
+  - "{{ is_state('switch.zolder_control_light', 'off') if trigger.event.data.device == 'Zolder' else true }}"
 action:
   - variables:
       main: light.{{ trigger.event.data.device | lower }}_template

@@ -79,11 +79,11 @@ action:
                     after: "21:00:00"
                     before: "06:00:00"
                 then:
+                  - event: set_house_mode
+                    event_data:
+                      mode: Slapen
                   - delay: 20
                   - alias: "Turn off TV plug"
                     service: switch.turn_off
                     target:
                       entity_id: switch.tv_meubel
-                  - event: set_house_mode
-                    event_data:
-                      mode: Slapen
