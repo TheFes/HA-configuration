@@ -831,6 +831,9 @@ script:
                     then:
                       - alias: "Set variables"
                         variables:
+                          bbc: >
+                            {% set app, type = player.app_name, player.type %}
+                            {{ app == 'BBC Sounds' or (app | lower == 'bbc iplayer' and type == 'screen') }}
                           ytube_music: >
                             {{ player.app_name == 'Ytube Music Player' }}
                           spotify: >
@@ -846,6 +849,51 @@ script:
                             }}
                       - alias: "Resume playing"
                         choose:
+                          - alias: "BBC"
+                          - alias: "Ytube Music?"
+                            conditions: "{{ bbc }}"
+                            sequence:
+                              - alias: "Play video"
+                                service: media_player.play_media
+                                target:
+                                  entity_id: "{{ player.entity_id }}"
+                                data:
+                                  media_content_type: cast
+                                  media_content_id: '{{ dict(app_name="youtube", media_id=player.media_content_id) | to_json }}'
+                              - service: media_player.play_media
+                                target:
+                                  entity_id: "{{ player.entity_id }}"
+                                data:
+                                  media_content_type: cast
+                                  media_content_id: >
+                                    {%- set live = dict(is_live=true) if player.app_name == 'BBC Sounds' else {} %}
+                                    {%- set basic = dict(app_name=player.app_name | lower | replace(" ", ""), media_id=player.media_content_id) %}
+                                    {{ dict(basic, **live) | to_json }}
+                                  extra:
+                                    metadata:
+                                      metadataType: 0
+                                      title: "{{ player.media_title }}"
+                                      images:
+                                        - url: "{{ player.entity_picture }}"
+                              - if: "{{ player.app_name | lower == 'bbc iplayer' }}"
+                                then:
+                                  - alias: "Wait until video is playing"
+                                    wait_template: >
+                                      {{
+                                        is_state_attr(player.entity_id, 'media_content_id', player.media_content_id)
+                                        and iif(state_attr(player.entity_id, 'media_position'))
+                                      }}
+                                    timeout: "00:00:10"
+                                  - alias: "Go to the right position in the track when resume is performed"
+                                    if: "{{ wait.completed }}"
+                                    then: &seek
+                                      - alias: "Seek"
+                                        service: media_player.media_seek
+                                        target:
+                                          entity_id: "{{ player.entity_id }}"
+                                        data:
+                                          seek_position: >
+                                            {{ [0, player.media_position - 3] | max }}
                           - alias: "Ytube Music?"
                             conditions: "{{ ytube_music }}"
                             sequence:
@@ -861,14 +909,7 @@ script:
                                 timeout: "00:00:10"
                               - alias: "Go to the right position in the track when resume is performed"
                                 if: "{{ wait.completed }}"
-                                then: &seek
-                                  - alias: "Seek"
-                                    service: media_player.media_seek
-                                    target:
-                                      entity_id: "{{ player.entity_id }}"
-                                    data:
-                                      seek_position: >
-                                        {{ [0, player.media_position - 3] | max }}
+                                then: *seek
                           - alias: "YouTube?"
                             conditions: "{{ player.type == 'screen' and youtube }}"
                             sequence:
