@@ -7,69 +7,67 @@
 ## Google Home Event: https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_event.md
 ## Google Home Voice: https://github.com/TheFes/HA-configuration/blob/main/include/integrations/packages/google_cast/docs/google_home_voice.md
 
-homeassistant:
-  customize:
-    script.google_home_resume:
-      # enter settings for the script here, all settings are optional, you can remove sections if you don't need them
-      # always leave the line with "settings: &settings" in!
-      settings: &settings
-        primary_spotcast: "pepijn"
-        radio_data:
-          NPO Radio 2:
-            picture: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
-            title: "Er is maar één NPO Radio 2"
-          Radio Veronica:
-            picture: "http://192.168.2.3:8123/local/pictures/radio/radio_veronica.png"
-            title: "WE. LOVE. MUSIC."
-          Willy:
-            picture: "http://192.168.2.3:8123/local/pictures/radio/willy.png"
-            title: "MUSIC MATTERS"
-          KINK:
-            picture: "http://192.168.2.3:8123/local/pictures/radio/kink.jpg"
-            title: "NO ALTERNATIVE"
-        speaker_groups:
-          media_player.huis_groep:
-            - media_player.keuken_hub
-            - media_player.slaapkamer_hub
-            - media_player.pepijn_mini
-            - media_player.woonkamer_home
-            - media_player.werkamer_marleen_minini
-            - media_player.zolder_werkkamer_stereo
-            - media_player.floris_mini
-          media_player.boven_groep:
-            - media_player.pepijn_mini
-            - media_player.slaapkamer_hub
-            - media_player.werkamer_marleen_mini
-            - media_player.zolder_werkkamer_stereo
-            - media_player.floris_mini
-          media_player.beneden_groep:
-            - media_player.keuken_hub
-            - media_player.woonkamer_home
-          media_player.zolder_groep:
-            - media_player.slaapkamer_hub
-            - media_player.zolder_werkkamer_stereo
-        default_volume_level: 0.25
-        dummy_player: media_player.vlc_telnet
-        default_resume_delay:
-          seconds: 20
-        max_runtime:
-          minutes: 10
-        # settings for automation
-        enable_automation: true
-        dashboard_cast: true
-        announce_volume_automation: 0.4
-      # settings for voice script
-      voice_settings: &voice_settings
-        check_for_title: "Witte ruis"
-        use_resume: true
-
-#### TO UPDATE TO A NEW VERSION, REPLACE EVERYTHING BELOW THIS LINE ####
-
-# Group integration, to make sure the dynamic groups can be created
-group:
-
-# All the Google Home scripts, now in one package
 script:
+  google_home_settings:
+    sequence:
+      - variables:
+          # enter settings for the script here, all settings are optional, you can remove sections if you don't need them
+          # always leave the line with "settings: &settings" in!
+          settings: &settings
+            primary_spotcast: "pepijn"
+            radio_data:
+              NPO Radio 2:
+                picture: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
+                title: "Er is maar één NPO Radio 2"
+              Radio Veronica:
+                picture: "http://192.168.2.3:8123/local/pictures/radio/radio_veronica.png"
+                title: "WE. LOVE. MUSIC."
+              Willy:
+                picture: "http://192.168.2.3:8123/local/pictures/radio/willy.png"
+                title: "MUSIC MATTERS"
+              KINK:
+                picture: "http://192.168.2.3:8123/local/pictures/radio/kink.jpg"
+                title: "NO ALTERNATIVE"
+            speaker_groups:
+              media_player.huis_groep:
+                - media_player.keuken_hub
+                - media_player.slaapkamer_hub
+                - media_player.pepijn_mini
+                - media_player.woonkamer_home
+                - media_player.werkamer_marleen_minini
+                - media_player.zolder_werkkamer_stereo
+                - media_player.floris_mini
+              media_player.boven_groep:
+                - media_player.pepijn_mini
+                - media_player.slaapkamer_hub
+                - media_player.werkamer_marleen_mini
+                - media_player.zolder_werkkamer_stereo
+                - media_player.floris_mini
+              media_player.beneden_groep:
+                - media_player.keuken_hub
+                - media_player.woonkamer_home
+              media_player.zolder_groep:
+                - media_player.slaapkamer_hub
+                - media_player.zolder_werkkamer_stereo
+            default_volume_level: 0.25
+            dummy_player: media_player.vlc_telnet
+            default_resume_delay:
+              seconds: 20
+            max_runtime:
+              minutes: 10
+            # settings for automation
+            enable_automation: true
+            dashboard_cast: true
+            announce_volume_automation: 0.4
+          # settings for voice script
+          voice_settings: &voice_settings
+            check_for_title: "Witte ruis"
+            use_resume: true
+      - stop:
+        response_variable: settings
+
+  #### TO UPDATE TO A NEW VERSION, REPLACE EVERYTHING BELOW THIS LINE ####
+
   # The main Google Home Resume script
   google_home_resume:
     alias: "00 - Google Home Resume"
@@ -107,7 +105,7 @@ script:
     sequence:
       - alias: "Version number"
         variables: &version
-          version: &ver 2023.6.1
+          version: &ver 2023.7.0b
           settings: "{{ settings | default({}, true) }}"
       - alias: "Failsafe to remove all groups if the script was not running"
         if: >
@@ -133,7 +131,6 @@ script:
       - alias: "Set based on other scripts"
         variables:
           event_script: "{{ event_script | default(false) }}"
-          automation: "{{ automation | default(false) }}"
       - alias: "Set variables for service calls"
         variables: &service_vars
           service_calls: >
@@ -163,20 +160,6 @@ script:
           speaker_group_list: "{{ speaker_groups.keys() | list }}"
           cast_entities: "{{ integration_entities('cast') }}"
           spotify_entities: "{{ integration_entities('spotify') }}"
-          mass_entities: "{{ integration_entities('mass') | select('match', '^media_player.') | list }}"
-          cast_mass_playing: >
-            {%- if cast_mass_playing is defined %}
-              {{ cast_mass_playing }}
-            {%- else %}
-              {{
-                expand(integration_entities('cast'))
-                  | selectattr('attributes.media_title', 'defined')
-                  | selectattr('attributes.media_title', 'search', 'Streaming from Music Assistant')
-                  | map(attribute='entity_id')
-                  | list
-              }}
-            {%- endif %}
-          mass_playing: "{{ cast_mass_playing | map('replace', '.', '.mass_') | select() | list }}"
           primary_spotcast_check: >
             {%- set accounts = spotify_entities | map('replace', 'media_player.spotify_', '') | list %}
             {{ spotify_entities | count <= 1 or settings.get('primary_spotcast') in accounts }}
@@ -244,15 +227,6 @@ script:
                                     if type != 'playing_member'
                                     else dict(entity_id = entity.entity_id, type = type, members=[])
                   %}
-                  {# add information for Music Assistant #}
-                  {%- if mass_entities | count > 0 and type != 'playing_member' %}
-                    {%- set mass_data = dict(
-                                              mass_playing = entity.entity_id in cast_mass_playing,
-                                              mass_sync = entity.entity_id | replace('.', '.mass_')
-                                            )
-                    %}
-                    {%- set general = dict(general, **mass_data) %}
-                  {%- endif %}
                   {# check if there is a Spotify account playing on this entity #}
                   {%- set list_check = expand([ entity.entity_id ] + members) | map(attribute='name') | list %}
                   {%- set spotify_entity = expand(spotify_entities)
@@ -348,9 +322,8 @@ script:
               {%- set total_list = target_list %}
             {%- else %}
               {# create target lists #}
-              {# define target and entities_check variables #}
+              {# define target #}
                 {%- set target = target | default({}, true) %}
-                {%- set entities_check = cast_entities + mass_entities %}
               {# create lists based on target input #}
                 {%- set a = target.get('area_id', []) %}
                 {%- set d = target.get('device_id', []) %}
@@ -359,70 +332,50 @@ script:
                 {%- set d = (d | replace(' ', '')).split(',') if d is string else d %}
                 {%- set e = ((e | replace(' ', '')).split(',') if e is string else e) | select('in', cast_entities) | list %}
               {# add targets based on actions #}
+                {# macro #}
+                  {%- macro service_data(service_calls, type) -%}
+                    {%- macro to_string(item) -%}
+                      {{- (item if item is string else item | join(',')) | replace(' ', '') -}}
+                    {%- endmacro -%}
+                    {%- set ns = namespace(data=[]) -%}
+                    {%- for call in service_calls -%}
+                      {%- set input = [
+                                      call.get(type, []),
+                                      call.get('data', {}).get(type, []),
+                                      call.get('target', {}).get(type, []),
+                                      call.get('extra', {}).get(type, []),
+                                      call.get('data', {}).get('script_extra', {}).get(type, [])
+                                    ]
+                      -%}
+                      {%- for i in input -%}
+                        {%- set ns.data = ns.data + [to_string(i)] -%}
+                      {%- endfor -%}
+                    {%- endfor -%}
+                    {{- (ns.data | select() | join(',')) -}}
+                  {%- endmacro -%}
                 {# entities #}
-                  {%- set ns = namespace(e=e) %}
-                  {%- for call in service_calls %}
-                    {%- set e2 = [
-                                call.get('entity_id', []),
-                                call.get('data', {}).get('entity_id', []),
-                                call.get('target', {}).get('entity_id', []),
-                                call.get('extra', {}).get('entity_id', []),
-                                call.get('data', {}).get('script_extra', {}).get('entity_id', [])
-                              ] %}
-                    {%- set e2 = ([e2 | select('string') | join(',')] | reject('string') | sum(start=[])) | join(',') %}
-                    {%- set ns.e = [ns.e, e2 ] | select() | join(',') %}
-                  {%- endfor %}
-                  {%- set entity_list = e + (ns.e | replace(' ','')).split(',') | unique | list %}
+                  {%- set entity_list = e + service_data(service_calls, 'entity_id').split(',') | unique | list %}
                 {# devices #}
-                  {%- set ns = namespace(d=d) %}
-                  {%- for call in service_calls %}
-                    {%- set d2 = [
-                                call.get('device_id', []),
-                                call.get('data', {}).get('device_id', []),
-                                call.get('target', {}).get('device_id', []),
-                                call.get('extra', {}).get('device_id', []),
-                                call.get('data', {}).get('script_extra', {}).get('device_id', [])
-                              ] %}
-                    {%- set d2 = ([d2 | select('string') | join(',')] + d | reject('string') | sum(start=[])) | join(',') %}
-                    {%- set ns.d = [ns.d, d2 ] | select() | join(',') %}
-                  {%- endfor %}
-                  {%- set device_list = d + (ns.d | replace(' ', '')).split(',') | select() | unique | list %}
+                  {%- set device_list = d + service_data(service_calls, 'device_id').split(',') | unique | list %}
                 {# areas #}
-                  {%- set ns = namespace(a=a) %}
-                  {%- for call in service_calls %}
-                    {%- set a2 = [
-                                call.get('area_id', []),
-                                call.get('data', {}).get('area_id', []),
-                                call.get('target', {}).get('area_id', []),
-                                call.get('extra', {}).get('area_id', []),
-                                call.get('data', {}).get('script_extra', {}).get('area_id', [])
-                              ] %}
-                    {%- set a = ([a2 | select('string') | join(',')] + a | reject('string') | sum(start=[])) | join(',') %}
-                    {%- set ns.a = [ns.a, a2 ] | select() | join(',') %}
-                  {%- endfor %}
-                  {%- set area_list = a + (ns.a | replace(' ', '')).split(',') | select() | unique | list %}
+                  {%- set area_list = a + service_data(service_calls, 'area_id').split(',') | unique | list %}
               {# create entity list based on device/area input #}
                 {# determine entities of areas #}
                   {%- set area_list = area_list | map('area_entities') | sum(start=[]) | list %}
                 {# determine entities of devices #}
                   {%- set device_list = device_list | map('device_entities') | sum(start=[]) | list %}
-              {# create list with all cast and mass entities #}
+              {# create list with all cast entities #}
                 {%- set total_list = (area_list + device_list + entity_list) | unique | list %}
-                {%- set total_list = total_list | select('in', entities_check) | list %}
+                {%- set total_list = total_list | select('in', cast_entities) | list %}
             {%- endif %}
-            {# replace mass entities with cast entities #}
-              {%- if mass_entities and total_list | select('search', '.mass_') | list %}
-                {%- set no_mass = total_list | map('replace', '.mass_', '.') | list %}
-                {%- set total_list = no_mass | select('in', cast_entities) | unique | list %}
-              {%- endif %}
             {# avoid to target both complete speaker groups and single members #}
-              {{ total_list }}
               {%- set members = player_data
                                   | selectattr('entity_id', 'in', total_list)
                                   | map(attribute='members')
                                   | sum(start=[])
               %}
               {% set target_list = total_list | reject('in', members) | list %}
+              {{ target_list }}
       - variables:
           players_to_resume: >
             {%- set target_list = players_to_resume if players_to_resume is defined else target_list %}
@@ -578,15 +531,6 @@ script:
                     | list
                 }}
               command: interrupt_start
-      - alias: "Create Music Assistant snapshots if needed"
-        repeat: &mass_snapshot
-          for_each: "{{ mass_playing }}"
-          sequence:
-            - service: mass.queue_command
-              target:
-                entity_id: "{{ repeat.item }}"
-              data:
-                command: snapshot_create
       - alias: "Perform service calls defined in action"
         repeat:
           for_each: "{{ service_calls }}"
@@ -706,22 +650,12 @@ script:
                       continue_on_error: true
             - service: "{{ service_call.service }}"
               target: >
-                {%- set mass = target_entities | select('in', mass_playing) | list | count > 0 %}
-                {%- if mass %}
-                  {%- set ns = namespace(no_mass = []) %}
-                  {%- for entity in target_entities %}
-                    {%- set e = entity | replace('.mass_', '.') if entity in mass_playing else entity %}
-                    {%- set ns.no_mass = ns.no_mass + [ e ] %}
-                  {%- endfor %}
-                  {%- set target_entities = ns.target_no_mass %}
-                  {%- set media_entities = target | select('match', '^media_player') | list %}
-                {%- endif %}
                 {%- if screen and tts %}
                   {{ dict(entity_id = settings.dummy_player) }}
                 {%- elif tts and iif(target.get('area_id', '')) %}
                   {{ dict(entity_id = media_entities) }}
                 {%- else %}
-                  {{ dict(entity_id = target_entities) if mass else target }}
+                  {{ target }}
                 {%- endif %}
               data: "{{ data }}"
               continue_on_error: true
@@ -826,7 +760,7 @@ script:
                         event_script
                         or ytube_resume
                         or (
-                            (states[player.entity_id].last_changed > as_datetime(start_time))
+                            (states[player.entity_id].last_updated > as_datetime(start_time))
                             and expand([player.entity_id] + player.members)
                                   | selectattr('state', 'eq', 'playing')
                                   | list | count > 0
@@ -910,17 +844,8 @@ script:
                               player.media_content_id is defined
                               and player.media_content_id.startswith('http')
                             }}
-                          mass: "{{ player.get('mass_playing') | default(false, true) }}"
                       - alias: "Resume playing"
                         choose:
-                          - alias: "Music Assistant?"
-                            conditions: "{{ mass }}"
-                            sequence:
-                              - service: mass.queue_command
-                                data:
-                                  command: snapshot_restore
-                                target:
-                                  entity_id: "{{ player.mass_sync }}"
                           - alias: "Ytube Music?"
                             conditions: "{{ ytube_music }}"
                             sequence:
@@ -1158,8 +1083,6 @@ script:
       - alias: "Store data cast entities"
         variables:
           player_data: *player_data
-      - alias: "Create snapshot of active Music Assistant entities"
-        repeat: *mass_snapshot
       - alias: "Interrupt YouTube music if needed"
         if: >
           {{
@@ -1237,7 +1160,6 @@ script:
               variables:
                 target_list: "{{ target_list }}"
                 player_data: "{{ player_data }}"
-                cast_mass_playing: "{{ cast_mass_playing }}"
                 action: >
                   {%- set ns = namespace(action=[]) %}
                   {%- for item in service_calls %}
@@ -1423,7 +1345,7 @@ script:
                 {%- set a = a | map('area_entities') | sum(start=[]) | select('in', cast_entities) | list %}
               {# determine entities of devices #}
                 {%- set d = d | map('device_entities') | sum(start=[]) | select('in', cast_entities) | list %}
-            {# create list with all cast and mass entities #}
+            {# create list with all cast entities #}
             {{ (a + d + e) | unique | list }}
           target_list: >
             {%- set cast_entities = integration_entities('cast') %}
@@ -1440,7 +1362,7 @@ script:
                 {%- set a = a | map('area_entities') | sum(start=[]) | select('in', cast_entities) | list %}
               {# determine entities of devices #}
                 {%- set d = d | map('device_entities') | sum(start=[]) | select('in', cast_entities) | list %}
-            {# create list with all cast and mass entities #}
+            {# create list with all cast entities #}
               {%- set target_list = (a + d + e) | unique | list %}
             {{ target_list | default(cast_entities, true) | reject('in', ignore_list) | list }}
           all: "{{ target_list == integration_entities('cast') }}"
@@ -1469,7 +1391,6 @@ script:
                   resume_data_new:
                     - resume_id: "{{ resume_id }}"
                       player_data: "{{ player_data }}"
-                      cast_mass_playing: "{{ cast_mass_playing }}"
                   resume_data: >
                     {{ state_attr('binary_sensor.resume_data_google_home_event' , 'resume_data') | rejectattr('resume_id', 'eq', resume_id) | list + resume_data_new }}
               - event: store_data
@@ -1492,8 +1413,6 @@ script:
                             | list
                         }}
                       command: interrupt_start
-              - alias: "Create snapshot of active Music Assistant entities"
-                repeat: *mass_snapshot
               - variables:
                   also_stop_list: >
                     {# create also_stop lists #}
@@ -1542,13 +1461,6 @@ script:
                                           | list
                     %}
                     {{ player_list | select('in', target_list) | list }}
-                  cast_mass_playing: >
-                    {{
-                      state_attr('binary_sensor.resume_data_google_home_event', 'resume_data')
-                        | selectattr('resume_id', 'eq', resume_id)
-                        | map(attribute='cast_mass_playing')
-                        | first
-                    }}
               - alias: "Anything to resume?"
                 if: "{{ players_to_resume | count > 0 }}"
                 then:
@@ -1560,7 +1472,6 @@ script:
                       variables:
                         player_data: "{{ player_data }}"
                         players_to_resume: "{{ players_to_resume }}"
-                        cast_mass_playing: "{{ cast_mass_playing }}"
                         action: []
                         event_script: true
               - variables:
@@ -1569,6 +1480,107 @@ script:
               - event: store_data
                 event_data:
                   resume_data: "{{ resume_data }}"
+  tts_and_resume:
+    alias: "00 - Google Home Send TTS and resume"
+    description: Script for resuming Google Home speakers
+    icon: mdi:cast-audio
+    mode: parallel
+    fields:
+      target:
+        description: "Enter the targets for the TTS message"
+        required: true
+        selector:
+          target:
+            entity:
+              integration: cast
+              domain: media_player
+            device:
+              integration: cast
+      message:
+        description: "Message to be sent as TTS"
+        required: true
+        selector:
+          text:
+      tts_service:
+        description: "TTS service to use"
+        required: true
+        selector:
+          text:
+      large_text:
+        description: "Large text to be displayed during the TTS message"
+        selector:
+          text:
+      small_text:
+        description: "Small text to be displayed during the TTS message"
+        selector:
+          text:
+      image:
+        description: "Image to be displayed during the TTS message"
+        selector:
+          media:
+    sequence:
+      delay: 0
+
+  play_and_resume:
+    alias: "00 - Google Home Play file and resume"
+    description: Script for resuming Google Home speakers
+    icon: mdi:cast-audio
+    mode: parallel
+    fields:
+      target:
+        description: "Enter the targets for the media file"
+        required: true
+        selector:
+          target:
+            entity:
+              integration: cast
+              domain: media_player
+            device:
+              integration: cast
+      title:
+        description: "Large text to be displayed while playing"
+        selector:
+          text:
+      artist:
+        description: "Small text to be displayed while playing"
+        selector:
+          text:
+      image:
+        description: "Image to be displayed while playing"
+        selector:
+          text:
+      file_media:
+        description: "Select file from your media folder"
+        required: true
+        selector:
+          media:
+    sequence:
+      - variables:
+          metadata: >
+            {% set ta = dict(dict(title=title | default(), artist = artist | default()).items() | selectattr('1')) %}
+            {% set p = dict(images = dict(url=image)) if image | default() else {} %}
+            {% set add = dict(ta, **p) %}
+            {{ dict(metadataType=3, **add) if add else {} }}
+          target_list: >
+            {% if target is defined and target.entity_id is defined %}
+              {% set add = (target.entity_id | replace(' ', '')).split(',') if target.entity_id is string else target.entity_id %}
+            {% endif %}
+            {{ [file_media.entity_id] + add | default([]) | unique | list }}
+      - alias: "Send to Google Home Resume script"
+        service: script.turn_on
+        data:
+          entity_id: script.google_home_resume
+          variables:
+            action:
+              - service: media_player.play_media
+                target:
+                  entity_id: "{{ target_list }}"
+                data:
+                  media_content_id: "{{ file_media.media_content_id }}"
+                  media_content_type: "{{ file_media.media_content_type }}"
+                  extra:
+                    metadata: "{{ metadata }}"
+            target_list: "{{ target_list }}"
 
 # Template sensor to store the data for the event script
 template:
@@ -1585,146 +1597,5 @@ template:
           resume_data: >
             {{ trigger.event.data.resume_data }}
 
-# Automation for automatic resume after specific service calls
-automation:
-  - alias: 00 - Google Home Automatic Resume
-    id: 417395bc-bd64-40a3-b20a-9062d426a01f
-    mode: parallel
-    max_exceeded: silent
-    trigger:
-      - platform: event
-        enabled: true
-        event_type: call_service
-        event_data:
-          domain: media_player
-          service: play_media
-        variables:
-          announce_volume: "{{ state_attr('script.google_home_resume', 'settings').get('announce_volume_automation') }}"
-        id: play
-      - platform: event
-        enabled: true
-        event_type: call_service
-        event_data:
-          domain: cast
-          service: show_lovelace_view
-        id: cast
-    variables:
-      version: *ver
-      settings: *settings
-      entities: >
-        {%- set e = trigger.event.data.service_data.entity_id %}
-        {%- set e = (e | replace(' ', '')).split(',') if e is string else e %}
-        {%- set e = expand(e) | map(attribute='entity_id') | list %}
-        {%- set speaker_groups = settings.get('speaker_groups') | default({}, true) %}
-        {%- set members = speaker_groups.items() | selectattr('0', 'in', e) | map(attribute='1') | sum(start=[]) %}
-        {{ e + members }}
-    condition:
-      - alias: "Check if announce was set on the service call"
-        condition: template
-        value_template: "{{ trigger.id == 'cast' or trigger.event.data.service_data.get('announce', false) }}"
-      - alias: "Check if automation in enabled in script settings"
-        condition: template
-        value_template: "{{ settings.automation_enabled | default(true) }}"
-      - alias: "Check if entity targeted is in cast of mass integration"
-        condition: template
-        value_template: "{{ entities | select('in', integration_entities('cast') + integration_entities('mass')) | list | count > 0 }}"
-      - alias: "Check if dashboard resume is enabled in case of dashboard cast trigger"
-        condition: template
-        value_template: "{{ trigger.id == 'play' or settings.get('dashboard_cast') | default(true) or settings.get('dashboard_cast') is none }}"
-    action:
-      - alias: Set variables to be used in the automation
-        variables: *generic_vars
-      - alias: "Failsafe to remove all groups if no resume scripts are not running"
-        if: >
-          {{ 
-            is_state_attr('script.google_home_resume', 'current', 0)
-            and integration_entities('group')
-                  | select('search', 'ghresume')
-                  | list | count > 0
-          }}
-        then:
-          - alias: "Which groups to remove"
-            variables:
-              groups_existing: >
-                {{ integration_entities('group') | select('search', 'ghresume') | list }}
-          - alias: "Loop to remove groups"
-            repeat:
-              for_each: "{{ groups_existing }}"
-              sequence:
-                - alias: "Remove one group"
-                  service: group.remove
-                  data:
-                    object_id: "{{ states[repeat.item].object_id }}"
-      - alias: "Check if target is already being resumed on in a group which is already being resumed"
-        condition: template
-        value_template: &group_check >
-          {%- set groups = states.group
-                    | selectattr('entity_id', 'search', 'resume_script_active_ghresume_')
-                    | map(attribute='entity_id')
-                    | list
-          %}
-          {%- set active = expand(groups)
-                            | rejectattr('state', 'in', ['unknown', 'unavailable'])
-                            | map(attribute='entity_id')
-                            | unique
-                            | list
-          %}
-          {%- set members = speaker_groups.items() | selectattr('0', 'in', active) | map(attribute='1') | sum(start=[]) %}
-          {%- set active = active + members %}
-          {%- set target_members = speaker_groups.items() | selectattr('0', 'in', entities) | map(attribute='1') | sum(start=[]) %}
-          {%- set entities = (entities + target_members) | reject('in', speaker_group_list) | unique | list %}
-          {{ entities | reject('in', active) | list | count > 0 }}
-      - alias: Are there Spotify entities?
-        if: "{{ integration_entities('spotify') | count > 0 }}"
-        then:
-          - alias: Update Spotify entities
-            service: homeassistant.update_entity
-            target:
-              entity_id: "{{ integration_entities('spotify') }}"
-      - alias: Set data_source and determine target list
-        variables:
-          data_source: automation
-          target_list: >
-            {{
-              (integration_entities('cast') + integration_entities('mass'))
-                | select('in', entities)
-                | list
-            }}
-      - variables:
-          player_data: *player_data
-      - alias: Create snapshot of active Music Assistant entities
-        repeat: *mass_snapshot
-      - alias: "Interrupt YouTube music if needed"
-        if: >
-          {{ player_data | selectattr('entity_id', 'in', target_list) | selectattr('yt_player', 'defined') | list | count > 0 }}
-        then:
-          - service: ytube_music_player.call_method
-            data:
-              entity_id: >
-                {{ player_data | selectattr('entity_id', 'in', target_list) | selectattr('yt_player', 'defined') | map(attribute='yt_player') | list }}
-              command: interrupt_start
-      - if: "{{ trigger.id == 'play' and announce_volume is defined and iif(announce_volume) }}"
-        then:
-          - wait_template: "{{ is_state(entities|first, 'idle') }}"
-          - alias: Set volume for announcement
-            service: media_player.volume_set
-            target:
-              entity_id: "{{ entities }}"
-            data:
-              volume_level: "{{ announce_volume }}"
-      - alias: "Short delay"
-        delay: 0.5
-      - alias: "Check again if target is already being resumed"
-        condition: template
-        value_template: *group_check
-      - alias: Send actions using Google Home Resume script
-        service: script.turn_on
-        target:
-          entity_id: script.google_home_resume
-        data:
-          variables:
-            start_time: "{{ start_time }}"
-            automation: true
-            target_list: "{{ target_list }}"
-            player_data: "{{ player_data }}"
-            cast_mass_playing: "{{ cast_mass_playing }}"
+# Group integration, to make sure the dynamic groups can be created
+group:
