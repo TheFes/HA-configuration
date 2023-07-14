@@ -13,6 +13,7 @@
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
+    - [Prior to 2023.7](#prior-to-20237)
       - [Prior to 2022.11](#prior-to-202211)
       - [From version 2022.11](#from-version-202211)
     - [Install the package](#install-the-package)
@@ -59,10 +60,13 @@ Adjust your bookmarks accordingly ☺
 ### :recycle: RESUME SCRIPT
 
 #### 🚨 BREAKING 🚨
+* The package requires Home Assistant 2023.7 or higher because of the usage of service call responses
+* The general settings have been moved to a separate script, instead of a customizations of the main script. This means you need to replace the entire file now. Copy your existing settings before that, and place them in the right place of the updated package. More detailded instructions [here](#prior-to-20237)
 * The automation has been removed from the package (still provided as optional file)
 
 #### 🌟 Improvements
 * New scripts have been added to make is more easy to call the script directly
+* YAML anchors in settings have been removed, 
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)
@@ -83,6 +87,9 @@ ___
 ## Setup instructions
 
 ### Updating from a previous version
+
+### Prior to 2023.7
+TO BE ADDED!!!
 
 #### Prior to 2022.11
 
