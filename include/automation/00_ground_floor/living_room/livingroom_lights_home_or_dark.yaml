@@ -23,6 +23,7 @@ condition:
     state:
       - "Vakantie"
       - "Thuis"
+      - "Gast"
   - alias: "Triggered by Shield which turned unavailable"
     condition: template
     value_template: "{{ not (trigger.id == 'shield' and trigger.to_state.state == 'unavailable') }}"

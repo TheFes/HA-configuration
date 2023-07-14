@@ -1,0 +1,18 @@
+id: 3b350cdb-4a8e-4ce9-b239-fc2e329f931d
+alias: "00 - Activate Guest Mode when Guest Wifi is used"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.guest_wifi_active
+    to: "on"
+    from: "off"
+    id: "on"
+  - platform: state
+    entity_id: binary_sensor.guest_wifi_active
+    to: "off"
+    for:
+      hours: 6
+    id: "off"
+action:
+  - service: input_boolean.turn_{{ trigger.id }}
+    target:
+      entity_id: input_boolean.gast

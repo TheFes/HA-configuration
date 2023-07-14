@@ -1,0 +1,34 @@
+- binary_sensor:
+    - unique_id: 9316d73d-0859-4a2a-afb0-054c56d9a707
+      name: Guest Wifi Active
+      state: >
+        {% set reject_list =
+          [
+            'PC-4A-0E-0D-C5-D6-58'
+          ]
+        %}
+        {{ 
+          states.device_tracker
+            | selectattr('state', 'eq', 'home')
+            | rejectattr('name', 'in', reject_list)
+            | selectattr('attributes.ip', 'defined')
+            | selectattr('attributes.ip', 'search', '^192.168.189')
+            | list
+            | count > 0
+        }}
+      attributes:
+        names: >
+          {% set reject_list =
+            [
+              'PC-4A-0E-0D-C5-D6-58'
+            ]
+          %}
+          {{ 
+            states.device_tracker
+              | selectattr('state', 'eq', 'home')
+              | rejectattr('name', 'in', reject_list)
+              | selectattr('attributes.ip', 'defined')
+              | selectattr('attributes.ip', 'search', '^192.168.189')
+              | map(attribute='name')
+              | list
+          }}
