@@ -53,6 +53,9 @@ As the automation was not always working properly, and sometimes was causing iss
 Instead of using the automation, I recommend to call the script directly. This is a lot more reliable, and has some additional advantage. You can for example send additional metadata to be displayed on a Google Nest Hub, or apply a specific volume for the TTS Message.
 To make it a bit easier to call the script directly, 3 additional helper scripts have been added: `script.ghr_play_and_resume`, `script.ghr_tts_and_resume` and `script.ghr_dash_image_and_resume`
 
+Besided these changes to the script/automation, everything now has it's own [Google Home Resume repository](https://github.com/TheFes/Google-Home-Resume)!
+Adjust your bookmarks accordingly ☺
+
 ### :recycle: RESUME SCRIPT
 
 #### 🚨 BREAKING 🚨
