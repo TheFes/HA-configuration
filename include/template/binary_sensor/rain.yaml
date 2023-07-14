@@ -40,7 +40,7 @@
       name: "Rain until afternoon"
       state: >-
         {%- set end = today_at('13:00') %}
-        {%- set end = end + timedelta(days=1) if now() > end %}
+        {%- set end = end + timedelta(days=1) if now() > end else end %}
         {%- set rain = state_attr('weather.combined_hourly', 'forecast')
                           | selectattr('datetime', '<=', end.isoformat())
                           | map(attribute='precipitation')

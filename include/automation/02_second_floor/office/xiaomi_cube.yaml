@@ -18,7 +18,6 @@ action:
           - service: switch.turn_on
             target:
               entity_id: switch.bureau_martijn_2
-          - wait_template: "{{ states('media_player.zolder_werkkamer_stereo') not in ['unknown', 'unavailable'] }}"
           - alias: "Turn on radio if morning on workday"
             choose:
               - conditions:
@@ -30,6 +29,13 @@ action:
                     entity_id: binary_sensor.workday_sensor
                     state: "on"
                 sequence:
+                  - wait_template: "{{ states('media_player.zolder_werkkamer_stereo') not in ['unknown', 'unavailable'] }}"
+                  - alias: "Set volume"
+                    service: media_player.volume_set
+                    target:
+                      entity_id: media_player.zolder_werkkamer_stereo
+                    data:
+                      volume_level: 0.1
                   - alias: "Turn on Radio 2"
                     service: media_player.play_media
                     target:

@@ -12,10 +12,10 @@ trigger:
       action: "not_today"
     id: "not_today"
 condition:
-  - alias: "Monday?"
+  - alias: "Tuesday?"
     condition: time
     weekday:
-      - "mon"
+      - "tue"
   - alias: "Vacuum working"
     condition: state
     entity_id: binary_sensor.vacuum
