@@ -884,7 +884,7 @@ script:
                                         and iif(state_attr(player.entity_id, 'media_position'))
                                       }}
                                     timeout: "00:00:10"
-                                  - alias: "Go to the right position in the track when resume is performed"
+                                  - alias: "Go to the right position in the video when resume is performed"
                                     if: "{{ wait.completed }}"
                                     then: &seek
                                       - alias: "Seek"
@@ -1521,6 +1521,7 @@ script:
               - event: store_data
                 event_data:
                   resume_data: "{{ resume_data }}"
+
   tts_and_resume:
     alias: "00 - Google Home Send TTS and resume"
     description: Script for resuming Google Home speakers

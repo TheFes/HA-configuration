@@ -3,6 +3,14 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.7.0
+
+#### 🚨 BREAKING 🚨
+* The automation has been removed from the package (still provided as optional file)
+
+#### 🌟 Improvements
+* New scripts have been added to make is more easy to call the script directly
+
 ### 2023.6.1
 
 #### 🐛 Bug fixes

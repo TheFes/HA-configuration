@@ -5,11 +5,11 @@
 - [Google Home Resume Package](#google-home-resume-package)
   - [Table of contents](#table-of-contents)
   - [Background](#background)
-- [🚨 USAGE OF THE AUTOMATION 🚨](#-usage-of-the-automation-)
   - [Latest version](#latest-version)
-    - [2023.6.0](#202360)
+    - [2023.7.0](#202370)
     - [:recycle: RESUME SCRIPT](#recycle-resume-script)
-      - [🐛 Bug fixes](#-bug-fixes)
+      - [🚨 BREAKING 🚨](#-breaking-)
+      - [🌟 Improvements](#-improvements)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
@@ -41,24 +41,25 @@ In the past years I also created others scripts using the Google Home Resume scr
 
 All these scripts are now combined in one package
 
-___
-
-#  🚨 USAGE OF THE AUTOMATION 🚨
-The automation to start the resume is intended to be used as a backup. If you already know you are going to send (like a TTS or mp3) and know you want to resume what was playing afterwards, I strongly advice to start the script yourself, and not rely on the automation, as it is a bit flaky.
-See [here](docs/google_home_resume.md#how-to-use-the-script) for instructions how to do that.
 
 ___
 
 ## Latest version
 
-### 2023.6.0
+### 2023.7.0
+
+This is quite a big one again, with some breaking changes.
+As the automation was not always working properly, and sometimes was causing issues, I removed it from the package. It is still included as a separate yaml file, so you can still use it. Although I would advice against that.
+Instead of using the automation, I recommend to call the script directly. This is a lot more reliable, and has some additional advantage. You can for example send additional metadata to be displayed on a Google Nest Hub, or apply a specific volume for the TTS Message.
+To make it a bit easier to call the script directly, 3 additional helper scripts have been added: `script.ghr_play_and_resume`, `script.ghr_tts_and_resume` and `script.ghr_dash_image_and_resume`
 
 ### :recycle: RESUME SCRIPT
 
-#### 🐛 Bug fixes
+#### 🚨 BREAKING 🚨
+* The automation has been removed from the package (still provided as optional file)
 
-* (2022.6.0) Fix bug in target determination
-* (2022.6.1) Another bug fix in target determination
+#### 🌟 Improvements
+* New scripts have been added to make is more easy to call the script directly
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)
