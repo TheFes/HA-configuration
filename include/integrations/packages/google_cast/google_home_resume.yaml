@@ -55,18 +55,19 @@ script:
               seconds: 20
             max_runtime:
               minutes: 10
-            # settings for automation
-            enable_automation: true
+            # settings for automation (not included in package anymore, only relevant if installed separately)
+            enable_automation: false
             dashboard_cast: true
             announce_volume_automation: 0.4
           # settings for voice script
           voice_settings: &voice_settings
             check_for_title: "Witte ruis"
             use_resume: true
+
+      #### TO UPDATE TO A NEW VERSION, REPLACE EVERYTHING BELOW THIS LINE ####
+
       - stop:
         response_variable: settings
-
-  #### TO UPDATE TO A NEW VERSION, REPLACE EVERYTHING BELOW THIS LINE ####
 
   # The main Google Home Resume script
   google_home_resume:
