@@ -1,0 +1,27 @@
+id: 089a1b6a-4dfa-490e-bda3-675de31e1807
+alias: "F0P - LIDL button livingroom"
+trigger:
+  - platform: event
+    event_type: "deconz_event"
+    event_data:
+      id: knop_speelhoek
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions:
+          - alias: "Short"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1002 }}"
+        sequence:
+          - alias: toggle led light
+            service: light.toggle
+            target:
+              entity_id: light.speelhoek_tafel
+      - conditions:
+          - alias: "Double"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1004 }}"
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: light.groep_speelhoek
