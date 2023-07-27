@@ -1,34 +1,14 @@
 type: vertical-stack
 cards:
   - type: custom:mushroom-title-card
-    title: Screens
+    title: Screen
   - type: custom:mushroom-cover-card
-    entity: cover.werkkamer_marleen
-    name: Screen Werkkamer Marleen
+    entity: cover.werkkamer_marleen_template
     show_position_control: true
     show_buttons_control: true
-    double_tap_action:
-      action: fire-dom-event
-      browser_mod:
-        service: browser_mod.popup
-        data:
-          title: Screens Slaapkamer
-          content:
-            type: vertical-stack
-            cards:
-              - type: custom:mushroom-entity-card
-                entity: input_boolean.cover_werkkamer_marleen_invert
-                tap_action:
-                  action: toggle
-              - type: custom:mushroom-cover-card
-                entity: cover.werkkamer_marleen_links_template
-                show_position_control: true
-                show_buttons_control: true
-              - type: custom:mushroom-cover-card
-                entity: cover.werkkamer_marleen_midden_template
-                show_position_control: true
-                show_buttons_control: true
-              - type: custom:mushroom-cover-card
-                entity: cover.werkkamer_marleen_rechts_template
-                show_position_control: true
-                show_buttons_control: true
+  - type: custom:mushroom-title-card
+    title: Gordijn
+  - type: custom:mushroom-cover-card
+    entity: cover.switchbot_curtain_werkkamer_marleen
+    show_position_control: true
+    show_buttons_control: true

@@ -24,7 +24,7 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.trapkast_template
         layout: vertical
-        icon: mdi:outdoor-lamp
+        icon: mdi:bulkhead-light
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red

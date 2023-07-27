@@ -25,53 +25,18 @@ cards:
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
       - type: custom:mushroom-template-card
-        entity: cover.floris_template
-        badge_icon: "{{ 'mdi:alert' if is_state('cover.floris_template', 'unavailable')}}"
-        badge_color: red
+        entity: cover.floris
         layout: vertical
-        icon: >-
-          {%- if is_state('cover.floris', 'opening') and not state_attr('cover.floris', 'current_position') in [0, 100] %}
-            mdi:arrow-collapse-up
-          {%- elif is_state('cover.floris', 'closing') and not is_state_attr('cover.floris', 'current_position', 0) %}
-            mdi:arrow-collapse-down
-          {%- elif state_attr('cover.floris', 'current_position') | int(100) < 100 %}
-            mdi:blinds
-          {%- else %}
-            mdi:blinds-open
-          {%- endif %}
-        icon_color: >-
-          {%- if states('cover.floris') in [ 'opening', 'closing' ] and not state_attr('cover.floris', 'current_position') in [0, 100] %}
-            green
-          {%- elif is_state_attr('cover.floris', 'current_position', 0) %}
-            yellow
-          {%- elif state_attr('cover.floris', 'current_position') | int(100) < 100 %}
-            orange
-          {%- endif %}
-      - type: custom:mushroom-template-card
-        entity: cover.switchbot_curtain_floris
-        layout: vertical
-        badge_icon: >
-          {%- if is_state(entity, ['unavailable', 'unknown']) %}
-            mdi:alert
-          {%- elif states('sensor.switchbot_curtain_floris_battery') | float(100) < 20 %}
-            mdi:battery-alert
-          {%- endif %}
+        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
-        icon: >-
-          {%- if is_state(entity, 'opening') %}
-            mdi:arrow-collapse-right
-          {%- elif is_state(entity, 'closing') %}
-            mdi:arrow-collapse-left
-          {%- elif is_state('binary_sensor.curtain_floris_open', 'off') %}
-            mdi:curtains-closed
-          {%- else %}
-            mdi:curtains
-          {%- endif %}
+        icon: "{{ state_attr(entity, 'icon') }}"
         icon_color: >-
           {%- if states(entity) in [ 'opening', 'closing' ] %}
             green
-          {%- elif is_state('binary_sensor.curtain_floris_open', 'off') %}
+          {%- elif is_state_attr(entity, 'current_position', 0) %}
             yellow
+          {%- elif state_attr(entity, 'current_position') | int(100) < 100 %}
+            orange
           {%- endif %}
       - type: conditional
         conditions:

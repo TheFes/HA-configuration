@@ -28,28 +28,63 @@ cards:
         badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.werkkamer_marleen
-        layout: vertical
-        badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+        badge_icon: "{{ 'mdi:alert' if is_state('cover.werkkamer_marleen_template', 'unavailable')}}"
         badge_color: red
-        icon: "{{ state_attr(entity, 'icon') }}"
+        layout: vertical
+        icon: >-
+          {%- if is_state(entity, 'opening') and not state_attr(entity, 'current_position') in [0, 100] %}
+            mdi:arrow-collapse-up
+          {%- elif is_state(entity, 'closing') and not is_state_attr(entity, 'current_position', 0) %}
+            mdi:arrow-collapse-down
+          {%- elif state_attr(entity, 'current_position') | int(100) < 100 %}
+            mdi:blinds
+          {%- else %}
+            mdi:blinds-open
+          {%- endif %}
         icon_color: >-
-          {%- if states(entity) in [ 'opening', 'closing' ] %}
+          {%- if states(entity) in [ 'opening', 'closing' ] and not state_attr(entity, 'current_position') in [0, 100] %}
             green
           {%- elif is_state_attr(entity, 'current_position', 0) %}
             yellow
           {%- elif state_attr(entity, 'current_position') | int(100) < 100 %}
             orange
           {%- endif %}
+      - type: custom:mushroom-template-card
+        entity: cover.switchbot_curtain_werkkamer_marleen
+        layout: vertical
+        badge_icon: >
+          {%- if is_state(entity, ['unavailable', 'unknown']) %}
+            mdi:alert
+          {%- elif states('sensor.switchbot_curtain_marleen_battery') | float(100) < 20 %}
+            mdi:battery-alert
+          {%- endif %}
+        badge_color: red
+        icon: >-
+          {%- if is_state(entity, 'opening') %}
+            mdi:arrow-collapse-right
+          {%- elif is_state(entity, 'closing') %}
+            mdi:arrow-collapse-left
+          {%- elif is_state('binary_sensor.curtain_marleen_open', 'off') %}
+            mdi:curtains-closed
+          {%- else %}
+            mdi:curtains
+          {%- endif %}
+        icon_color: >-
+          {%- if states(entity) in [ 'opening', 'closing' ] %}
+            green
+          {%- elif is_state('binary_sensor.curtain_marleen_open', 'off') %}
+            yellow
+          {%- endif %}
       - type: conditional
         conditions:
-          - entity: media_player.werkamer_marleen_mini
+          - entity: media_player.werkkamer_marleen_mini
             state_not: "off"
-          - entity: media_player.werkamer_marleen_mini
+          - entity: media_player.werkkamer_marleen_mini
             state_not: "idle"
         card:
           type: custom:mushroom-template-card
           layout: vertical
-          entity: media_player.werkamer_marleen_mini
+          entity: media_player.werkkamer_marleen_mini
           icon: mdi:cast
           icon_color: "{{ 'yellow' if is_state(entity, 'playing') }}"
           badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"

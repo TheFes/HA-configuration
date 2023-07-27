@@ -1,14 +1,32 @@
 type: vertical-stack
 cards:
   - type: custom:mushroom-title-card
-    title: Screen
+    title: Screens
   - type: custom:mushroom-cover-card
-    entity: cover.floris_template
+    entity: cover.floris
+    name: Screen Floris
     show_position_control: true
     show_buttons_control: true
-  - type: custom:mushroom-title-card
-    title: Gordijn
-  - type: custom:mushroom-cover-card
-    entity: cover.switchbot_curtain_floris
-    show_position_control: true
-    show_buttons_control: true
+    double_tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Screens Floris
+          content:
+            type: vertical-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: input_boolean.cover_floris_invert
+              - type: custom:mushroom-cover-card
+                entity: cover.floris_links_template
+                show_position_control: true
+                show_buttons_control: true
+              - type: custom:mushroom-cover-card
+                entity: cover.floris_midden_template
+                show_position_control: true
+                show_buttons_control: true
+              - type: custom:mushroom-cover-card
+                entity: cover.floris_rechts_template
+                show_position_control: true
+                show_buttons_control: true
