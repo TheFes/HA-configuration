@@ -4,7 +4,7 @@ trigger:
   - platform: event
     event_type: "deconz_event"
     event_data:
-      device_id: f2bccbc6effd6709b9dea5b2de97be27
+      id: knop_floris_leeslamp
 action:
   - alias: "Which click type"
     choose:
@@ -12,7 +12,10 @@ action:
           - alias: "Short"
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
-        sequence: []
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: light.floris_leeslamp
       - conditions:
           - alias: "Long"
             condition: template

@@ -94,6 +94,10 @@ template:
   - trigger:
       - platform: event
         event_type: update_energy_plot
+        id: plot_update
+      - platform: homeassistant
+        event: start
+        id: remove_incomplete
     sensor:
       - unique_id: 36c9491c-2e16-4fc3-bc9f-a6ada5fc88b7
         name: Energy plots
@@ -101,36 +105,39 @@ template:
         attributes:
           energy_plots: >
             {%- set c = this.attributes.get('energy_plots', {}) -%}
-            {%- if trigger.event.data is defined -%}
-              {%- set d = trigger.event.data.description | default('unknown') -%}
-              {%- set s = trigger.event.data.state | default(0) -%}
+            {%- if trigger.id == 'plot_update' and trigger.event.data is defined -%}
               {%- set st = trigger.event.data.status | default('unknown') -%}
-              {%- set wp = trigger.event.data.no_weight_points | default(none) %}
+              {%- set d = trigger.event.data.description | default('unknown') ~ ('(incomplete)' if st != 'complete' else '') -%}
               {%- if st == 'remove' -%}
                 {{ dict(c.items() | rejectattr('0', 'eq', d)) }}
               {%- else -%}
+                {%- set s = trigger.event.data.state | default(0) -%}
+                {%- set wp = trigger.event.data.no_weight_points | default(none) %}
+                {%- set dt = now().replace(microsecond=0).isoformat() -%}
                 {%- if st == 'first' -%}
-                  {%- set p = {d: dict(data=[], state=s, start=s, no_weight_points=wp, complete=false)} -%}
-                {%- elif st == 'complete' -%}
-                  {%- set values = c.get(d, {}) -%}
-                  {%- set data = values.get('data', []) -%}
-                  {%- set u = values.get('state', 0) - values.get('start', 0) -%}
-                  {%- set no_zero = data | select() | list -%}
-                  {%- set factor = 1 / no_zero | min if no_zero else 0 -%}
-                  {%- set data = data | map('multiply', factor) | map('round', 3) | list -%}
-                  {%- set p = {d: dict(data=data, kwh_used=u, no_weight_points=wp, complete=true)} -%}
+                  {%- set p = {d: dict(data=[], state=s, start=s, no_weight_points=wp, last_update=dt)} -%}
                 {%- elif st == 'ongoing' -%}
                   {%- set values = c.get(d, {}) -%}
                   {%- set data = values.get('data', []) -%}
                   {%- set u = s - values.get('state', 0) -%}
                   {%- set start = values.get('start', 0) -%}
                   {%- set data = data + [u | round(3)] -%}
-                  {%- set p = {d: dict(data=data, state=s, start=start, no_weight_points=wp, complete=false)} -%}
-                {%- else -%}
-                  {%- set p = {} -%}
+                  {%- set p = {d: dict(data=data, state=s, start=start, no_weight_points=wp, last_update=dt)} -%}
+                {%- elif st == 'complete' -%}
+                  {%- set di = d~'(incomplete)' -%}
+                  {%- set values = c.get(di, {}) -%}
+                  {%- set data = values.get('data', []) -%}
+                  {%- set u = (values.get('state', 0) - values.get('start', 0)) | round(3) -%}
+                  {%- set no_zero = data | select() | list -%}
+                  {%- set factor = 1 / no_zero | min if no_zero else 0 -%}
+                  {%- set data = data | map('multiply', factor) | map('round', 3) | list -%}
+                  {%- set c = dict(c.items() | rejectattr('0', 'eq', di)) -%}
+                  {%- set p = {d: dict(data=data, kwh_used=u, no_weight_points=wp, last_update=dt)} -%}
                 {%- endif -%}
-                {{ dict(c, **p) }}
+                {{ dict(c, **p | default({})) }}
               {%- endif -%}
+            {%- elif trigger.id == 'remove_incomplete' -%}
+              {{ dict(c.items() | rejectattr('0', 'search', '\(incomplete\)$')) }}
             {%- else -%}
               {{ c }}
             {%- endif -%}
@@ -141,7 +148,7 @@ automation:
     alias: "F2L - Plot Wasmachine Energy"
     trigger:
       - platform: state
-        entity_id: sensor.wasmachine
+        entity_id: binary_sensor.wasmachine_door_lock
         from: "off"
         to: "on"
     action:
@@ -174,7 +181,9 @@ automation:
         data:
           variables:
             description: >
-              {{ states('input_select.dishwasher_program')}} - {{ states('input_select.dishwasher_program_extra')}}
+              {% set p = states('input_select.dishwasher_program') | lower -%}
+              {% set e = states('input_select.dishwasher_program_extra') | lower -%}
+              vaatwasser_{{ p }}{{ '_' ~ e if e != 'normaal' else '' }}
             no_weight_points: 4
             stop_state: "off"
             sensor: sensor.vaatwasser_energy

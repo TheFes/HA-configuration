@@ -13,19 +13,19 @@ variables:
   loc: >
     {{
       states('sensor.pixel_7_pro_geocoded_location')
-      if trigger.id == leave_car
+      if trigger.id == 'leave_car'
       else state_attr('sensor.variables', 'variables').get('car_location', {}).get('location')
     }}
   lat: >
     {{
       state_attr('person.martijn', 'latitude')
-      if trigger.id == leave_car
+      if trigger.id == 'leave_car'
       else state_attr('sensor.variables', 'variables').get('car_location', {}).get('latitude')
     }}
   lon: >
     {{
       state_attr('person.martijn', 'longitude')
-      if trigger.id == leave_car
+      if trigger.id == 'leave_car'
       else state_attr('sensor.variables', 'variables').get('car_location', {}).get('longitude')
     }}
 action:

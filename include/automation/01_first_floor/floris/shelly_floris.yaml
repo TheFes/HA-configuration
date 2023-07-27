@@ -43,7 +43,6 @@ action:
               entity_id: light.floris
             data:
               brightness: 255
-              color_temp: "{{ state_attr('light.floris', 'min_mireds') }}"
           - alias: "Switch intput boolean to dim"
             service: input_boolean.turn_on
             target:
@@ -67,7 +66,6 @@ action:
                       entity_id: light.floris
                     data:
                       brightness: 76
-                      color_temp: 306
               - conditions:
                   - alias: "Boolean dim on?"
                     condition: state

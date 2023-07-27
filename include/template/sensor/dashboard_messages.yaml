@@ -57,7 +57,7 @@
           {{ dict(message=ns.message | join('\n'), level='info') }}
         battery: >-
           {% set ns = namespace(message=[]) %}
-          {% for item in expand('group.battery_warning') %}
+          {% for item in expand('sensor.battery_warning') %}
             {%- if item.state | float(21) <= 20 %}
               {%- if is_state('input_select.dashboard_language', 'EN') %}
                 {%- set ns.message = ns.message + [ 'De battery of '~ item.name.split(' Battery')[0] ~ ' only has ' ~ item.state ~'%' ] %}

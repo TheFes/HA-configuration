@@ -3,8 +3,13 @@ alias: "F2 - Disable Printer ingegration"
 trigger:
   - platform: state
     entity_id: binary_sensor.printer
-    from: ~
+    to:
+      - "on"
+      - "off"
 action:
+  - service: automation.turn_{{ trigger.to_state.state }}
+    target:
+      entity_id: automation.f2_status_messages_for_printer
   - service: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
     data:
       config_entry_id: 032578ad1a4457ef750d888d0ec9cb47

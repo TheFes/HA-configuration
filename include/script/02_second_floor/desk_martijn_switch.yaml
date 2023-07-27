@@ -9,13 +9,16 @@ desk_martijn_switch:
     - service: browser_mod.close_popup
 
 computer_martijn_off:
-  alias: "F2O - Turn desk Martijn on"
+  alias: "F2O - Turn desk Martijn off"
   icon: mdi:human-male
   sequence:
-    - if: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
+    - variables:
+        pc_on: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
+    - if: "{{ pc_on }}"
       then:
         - service: hassio.addon_stdin
           data:
             addon: core_rpc_shutdown
             input: computer_zolder
-    - wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
+        - wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
+        - delay: 10

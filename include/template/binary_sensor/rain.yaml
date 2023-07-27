@@ -16,7 +16,7 @@
         {%- else %}
           {%- set p4 = 'nan' %}
         {%- endif %}
-        {{ (p3 if p3 | is_number else [ p1, p2, p4 ] | select('is_number') | max) > 0 }}
+        {{ [p1, p2, p3, p4] | select('is_number') | max | default(0) }}
       availability: >
         {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
         {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}

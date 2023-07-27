@@ -64,31 +64,25 @@ google_assistant:
       name: Overloop
       room: Overloop
 
-    # Slaapkamer
-    light.slaapkamer_template:
-      name: Slaapkamer
-      room: Slaapkamer
-    light.bedside_lamp:
-      name: Nachtkastje Martijn
-      room: Zolder Slaapkamer
-    cover.werkkamer_marleen:
-      name: Slaapkamer
-      room: Slaapkamer
-    sensor.slaapkamer_temp:
-      name: Temperatuur Slaapkamer
-      room: Slaapkamer
-    vacuum.mi_robot_vacuum:
-      name: Stofzuiger
-      room: Zolder Slaapkamer
+    # Werkkamer Marleen
+    cover.switchbot_curtain_werkkamer_marleen:
+      name: Gordijn Werkkamer Marleen
+      room: Werkkamer Marleen
+    light.werkkamer_marleen_template:
+      name: Werkkamer Marleen
+      room: Werkkamer Marleen
+    cover.werkkamer_marleen_template:
+      name: Werkkamer Marleen
+      room: Werkkamer Marleen
+    sensor.werkkamer_marleen_temp:
+      name: Temperatuur Werkkamer Marleen
+      room: Werkkamer Marleen
 
     # Slaapkamer Floris
-    cover.switchbot_curtain_floris:
-      name: Gordijn Floris
-      room: Slaapkamer Floris
     light.floris_template:
       name: Floris
       room: Slaapkamer Floris
-    cover.floris_template:
+    cover.floris:
       name: Floris
       room: Slaapkamer Floris
     sensor.floris_temp:
@@ -96,6 +90,9 @@ google_assistant:
       room: Slaapkamer Floris
     light.floris_leeslamp:
       name: Leeslamp
+      room: Slaapkamer Floris
+    light.nijntje:
+      name: Nijntje
       room: Slaapkamer Floris
 
     # Slaapkamer Pepijn
@@ -167,51 +164,52 @@ google_assistant:
       name: Temperatuur Woonkamer
       room: Woonkamer
 
-    # Zolder
-    light.zolder_bol_template:
-      name: Bol
-      room: Zolder
-    light.wasmachinelamp:
-      name: Wasmachinelamp
-      room: Zolder
-    switch.droger:
-      name: Droger
-      room: Zolder
-
-    # Zolder slaapkamer
+    # Slaapkamer
     light.slaapkamer_plafond_template:
       name: Slaapkamer Plafond
-      room: Zolder Slaapkamer
+      room: Slaapkamer
     cover.slaapkamer_zolder_template:
-      name: Screen Slaapkamer Zolder
-      room: Zolder Slaapkamer
-    sensor.zolder_temp:
-      name: Temperatuur Zolder
-      room: Zolder Slaapkamer
+      name: Screen Slaapkamer
+      room: Slaapkamer
+    sensor.awair_slaapkamer_temperature:
+      name: Temperatuur Slaapkamer
+      room: Slaapkamer
+    light.bedside_lamp:
+      name: Nachtkastje Martijn
+      room: Slaapkamer
 
     # Werkamer Martijn
     light.werkkamer_martijn_plafond_template:
       name: Werkkamer Martijn Plafond
       room: Zolder Werkkamer
+    vacuum.mi_robot_vacuum:
+      name: Stofzuiger
+      room: Zolder Werkkamer
+    switch.bureau_martijn_2:
+      name: Bureau
+      room: Zolder Werkkamer
 
-    # Zolder Badkamer
+    # Badkamer Zolder
     light.badkamer_zolder_template:
       name: Badkamer Zolder Plafond
-      room: Zolder Badkamer
+      room: Badkamer Zolder
     light.badkamerspiegel_zolder:
       name: Badkamerspiegel Zolder
-      room: Zolder Badkamer
+      room: Badkamer Zolder
+    sensor.badkamer_zolder_temp:
+      name: Temperatuur Badkamer Zolder
+      room: Badkamer Zolder
 
-    # Zolder overloop
+    # Overloop Zolder
     light.zolder:
       name: Zolder
-      room: Zolder Overloop
+      room: Overloop Zolder
     light.wasmachinehoek_template:
       name: Wasmachinehoek
-      room: Zolder Overloop
+      room: Overloop Zolder
     cover.overloop_zolder_template:
       name: Screen Overloop Zolder
-      room: Zolder Overloop
+      room: Overloop Zolder
 
     # Zone Algemeen
     input_boolean.gast:
@@ -234,4 +232,7 @@ google_assistant:
       room: Zone Algemeen
     light.groep_buiten:
       name: Buiten
+      room: Zone Algemeen
+    cover.zolder:
+      name: Screens Zolder
       room: Zone Algemeen

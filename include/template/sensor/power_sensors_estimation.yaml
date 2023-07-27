@@ -44,17 +44,3 @@
                           | list
         %}
         {{ devices | count * 1 }}
-    - unique_id: 9e9158a8-b24d-4e55-9a92-450edf3b36bd
-      name: OSC estimated power
-      unit_of_measurement: W
-      device_class: power
-      state_class: measurement
-      state: >
-        {% set entities = integration_entities('onesmartcontrol') %}
-        {% set devices = entities
-                          | reject('is_state', 'unavailable')
-                          | map('device_attr', 'name')
-                          | unique
-                          | list
-        %}
-        {{ (devices | count * 0.4 + 4.7 + 1.5) | round(1) }}

@@ -4,19 +4,8 @@
       device_class: heat
       state: >-
         {{ 
-          states('sensor.slaapkamer_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
-          and states('sensor.slaapkamer_temp') | float(0.0) > 21
-        }}
-      delay_on: "00:05:00"
-      delay_off: "00:05:00"
-
-    - unique_id: dbe79bbb-5f17-48b2-95a1-144cd8cc9aa7
-      name: "Temperature Second Floor"
-      device_class: heat
-      state: >-
-        {{ 
-          states('sensor.zolder_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
-          and states('sensor.zolder_temp') | float(0.0) > 21
+          states('sensor.awair_slaapkamer_temperature') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+          and states('sensor.awair_slaapkamer_temperature') | float(0.0) > 21
         }}
       delay_on: "00:05:00"
       delay_off: "00:05:00"
