@@ -14,34 +14,6 @@ variables:
     - sensor.anniversary_martijn
   holiday:
     - sensor.anniversary_sinterklaas
-  blink:
-    always:
-      - light.slaapkamer
-      - light.zolder_bol
-      - light.eettafel
-      - light.tv_lamp
-      - light.voordeur
-    only_on:
-      - light.pepijn
-      - light.pepijn_leeslamp
-      - light.floris
-  hue:
-    - light.slaapkamer
-    - light.zolder_bol
-  esphome: >
-    {{
-      expand(integration_entities('esphome'))
-        | selectattr('domain', 'eq', 'light')
-        | map(attribute='entity_id')
-        | reject('eq', 'light.tagreader_led')
-        | list 
-    }}
-  other: >
-    {{
-      (blink.always + blink.only_on)
-        | reject('in', hue + esphome)
-        | list
-    }}
   birthday_today: >
     {% set m = state_attr('calendar.m_m', 'message') | lower %}
     {{
@@ -125,50 +97,16 @@ action:
             entity_id: sensor.house_mode
             state: "Thuis"
         sequence:
-          - alias: "Determine which lights are one and should blink"
-            variables:
-              lights: >
-                {{ expand(blink.only_on) | selectattr('state','eq','on') | map(attribute='entity_id') | list + blink.always }}
-          - alias: "Create scene with current state"
-            service: scene.create
-            data:
-              scene_id: before
-              snapshot_entities: "{{ lights }}"
-          - alias: "Hue lights to blink?"
-            if: "{{ lights | select('in', hue) | list | count > 0 }}"
-            then:
-              - alias: "Blink lights (hue_lights)"
-                service: light.turn_on
-                target:
-                  entity_id: "{{ lights | select('in', hue) | list }}"
-                data:
-                  flash: long
-          - alias: "ESPHome lights to blink?"
-            if: "{{ lights | select('in', esphome) | list | count > 0 }}"
-            then:
-              - alias: "Blink lights (ESPHome)"
-                service: light.turn_on
-                target:
-                  entity_id: "{{ lights | select('in', esphome) | list }}"
-                data:
-                  effect: "Fast Pulse"
-          - alias: "Others lights to blink?"
-            if: "{{ lights | select('in', other) | list | count > 0 }}"
-            then:
-              - alias: "Blink other lights using repeat loop"
-                repeat:
-                  count: 10
-                  sequence:
-                    - alias: "Toggle other lights"
-                      service: light.toggle
-                      data:
-                        entity_id: "{{ lights | select('in', other) | list }}"
-                    - alias: "Short delay between toggle"
-                      delay: 0.5
-          - alias: "Restore state"
-            service: scene.turn_on
+          - alias: "Blink front door light"
+            service: light.turn_on
             target:
-              entity_id: scene.before
+              entity_id: light.voordeur
+            data:
+              effect: Slow Pulse
+          - alias: "Blink lights using script"
+            service: script.turn_on
+            target:
+              entity_id: script.light_blink_alert
       # Blink front door light when nobody is home
       - conditions:
           - alias: "Chime not active"
@@ -180,25 +118,12 @@ action:
             entity_id: sensor.house_mode
             state: "Afwezig"
         sequence:
-          - alias: "Create scene with current state"
-            service: scene.create
-            data:
-              scene_id: before
-              snapshot_entities: light.voordeur
-          - alias: "Blink loop"
-            repeat:
-              count: 10
-              sequence:
-                - alias: "Blink"
-                  service: light.toggle
-                  data:
-                    entity_id: light.voordeur
-                - alias: "Short delay between toggle"
-                  delay: 0.5
-          - alias: "Restore scene"
-            service: scene.turn_on
+          - alias: "Blink front door light"
+            service: light.turn_on
             target:
-              entity_id: scene.before
+              entity_id: light.voordeur
+            data:
+              effect: Slow Pulse
   - variables:
       ha_url: !secret ha_url
   - alias: "TTS announcement in case of birthday"
