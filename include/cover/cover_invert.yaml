@@ -1,0 +1,117 @@
+platform: template
+covers:
+  floris_links_template:
+    unique_id: 736e6b7e-daa8-4781-8e49-5c61879c54e8
+    friendly_name: "Screen Floris Links"
+    device_class: shade
+    value_template: &value "{{ states(this.entity_id | replace('_template', '')) }}"
+    position_template: &position >
+      {%- set c = this.entity_id | replace('_template', '') %}
+      {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+      {%- set s = state_attr(c, 'current_position') %}
+      {%- set i = is_state(b, 'on') %}
+      {{ 100 - s if i else s }}
+    availability_template: &availability >
+      {{ (this.entity_id | replace('_template', '')) | has_value }}
+    open_cover: &open_cover
+      - service: >
+          {%- set c = this.entity_id | replace('_template', '') %}
+          {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+          {%- set i = is_state(b, 'on') %}
+          {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+        target:
+          entity_id: "{{ this.entity_id | replace('_template', '') }}"
+    close_cover: &close_cover
+      - service: >
+          {%- set c = this.entity_id | replace('_template', '') %}
+          {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+          {%- set i = is_state(b, 'on') %}
+          {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+        target:
+          entity_id: "{{ this.entity_id | replace('_template', '') }}"
+    stop_cover: &stop_cover
+      - service: cover.stop_cover
+        target:
+          entity_id: "{{ this.entity_id | replace('_template', '') }}"
+    set_cover_position: &set_cover_position
+      - service: cover.set_cover_position
+        target:
+          entity_id: "{{ this.entity_id | replace('_template', '') }}"
+        data:
+          position: >
+            {%- set c = this.entity_id | replace('_template', '') %}
+            {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+            {%- set i = is_state(b, 'on') %}
+            {{ 100 - position if i else position }}
+
+  floris_midden_template:
+    unique_id: 1670176f-2cc1-4ee9-97c8-e7626c2d8db9
+    friendly_name: "Screen Floris Midden"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position
+
+  floris_rechts_template:
+    unique_id: 903bf5bf-39ea-43a6-a7c5-47023d3ce404
+    friendly_name: "Screen Floris Rechts"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position
+
+  pepijn_template:
+    unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
+    friendly_name: "Screen Pepijn"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position
+
+  werkkamer_marleen_template:
+    unique_id: fa9ffb64-56b5-4170-baf0-e550d89b0501
+    friendly_name: "Screen Werkkamer Marleen"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position
+
+  slaapkamer_zolder_template:
+    unique_id: 95fb6193-3557-435e-8b5b-8fdf8bdacd3f
+    friendly_name: "Screen Slaapkamer Zolder"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position
+
+  overloop_zolder_template:
+    unique_id: f257aa95-bd57-4f22-baf3-613754cb23ab
+    friendly_name: "Screen Overloop Zolder"
+    device_class: shade
+    value_template: *value
+    position_template: *position
+    availability_template: *availability
+    open_cover: *open_cover
+    close_cover: *close_cover
+    stop_cover: *stop_cover
+    set_cover_position: *set_cover_position

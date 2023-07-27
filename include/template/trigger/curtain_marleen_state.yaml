@@ -1,10 +1,10 @@
 - trigger:
     - platform: state
-      entity_id: cover.switchbot_curtain_floris
+      entity_id: cover.switchbot_curtain_werkkamer_marleen
       attribute: current_position
   binary_sensor:
     - unique_id: 81695230-9ee9-4444-b484-a7b6b6e8c77c
-      name: "Curtain Floris Open"
+      name: "Curtain Marleen Open"
       state: >
         {%- set to, from = trigger.to_state.attributes.current_position, trigger.from_state.attributes.current_position %}
         {%- if to | is_number and from | is_number %}

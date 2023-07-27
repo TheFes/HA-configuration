@@ -6,7 +6,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.werkkamer_marleen_groep
+          entity_id: cover.floris_groep
     - platform: event
       event_type: call_service
       id: closing
@@ -14,7 +14,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.werkkamer_marleen
+          entity_id: cover.floris
     - platform: event
       event_type: call_service
       id: opening
@@ -22,7 +22,7 @@
         domain: cover
         service: close_cover
         service_data:
-          entity_id: cover.werkkamer_marleen_groep
+          entity_id: cover.floris_groep
     - platform: event
       event_type: call_service
       id: opening
@@ -30,14 +30,14 @@
         domain: cover
         service: open_cover
         service_data:
-          entity_id: cover.werkkamer_marleen
+          entity_id: cover.floris
     - platform: state
-      entity_id: cover.werkkamer_marleen
+      entity_id: cover.floris
       attribute: current_position
       id: idle
   sensor:
-    - name: Cover Slaapkamer
-      unique_id: a7f46b20-cef6-48e7-ab75-44f27b59d9f4
+    - name: Cover Floris
+      unique_id: 21d6aec8-4a41-4fbd-89e5-58859a2ad10c
       state: "{{ trigger.id }}"
       icon: >
         {%- if trigger.id == 'closing' %}
