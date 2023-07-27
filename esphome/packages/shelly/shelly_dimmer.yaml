@@ -4,7 +4,8 @@ substitutions:
   lower_name: shelly-dimmer-2
   max_temp: "70" # °C
   dim_lenght: "10s"
-  restore_mode: "restore_default_off"
+  restore_mode_light: "restore_default_off"
+  restore_mode_switch: "restore_default_on"
   min_brightness: "470"
   max_brightness: "1000"
   leading_edge: "false"
@@ -42,7 +43,7 @@ light:
     leading_edge: ${leading_edge}
     min_brightness: ${min_brightness}
     max_brightness: ${max_brightness}
-    restore_mode: ${restore_mode}
+    restore_mode: ${restore_mode_light}
     default_transition_length: 1s
     gamma_correct: ${gamma_correct}
     effects:
@@ -136,7 +137,6 @@ switch:
   - platform: template
     name: Dim Down
     id: dim_down_active
-    restore_state: false
     turn_on_action:
       - globals.set:
           id: dim_down_bool
@@ -151,7 +151,7 @@ switch:
   - platform: template
     name: Control Light
     id: control_light_active
-    restore_state: false
+    restore_mode: ${restore_mode_switch}
     turn_on_action:
       - globals.set:
           id: control_light
