@@ -1,17 +1,24 @@
-{%- macro cheapest_energy_hours(sensor, hours, start, end, attr_today, attr_tomorrow, time_key, value_key, include_today, include_tomorrow, lowest, mode, look_ahead, time_format, no_weight_points, weight) -%}
+{%- macro cheapest_energy_hours(sensor, hours, start, end, attr_today, attr_tomorrow, time_key, value_key, include_today, include_tomorrow, lowest, mode, look_ahead, time_format, no_weight_points, weight, program, value_on_error) -%}
     {# Get data out of the selected entity #}
         {%- set today = state_attr(sensor, attr_today | default('raw_today')) -%}
         {%- set tomorrow = state_attr(sensor, attr_tomorrow | default('raw_tomorrow')) -%}
-        {%- set m = mode | default('start') -%}
         {%- set wp = no_weight_points | default(1) | int(1) -%}
         {%- set h = hours | default(1) | int(1) -%}
         {%- set w = weight | default(none) -%}
+        {%- set p = program | default(none) -%}
+        {%- set m = mode | default('start') -%}
+        {%- set use_voe = value_on_error is defined -%}
+        {%-if p is not none-%}
+            {%- set w = state_attr('sensor.energy_plots', 'energy_plots').get(p, {}).get('data') | default(none, true) -%}
+            {%- set wp = state_attr('sensor.energy_plots', 'energy_plots').get(p, {}).get('no_weight_points', 1) -%}
+            {%- set c = state_attr('sensor.energy_plots', 'energy_plots').get(p, {}).get('complete', false) -%}
+        {%- endif -%}
         {%- set w = w | map('int', none) | reject('none') | list
                     if w is iterable and w is not string
                     else none
         -%}
     {# set number of hours based on weight points in case hours setting is not provided #}
-        {%- set h_wp = (w | count / wp) | round(0, 'ceil') | int if w is not none else h -%}
+        {%- set h_wp = (w | count / wp) | round(0, 'ceil') | int if w else h -%}
         {%- set h = h if hours is defined else h_wp -%}
     {# set weight points based on number of hours (either add zeros, or remove unneeded part) #}
         {%- if w is not none -%}
@@ -23,92 +30,96 @@
         {%- endif -%}
     {# Check if data is available and mode is correct#}
         {%- if not today and not tomorrow -%}
-            No valid data in selected sensor
+            {{- value_on_error if use_voe else 'No valid data in selected sensor' -}}
         {%- elif m not in ['min', 'max', 'average', 'start', 'end', 'list', 'weighted_average','time_min','time_max'] -%}
-            Invalid mode selected
+            {{- value_on_error if use_voe else 'Invalid mode selected' -}}
+        {%- elif p is not none and w is none -%}
+            {{- value_on_error if use_voe else 'Selected program is not available or has no data' -}}
+        {%- elif p is not none and not c -%}
+            {{- value_on_error if use_voe else 'Data plot for selected program not complete' -}}
         {%- else -%}
             {# Set defaults for variables which are not provided #}
-                    {%- set tk, vk = time_key | default('start'), value_key | default('value') -%}
-                    {%- set l = lowest | default(true) | bool(true) -%}
-                    {%- set itd = include_today | default(true) | bool(true) -%}
-                    {%- set it = include_tomorrow | default(false) | bool(false) -%}
-                    {%- set la = look_ahead | default(false) |bool(false) -%}
-                    {%- set s = today_at(start) if start is defined else today_at() -%}
-                    {%- set s = s + timedelta(days=1) if not itd else s -%}
-                    {%- set n = today_at(now().strftime('%H:00')) -%}
-                    {%- set s = n if la and s < n else s -%}
-                    {%- set e = (today_at(end) if end is defined else today_at() + timedelta(days=1)) + timedelta(days=1 if it else 0) -%}
-                    {%- set e = e + timedelta(days=1) if not itd and end is defined else e -%}
-                {# Check if the dateteime in the sensor is a string, and convert start and end if needed #}
-                    {%- set str = today[0][tk] is string -%}
-                    {%- set s, e = s.isoformat() if str else s, e.isoformat() if str else e -%}
-                {# Perform selection based on start and end on the data #}
-                    {%- set values = 
-                                        ((today if itd else []) + (tomorrow if it else []))
-                                            | selectattr(tk, '>=', s)
-                                            | selectattr(tk, '<', e)
-                                            | selectattr(vk, 'is_number')
-                                            | list
-                    -%}
-                {# Check if there is data, and find the right hour block #}
-                    {%- if values | count >= h -%}
-                        {# Change datetimes in case multiple weight factors per hour are used #}
-                            {%- set ns = namespace(values=[]) -%}
-                            {%- if wp != 1 and w is not none -%}
-                                {%- for v in (values * wp) | sort(attribute=tk) -%}
-                                    {%- set t = as_datetime(v[tk]) if str else v[tk] -%}
-                                    {%- set t = t + timedelta(minutes=((60/wp)*(loop.index0 % wp))) -%}
-                                    {%- set ns.values = ns.values + [ { tk: t, vk: v[vk] } ] -%}
+                {%- set tk, vk = time_key | default('start'), value_key | default('value') -%}
+                {%- set l = lowest | default(true) | bool(true) -%}
+                {%- set itd = include_today | default(true) | bool(true) -%}
+                {%- set it = include_tomorrow | default(false) | bool(false) -%}
+                {%- set la = look_ahead | default(false) |bool(false) -%}
+                {%- set s = today_at(start) if start is defined else today_at() -%}
+                {%- set s = s + timedelta(days=1) if not itd else s -%}
+                {%- set n = today_at(now().strftime('%H:00')) -%}
+                {%- set s = n if la and s < n else s -%}
+                {%- set e = (today_at(end) if end is defined else today_at() + timedelta(days=1)) + timedelta(days=1 if it else 0) -%}
+                {%- set e = e + timedelta(days=1) if not itd and end is defined else e -%}
+            {# Check if the dateteime in the sensor is a string, and convert start and end if needed #}
+                {%- set str = today[0][tk] is string -%}
+                {%- set s, e = s.isoformat() if str else s, e.isoformat() if str else e -%}
+            {# Perform selection based on start and end on the data #}
+                {%- set values =
+                        ((today if itd else []) + (tomorrow if it else []))
+                            | selectattr(tk, '>=', s)
+                            | selectattr(tk, '<', e)
+                            | selectattr(vk, 'is_number')
+                            | list
+                -%}
+            {# Check if there is data, and find the right hour block #}
+                {%- if values | count >= h -%}
+                    {# Change datetimes in case multiple weight factors per hour are used #}
+                        {%- set ns = namespace(values=[]) -%}
+                        {%- if wp != 1 and w is not none -%}
+                            {%- for v in (values * wp) | sort(attribute=tk) -%}
+                                {%- set t = as_datetime(v[tk]) if str else v[tk] -%}
+                                {%- set t = t + timedelta(minutes=((60/wp)*(loop.index0 % wp))) -%}
+                                {%- set ns.values = ns.values + [ { tk: t, vk: v[vk] } ] -%}
+                            {%- endfor -%}
+                        {%- set values = ns.values -%}
+                        {%- set str = false -%}
+                        {%- endif -%}
+                    {%- set ns = namespace(average=none, start=none, min=none, max=none, weighted_average=none, time_min=none, time_max=none) -%}
+                    {%- for i in values[:values|length-(h*wp-1)] -%}
+                        {%- set ix = loop.index0 -%}
+                        {%- set list = values[ix:ix+h*wp] | map(attribute=vk) | list -%}
+                        {# calculate weighted average #}
+                            {%- if w is not none -%}
+                                {%- set wa = namespace(sum=0,divide=0) -%}
+                                {%- for i in list -%}
+                                    {%- set wa.sum = wa.sum + i * w[loop.index0] -%}
+                                    {%- set wa.divide = wa.divide + w[loop.index0] -%}
                                 {%- endfor -%}
-                            {%- set values = ns.values -%}
-                            {%- set str = false -%}
-                            {%- endif -%}
-                        {%- set ns = namespace(average=none, start=none, min=none, max=none, weighted_average=none, time_min=none, time_max=none) -%}
-                        {%- for i in values[:values|length-(h*wp-1)] -%}
-                            {%- set ix = loop.index0 -%}
-                            {%- set list = values[ix:ix+h*wp] | map(attribute=vk) | list  -%}
-                            {# calculate weighted average #}
-                                {%- if w is not none -%}
-                                    {%- set wa = namespace(sum=0,divide=0) -%}
-                                    {%- for i in list -%}
-                                        {%- set wa.sum = wa.sum + i * w[loop.index0] -%}
-                                        {%- set wa.divide = wa.divide + w[loop.index0] -%}
-                                    {%- endfor -%}
-                                        {%- set a = wa.sum / wa.divide -%}
-                                    {%- else -%}
-                                        {%- set a = list | sum / h -%}
-                                    {%- endif -%}
-                            {%- set b = ns.weighted_average -%}
-                            {%- set min = list | min  -%}
-                            {%- set max = list | max  -%}
-                            {%- if ns.average is none or ((a < b) if l else (a > b)) -%}
-                                {%- set ns.list = list -%}
-                                {%- set ns.min = min -%}
-                                {%- set ns.max = max -%}
-                                {%- set ns.weighted_average = a -%}
-                                {%- set ns.average = list | average -%}
-                                {%- set ns.start = as_datetime(i[tk]) if str else i[tk] -%}
-                                {%- set ns.end = ns.start + timedelta(hours=h) -%}
-                                {%- set index_min = ns.list.index(ns.min) -%}
-                                {%- set index_max = ns.list.index(max) -%}
-                                {%- set ns.time = values[ix:ix+h*wp] | map(attribute=tk) | list -%}
-                                {%- set ns.time_min = as_datetime(ns.time[index_min]) if str else ns.time[index_min] -%}
-                                {%- set ns.time_max = as_datetime(ns.time[index_max]) if str else ns.time[index_max] -%}
-                            {%- endif -%}
-                        {%- endfor -%}
-                        {# output date based on the selected mode#}
-                            {%- if m in [ 'start', 'end','time_min','time_max'] -%}
-                                {%- if time_format is defined -%}
-                                    {%- set format = dict(time12='%I:%M %p', time24='%H:%M') -%}
-                                    {{- ns[m].strftime(format[time_format] | default(time_format)) -}}
+                                    {%- set a = wa.sum / wa.divide -%}
                                 {%- else -%}
-                                    {{- ns[m].isoformat() -}}
+                                    {%- set a = list | sum / h -%}
                                 {%- endif -%}
+                        {%- set b = ns.weighted_average -%}
+                        {%- set min = list | min -%}
+                        {%- set max = list | max -%}
+                        {%- if ns.average is none or ((a < b) if l else (a > b)) -%}
+                            {%- set ns.list = list -%}
+                            {%- set ns.min = min -%}
+                            {%- set ns.max = max -%}
+                            {%- set ns.weighted_average = a -%}
+                            {%- set ns.average = list | average -%}
+                            {%- set ns.start = as_datetime(i[tk]) if str else i[tk] -%}
+                            {%- set ns.end = ns.start + timedelta(hours=h) -%}
+                            {%- set index_min = ns.list.index(ns.min) -%}
+                            {%- set index_max = ns.list.index(max) -%}
+                            {%- set ns.time = values[ix:ix+h*wp] | map(attribute=tk) | list -%}
+                            {%- set ns.time_min = as_datetime(ns.time[index_min]) if str else ns.time[index_min] -%}
+                            {%- set ns.time_max = as_datetime(ns.time[index_max]) if str else ns.time[index_max] -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {# output date based on the selected mode #}
+                        {%- if m in [ 'start', 'end','time_min','time_max'] -%}
+                            {%- if time_format is defined -%}
+                                {%- set format = dict(time12='%I:%M %p', time24='%H:%M') -%}
+                                {{- ns[m].strftime(format[time_format] | default(time_format)) -}}
                             {%- else -%}
-                                {{- ns[m] | round(5) if ns[m] | is_number else ns[m] -}}
+                                {{- ns[m].isoformat() -}}
                             {%- endif -%}
-                    {%- else -%}
-                        No{{- 't enough' if values -}} data within current selection
-                    {%- endif -%}
+                        {%- else -%}
+                            {{- ns[m] | round(5) if ns[m] | is_number else ns[m] -}}
+                        {%- endif -%}
+                {%- else -%}
+                    {{- value_on_error if use_voe else 'No' ~ ('t enough' if values) ~ ' data within current selection' -}}
+                {%- endif -%}
         {%- endif -%}
 {%- endmacro -%}
