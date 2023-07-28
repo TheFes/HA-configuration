@@ -1,0 +1,16 @@
+rest:
+  - resource_template: !secret postcodeloterij
+    headers:
+      User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+    sensor:
+      - name: Postcodeloterij prizecount
+        unique_id: 0160fb4d-485f-4233-ae17-1b6a6a1e4cea
+        value_template: "{{ value_json.prizeCount }}"
+      - name: Postcodeloterij wonprizes
+        unique_id: d4d462fa-d078-47a5-9ffc-349650297b8f
+        value_template: >
+          {% set ns = namespace(prizes=[]) %}
+          {% for p in value_json.wonPrizes %}
+            {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
+          {% endfor %}
+          {{ ns.prizes | join(', ') if ns.prizes else 'Helaas, pindakaas' }}
