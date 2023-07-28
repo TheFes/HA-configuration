@@ -1,9 +1,9 @@
 - trigger:
     - platform: state
-      entity_id: sensor.sonoff_slaapkamer_plafond_xiaomi_mi_scale_weight
+      entity_id: sensor.mi_body_composition_scale_3496_mass
       not_to: "unavailable"
       for:
-        seconds: 10
+        seconds: 20
       variables: &var
         name: >
           {%- if states('input_number.weight_martijn_min') | float < trigger.to_state.state | float <= states('input_number.weight_martijn_max') | float %}
@@ -33,7 +33,7 @@
       state_class: measurement
       icon: mdi:omega
       state: &imp >
-        {%- set i = 'sensor.sonoff_slaapkamer_plafond_xiaomi_mi_scale_impedance' %}
+        {%- set i = 'sensor.mi_body_composition_scale_3496_impedance' %}
         {%- set valid = states(i) | is_number and now() - states[i].last_changed < timedelta(seconds=30) %}
         {{ states(i) if name in this.entity_id and valid else this.state }}
     - unique_id: 3aa91cd3-c2b2-4910-be24-55f1fd379213
