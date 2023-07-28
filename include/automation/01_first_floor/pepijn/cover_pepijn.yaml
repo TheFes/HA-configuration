@@ -33,7 +33,7 @@ action:
             if state_attr('weather.combined_hourly', 'forecast') else false 
           }}
       - alias: "No rain upcoming"
-        conditon: state
+        condition: state
         entity_id: binary_sensor.rain
         state: "off"
       - alias: "Sun rising"
