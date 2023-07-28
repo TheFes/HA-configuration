@@ -66,12 +66,12 @@ action:
                   target:
                     entity_id: "{{ sensor }}"
                 - variables:
-                    eta: "{{ (now() + timedelta(minutes=states(sensor))|float).timestamp() }}"
+                    eta: "{{ (now() + timedelta(minutes=states(sensor)|float)).timestamp() }}"
                 - wait_for_trigger:
                     - platform: template
                       value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
                     - platform: template
-                      value_template: "{{ ((now() + timedelta(minutes=states(sensor))|float).timestamp() - eta) > 300 }}"
+                      value_template: "{{ ((now() + timedelta(minutes=states(sensor)|float)).timestamp() - eta) > 300 }}"
                       id: delay
                 - if: "{{ wait.trigger.id == 'delay' }}"
                   then:
