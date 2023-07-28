@@ -9,15 +9,15 @@ trigger:
       - update.home_assistant_operating_system_update
     to: "on"
     variables:
-      what: "{{ state_attr(trigger.entity_id, 'title') }}"
-      from: "{{ state_attr(trigger.entity_id, 'installed_version') }}"
-      to: "{{ state_attr(trigger.entity_id, 'latest_version') }}"
+      what: "{{ trigger.to_state.attributes.title }}"
+      from: "{{ trigger.to_state.attributes.installed_version }}"
+      to: "{{ trigger.to_state.attributes.latest_version }}"
       url: >
         {%- 
           if what == 'Home Assistant Operating System'
-          or to.split('.')[-1].split('b')[-1] == '0' 
+          or version(to).patch == '0' 
         %}
-          {{ state_attr(trigger.entity_id, 'release_url') }}
+          {{ trigger.to_state.attributes.release_url }}
         {%- else %}
           https://github.com/home-assistant/core/releases/tag/{{ to }}
         {%- endif %}
@@ -33,7 +33,7 @@ action:
       message: >-
         Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
       data:
-        tag: "ha_update"
+        tag: "ha_update_{{ what | slugify }}"
         channel: Home Assistant
         ttl: 0
         priority: high
