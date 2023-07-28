@@ -107,32 +107,37 @@ template:
             {%- set c = this.attributes.get('energy_plots', {}) -%}
             {%- if trigger.id == 'plot_update' and trigger.event.data is defined -%}
               {%- set st = trigger.event.data.status | default('unknown') -%}
-              {%- set d = trigger.event.data.description | default('unknown') ~ ('(incomplete)' if st != 'complete' else '') -%}
-              {%- if st == 'remove' -%}
+              {%- set d = trigger.event.data.description | default('unknown') ~ ('(incomplete)' if not st in ['complete', 'remove'] else '') -%}
+              {%- if st == 'remove_all' -%}
+                {{ dict() }}
+              {%- elif st == 'remove' -%}
                 {{ dict(c.items() | rejectattr('0', 'eq', d)) }}
               {%- else -%}
                 {%- set s = trigger.event.data.state | default(0) -%}
                 {%- set wp = trigger.event.data.no_weight_points | default(none) %}
                 {%- set dt = now().replace(microsecond=0).isoformat() -%}
                 {%- if st == 'first' -%}
-                  {%- set p = {d: dict(data=[], state=s, start=s, no_weight_points=wp, last_update=dt)} -%}
+                  {%- set p = {d: dict(data=[], state=s, start=s, start_time=now().isoformat(), no_weight_points=wp, last_update=dt)} -%}
                 {%- elif st == 'ongoing' -%}
                   {%- set values = c.get(d, {}) -%}
                   {%- set data = values.get('data', []) -%}
                   {%- set u = s - values.get('state', 0) -%}
                   {%- set start = values.get('start', 0) -%}
+                  {%- set start_time = values.get('start_time', now().isoformat()) -%}
                   {%- set data = data + [u | round(3)] -%}
-                  {%- set p = {d: dict(data=data, state=s, start=start, no_weight_points=wp, last_update=dt)} -%}
+                  {%- set p = {d: dict(data=data, state=s, start=start, start_time=start_time, no_weight_points=wp, last_update=dt)} -%}
                 {%- elif st == 'complete' -%}
                   {%- set di = d~'(incomplete)' -%}
                   {%- set values = c.get(di, {}) -%}
                   {%- set data = values.get('data', []) -%}
                   {%- set u = (values.get('state', 0) - values.get('start', 0)) | round(3) -%}
+                  {%- set start_time = values.get('start_time', now().isoformat()) -%}
+                  {%- set duration = (now() - as_datetime(start_time)).total_seconds() | int %}
                   {%- set no_zero = data | select() | list -%}
                   {%- set factor = 1 / no_zero | min if no_zero else 0 -%}
                   {%- set data = data | map('multiply', factor) | map('round', 3) | list -%}
                   {%- set c = dict(c.items() | rejectattr('0', 'eq', di)) -%}
-                  {%- set p = {d: dict(data=data, kwh_used=u, no_weight_points=wp, last_update=dt)} -%}
+                  {%- set p = {d: dict(data=data, kwh_used=u, duration=duration, no_weight_points=wp, last_update=dt)} -%}
                 {%- endif -%}
                 {{ dict(c, **p | default({})) }}
               {%- endif -%}
