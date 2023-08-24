@@ -1,0 +1,225 @@
+sensor:
+  - platform: ade7953
+    current_b:
+      name: Current 1
+      internal: true
+    active_power_b:
+      name: Power 1
+      id: power_channel_1
+      filters:
+        - lambda: return abs(x);
+      on_value_range:
+        - above: ${max_power}
+          then:
+            - switch.turn_off: relay_1
+            - homeassistant.service:
+                service: persistent_notification.create
+                data:
+                  title: Message from ${friendly_name}
+                data_template:
+                  message: Switch 1 turned off because power exceeded ${max_power}W
+    update_interval: 30s
+
+  - platform: total_daily_energy
+    name: Energy 1
+    power_id: power_channel_1
+    filters:
+      # Multiplication factor from W to kWh is 0.001
+      - multiply: 0.001
+    unit_of_measurement: kWh
+
+status_led:
+  pin:
+    number: GPIO0
+    inverted: yes
+
+switch:
+  - platform: gpio
+    id: relay_1
+    name: " 1"
+    pin: ${switch_pin_1}
+    restore_mode: ${restore_mode_1}
+
+select:
+  - platform: template
+    name: Button Type 1
+    id: button_type_select_1
+    entity_category: config
+    options:
+      - Detached
+      - Momentary
+      - Toggle
+      - Events Only
+    optimistic: true
+    restore_value: true
+    on_value:
+      then:
+        - text_sensor.template.publish:
+            id: button_type_state_1
+            state: !lambda "return id(button_type_select_1).state;"
+
+binary_sensor:
+  - platform: gpio
+    id: wall_button_1
+    pin:
+      number: ${binary_sensor_pin_1}
+      inverted: ${binary_inverted}
+    on_state:
+      - if:
+          condition:
+            - text_sensor.state:
+                id: button_type_state_1
+                state: "Toggle"
+          then:
+            - switch.toggle: relay_1
+    on_multi_click:
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                - api.connected:
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${name}_1
+                      click_type: restart
+          - button.press: restart_button
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                - not:
+                    - text_sensor.state:
+                        id: button_type_state_1
+                        state: "Toggle"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${name} 1
+                      click_type: triple
+                - switch.toggle: relay_1
+      - timing:
+          - ON for at most 1s
+          - OFF for at most 1s
+          - ON for at most 1s
+          - OFF for at least 0.2s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay_1
+                - not:
+                    - text_sensor.state:
+                        id: button_type_state_1
+                        state: "Toggle"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${name} 1
+                      click_type: double
+              else:
+                - if:
+                    condition:
+                      not:
+                        - text_sensor.state:
+                            id: button_type_state_1
+                            state: "Events Only"
+                    then:
+                      - switch.toggle: relay_1
+      - timing:
+          - state: true
+            min_length: ${long_press}
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay_1
+                - not:
+                    - text_sensor.state:
+                        id: button_type_state_1
+                        state: "Toggle"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${name} 1
+                      click_type: long
+              else:
+                - if:
+                    condition:
+                      not:
+                        - text_sensor.state:
+                            id: button_type_state_1
+                            state: "Events Only"
+                    then:
+                      - switch.toggle: relay_1
+      - timing:
+          - ON for at most 1s
+          - OFF for at least 0.25s
+        then:
+          - if:
+              condition:
+                - api.connected:
+                - switch.is_on: relay_1
+                - or:
+                    - text_sensor.state:
+                        id: button_type_state_1
+                        state: "Detached"
+                    - text_sensor.state:
+                        id: button_type_state_1
+                        state: "Events Only"
+              then:
+                - homeassistant.event:
+                    event: esphome.button_pressed
+                    data:
+                      device: ${name}
+                      click_type: short
+              else:
+                - if:
+                    condition:
+                      - or:
+                          - text_sensor.state:
+                              id: button_type_state_1
+                              state: "Detached"
+                          - text_sensor.state:
+                              id: button_type_state_1
+                              state: "Momentary"
+                    then:
+                      - switch.toggle: relay_1
+    on_release:
+      then:
+        - homeassistant.event:
+            event: esphome.button_pressed
+            data:
+              device: ${name}
+              click_type: release
+
+text_sensor:
+  - platform: homeassistant
+    entity_id: ${connected_light_1}
+    id: light_status_1
+    internal: true
+  - platform: template
+    internal: true
+    id: button_type_state_1
+    lambda: |-
+      return id(button_type_select_1).state;
