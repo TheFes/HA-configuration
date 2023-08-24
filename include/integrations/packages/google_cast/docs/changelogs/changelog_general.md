@@ -3,6 +3,12 @@
 * General changes for the [Google Home Resume package](../google_home_resume.yaml)
 * More information [here](../../readme.md)
 
+### Version 2023.8.0
+
+#### 🚨 BREAKING
+
+* Removed support for Music Assistant. The integration is broken for a couple of months already, and the new version is still in beta. Will look at it again if the final version of MA2 is released
+
 ### Version 2022.12.3
 
 #### 🌟 Improvements

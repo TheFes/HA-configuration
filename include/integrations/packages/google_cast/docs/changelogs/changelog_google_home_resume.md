@@ -3,6 +3,16 @@
 * For Google Home Resume Script, which is included in [Google Home Resume package](../../google_home_resume.yaml)
 * More information [here](../google_home_resume.md)
 
+### 2023.8.0
+
+#### ✨ New features
+
+* Added support for resuming BBC streams (BBC Sounds and BBC Iplayer (for players with a screen))
+
+#### 🐛 Bug fixes
+
+* Fix bug in target determination
+
 ### 2023.6.1
 
 #### 🐛 Bug fixes

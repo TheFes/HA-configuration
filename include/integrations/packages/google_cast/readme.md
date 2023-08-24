@@ -7,9 +7,6 @@
   - [Background](#background)
 - [🚨 USAGE OF THE AUTOMATION 🚨](#-usage-of-the-automation-)
   - [Latest version](#latest-version)
-    - [2023.6.0](#202360)
-    - [:recycle: RESUME SCRIPT](#recycle-resume-script)
-      - [🐛 Bug fixes](#-bug-fixes)
   - [Requirements](#requirements)
   - [Setup instructions](#setup-instructions)
     - [Updating from a previous version](#updating-from-a-previous-version)
@@ -51,14 +48,24 @@ ___
 
 ## Latest version
 
-### 2023.6.0
+### 2023.8.0
+
+### 📻 GENERAL
+
+#### 🚨 BREAKING
+
+* (2022.8.0) Removed support for Music Assistant. The integration is broken for a couple of months already, and the new version is still in beta. Will look at it again if the final version of MA2 is released
 
 ### :recycle: RESUME SCRIPT
 
+#### ✨ New features
+
+* Added support for resuming BBC streams (BBC Sounds and BBC Iplayer (for players with a screen))
+
 #### 🐛 Bug fixes
 
-* (2022.6.0) Fix bug in target determination
-* (2022.6.1) Another bug fix in target determination
+* (2022.8.0) Fix bug in target determination
+* (2022.8.0) Actually use the correct setting for enabling the automation, so now setting this to `false` actually works.
 
 Previous changes can be found here:
 * [General package changes](docs/changelogs/changelog_general.md)
