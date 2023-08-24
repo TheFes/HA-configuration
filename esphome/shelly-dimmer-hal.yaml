@@ -1,16 +1,7 @@
 substitutions:
   name: "Hal"
-  type: Dimmer
   lower_name: dimmer-hal
   ip: 192.168.2.73
-  max_temp: "73" # °C
-  dim_lenght: "10s"
-  restore_mode_light: "restore_default_off"
-  restore_mode_switch: "restore_default_on"
-  min_brightness: "470"
-  max_brightness: "1000"
-  leading_edge: "false"
-  gamma_correct: "0"
 
 packages:
   dimmer: !include packages/shelly/shelly_dimmer.yaml

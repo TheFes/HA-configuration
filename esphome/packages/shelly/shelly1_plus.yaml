@@ -1,7 +1,11 @@
 substitutions:
   binary_sensor_pin: GPIO4
   switch_pin: GPIO26
-  restore_mode: RESTORE_DEFAULT_OFF
+  # Higher value gives lower watt readout
+  current_res: "0.001"
+  # Lower value gives lower voltage readout
+  voltage_div: "1925"
+  max_temp: "80.0"
 
 esphome:
   friendly_name: ${name}
@@ -30,7 +34,7 @@ packages:
 sensor:
   - platform: ntc
     sensor: temp_resistance_reading
-    name: "${name} Temperature"
+    name: "Temperature"
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     icon: "mdi:thermometer"
@@ -39,9 +43,13 @@ sensor:
       reference_resistance: 10kOhm
       reference_temperature: 298.15K
     on_value_range:
-      - above: "80.0"
+      - above: ${max_temp}
         then:
-          - switch.turn_off: "shelly_relay"
+          - switch.turn_off: relay
+          - homeassistant.event:
+              event: esphome.overheat
+              data:
+                title: "${name} has overheated."
   - platform: resistance
     id: temp_resistance_reading
     sensor: temp_analog_reading
@@ -53,7 +61,7 @@ sensor:
     attenuation: 11db
 
   - platform: adc
-    name: "${name} Relay Supply Voltage"
+    name: "Relay Supply Voltage"
     pin: GPIO33
     attenuation: 11db
     filters:

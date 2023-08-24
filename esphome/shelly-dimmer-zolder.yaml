@@ -1,17 +1,9 @@
 substitutions:
   name: "Zolder"
-  type: Dimmer
   lower_name: dimmer-zolder
   ip: 192.168.2.18
-  max_temp: "70" # °C
-  dim_lenght: "20s"
-  restore_mode_light: "restore_default_off"
-  restore_mode_switch: "restore_default_off"
-  min_brightness: "470"
-  max_brightness: "1000"
-  leading_edge: "false"
-  gamma_correct: "0"
   light_icon: mdi:bulkhead-light
+  control_light_default: "false"
 
 packages:
   dimmer: !include packages/shelly/shelly_dimmer.yaml

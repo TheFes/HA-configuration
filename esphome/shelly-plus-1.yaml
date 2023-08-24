@@ -1,13 +1,10 @@
 substitutions:
-  name: "Alles Uit Achter"
-  lower_name: alles-uit-achter
-  # Higher value gives lower watt readout
-  current_res: "0.001"
-  # Lower value gives lower voltage readout
-  voltage_div: "1925"
+  name: "Alles Uit Voor"
+  lower_name: alles-uit-voor
   ip: 192.168.2.84
-  connected_light: light.no_light
-  default_button_type: Detached
+  restore_mode: always_off
+  default_button_type: Events Only
+  long_press: 5s
 
 packages:
   switch: !include packages/shelly/shelly1_plus.yaml

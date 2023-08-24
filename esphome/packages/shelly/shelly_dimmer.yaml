@@ -3,7 +3,7 @@ substitutions:
   name: "Shelly Dimmer 2"
   lower_name: shelly-dimmer-2
   max_temp: "70" # °C
-  dim_lenght: "10s"
+  dim_lenght: "20s"
   restore_mode_light: "restore_default_off"
   restore_mode_switch: "restore_default_on"
   min_brightness: "470"
@@ -11,6 +11,7 @@ substitutions:
   leading_edge: "false"
   gamma_correct: "0"
   light_icon: mdi:lightbulb
+  control_light_default: "true"
 
 # ESPhome generic config
 esphome:
@@ -130,7 +131,7 @@ globals:
   - id: control_light
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: ${control_light_default}
 
 # switches to determine light control and dim action
 switch:

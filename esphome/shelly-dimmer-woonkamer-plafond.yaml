@@ -1,18 +1,10 @@
 substitutions:
   name: "Woonkamer Plafond"
-  type: Dimmer
   lower_name: dimmer-woonkamer-plafond
-  ip: 192.168.2.12
-  max_temp: "70" # °C
-  dim_lenght: "10s"
-  restore_mode_light: "restore_default_off"
-  restore_mode_switch: "restore_default_on"
   min_brightness: "430"
-  max_brightness: "1000"
-  leading_edge: "false"
-  gamma_correct: "0"
+  light_icon: mdi:ceiling-light
+  ip: 192.168.2.12
 
 packages:
   dimmer: !include packages/shelly/shelly_dimmer.yaml
-  # minimal: !include packages/shelly/shelly_dimmer_minimal.yaml
 
