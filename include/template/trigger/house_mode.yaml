@@ -13,7 +13,7 @@
         mode: >
           {% set home = states('zone.home') | int(0) > 0 %}
           {% set guest = is_state('input_boolean.gast', 'on') %}
-          {% set holiay = is_state('input_boolean.vakantie', 'on') %}
+          {% set holiday = is_state('input_boolean.vakantie', 'on') %}
           {% if home and is_state('sensor.house_mode', 'Slapen') %}
             Slapen
           {% elif home %}
@@ -31,7 +31,7 @@
         mode: >
           {% set home = states('zone.home') | int(0) > 0 %}
           {% set guest = is_state('input_boolean.gast', 'on') %}
-          {% set holiay = is_state('input_boolean.vakantie', 'on') %}
+          {% set holiday = is_state('input_boolean.vakantie', 'on') %}
           {% if home %}
             Thuis
           {% elif guest %}

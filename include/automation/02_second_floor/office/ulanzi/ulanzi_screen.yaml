@@ -53,4 +53,4 @@ action:
   - alias: "Turn matrix on or off"
     service: light.turn_{{ iif(action | default(true) | bool(true), 'on', 'off') }}
     target:
-      entity_id: light.matrix
+      entity_id: light.awtrix_dd3300_matrix

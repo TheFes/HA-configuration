@@ -108,23 +108,24 @@ light:
           {{
             is_state('switch.shelly1_' ~ id, 'on')
             or is_state('switch.' ~ id, 'on')
+            or is_state('switch.sonoff_' ~ id, 'on')
             or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
           }}
         availability_template: &availability >
           {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-          {{ ('switch.shelly1_' ~ id) | has_value or ('switch.' ~ id) | has_value }}
+          {{ ('switch.shelly1_' ~ id) | has_value or ('switch.' ~ id) | has_value or ('switch.sonoff_' ~ id) | has_value }}
         turn_on: &turn_on
           - service: switch.turn_on
             target:
               entity_id: >
                 {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-                {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id] | select('has_value') | list | first }}
+                {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id, 'switch.sonoff_' ~ id ] | select('has_value') | list | first }}
         turn_off: &turn_off
           - service: switch.turn_off
             target:
               entity_id: >
                 {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-                {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id] | select('has_value') | list | first }}
+                {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id, 'switch.sonoff_' ~ id ] | select('has_value') | list | first }}
         effect_list_template: &effect_list "{{ ['Fast Pulse', 'Slow Pulse', 'None'] }}"
         effect_template: &effect "{{ state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') }}"
         set_effect: &set_effect
@@ -136,7 +137,7 @@ light:
                 light: "{{ this.entity_id }}"
                 toggle_entity: >
                   {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-                  {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id] | select('has_value') | list | first }}
+                  {{ [ 'switch.shelly1_' ~ id, 'switch.' ~ id, 'switch.sonoff_' ~ id ] | select('has_value') | list | first }}
                 effect: "{{ effect }}"
 
       voordeur:

@@ -38,13 +38,13 @@ action:
             then:
               - service: light.turn_on
                 target:
-                  entity_id: light.matrix
+                  entity_id: light.awtrix_dd3300_matrix
                 data:
                   brightness: 10
               - delay: 10
           - service: light.turn_off
             target:
-              entity_id: light.matrix
+              entity_id: light.awtrix_dd3300_matrix
       - conditions:
           - alias: "Double"
             condition: template

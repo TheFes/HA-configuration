@@ -62,20 +62,26 @@ lights:
                 target:
                   entity_id: light.{{ room }}
         else:
-          - service: switch.toggle
+          - service: switch.turn_on
             target:
               entity_id: >
-                {{ 
+                {{
                   [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                    | reject('is_state', 'unavailable')
-                    | reject('is_state', 'unknown')
+                    | select('has_value')
                     | list
                 }}
+    # supports_transition_template: "{{ true }}"
     turn_off: &turn_off
+      # - service: persistent_notification.create
+      #   data:
+      #     message: transition is {{ transition }}
       - variables:
           room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
       - if: >
-          {{ states('light.' ~ room) | bool('na') is boolean }}
+          {{
+            states('light.' ~ room) | bool('na') is boolean
+            and not is_state('sensor.house_mode', 'Vakantihhhe')
+          }}
         then:
           - variables:
               script: "{{ 'script.' ~ room ~ '_toggle' }}"
@@ -91,13 +97,12 @@ lights:
                 target:
                   entity_id: light.{{ room }}
         else:
-          - service: switch.toggle
+          - service: switch.turn_off
             target:
               entity_id: >
-                {{ 
+                {{
                   [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                    | reject('is_state', 'unavailable')
-                    | reject('is_state', 'unknown')
+                    | select('has_value')
                     | list
                 }}
     set_level: &set_level
