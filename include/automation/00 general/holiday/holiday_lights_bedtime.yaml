@@ -17,7 +17,7 @@ action:
   - alias: "Turn light bedroom on"
     service: light.turn_on
     target:
-      entity_id: light.slaapkamer_template
+      entity_id: light.slaapkamer_plafond_template
   - alias: "Random delay to turn light downstairs off"
     delay:
       minutes: "{{ range(5,10) | random }}"

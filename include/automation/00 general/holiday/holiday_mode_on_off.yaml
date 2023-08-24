@@ -1,6 +1,6 @@
 id: 6cdd3311-fb90-47ea-a796-f679091021f2
 alias: "00 - Turn on holiday mode and send notification"
-mode: single
+mode: queued
 max_exceeded: silent
 trigger:
   - platform: state
@@ -13,6 +13,10 @@ trigger:
     event_type: mobile_app_notification_action
     event_data:
       action: "vakantie"
+  - platform: state
+    id: holiday_house
+    entity_id: sensor.house_mode
+    to: "Vakantie"
   - platform: event
     id: no_holiday
     event_type: mobile_app_notification_action
@@ -20,8 +24,8 @@ trigger:
       action: "no_holiday"
   - platform: numeric_state
     id: holiday_over
-    entity_id: zone.home
-    above: 0
+    entity_id: proximity.martijn
+    below: 10000
 action:
   - alias: "Actions holiday mode"
     choose:
@@ -53,6 +57,23 @@ action:
                 notification_icon: mdi:sunglasses
       - conditions:
           condition: trigger
+          id: holiday_house
+        sequence:
+          - variables:
+              switches: >
+                {{
+                  integration_entities('esphome')
+                    | select('is_state', 'Detached')
+                    | map('replace', 'select', 'switch')
+                    | map('replace', '_button_type', '')
+                    | select('has_value')
+                    | list
+                }}
+          - service: switch.turn_off
+            target:
+              entity_id: "{{ switches }}"
+      - conditions:
+          condition: trigger
           id: no_holiday
         sequence:
           - service: input_boolean.turn_off
@@ -65,3 +86,34 @@ action:
           - service: input_boolean.turn_off
             target:
               entity_id: input_boolean.vakantie
+          - if:
+              - alias: "No guest"
+                condition: state
+                entity_id: input_boolean.gast
+                state: "off"
+            then:
+              - variables:
+                  switches: >
+                    {{
+                      integration_entities('esphome')
+                        | select('is_state', 'Detached')
+                        | map('replace', 'select', 'switch')
+                        | map('replace', '_button_type', '')
+                        | select('has_value')
+                        | list
+                    }}
+              - service: switch.turn_on
+                target:
+                  entity_id: "{{ switches }}"
+              - delay: 20
+              - variables:
+                  lights: >
+                    {{
+                      switches
+                        | map('regex_replace', '^switch.shelly1_|^switch.sonoff_', 'light.')
+                        |select('has_value')
+                        | list
+                    }}
+              - service: light.turn_off
+                target:
+                  entity_id: "{{ lights }}"

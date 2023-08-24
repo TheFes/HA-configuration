@@ -13,8 +13,8 @@ condition:
 action:
   - variables:
       light_list:
-        - light.floris
-        - light.pepijn
+        - light.floris_template
+        - light.pepijn_template
       light_select: "{{ range(0,1) | random }}"
       light_select2: "{{ range(0,1) | random }}"
   - alias: "Random delay before lights are turned on"
@@ -23,7 +23,7 @@ action:
   - alias: "Turn on light in master bedroom"
     service: light.turn_on
     target:
-      entity_id: light.slaapkamer_template
+      entity_id: light.slaapkamer_plafond_template
   - alias: "Another delay"
     delay:
       minutes: "{{ range(3,8) | random }}"
@@ -65,4 +65,4 @@ action:
   - alias: "Turn off master bedroom light"
     service: light.turn_off
     target:
-      entity_id: light.slaapkamer_template
+      entity_id: light.slaapkamer_plafond_template
