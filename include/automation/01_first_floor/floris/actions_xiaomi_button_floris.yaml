@@ -3,16 +3,22 @@ alias: "F1F - Xiaomi button Floris"
 trigger:
   - platform: state
     entity_id: sensor.knop_leeslamp_floris_action
-    from: ~
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which click type"
     choose:
-      - conditions: "{{ trigger.to_state.state == 'single' }}"
+      - conditions: "{{ event == 'single' }}"
         sequence:
           - service: light.toggle
             target:
               entity_id: light.floris_leeslamp
-      - conditions: "{{ trigger.to_state.state == 'hold' }}"
+      - conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Light on"
             service: light.turn_on
@@ -26,7 +32,7 @@ action:
               message: "Slaap lekker Floris!"
           - alias: "Wait untill TTS is playing"
             wait_template: "{{ (state_attr('media_player.floris_mini', 'media_content_id') | string).startswith('https://hass.thefes.nl') }}"
-      - conditions: "{{ trigger.to_state.state == 'double' }}"
+      - conditions: "{{ event == 'double' }}"
         sequence: []
-      - conditions: "{{ trigger.to_state.state == 'release' }}"
+      - conditions: "{{ event == 'release' }}"
         sequence: []

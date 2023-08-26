@@ -3,21 +3,27 @@ alias: "F0K - Xiaomi button kitchen"
 trigger:
   - platform: state
     entity_id: sensor.knop_keuken_action
-    to: ~
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which click type"
     choose:
-      - conditions: "{{ trigger.to_state.state == 'single' }}"
+      - conditions: "{{ event == 'single' }}"
         sequence:
           - service: light.toggle
             data:
               entity_id: light.keukenspotjes
-      - conditions: "{{ trigger.to_state.state == 'double' }}"
+      - conditions: "{{ event == 'double' }}"
         sequence:
           - service: light.toggle
             target:
               entity_id: light.keuken
-      - conditions: "{{ trigger.to_state.state == 'hold' }}"
+      - conditions: "{{ event == 'hold' }}"
         sequence: []
-      - conditions: "{{ trigger.to_state.state == 'release' }}"
+      - conditions: "{{ event == 'release' }}"
         sequence: []

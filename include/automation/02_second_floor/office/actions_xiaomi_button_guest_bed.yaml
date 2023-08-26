@@ -3,11 +3,17 @@ alias: "F2O - Xiaomi button Guest Bed"
 trigger:
   - platform: state
     entity_id: sensor.knop_logeerbed_action
-    from: ~
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which click type"
     choose:
-      - conditions: "{{ trigger.to_state.state == 'single' }}"
+      - conditions: "{{ event == 'single' }}"
         sequence:
           - if: "{{ is_state('light.werkkamer_martijn_plafond', 'on') }}"
             then:
@@ -25,7 +31,7 @@ action:
                   entity_id: light.werkkamer_martijn_plafond
                 data:
                   color_temp_kelvin: 2000
-      - conditions: "{{ trigger.to_state.state == 'hold' }}"
+      - conditions: "{{ event == 'hold' }}"
         sequence:
           - if: "{{ is_state('light.matrix', 'off') }}"
             then:
@@ -38,7 +44,7 @@ action:
           - service: light.turn_off
             target:
               entity_id: light.awtrix_dd3300_matrix
-      - conditions: "{{ trigger.to_state.state == 'double' }}"
+      - conditions: "{{ event == 'double' }}"
         sequence:
           - service: light.turn_on
             target:
@@ -50,5 +56,5 @@ action:
               entity_id: light.werkkamer_martijn_plafond
             data:
               color_temp_kelvin: 6535
-      - conditions: "{{ trigger.to_state.state == 'release' }}"
+      - conditions: "{{ event == 'release' }}"
         sequence: []

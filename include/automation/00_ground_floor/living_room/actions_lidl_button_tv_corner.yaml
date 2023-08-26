@@ -3,14 +3,18 @@ alias: "F0P - LIDL button livingroom"
 trigger:
   - platform: state
     entity_id: sensor.knop_tv_hoek_action
-    to: ~
+    to:
+      - "on"
+      - "off"
+    variables:
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which click type"
     choose:
       - conditions:
           - alias: "Short"
             condition: template
-            value_template: "{{ trigger.to_state.state == 'on' }}"
+            value_template: "{{ event == 'on' }}"
         sequence:
           - alias: toggle led light
             service: light.toggle
@@ -19,7 +23,7 @@ action:
       - conditions:
           - alias: "Double"
             condition: template
-            value_template: "{{ trigger.to_state.state == 'off' }}"
+            value_template: "{{ event == 'off' }}"
         sequence:
           - service: light.toggle
             target:

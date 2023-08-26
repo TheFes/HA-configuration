@@ -5,7 +5,13 @@ max_exceeded: silent
 trigger:
   - platform: state
     entity_id: sensor.knop_pepijn_bed_action
-    from: ~
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
 variables:
   pepijn: >
     {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}
@@ -31,7 +37,7 @@ action:
   - alias: "Which click type"
     choose:
       - alias: "Actions with short press"
-        conditions: "{{ trigger.to_state.state == 'single' }}"
+        conditions: "{{ event == 'single' }}"
         sequence:
           - alias: "Perform right action"
             choose:
@@ -73,15 +79,15 @@ action:
                 target:
                   entity_id: light.groep_bed_pepijn
       - alias: "Actions with long press"
-        conditions: "{{ trigger.to_state.state == 'hold' }}"
+        conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Turn all lights off"
             service: light.turn_off
             target:
               area_id: slaapkamer_pepijn
       - alias: "Actions on double press"
-        conditions: "{{ trigger.to_state.state == 'double' }}"
+        conditions: "{{ event == 'double' }}"
         sequence: []
       - alias: "Actions on release"
-        conditions: "{{ trigger.to_state.state == 'release' }}"
+        conditions: "{{ event == 'release' }}"
         sequence: []

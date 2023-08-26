@@ -3,7 +3,13 @@ alias: "F1P - Xiaomi button Reading Light Pepijn"
 trigger:
   - platform: state
     entity_id: sensor.knop_pepijn_leeslamp_action
-    from: ~
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which click type"
     choose:
