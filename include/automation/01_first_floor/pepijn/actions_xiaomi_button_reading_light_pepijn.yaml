@@ -1,17 +1,14 @@
 id: 012addf5-428e-45f9-9934-5cec9bc47f23
 alias: "F1P - Xiaomi button Reading Light Pepijn"
 trigger:
-  - platform: event
-    event_type: "deconz_event"
-    event_data:
-      device_id: fcbea2e293f4b569d908baf7cc496d9e
+  - platform: state
+    entity_id: sensor.knop_pepijn_leeslamp_action
+    from: ~
 action:
   - alias: "Which click type"
     choose:
-      - conditions:
-          - alias: "Short"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1002 }}"
+      - alias: "Actions on short press"
+        conditions: "{{ trigger.to_state.state == 'single' }}"
         sequence:
           - alias: "Turn on reading light"
             service: light.toggle
@@ -21,10 +18,8 @@ action:
             data:
               brightness: 100
               color_temp: 265
-      - conditions:
-          - alias: "Long"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1001 }}"
+      - alias: "Actions on long press"
+        conditions: "{{ trigger.to_state.state == 'hold' }}"
         sequence:
           - alias: "Dim ceiling light"
             service: light.turn_on
@@ -52,13 +47,9 @@ action:
               entity_id: media_player.pepijn_mini
             data:
               message: "Slaap lekker Pepijn!"
-      - conditions:
-          - alias: "Double"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1004 }}"
+      - alias: "Actions on double press"
+        conditions: "{{ trigger.to_state.state == 'double' }}"
         sequence: []
-      - conditions:
-          - alias: "Release"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1003 }}"
+      - alias: "Actions on release"
+        conditions: "{{ trigger.to_state.state == 'release' }}"
         sequence: []

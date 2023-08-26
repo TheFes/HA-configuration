@@ -1,8 +1,8 @@
-id: a86036e6-5023-4298-b809-defcbb4d6df9
-alias: "F0P - LIDL button play area"
+id: 089a1b6a-4dfa-490e-bda3-675de31e1807
+alias: "F0P - LIDL button livingroom"
 trigger:
   - platform: state
-    entity_id: sensor.knop_speelhoek_action
+    entity_id: sensor.knop_tv_hoek_action
     to: ~
 action:
   - alias: "Which click type"
@@ -15,7 +15,7 @@ action:
           - alias: toggle led light
             service: light.toggle
             target:
-              entity_id: light.speelhoek_tafel
+              entity_id: light.groep_tv_hoek
       - conditions:
           - alias: "Double"
             condition: template
@@ -23,4 +23,4 @@ action:
         sequence:
           - service: light.toggle
             target:
-              entity_id: light.groep_speelhoek
+              entity_id: light.groep_woonkamer

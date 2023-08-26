@@ -13,7 +13,7 @@ trigger:
   - platform: template
     value_template: "{{ state_attr('weather.combined_hourly', 'forecast')[0].condition in [ 'sunny', 'partly_sunny'] if state_attr('weather.combined_daily', 'forecast') else false }}"
   - platform: numeric_state
-    entity_id: sensor.woonkamer_temp
+    entity_id: sensor.woonkamer_multi_temperature
     above: 20
   - platform: time
     at: "16:00:00"
@@ -33,7 +33,7 @@ action:
         state: "on"
       - alias: "Warm inside"
         condition: numeric_state
-        entity_id: sensor.woonkamer_temp
+        entity_id: sensor.woonkamer_multi_temperature
         above: 20
       - alias: "Open cover"
         service: cover.open_cover

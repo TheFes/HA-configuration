@@ -11,7 +11,7 @@ cards:
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     icon: mdi:stairs
     icon_color: blue
-    entity: binary_sensor.deur_trapkast
+    entity: binary_sensor.deur_trapkast_contact
     badge_icon: "{{ 'mdi:door' if is_state(entity, 'on') }}"
     badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     layout: horizontal

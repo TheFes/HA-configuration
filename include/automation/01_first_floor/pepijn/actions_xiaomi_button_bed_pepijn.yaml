@@ -3,10 +3,9 @@ alias: "F1P - Xiaomi button Bed Pepijn"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: "deconz_event"
-    event_data:
-      device_id: f448ab96c13a02e1e4ed6dc679d693c5
+  - platform: state
+    entity_id: sensor.knop_pepijn_bed_action
+    from: ~
 variables:
   pepijn: >
     {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}
@@ -32,16 +31,13 @@ action:
   - alias: "Which click type"
     choose:
       - alias: "Actions with short press"
-        conditions:
-          - alias: "Short"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1002 }}"
+        conditions: "{{ trigger.to_state.state == 'single' }}"
         sequence:
           - alias: "Perform right action"
             choose:
               - conditions: >
                   {{
-                    states('sensor.pepijn_lux') | float(0) < 10
+                    states('pepijn_lux_illuminance_lux') | float(0) < 10
                     and pepijn == 'sleeping'
                     and is_state('light.groep_bed_pepijn', 'off')
                   }}
@@ -76,22 +72,16 @@ action:
               - service: light.turn_off
                 target:
                   entity_id: light.groep_bed_pepijn
-      - conditions:
-          - alias: "Long"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1001 }}"
+      - alias: "Actions with long press"
+        conditions: "{{ trigger.to_state.state == 'hold' }}"
         sequence:
           - alias: "Turn all lights off"
             service: light.turn_off
             target:
               area_id: slaapkamer_pepijn
-      - conditions:
-          - alias: "Double"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1004 }}"
+      - alias: "Actions on double press"
+        conditions: "{{ trigger.to_state.state == 'double' }}"
         sequence: []
-      - conditions:
-          - alias: "Release"
-            condition: template
-            value_template: "{{ trigger.event.data.event == 1003 }}"
+      - alias: "Actions on release"
+        conditions: "{{ trigger.to_state.state == 'release' }}"
         sequence: []

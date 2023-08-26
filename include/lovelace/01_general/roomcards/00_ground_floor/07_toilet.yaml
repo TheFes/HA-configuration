@@ -11,7 +11,7 @@ cards:
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
     icon: mdi:toilet
     icon_color: blue
-    entity: binary_sensor.motion_wc
+    entity: binary_sensor.wc_motion_occupancy
     badge_icon: "{{ 'mdi:motion-sensor' if is_state(entity, 'on') }}"
     badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     layout: horizontal

@@ -1,10 +1,10 @@
-id: 089a1b6a-4dfa-490e-bda3-675de31e1807
-alias: "F0P - LIDL button livingroom"
+id: 2e33a880-34d0-4d69-9590-7e7d96fdbc3f
+alias: "F0K - Xiaomi button kitchen"
 trigger:
   - platform: event
     event_type: "deconz_event"
     event_data:
-      id: knop_speelhoek
+      device_id: "c953df250e726edcad4416de43bb3ac2"
 action:
   - alias: "Which click type"
     choose:
@@ -13,10 +13,9 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.event == 1002 }}"
         sequence:
-          - alias: toggle led light
-            service: light.toggle
-            target:
-              entity_id: light.speelhoek_tafel
+          - service: light.toggle
+            data:
+              entity_id: light.binary_sensor.deur_trapkast_contact
       - conditions:
           - alias: "Double"
             condition: template
@@ -24,4 +23,10 @@ action:
         sequence:
           - service: light.toggle
             target:
-              entity_id: light.groep_speelhoek
+              entity_id: light.keuken
+      - conditions:
+          - alias: "Release"
+            condition: template
+            value_template: "{{ trigger.event.data.event == 1003 }}"
+        sequence:
+          - delay: 0

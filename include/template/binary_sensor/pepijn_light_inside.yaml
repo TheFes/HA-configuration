@@ -3,4 +3,4 @@
       name: "Pepijn Light inside"
       device_class: light
       state: >-
-        {{ states('sensor.pepijn_lux') | float(0) > 10 }}
+        {{ states('pepijn_lux_illuminance_lux') | float(0) > 10 }}

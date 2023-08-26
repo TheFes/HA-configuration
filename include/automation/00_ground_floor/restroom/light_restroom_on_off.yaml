@@ -4,7 +4,7 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: binary_sensor.motion_wc
+    entity_id: binary_sensor.wc_motion_occupancy
     to: "on"
     from: "off"
 action:
@@ -17,7 +17,7 @@ action:
         - alias: "Wait until motion sensor triggers again"
           wait_for_trigger:
             - platform: state
-              entity_id: binary_sensor.motion_wc
+              entity_id: binary_sensor.wc_motion_occupancy
               to: "on"
             - platform: state
               entity_id: light.wc

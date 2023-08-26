@@ -4,11 +4,11 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: numeric_state
-    entity_id: sensor.licht_woonkamer
+    entity_id: sensor.woonkamer_lux_illuminance_lux
     id: light
     above: 100
   - platform: numeric_state
-    entity_id: sensor.licht_woonkamer
+    entity_id: sensor.woonkamer_lux_illuminance_lux
     id: very_light
     above: 400
 condition:

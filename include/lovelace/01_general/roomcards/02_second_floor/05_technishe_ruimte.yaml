@@ -12,7 +12,7 @@ cards:
       {% set temp = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'temperature') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
       {% set lux = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'illuminance') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
       {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
-    entity: binary_sensor.deur_technische_ruimte
+    entity: binary_sensor.technische_ruimte_contact
     badge_icon: "{{ 'mdi:door' if is_state(entity, 'on') }}"
     badge_color: "{{ 'yellow' if is_state(entity, 'on') }}"
     tap_action:

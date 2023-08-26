@@ -2,18 +2,16 @@ id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"
 alias: "F2 - Xiaomi Cube"
 mode: parallel
 trigger:
-  - platform: event
-    event_type: "deconz_event"
-    event_data:
-      device_id: f6774ae0411495f22b9ffa91f9f11c0b
+  - platform: state
+    entity_id: sensor.magic_cube_action
+    from: ~
     variables:
-      event: "{{ trigger.event.data.event }}"
-      gesture: "{{ trigger.event.data.gesture}}"
+      event: "{{ trigger.to_state.state }}"
 action:
   - alias: "Which action"
     choose:
       - alias: "Actions with shake"
-        conditions: "{{ event == 7007 }}"
+        conditions: "{{ event == 'shake' }}"
         sequence:
           - service: switch.turn_on
             target:
@@ -51,7 +49,7 @@ action:
                           images:
                             - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
       - alias: "Actions with rotate"
-        conditions: "{{ gesture in [7, 8] }}"
+        conditions: "{{ 'rotate' in event }}"
         sequence:
           - variables:
               volume: "{{ state_attr('media_player.zolder_werkkamer_stereo', 'volume_level') }}"
@@ -62,17 +60,5 @@ action:
                   entity_id: media_player.zolder_werkkamer_stereo
                 data:
                   volume_level: >
-                    {% set c = 0.05 if gesture == 7 else -0.05 %}
+                    {% set c = 0.05 if event == 'rotate_right' else -0.05 %}
                     {{ ([ 0, volume + c, 1] | sort)[1] | round(2) }}
-
-# Possible actions
-#   events (trigger.event.data.event)
-#     X00X: double tap X
-#     X00Y: Y to X
-#     X000: slide on X
-#     7000: cube wake
-#     7007: cube shake
-#     7008: cube fall
-#   gestures (trigger.event.data.gesture)
-#     7 rotate clockwise
-#     8 rotate counter clockwise

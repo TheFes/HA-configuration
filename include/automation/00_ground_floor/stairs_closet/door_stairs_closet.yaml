@@ -4,14 +4,14 @@ mode: restart
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: binary_sensor.deur_trapkast
+    entity_id: binary_sensor.deur_trapkast_contact
 action:
   - alias: "Open or closed?"
     choose:
       - conditions:
           - alias: "Door open?"
             condition: state
-            entity_id: binary_sensor.deur_trapkast
+            entity_id: binary_sensor.deur_trapkast_contact
             state: "on"
         sequence:
           - alias: "Light on"
@@ -30,7 +30,7 @@ action:
       - conditions:
           - alias: "Door closed?"
             condition: state
-            entity_id: binary_sensor.deur_trapkast
+            entity_id: binary_sensor.deur_trapkast_contact
             state: "off"
         sequence:
           - alias: "Light off"
