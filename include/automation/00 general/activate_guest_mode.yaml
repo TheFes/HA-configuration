@@ -2,17 +2,77 @@ id: 3b350cdb-4a8e-4ce9-b239-fc2e329f931d
 alias: "00 - Activate Guest Mode when Guest Wifi is used"
 trigger:
   - platform: state
-    entity_id: binary_sensor.guest_wifi_active
-    to: "on"
-    from: "off"
+    entity_id: sensor.guest_wifi_active
+    to: ~
     id: "on"
   - platform: state
-    entity_id: binary_sensor.guest_wifi_active
-    to: "off"
+    entity_id: sensor.guest_wifi_active
+    to: "0"
     for:
-      hours: 6
+      hours: 2
     id: "off"
+condition:
+  - >
+    {{
+      trigger.id == 'off'
+      or
+        (
+          trigger.to_state.state | is_number
+          and trigger.from_state.state | is_number
+          and trigger.to_state.state > trigger.from_state.state
+        )
+    }}
 action:
   - service: input_boolean.turn_{{ trigger.id }}
     target:
       entity_id: input_boolean.gast
+  - if: "{{ trigger.id == 'on' }}"
+    then:
+      - variables:
+          added: >
+            {{
+              trigger.to_state.attributes.names
+                | reject('in', trigger.from_state.attributes.names)
+                | join
+            }}
+      - if: "{{ added not in state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true)}}"
+        then:
+          - service: notify.mobile_app_pixel_7_pro
+            data:
+              title: "🏡 Gastmodus geactiveerd"
+              message: "Gastmodus geactiveert door {{ added }}"
+              data:
+                channel: Guest
+                ttl: 0
+                priority: high
+                notification_icon: mdi:home
+                tag: Guest
+                actions:
+                  - action: "add_guest"
+                    title: "Gast"
+                  - action: "ignore_guest"
+                    title: "Negeer"
+          - wait_for_trigger:
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "add_guest"
+                id: add
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "ignore_guest"
+                id: ignore
+            timeout: "01:00:00"
+            continue_on_timeout: false
+          - if: "{{ wait.trigger.id == 'add' }}"
+            then:
+              - alias: "Change template sensor if needed"
+                event: wifi_always_guest
+                event_data:
+                  name: "{{ added }}"
+            else:
+              - alias: "Change template sensor if needed"
+                event: wifi_ignore
+                event_data:
+                  name: "{{ added }}"

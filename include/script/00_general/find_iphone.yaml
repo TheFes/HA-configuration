@@ -1,0 +1,18 @@
+find_iphone:
+  alias: "00 - Find iPhone Marleen"
+  icon: mdi:cellphone-information
+  mode: restart
+  sequence:
+    - repeat:
+        count: 5
+        sequence:
+          - service: notify.mobile_app_marleen_app
+            data:
+              message: "Joehoe, hier ben ik!"
+              data:
+                push:
+                  sound:
+                    name: default
+                    critical: 1
+                    volume: 1.0
+          - delay: 2
