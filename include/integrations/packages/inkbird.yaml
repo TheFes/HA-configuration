@@ -1,0 +1,216 @@
+# Package with entities for Inkbird alerts and to be used on dashboard
+
+template:
+  # template sensors for temperature and trend
+  # probe 1
+  - trigger:
+      - platform: state
+        entity_id: sensor.xbbq_112c_temperature_probe_1
+        from: ~
+        id: state
+        variables: &var_sensor_probe1
+          probe_entity: sensor.xbbq_112c_temperature_probe_1
+      - platform: time_pattern
+        minutes: "/1"
+        id: time
+        variables: *var_sensor_probe1
+    sensor:
+      - name: Inkbird Probe 1
+        unique_id: 2cf2b064-9115-4603-a079-ca78702db172
+        state: &state_template >
+          {%- if trigger.id == 'state' %}
+            {{ trigger.to_state.state }}
+          {%- else %}
+            {{ this.state }}
+          {%- endif %}
+        icon: &icon mdi:thermometer
+        unit_of_measurement: &unit "°C"
+        availability: &availability_template >
+          {{
+            states(probe_entity) not in ['unavailable, unknown']
+            and now() - states[probe_entity].last_updated < timedelta(minutes=10)
+          }}
+        attributes: &attributes
+          history: >
+            {%- set previous = this.get('attributes', {}).get('history', []) %}
+            {%- set state = states(probe_entity) | float(0) %}
+            {%- if state > 0 %}
+              {{ [ state ] + (previous[:2] if previous else []) }}
+            {%- else %}
+              {{ previous }}
+            {%- endif %}
+          trend: >
+            {%- set history = state_attr(probe_entity, 'history') | default([], true) %}
+            {%- if history | count == 3 %}
+              {%- if history[0] >= history[1] >= history[2] and history[2] != history | max %}
+                up
+              {%- elif history[0] <= history[1] <= history[2] and history[2] != history | min %}
+                down
+              {%- else %}
+                stable
+              {%- endif %}
+            {%- else %}
+              unknown
+            {%- endif %}
+  # probe 2
+  - trigger:
+      - platform: state
+        entity_id: sensor.xbbq_112c_temperature_probe_2
+        from: ~
+        id: state
+        variables: &var_sensor_probe2
+          probe_entity: sensor.xbbq_112c_temperature_probe_2
+      - platform: time_pattern
+        minutes: "/1"
+        id: time
+        variables: *var_sensor_probe2
+    sensor:
+      - name: Inkbird Probe 2
+        unique_id: 0b0e5c49-6ff6-448b-9444-af80ddf633c9
+        state: *state_template
+        icon: *icon
+        unit_of_measurement: *unit
+        availability: *availability_template
+        attributes: *attributes
+
+  # binary sensors for alert
+  - binary_sensor:
+      # probe 1
+      - unique_id: 03f0a790-d0a3-4efd-927f-4bc2e7f26828
+        name: "Probe 1"
+        device_class: problem
+        state: >-
+          {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+          {%- set min = states('input_number.probe_1_min') | int(0) %}
+          {%- set max = states('input_number.probe_1_max') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+          {{
+            ((state < min and trend != 'up')
+            or (state > max and trend != 'down'))
+            and is_state('input_boolean.probe_1_alert', 'on')
+          }}
+        availability: "{{ states('sensor.inkbird_probe_1') | is_number }}"
+        icon: >
+          {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+          {%- set min = states('input_number.probe_1_min') | int(0) %}
+          {%- set max = states('input_number.probe_1_max') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+          {%- if state < min and trend != 'up' %}
+            mdi:grill-outline
+          {%- else %}
+            mdi:grill
+          {%- endif %}
+        attributes:
+          title: >
+            {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+            {%- set min = states('input_number.probe_1_min') | int(0) %}
+            {%- set max = states('input_number.probe_1_max') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+            {%- if state < min and trend != 'up' %}
+              BBQ te koud
+            {%- elif state > max and trend != 'down' %}
+              BBQ te warm
+            {%- else %}
+              Prima!
+            {%- endif %}
+          message: >
+            {%- set state = states('sensor.inkbird_probe_1') | int(0) %}
+            {%- set min = states('input_number.probe_1_min') | int(0) %}
+            {%- set max = states('input_number.probe_1_max') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_1', 'trend') %}
+            {%- if state < min and trend != 'up' %}
+              De BBQ is nog niet warm genoeg, en de temperatuur gaat niet omhoog!
+            {%- elif state > max and trend != 'down' %}
+              De BBQ is te warm, en de temperatuur gaat niet omlaag
+            {%- else %}
+              Alles prima!
+            {%- endif %}
+
+      # probe 2
+      - unique_id: decc7762-59b0-4ef9-a4ac-8f8f7bcf0d10
+        name: "Probe 2"
+        device_class: problem
+        state: >-
+          {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+          {%- set target = states('input_number.probe_2_target') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+          {{
+            ((state < target and trend != 'up')
+            or state >= target)
+            and is_state('input_boolean.probe_2_alert', 'on')
+          }}
+        availability: "{{ states('sensor.inkbird_probe_2') | is_number }}"
+        icon: >
+          {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+          {%- set target = states('input_number.probe_2_target') | int(0) %}
+          {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+          {%- if state < target and trend != 'up' %}
+            mdi:food-steak-off
+          {%- else %}
+            mdi:food-steak
+          {%- endif %}
+        attributes:
+          title: >
+            {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+            {%- set target = states('input_number.probe_2_target') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+            {%- if state >= target %}
+              Vlees klaar!
+            {%- elif state < target and trend != 'up' %}
+              Vlees te koud!
+            {%- else %}
+              Alles prima!
+            {%- endif %}
+          message: >
+            {%- set state = states('sensor.inkbird_probe_2') | int(0) %}
+            {%- set target = states('input_number.probe_2_target') | int(0) %}
+            {%- set trend = state_attr('sensor.inkbird_probe_2', 'trend') %}
+            {%- if state >= target %}
+              Het vlees is klaar! Haal het er snel af!
+            {%- elif state < target and trend != 'up' %}
+              Het vlees is nog niet warm genoeg, maar de temperatuur gaat niet omhoog!
+            {%- else %}
+              Alles prima!
+            {%- endif %}
+
+# alerts
+alert:
+  # probe 1
+  probe_1:
+    name: "BBQ Probe 1"
+    title: "{{ state_attr('binary_sensor.probe_1', 'title') }}"
+    message: "{{ state_attr('binary_sensor.probe_1', 'message') }}"
+    entity_id: binary_sensor.probe_1
+    state: "on"
+    repeat: 10
+    can_acknowledge: true
+    skip_first: false
+    notifiers:
+      - mobile_app_pixel_7_pro
+    data:
+      tag: bbq_probe1
+      channel: BBQ
+      ttl: 0
+      priority: high
+      notification_icon: mdi:grill
+    done_message: "clear_notification"
+
+  #probe 2
+  probe_2:
+    name: "BBQ Probe 2"
+    title: "{{ state_attr('binary_sensor.probe_2', 'title') }}"
+    message: "{{ state_attr('binary_sensor.probe_2', 'message') }}"
+    entity_id: binary_sensor.probe_2
+    state: "on"
+    repeat: 10
+    can_acknowledge: true
+    skip_first: false
+    notifiers:
+      - mobile_app_pixel_7_pro
+    data:
+      tag: bbq_probe2
+      channel: BBQ
+      ttl: 0
+      priority: high
+      notification_icon: mdi:food-steak
+    done_message: "clear_notification"

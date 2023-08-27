@@ -1,0 +1,205 @@
+input_boolean:
+  keuken_hub:
+    name: Keuken Hub
+    icon: mdi:fridge-outline
+  slaapkamer_hub:
+    name: Slaapkamer Hub
+    icon: mdi:bed
+  pepijn_mini:
+    name: Pepijn Mini
+    icon: mdi:toy-brick
+  floris_mini:
+    name: Floris Mini
+    icon: mdi:teddy-bear
+  woonkamer_home:
+    name: Woonkamer Home
+    icon: mdi:sofa
+  zolder_mini_marleen:
+    name: Zolder Mini Marleen
+    icon: mdi:human-female
+  zolder_werkkamer_stereo:
+    name: Werkkamer Zolder Stereo
+    icon: mdi:human-male
+  beneden_groep:
+    name: Beneden Groep
+    icon: mdi:home-floor-0
+  boven_groep:
+    name: Boven Groep
+    icon: mdi:home-floor-1
+  zolder_groep:
+    name: Zolder Groep
+    icon: mdi:home-floor-2
+  huis_groep:
+    name: Huis Groep
+    icon: mdi:home
+  tts_volume:
+    name: Set volume?
+    icon: mdi:volume-plus
+
+group:
+  tts_selection:
+    name: "TTS target selection"
+    entities: &booleans
+      - input_boolean.huis_groep
+      - input_boolean.zolder_groep
+      - input_boolean.boven_groep
+      - input_boolean.beneden_groep
+      - input_boolean.zolder_werkkamer_stereo
+      - input_boolean.zolder_mini_marleen
+      - input_boolean.slaapkamer_hub
+      - input_boolean.floris_mini
+      - input_boolean.pepijn_mini
+      - input_boolean.keuken_hub
+      - input_boolean.woonkamer_home
+
+input_number:
+  tts_volume:
+    name: TTS Volume
+    min: 0
+    max: 100
+    step: 5
+    mode: slider
+    icon: mdi:volume-high
+    unit_of_measurement: "%"
+
+input_text:
+  tts_message:
+    name: TTS Message
+    icon: mdi:message
+
+input_select:
+  radio_channel:
+    name: Radio Channel
+    options:
+      - NPO Radio 2
+      - Radio Veronica
+      - Willy
+      - KINK
+      - VRT Studio Brussel
+      - Geen
+  tts_or_radio:
+    name: TTS or Radio
+    options:
+      - TTS
+      - Radio
+
+script:
+  google_tts_radio_dashboard:
+    alias: "00 - TTS via Dashboard"
+    description: Script to send TTS message via dashboard.
+    icon: mdi:cast-audio
+    mode: single
+    variables:
+      boolean: *booleans
+      default_volume: 25
+      default_message: ""
+      default_selection: "Huis groep"
+      reset_booleans: True
+    sequence:
+      - service: script.google_home_settings
+        response_variable: settings
+      - variables:
+          target: >
+            {%
+              set target = expand(boolean)
+                            | selectattr('state', 'eq', 'on')
+                            | map(attribute='entity_id')
+                            | map('replace', 'input_boolean', 'media_player')
+                            | list
+            %}
+            {% set speaker_groups = settings.speaker_groups %}
+            {% set members_selected = speaker_groups.items() | selectattr('0', 'in', target) | map(attribute='1') | sum(start=[]) %}
+            {{ target | reject('in', members_selected) |list }}
+      - if:
+          - alias: "TTS selected"
+            condition: state
+            entity_id: input_select.tts_or_radio
+            state: "TTS"
+        then:
+          - alias: "Send TTS using Google Home Resume script"
+            service: script.turn_on
+            target:
+              entity_id: script.google_home_resume
+            data:
+              variables:
+                action:
+                  - alias: "Send TTS message"
+                    service: tts.google_cloud_say
+                    target:
+                      entity_id: "{{ target }}"
+                    data:
+                      message: "{{ states('input_text.tts_message') }}"
+                    extra: >
+                      {{
+                        dict(volume = states('input_number.tts_volume') | float(25) / 100 | round(2))
+                        if is_state('input_boolean.tts_volume', 'on')
+                        else {}
+                      }}
+          - alias: "Reset volume"
+            choose:
+              - conditions: "{{ True if default_volume else False }}"
+                sequence:
+                  - service: input_number.set_value
+                    target:
+                      entity_id: input_number.tts_volume
+                    data:
+                      value: "{{ default_volume }}"
+          - alias: "Reset message"
+            choose:
+              - conditions: "{{ default_message is defined }}"
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: input_text.tts_message
+                    data:
+                      value: "{{ default_message }}"
+        else:
+          - variables:
+              radio_data:
+                NPO Radio 2:
+                  picture: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
+                  url: http://icecast.omroep.nl/radio2-bb-aac
+                  title: "Er is maar één NPO Radio 2"
+                Radio Veronica:
+                  picture: "http://192.168.2.3:8123/local/pictures/radio/radio_veronica.png"
+                  url: https://playerservices.streamtheworld.com/api/livestream-redirect/VERONICAAAC.aac?dist=tunein&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY3MDgzNTEzNiwiaXNzIjoidGlzcnYifQ.16Q074tCkCkexSdR8wN8qIfq2HybMzeIA5DF_ljXSrU
+                  title: "WE. LOVE. MUSIC."
+                Willy:
+                  picture: "http://192.168.2.3:8123/local/pictures/radio/willy.png"
+                  url: https://streams.radio.dpgmedia.cloud/redirect/willy_be/mp3?source=tunein&player=rp_external&gdpr=1&gdpr_consent=&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY3MjY3MDA0NywiaXNzIjoidGlzcnYifQ.a2_Igl_uXwR23udPph6LDETz3zJ93OmjJjMfKHfIR_I
+                  title: "MUSIC MATTERS"
+                KINK:
+                  picture: "http://192.168.2.3:8123/local/pictures/radio/kink.jpg"
+                  url: http://25333.live.streamtheworld.com/KINKAAC_SC?tdtok=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ImZTeXA4In0.eyJpc3MiOiJ0aXNydiIsInN1YiI6IjIxMDY0IiwiaWF0IjoxNjcwODM1MzMwLCJ0ZC1yZWciOmZhbHNlfQ.Ab80x7W9JM51ouH01NF3rHnJh5jHsFVB1vJj0WmscHY&DIST=TuneIn&TGT=TuneIn&maxServers=2&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTY3MDgzNTMzMCwiaXNzIjoidGlzcnYifQ.efPyIem6ZRzBsUTEglz9jDdZzHVMitI14fAmRC_L7FY
+                  title: "NO ALTERNATIVE"
+                VRT Studio Brussel:
+                  picture: "http://192.168.2.3:8123/local/pictures/radio/stu_bru.png"
+                  url: http://icecast.vrtcdn.be/stubru.aac
+                  title: "Life is Music"
+          - alias: "Turn on Radio 2"
+            service: media_player.play_media
+            target:
+              entity_id: "{{ target }}"
+            data:
+              media_content_id: "{{ radio_data[states('input_select.radio_channel')].url }}"
+              media_content_type: music
+              extra:
+                metadata:
+                  metadataType: 3
+                  title: "{{ radio_data[states('input_select.radio_channel')].title }}"
+                  artist: "{{ states('input_select.radio_channel') }}"
+                  images:
+                    - url: "{{ radio_data[states('input_select.radio_channel')].picture }}"
+          - alias: "Reset selction"
+            service: input_select.select_option
+            target:
+              entity_id: input_select.radio_channel
+            data:
+              option: "Geen"
+      - alias: "Reset booleans"
+        choose:
+          - conditions: "{{ reset_booleans and (boolean is defined) }}"
+            sequence:
+              - service: homeassistant.turn_off
+                target:
+                  entity_id: "{{ boolean }}"

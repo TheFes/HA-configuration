@@ -1,0 +1,79 @@
+template:
+  - sensor:
+      - unique_id: ea9be49b-e147-49aa-b8fd-0c63258b3029
+        name: TGTG boxes
+        state: >
+          {{ integration_entities('tgtg') | map('states') | map('int', 0) | select() | list | count }}
+        icon: mdi:archive
+        attributes:
+          boxes: >
+            {% set ns = namespace(box=[]) %}
+            {% for e in integration_entities('tgtg') %}
+              {% set ns.box = ns.box + [dict(entity_id=e, box=states[e].name.split(' - ')[0], state=states(e))] %}
+            {% endfor %}
+            {{ ns.box }}
+
+automation:
+  - id: b8f7c143-ca0d-4fbc-b98e-fec9870fd284
+    alias: "00 - Alert for Too Good To Go"
+    trigger:
+      - platform: state
+        entity_id: sensor.tgtg_boxes
+        attribute: boxes
+    mode: parallel
+    variables:
+      entity: >
+        {% set changed = trigger.to_state.attributes.get('boxes', []) | reject('in', trigger.from_state.attributes.get('boxes', [])) | list %}
+        {{ (changed | first).entity_id if iif(changed) else 'none' }}
+      box: "{{ trigger.from_state.attributes.get('boxes', []) | selectattr('entity_id', 'eq', entity) | map(attribute='box') | join }}"
+      from: "{{ trigger.from_state.attributes.get('boxes', [])| selectattr('entity_id', 'eq', entity) | map(attribute='state') | join }}"
+      to: "{{ trigger.to_state.attributes.get('boxes', []) | selectattr('entity_id', 'eq', entity) | map(attribute='state') | join }}"
+    condition:
+      - "{{ entity != 'none' and from | is_number and to | is_number }}"
+    action:
+      - alias: "Send or dismiss"
+        if:
+          - "{{ to > 0 }}"
+          - "{{ state_attr('sensor.variables', 'variables')[entity] | default(true) }}"
+        then:
+          - alias: "Send notification"
+            service: notify.mobile_app_pixel_7_pro
+            data:
+              title: "{{ box}} beschikbaar"
+              message: "Er {{ iif(to == 1,'is', 'zijn') }} er nog {{ to }}"
+              data:
+                tag: TGTG-{{ entity }}
+                channel: TGTG
+                ttl: 0
+                priority: high
+                notification_icon: mdi:baguette
+                clickAction: "{{ state_attr(entity, 'Item URL') }}"
+                actions:
+                  - action: "tgtg={{ entity }}-dismiss"
+                    title: "Nah.."
+          - alias: "Wait for a response"
+            wait_for_trigger:
+              - platform: event
+                event_type: mobile_app_notification_action
+                event_data:
+                  action: "tgtg={{ entity }}-dismiss"
+                id: dismiss
+              - platform: template
+                value_template: "{{ states(entity) != to | string }}"
+          - if: "{{ wait.trigger.id == 'dismiss' }}"
+            then:
+              - event: variable_set
+                event_data:
+                  key: "{{ entity }}"
+                  value: true
+        else:
+          - alias: "Dismiss notification"
+            service: notify.mobile_app_pixel_7_pro
+            data:
+              message: "clear_notification"
+              data:
+                tag: TGTG-{{ entity }}
+          - alias: "Remove ignore setting if set"
+            event: remove_variable
+            event_data:
+              key: "{{ entity }}"

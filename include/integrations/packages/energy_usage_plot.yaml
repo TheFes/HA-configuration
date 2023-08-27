@@ -1,0 +1,195 @@
+## SCRIPT TO STORE THE DATA ##
+script:
+  plot_energy_usage:
+    alias: "00 - Plot energy usage"
+    icon: mdi:brightness-percent
+    mode: parallel
+    max: 20
+    max_exceeded: silent
+    fields:
+      sensor:
+        description: "Select energy sensor"
+        name: Energy Sensor
+        example: sensor.dishwasher_energy
+        required: true
+        selector:
+          entity:
+            domain: sensor
+            device_class: energy
+      description:
+        description: "Description for the plot"
+        name: Description
+        example: 120
+        required: true
+        selector:
+          text:
+      no_weight_points:
+        description: "Number of weight points/hour"
+        name: Weight points
+        default: 1
+        example: 3
+        required: true
+        selector:
+          number:
+            min: 0
+            max: 12
+            step: 1
+            mode: slider
+      stop_entity:
+        description: "Entity to use to stop the plot"
+        example: input_boolean.dishwasher_off
+        required: true
+        selector:
+          entity:
+      stop_state:
+        description: "State the entity should have to stop the plot"
+        example: "off"
+        required: true
+        selector:
+          text:
+    sequence:
+      - variables:
+          not_defined: >
+            {{ [
+                  'energy sensor' if sensor is not defined or not sensor else none,
+                  'stop entity' if stop_entity is not defined or not stop_entity else none,
+                  'stop state' if stop_state is not defined else none
+                ] | reject('none') | list
+            }}
+      - if: "{{ not_defined | count > 0 }}"
+        then:
+          - stop: >
+              {{ not_defined | join(', ') }} {{ 'is' if not_defined | count == 1 else 'are'}} not defined, script has stopped
+            error: true
+      - variables:
+          description: "{{ description | default('unknown') }}"
+          no_weight_points: "{{ no_weight_points | default(4) | int(4) }}"
+      - repeat:
+          until:
+            - condition: template
+              value_template: "{{ is_state(stop_entity, stop_state) }}"
+          sequence:
+            - variables:
+                sensor_state: "{{ states(sensor) | float('na') }}"
+            - if: "{{ not sensor_state | is_number }}"
+              then:
+                - stop: "Received non numeric state, script has stopped"
+                  error: true
+            - event: update_energy_plot
+              event_data:
+                description: "{{ description }}"
+                status: "{{ 'first' if repeat.first else 'ongoing' }}"
+                state: "{{ sensor_state }}"
+                no_weight_points: "{{ no_weight_points }}"
+            - delay:
+                minutes: "{{ 60 / no_weight_points }}"
+      - event: update_energy_plot
+        event_data:
+          description: "{{ description }}"
+          no_weight_points: "{{ no_weight_points }}"
+          status: complete
+
+## TEMPLATE SENSOR TO STORE THE DATA ##
+template:
+  - trigger:
+      - platform: event
+        event_type: update_energy_plot
+        id: plot_update
+      - platform: homeassistant
+        event: start
+        id: remove_incomplete
+    sensor:
+      - unique_id: 36c9491c-2e16-4fc3-bc9f-a6ada5fc88b7
+        name: Energy plots
+        state: OK
+        attributes:
+          energy_plots: >
+            {%- set c = this.attributes.get('energy_plots', {}) -%}
+            {%- if trigger.id == 'plot_update' and trigger.event.data is defined -%}
+              {%- set st = trigger.event.data.status | default('unknown') -%}
+              {%- set d = trigger.event.data.description | default('unknown') ~ ('(incomplete)' if not st in ['complete', 'remove'] else '') -%}
+              {%- if st == 'remove_all' -%}
+                {{ dict() }}
+              {%- elif st == 'remove' -%}
+                {{ dict(c.items() | rejectattr('0', 'eq', d)) }}
+              {%- else -%}
+                {%- set s = trigger.event.data.state | default(0) -%}
+                {%- set wp = trigger.event.data.no_weight_points | default(none) %}
+                {%- set dt = now().replace(microsecond=0).isoformat() -%}
+                {%- if st == 'first' -%}
+                  {%- set p = {d: dict(data=[], state=s, start=s, start_time=now().isoformat(), no_weight_points=wp, last_update=dt)} -%}
+                {%- elif st == 'ongoing' -%}
+                  {%- set values = c.get(d, {}) -%}
+                  {%- set data = values.get('data', []) -%}
+                  {%- set u = s - values.get('state', 0) -%}
+                  {%- set start = values.get('start', 0) -%}
+                  {%- set start_time = values.get('start_time', now().isoformat()) -%}
+                  {%- set data = data + [u | round(3)] -%}
+                  {%- set p = {d: dict(data=data, state=s, start=start, start_time=start_time, no_weight_points=wp, last_update=dt)} -%}
+                {%- elif st == 'complete' -%}
+                  {%- set di = d~'(incomplete)' -%}
+                  {%- set values = c.get(di, {}) -%}
+                  {%- set data = values.get('data', []) -%}
+                  {%- set u = (values.get('state', 0) - values.get('start', 0)) | round(3) -%}
+                  {%- set start_time = values.get('start_time', now().isoformat()) -%}
+                  {%- set duration = (now() - as_datetime(start_time)).total_seconds() | int %}
+                  {%- set no_zero = data | select() | list -%}
+                  {%- set factor = 1 / no_zero | min if no_zero else 0 -%}
+                  {%- set data = data | map('multiply', factor) | map('round', 3) | list -%}
+                  {%- set c = dict(c.items() | rejectattr('0', 'eq', di)) -%}
+                  {%- set p = {d: dict(data=data, kwh_used=u, duration=duration, no_weight_points=wp, last_update=dt)} -%}
+                {%- endif -%}
+                {{ dict(c, **p | default({})) }}
+              {%- endif -%}
+            {%- elif trigger.id == 'remove_incomplete' -%}
+              {{ dict(c.items() | rejectattr('0', 'search', '\(incomplete\)$')) }}
+            {%- else -%}
+              {{ c }}
+            {%- endif -%}
+
+## AUTOMATION TO START THE SCRIPT ##
+automation:
+  - id: 2794cd64-a5d0-48e3-9edb-08527ac231bc
+    alias: "F2L - Plot Wasmachine Energy"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.wasmachine_door_lock
+        from: "off"
+        to: "on"
+    action:
+      - service: script.turn_on
+        target:
+          entity_id: script.plot_energy_usage
+        data:
+          variables:
+            description: >
+              {%- set m = state_attr('sensor.wasmachine', 'current_course').split(' ')[0] | lower -%}
+              {%- set t = state_attr('sensor.wasmachine', 'water_temp') | slugify -%}
+              {%- set s = state_attr('sensor.wasmachine', 'spin_speed') -%}
+              wasmachine_{{ m }}_{{ t }}_{{ s }}
+            no_weight_points: 4
+            stop_state: "off"
+            sensor: sensor.wasmachine_energy
+            stop_entity: sensor.wasmachine
+
+  - id: d334a854-86b4-4c8e-87b4-5c43b28fb042
+    alias: "F0K - Plot Dishwasher Energy"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.dishwasher_active
+        from: "off"
+        to: "on"
+    action:
+      - service: script.turn_on
+        target:
+          entity_id: script.plot_energy_usage
+        data:
+          variables:
+            description: >
+              {% set p = states('input_select.dishwasher_program') | lower -%}
+              {% set e = states('input_select.dishwasher_program_extra') | lower -%}
+              vaatwasser_{{ p }}{{ '_' ~ e if e != 'normaal' else '' }}
+            no_weight_points: 4
+            stop_state: "off"
+            sensor: sensor.vaatwasser_energy
+            stop_entity: binary_sensor.dishwasher_active

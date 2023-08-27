@@ -1,0 +1,32 @@
+sensor:
+  - platform: history_stats
+    name: "Light on history stats"
+    unique_id: b9aa35bc-f072-4ad9-a070-7d58c83581a7
+    entity_id: light.eettafel
+    state: "on"
+    type: time
+    start: "{{ today_at('17:00')}}"
+    end: "{{ today_at('19:30') }}"
+
+template:
+  - trigger:
+      - platform: time
+        at: "19:30:10"
+    sensor:
+      - name: "Average light on duration of last 14 days"
+        unique_id: 96bee8ec-be4d-4871-8b40-ab3c73b57692
+        state: >
+          {% set history = this.attributes.get('history', []) %}
+          {% set value_minutes = (states('sensor.light_on_history_stats') | float(0) * 60) | round(2) %}
+          {% set new = dict(date=now().date() | string, value=value_minutes) %}
+          {% set data = ([new] + history)[:14] %}
+          {{ data | map(attribute='value') | list | default([0], true) | average }}
+        device_class: duration
+        state_class: measurement
+        unit_of_measurement: min
+        attributes:
+          history: >
+            {% set history = this.attributes.get('history', []) %}
+            {% set value_minutes = (states('sensor.light_on_history_stats') | float(0) * 60) | round(2) %}
+            {% set new = dict(date=now().date() | string, value=value_minutes) %}
+            {{ ([new] + history)[:14] }}
