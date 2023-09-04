@@ -18,6 +18,7 @@
       name: "Screen Floris manual"
       state: "{{ true }}"
       auto_off: "01:00:00"
+
 - trigger:
     - platform: template
       value_template: "{{ states.cover.pepijn.context.user_id is not none }}"
@@ -28,6 +29,7 @@
       name: "Screen Pepijn manual"
       state: "{{ true }}"
       auto_off: "01:00:00"
+
 - trigger:
     - platform: template
       value_template: "{{ states.cover.werkkamer_marleen.context.user_id is not none }}"
@@ -38,6 +40,7 @@
       name: "Screen Werkkamer Marleen manual"
       state: "{{ true }}"
       auto_off: "01:00:00"
+
 - trigger:
     - platform: template
       value_template: "{{ states.cover.veranda.context.user_id is not none }}"

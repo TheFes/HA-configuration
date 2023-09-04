@@ -1,4 +1,4 @@
-id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
+sid: 10d5d325-1ed3-47a8-9352-b1b1d121802e
 alias: "00 - Ulanzi notificatons and custom apps"
 mode: queued
 trigger:
@@ -18,14 +18,15 @@ trigger:
 
   - platform: state
     entity_id:
-      - sensor.werkkamer_martijn_multi_temperature
+      -
+
       - sensor.werkkamer_martijn_multi_humidity
     not_to: unavailable
     variables:
       app: "{{ trigger.entity_id.split('_') | last }}"
-      text: "{{ trigger.to_state.state | round(1) }} {{ '°C' if app == 'temp' else '%' }}"
+      text: "{{ trigger.to_state.state | round(1) }} {{ '°C' if app == 'temperature' else '%' }}"
       icon: >
-        {% if app == 'vocht' %}
+        {% if app == 'humidity' %}
           humidity
         {% elif trigger.to_state.state | float >= 25 %}
           temp-hot
