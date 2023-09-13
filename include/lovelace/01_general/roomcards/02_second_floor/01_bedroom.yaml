@@ -2,9 +2,7 @@ type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
     entity: light.groep_slaapkamer_zolder
-    primary: >
-      {% set title = { "NL": "Slaapkamer", "EN": "Bedroom" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Slaapkamer
     icon: mdi:bed-double
     icon_color: blue
     layout: horizontal

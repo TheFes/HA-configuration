@@ -22,11 +22,6 @@ states:
         tap_action:
           action: navigate
           navigation_path: /energy
-        double_tap_action:
-          action: call-service
-          service: input_select.select_next
-          target:
-            entity_id: input_select.dashboard_language
       - type: entity
         entity: sensor.watermeter_current_usage
         icon_color: blue

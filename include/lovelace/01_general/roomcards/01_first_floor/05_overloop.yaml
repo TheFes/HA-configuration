@@ -2,9 +2,7 @@ type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
     entity: light.overloop
-    primary: >
-      {% set title = { "NL": "Overloop", "EN": "Landing" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Overloop
     secondary: >
       {% set hum = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'humidity') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
       {% set temp = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'temperature') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}

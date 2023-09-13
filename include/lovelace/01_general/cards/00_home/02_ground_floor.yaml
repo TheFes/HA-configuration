@@ -3,9 +3,7 @@ view_layout:
   grid-area: ground
 cards:
   - type: custom:mushroom-title-card
-    title: >-
-      {% set title = { "NL": "Beneden", "EN": "Ground Floor" } %}
-      {{ title[states('input_select.dashboard_language')] if user == "Martijn" else title['NL'] }}
+    title: Beneden
   - type: grid
     square: false
     columns: 2

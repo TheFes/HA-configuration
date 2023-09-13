@@ -1,9 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    primary: >
-      {% set title = { "NL": "Technische ruimte", "EN": "Technical Area" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Technische Ruimte
     icon: mdi:radiator
     icon_color: blue
     layout: horizontal

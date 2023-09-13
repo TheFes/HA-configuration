@@ -188,11 +188,7 @@ states:
                     - type: custom:mushroom-title-card
                       title: >-
                         {%- set s = states.update | selectattr('state', 'eq', 'on') | list | count %}
-                        {%- if is_state('input_select.dashboard_language', 'EN') and user == 'Martijn' %}
-                          There {{ 'is' if s == 1 else 'are' }} currently {{ 'no' if s == 0 else s }} update{{'s' if not s == 1 }}.
-                        {%- else %}
-                          Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
-                        {%- endif %}
+                        Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
                     - type: custom:auto-entities
                       card:
                         type: custom:vertical-stack-in-card

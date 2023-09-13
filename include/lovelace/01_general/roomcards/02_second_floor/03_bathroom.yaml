@@ -2,9 +2,7 @@ type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
     entity: light.groep_badkamer_zolder
-    primary: >
-      {% set title = { "NL": "WC", "EN": "Bathroom" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: WC
     icon: mdi:toilet
     icon_color: blue
     layout: horizontal

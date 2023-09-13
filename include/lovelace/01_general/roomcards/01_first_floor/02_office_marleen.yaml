@@ -2,9 +2,7 @@ type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
     entity: light.groep_werkkamer_marleen
-    primary: >
-      {% set title = { "NL": "Werkkamer Marleen", "EN": "Office Marleen" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Werkkamer Marleen
     icon: mdi:desk
     icon_color: blue
     layout: horizontal

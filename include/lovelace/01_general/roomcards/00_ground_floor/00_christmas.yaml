@@ -10,9 +10,7 @@ card:
       states:
         admin:
           type: custom:mushroom-template-card
-          primary: >
-            {% set title = { "NL": "Kerst", "EN": "Christmas" } %}
-            {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+          primary: Kerst
           icon: fas:sleigh
           icon_color: green
           layout: horizontal

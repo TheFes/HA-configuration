@@ -1,9 +1,7 @@
 type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
-    primary: >
-      {% set title = { "NL": "Vliering", "EN": "Attic" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Vliering
     icon: mdi:home-floor-3
     icon_color: blue
     layout: horizontal

@@ -2,9 +2,7 @@ type: custom:vertical-stack-in-card
 cards:
   - type: custom:mushroom-template-card
     entity: binary_sensor.knieschotluik_contact
-    primary: >
-      {% set title = { "NL": "Werkkamer", "EN": "Office" } %}
-      {{ title[states('input_select.dashboard_language')] if user == 'Martijn' else title['NL'] }}
+    primary: Werkkamer Martijn
     icon: mdi:desk
     icon_color: blue
     layout: horizontal
