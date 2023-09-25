@@ -99,7 +99,7 @@ lights:
       set_effect:
         - variables:
             light: "{{ this.entity_id | regex_replace('_template', '') }}"
-            built_in: "{{ state_attr(light, effect_list) | default([], true) }}"
+            built_in: "{{ state_attr(light, 'effect_list') | default([], true) }}"
         - if: "{{ effect in built_in }}"
           then:
             - service: light.turn_on
