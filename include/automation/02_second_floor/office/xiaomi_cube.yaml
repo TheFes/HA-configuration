@@ -27,17 +27,17 @@ action:
                     entity_id: binary_sensor.workday_sensor
                     state: "on"
                 sequence:
-                  - wait_template: "{{ states('media_player.zolder_werkkamer_stereo') not in ['unknown', 'unavailable'] }}"
+                  - wait_template: "{{ states('media_player.werkkamer_martijn_stereo') not in ['unknown', 'unavailable'] }}"
                   - alias: "Set volume"
                     service: media_player.volume_set
                     target:
-                      entity_id: media_player.zolder_werkkamer_stereo
+                      entity_id: media_player.werkkamer_martijn_stereo
                     data:
                       volume_level: 0.1
                   - alias: "Turn on Radio 2"
                     service: media_player.play_media
                     target:
-                      entity_id: media_player.zolder_werkkamer_stereo
+                      entity_id: media_player.werkkamer_martijn_stereo
                     data:
                       media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
                       media_content_type: music
@@ -52,12 +52,12 @@ action:
         conditions: "{{ 'rotate' in event }}"
         sequence:
           - variables:
-              volume: "{{ state_attr('media_player.zolder_werkkamer_stereo', 'volume_level') }}"
+              volume: "{{ state_attr('media_player.werkkamer_martijn_stereo', 'volume_level') }}"
           - if: "{{ volume is not none }}"
             then:
               - service: media_player.volume_set
                 target:
-                  entity_id: media_player.zolder_werkkamer_stereo
+                  entity_id: media_player.werkkamer_martijn_stereo
                 data:
                   volume_level: >
                     {% set c = 0.05 if event == 'rotate_right' else -0.05 %}

@@ -34,24 +34,12 @@
             {%- set icons = ['🥳', '🎈', '🍰', '🎊', '🎉'] %}
             {%- set icon = fixed_icons[n] | default(icons | random, true) %}
             {%- if d <= 1 %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set ns.message = ns.message + [icon ~ [' Today: ', ' Tomorrow '][d] ~ n ~ ((' (' ~ y ~ ' years)') if y)] %}
-              {%- else %}
                 {%- set ns.message = ns.message + [icon ~ [' Vandaag: ', ' Morgen '][d] ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
-              {%- endif %}
             {%- elif d % 7 == 0 and d <= days_to_show %}
-              {%- set w = (d / 7) | int  %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set ns.message = ns.message + [icon ~ ' In ' ~ w ~ (' week ' if w == 1 else ' weeks ') ~ ': ' ~ n ~ ((' (' ~ y ~ ' year)') if y)] %}
-              {%- else %}
+              {%- set w = (d / 7) | int %}
                 {%- set ns.message = ns.message + [icon ~ ' Over ' ~ w ~ (' week ' if w == 1 else ' weken ') ~ ': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
-              {%- endif %}
             {%- elif d <= days_to_show %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set ns.message = ns.message + [icon ~ ' In ' ~ d ~ ' days' ~': ' ~ n ~ ((' (' ~ y ~ ' years)') if y)] %}
-              {%- else %}
                 {%- set ns.message = ns.message + [icon ~ ' Over ' ~ d ~ ' dagen' ~': ' ~ n ~ ((' (' ~ y ~ ' jaar)') if y)] %}
-              {%- endif %}
             {%- endif %}
           {%- endfor %}
           {{ dict(message=ns.message | join('\n'), level='info') }}
@@ -59,11 +47,7 @@
           {% set ns = namespace(message=[]) %}
           {% for item in expand('sensor.battery_warning') %}
             {%- if item.state | float(21) <= 20 %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set ns.message = ns.message + [ 'De battery of '~ item.name.split(' Battery')[0] ~ ' only has ' ~ item.state ~'%' ] %}
-              {%- else %}
-                {%- set ns.message = ns.message + [ 'De batterij van '~ item.name.split(' Battery')[0] ~ ' is nog maar ' ~ item.state ~'%' ] %}
-              {%- endif %}
+              {%- set ns.message = ns.message + [ 'De batterij van '~ item.name.split(' Battery')[0] ~ ' is nog maar ' ~ item.state ~'%' ] %}
             {%- endif %}
           {% endfor %}
           {{ dict(message=ns.message | join('\n'), level='warning') }}
@@ -89,17 +73,9 @@
               {%- set extra = states('input_select.dishwasher_program_extra') %}
               {%- set extra = '' if extra == 'Normaal' else ' - ' ~ extra %}
               {%- set program = program ~ extra %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set message = '💦 Dishwasher ready at ' ~ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
-              {%- else %}
-                {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
-              {%- endif %}
+              {%- set message = '💦 Vaatwasser klaar rond ' ~ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M ') ~ '(' ~ program ~ ')' %}
             {%- else %}
-              {%- if is_state('input_select.dashboard_language', 'EN') %}
-                {%- set message = '💦 Dishwasher ready any time now' %}
-              {%- else %}
-                {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
-              {%- endif %}
+              {%- set message = '💦 Vaatwasser is nu elk moment klaar' %}
             {%- endif %}
           {%- endif %}
           {{ dict(message=message | default(''), level='info') }}
@@ -107,11 +83,7 @@
           {%- if is_state('sensor.wasmachine', 'on') %}
             {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
             {%- set total = h * 3600 + m *60 %}
-            {%- if is_state('input_select.dashboard_language', 'EN') %}
-              {%- set message = '🧺 Washing machine ready at ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') %}
-            {%- else %}
-              {%- set message = '🧺 Wasmachine klaar rond ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') %}
-            {%- endif %}
+            {%- set message = '🧺 Wasmachine klaar rond ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') %}
           {%- endif %}
           {{ dict(message=message | default(''), level='info') }}
         eta_martijn: >-

@@ -49,6 +49,7 @@ action:
           message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
           data:
             channel: ETA
+            tag: eta_{{ name }}
             ttl: 0
             priority: high
             notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
@@ -82,6 +83,7 @@ action:
                         message: "{{ gender | capitalize }} zou er nu rond {{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }} moeten zijn"
                         data:
                           channel: ETA
+                          tag: eta_{{ name }}
                           ttl: 0
                           priority: high
                           notification_icon: mdi:car

@@ -75,16 +75,16 @@ cards:
                       - zones: [[24012, 20199, 27161, 22418]] # Badkamer
       - type: conditional
         conditions:
-          - entity: media_player.zolder_werkkamer_stereo
+          - entity: media_player.werkkamer_martijn_stereo
             state_not: "off"
-          - entity: media_player.zolder_werkkamer_stereo
+          - entity: media_player.werkkamer_martijn_stereo
             state_not: "idle"
           - entity: switch.bureau_martijn_2
             state: "on"
         card:
           type: custom:mushroom-template-card
           layout: vertical
-          entity: media_player.zolder_werkkamer_stereo
+          entity: media_player.werkkamer_martijn_stereo
           icon: mdi:cast
           icon_color: "{{ 'yellow' if is_state(entity, 'playing') }}"
           badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"

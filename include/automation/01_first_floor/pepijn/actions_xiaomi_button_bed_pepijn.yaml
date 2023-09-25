@@ -84,7 +84,10 @@ action:
           - alias: "Turn all lights off"
             service: light.turn_off
             target:
-              area_id: slaapkamer_pepijn
+              entity_id: light.groep_pepijn
+          - if: "{{ now() > today_at('18:30') }}"
+            then:
+              - event: pepijn_sleeping
       - alias: "Actions on double press"
         conditions: "{{ event == 'double' }}"
         sequence: []

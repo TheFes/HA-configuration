@@ -58,7 +58,7 @@ action:
           - alias: "Speaker Martijn playing"
             condition: state
             entity_id:
-              - media_player.zolder_werkkamer_stereo
+              - media_player.werkkamer_martijn_stereo
             match: any
             state: "playing"
           - alias: "Someone on attic"
@@ -79,7 +79,7 @@ action:
               - alias: "Send TTS message"
                 service: tts.google_cloud_say
                 target:
-                  entity_id: media_player.zolder_werkkamer_stereo
+                  entity_id: media_player.werkkamer_martijn_stereo
                 data:
                   message: "Ding Dong! Er staat iemand aan de deur!"
                 extra:

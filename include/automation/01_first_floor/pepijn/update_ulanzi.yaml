@@ -1,0 +1,83 @@
+id: 1bb3f63c-c210-4299-a36e-14e70a2e6950
+alias: "F1P - Update ulanzi"
+trigger:
+  - platform: time_pattern
+    seconds: "0"
+  - platform: state
+    entity_id: binary_sensor.pepijn_sleeping
+    from:
+      - "on"
+      - "off"
+    to:
+      - "on"
+      - "off"
+  - platform: state
+    entity_id: light.awtrix_ed56c0_matrix
+    from:
+      - "unavailable"
+  - platform: state
+    entity_id: weather.combined_daily
+    to: ~
+action:
+  - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
+    then:
+      - service: select.select_option
+        data:
+          option: Manual
+        target:
+          entity_id: select.awtrix_ed56c0_brightness_mode
+      - service: light.turn_on
+        target:
+          entity_id: light.awtrix_ed56c0_matrix
+        data:
+          brightness: 2
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_pepijn/custom/sleep_clock
+          payload: >
+            {% set awake_time = today_at(states('input_datetime.pepijn_time_awake')) %}
+            {% set awake_time = awake_time + timedelta(days=1) if now() > awake_time else awake_time %}
+            {% set read_time = awake_time - timedelta(minutes=states('input_number.leestijd_pepijn') | int) %}
+            {% set qh = ((read_time - now()).total_seconds() / 60 / 15) | round(0, 'ceil') %}
+            {% set progress = [100 - int((100/24 * qh)), 0] | max if now() < read_time or now() > today_at('19:00') else 100 %}
+            {% if read_time < now() < awake_time %}
+              {% set icon = 'book' %}
+            {% else %}
+              {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
+            {% endif %}
+            {{
+              dict(
+                    icon = icon,
+                    text = now().strftime('%-I:%M'),
+                    color = [160,0,0],
+                    progress = progress,
+                    progressC = [0,0,0],
+                    progressBC = [160,0,0]
+                  )
+            }}
+    else:
+      - service: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_pepijn/custom/sleep_clock
+          payload: >
+            {{
+              dict(
+                    icon = states('weather.combined_daily'),
+                    text = now().strftime('%-I:%M')
+                  )
+            }}
+      - service: select.select_option
+        data:
+          option: Auto
+        target:
+          entity_id: select.awtrix_ed56c0_brightness_mode
+  - service: mqtt.publish
+    data:
+      qos: 0
+      retain: false
+      topic: awtrix_pepijn/switch
+      payload: "{{ dict(name = 'sleep_clock') }}"

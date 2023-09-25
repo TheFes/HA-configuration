@@ -47,32 +47,6 @@ cards:
           {%- elif state_attr(entity, 'current_position') | int(100) < 100 %}
             orange
           {%- endif %}
-      - type: custom:mushroom-template-card
-        entity: cover.switchbot_curtain_werkkamer_marleen
-        layout: vertical
-        badge_icon: >
-          {%- if is_state(entity, ['unavailable', 'unknown']) %}
-            mdi:alert
-          {%- elif states('sensor.switchbot_curtain_marleen_battery') | float(100) < 20 %}
-            mdi:battery-alert
-          {%- endif %}
-        badge_color: red
-        icon: >-
-          {%- if is_state(entity, 'opening') %}
-            mdi:arrow-collapse-right
-          {%- elif is_state(entity, 'closing') %}
-            mdi:arrow-collapse-left
-          {%- elif is_state('binary_sensor.curtain_marleen_open', 'off') %}
-            mdi:curtains-closed
-          {%- else %}
-            mdi:curtains
-          {%- endif %}
-        icon_color: >-
-          {%- if states(entity) in [ 'opening', 'closing' ] %}
-            green
-          {%- elif is_state('binary_sensor.curtain_marleen_open', 'off') %}
-            yellow
-          {%- endif %}
       - type: conditional
         conditions:
           - entity: media_player.werkkamer_marleen_mini

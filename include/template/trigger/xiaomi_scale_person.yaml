@@ -1,44 +1,54 @@
 - trigger:
     - platform: state
-      entity_id: sensor.mi_body_composition_scale_3496_mass
+      entity_id: sensor.mi_body_composition_scale_3496_impedance
       not_to: "unavailable"
-      for:
-        seconds: 20
-      variables: &var
-        name: >
-          {%- if states('input_number.weight_martijn_min') | float < trigger.to_state.state | float <= states('input_number.weight_martijn_max') | float %}
-            martijn
-          {%- elif states('input_number.weight_marleen_min') | float < trigger.to_state.state | float <= states('input_number.weight_marleen_max') | float %}
-            marleen
-          {%- else %}
-            no update
-          {%- endif %}
   sensor:
     - unique_id: 8523c401-c2a0-48d9-9669-3fdbe51ba8c4
       name: Weight Martijn
-      unit_of_measurement: kg
-      state_class: measurement
-      icon: mdi:weight-kilogram
-      state: &weight >
-        {{ trigger.to_state.state if name in this.entity_id else this.state }}
-    - unique_id: 3948030c-3fe0-4be8-8851-87e6a198e334
+      <<: &config_weight
+        unit_of_measurement: kg
+        icon: mdi:weight-kilogram
+      <<: &config_general
+        state_class: measurement
+        state: >
+          {% set type = ['impedance', 'weight'] | select('in', this.entity_id) | join %}
+          {% set w = states('sensor.mi_body_composition_scale_3496_mass') | float(0) %}
+          {% set i = states('sensor.mi_body_composition_scale_3496_impedance') | float(0) %}
+          {% set s = i if type == 'impedance' else w %}
+          {%- if states('input_number.weight_martijn_min') | float < w <= states('input_number.weight_martijn_max') | float %}
+            {% set name = 'martijn' %}
+          {%- elif states('input_number.weight_marleen_min') | float < w <= states('input_number.weight_marleen_max') | float %}
+            {% set name = 'marleen' %}
+          {%- else %}
+            {% set name = 'no update' %}
+          {%- endif %}
+          {{ s if name in this.entity_id and s != 0 else this.state }}
+- trigger:
+    - platform: state
+      entity_id: sensor.mi_body_composition_scale_3496_impedance
+      not_to: "unavailable"
+  sensor:
+    - unique_id: 3721a548-59e5-445a-bfa4-4872da3d9b2e
       name: Weight Marleen
-      icon: mdi:weight-kilogram
-      state_class: measurement
-      unit_of_measurement: kg
-      state: *weight
-    - unique_id: 5257e56d-f8bc-49c3-b46a-46f47a4065e0
+      <<: *config_weight
+      <<: *config_general
+- trigger:
+    - platform: state
+      entity_id: sensor.mi_body_composition_scale_3496_impedance
+      not_to: "unavailable"
+  sensor:
+    - unique_id: 97f05a38-a889-4363-8fe3-362a9c801040
       name: Impedance Martijn
-      unit_of_measurement: ohm
-      state_class: measurement
-      icon: mdi:omega
-      state: &imp >
-        {%- set i = 'sensor.mi_body_composition_scale_3496_impedance' %}
-        {%- set valid = states(i) | is_number and now() - states[i].last_changed < timedelta(seconds=30) %}
-        {{ states(i) if name in this.entity_id and valid else this.state }}
-    - unique_id: 3aa91cd3-c2b2-4910-be24-55f1fd379213
+      <<: &config_impedance
+        unit_of_measurement: ohm
+        icon: mdi:omega
+      <<: *config_general
+- trigger:
+    - platform: state
+      entity_id: sensor.mi_body_composition_scale_3496_impedance
+      not_to: "unavailable"
+  sensor:
+    - unique_id: 8d23659c-0745-4f72-acae-ee9fca525e6f
       name: Impedance Marleen
-      unit_of_measurement: ohm
-      state_class: measurement
-      icon: mdi:omega
-      state: *imp
+      <<: *config_impedance
+      <<: *config_general

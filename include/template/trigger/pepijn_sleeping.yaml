@@ -1,0 +1,12 @@
+- trigger:
+    - platform: event
+      event_type: pepijn_sleeping
+      id: "on"
+    - platform: time
+      at: input_datetime.pepijn_time_awake
+      id: "off"
+  binary_sensor:
+    - unique_id: 2d748636-6ecd-4941-aef7-797d7cde1d5a
+      name: Pepijn Sleeping
+      state: "{{ trigger.id | bool }}"
+      icon: "{{ 'mdi:bed' if trigger.id | bool else 'mdi:balloon' }}"

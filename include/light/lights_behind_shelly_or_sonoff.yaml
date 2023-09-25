@@ -4,286 +4,211 @@ lights:
     unique_id: 847f5495-8971-4656-8fde-7a636e983735
     friendly_name: "Eettafel Template"
     icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
-    level_template: &level >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {% if light in integration_entities('esphome') %}
-        {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
-      {% else %}
-        {{ state_attr(light, 'brightness') | int(255) }}
-      {% endif %}
-    value_template: &value >
-      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-      {{
-        is_state('light.' ~ room, 'on')
-        or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
-        or 
-          (
-            not states('light.' ~ room) | bool('na') is boolean
-            and 
-              (
-                is_state('switch.shelly1_' ~ room, 'on')
-                or is_state('switch.sonoff_' ~ room, 'on')
-              )
-          )
-      }}
-    temperature_template: &temperature >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
-    min_mireds_template: &min_mireds >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {{ state_attr(light, 'min_mireds') | int(153) }}
-    max_mireds_template: &max_mireds >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {{ state_attr(light, 'max_mireds') | int(370) }}
-    availability_template: &availablity >
-      {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-      {{
-        states('light.' ~ room) | bool('na') is boolean
-        or states('switch.shelly1_' ~ room) | bool('na') is boolean
-        or states('switch.sonoff_' ~ room) | bool('na') is boolean
-      }}
-    turn_on: &turn_on
-      - variables:
-          room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
-      - if: >
-          {{ states('light.' ~ room) | bool('na') is boolean }}
-        then:
-          - variables:
-              script: "{{ 'script.' ~ room ~ '_toggle' }}"
-          - if: "{{ script | has_value }}"
-            then:
-              - service: >
-                  {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-                  script.{{ room }}_toggle
-                data:
-                  action: "on"
-            else:
-              - service: light.turn_on
-                target:
-                  entity_id: light.{{ room }}
-        else:
-          - service: switch.turn_on
-            target:
-              entity_id: >
-                {{
-                  [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                    | select('has_value')
-                    | list
-                }}
-    # supports_transition_template: "{{ true }}"
-    turn_off: &turn_off
-      # - service: persistent_notification.create
-      #   data:
-      #     message: transition is {{ transition }}
-      - variables:
-          room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
-      - if: >
-          {{
-            states('light.' ~ room) | bool('na') is boolean
-            and not is_state('sensor.house_mode', 'Vakantihhhe')
-          }}
-        then:
-          - variables:
-              script: "{{ 'script.' ~ room ~ '_toggle' }}"
-          - if: "{{ script | has_value }}"
-            then:
-              - service: >
-                  {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-                  script.{{ room }}_toggle
-                data:
-                  action: "off"
-            else:
-              - service: light.turn_off
-                target:
-                  entity_id: light.{{ room }}
-        else:
-          - service: switch.turn_off
-            target:
-              entity_id: >
-                {{
-                  [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                    | select('has_value')
-                    | list
-                }}
-    set_level: &set_level
-      - service: light.turn_on
-        data:
-          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
-          brightness: >
-            {% set light = this.entity_id | regex_replace('_template', '') %}
-            {% if light in integration_entities('esphome') %}
-              {{ (brightness | float * 0.855 + 255*0.145) | round }}
-            {% else %}
-              {{ brightness }}
-            {% endif %}
-    set_temperature: &set_temperature
-      - service: light.turn_on
-        data:
-          entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
-          color_temp: "{{ color_temp }}"
-    effect_list_template: &effect_list_template >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {% set effect = state_attr(light, 'effect_list') | default([], true) %}
-      {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
-    effect_template: &effect_template >
-      {% set light = this.entity_id | regex_replace('_template', '') %}
-      {% set custom =  state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
-      {% set def = state_attr(light, effect) | default('None') %}
-      {% set effect = [def, custom] | reject('eq', 'None') | list %}
-      {{ effect | first if effect else 'None' }}
-    set_effect: &set_effect
-      - variables:
-          light: "{{ this.entity_id | regex_replace('_template', '') }}"
-          built_in: "{{ state_attr(light, effect_list) | default([], true) }}"
-      - if: "{{ effect in built_in }}"
-        then:
-          - service: light.turn_on
-            target:
-              entity_id: "{{ light }}"
-            data:
-              effect: "{{ effect }}"
-        else:
-          - service: script.turn_on
-            target:
-              entity_id: script.light_blink
-            data:
-              variables:
-                light: "{{ this.entity_id }}"
-                toggle_entity: "{{ light }}"
+    <<: &config_general
+      value_template: >
+        {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+        {{
+          is_state('light.' ~ room, 'on')
+          or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
+          or 
+            (
+              not states('light.' ~ room) | bool('na') is boolean
+              and 
+                (
+                  is_state('switch.shelly1_' ~ room, 'on')
+                  or is_state('switch.sonoff_' ~ room, 'on')
+                )
+            )
+        }}
+      availability_template: >
+        {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+        {{
+          states('light.' ~ room) | bool('na') is boolean
+          or states('switch.shelly1_' ~ room) | bool('na') is boolean
+          or states('switch.sonoff_' ~ room) | bool('na') is boolean
+        }}
+      turn_on:
+        - variables:
+            room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+        - if: >
+            {{ states('light.' ~ room) | bool('na') is boolean }}
+          then:
+            - variables:
+                script: "{{ 'script.' ~ room ~ '_toggle' }}"
+            - if: "{{ script | has_value }}"
+              then:
+                - service: >
+                    {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                    script.{{ room }}_toggle
+                  data:
+                    action: "on"
+              else:
+                - service: light.turn_on
+                  target:
+                    entity_id: light.{{ room }}
+          else:
+            - service: switch.turn_on
+              target:
+                entity_id: >
+                  {{
+                    [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
+                      | select('has_value')
+                      | list
+                  }}
+      turn_off:
+        - variables:
+            room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
+        - if: >
+            {{
+              states('light.' ~ room) | bool('na') is boolean
+              and not is_state('sensor.house_mode', 'Vakantihhhe')
+            }}
+          then:
+            - variables:
+                script: "{{ 'script.' ~ room ~ '_toggle' }}"
+            - if: "{{ script | has_value }}"
+              then:
+                - service: >
+                    {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+                    script.{{ room }}_toggle
+                  data:
+                    action: "off"
+              else:
+                - service: light.turn_off
+                  target:
+                    entity_id: light.{{ room }}
+          else:
+            - service: switch.turn_off
+              target:
+                entity_id: >
+                  {{
+                    [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
+                      | select('has_value')
+                      | list
+                  }}
+      effect_list_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {% set effect = state_attr(light, 'effect_list') | default([], true) %}
+        {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
+      effect_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {% set custom =  state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
+        {% set def = state_attr(light, effect) | default('None') %}
+        {% set effect = [def, custom] | reject('eq', 'None') | list %}
+        {{ effect | first if effect else 'None' }}
+      set_effect:
+        - variables:
+            light: "{{ this.entity_id | regex_replace('_template', '') }}"
+            built_in: "{{ state_attr(light, effect_list) | default([], true) }}"
+        - if: "{{ effect in built_in }}"
+          then:
+            - service: light.turn_on
+              target:
+                entity_id: "{{ light }}"
+              data:
                 effect: "{{ effect }}"
+          else:
+            - service: script.turn_on
+              target:
+                entity_id: script.light_blink
+              data:
+                variables:
+                  light: "{{ this.entity_id }}"
+                  toggle_entity: "{{ light }}"
+                  effect: "{{ effect }}"
+    <<: &config_brightness
+      level_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {% if light in integration_entities('esphome') %}
+          {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
+        {% else %}
+          {{ state_attr(light, 'brightness') | int(255) }}
+        {% endif %}
+      set_level:
+        - service: light.turn_on
+          data:
+            entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
+            brightness: >
+              {% set light = this.entity_id | regex_replace('_template', '') %}
+              {% if light in integration_entities('esphome') %}
+                {{ (brightness | float * 0.855 + 255*0.145) | round }}
+              {% else %}
+                {{ brightness }}
+              {% endif %}
+    <<: &config_color_temp
+      temperature_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
+      min_mireds_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {{ state_attr(light, 'min_mireds') | int(153) }}
+      max_mireds_template: >
+        {% set light = this.entity_id | regex_replace('_template', '') %}
+        {{ state_attr(light, 'max_mireds') | int(370) }}
+      set_temperature:
+        - service: light.turn_on
+          data:
+            entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
+            color_temp: "{{ color_temp }}"
 
   werkkamer_marleen_template:
     unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
     friendly_name: "Werkamer Marleen Template"
     icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
-    level_template: *level
-    value_template: *value
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
 
   pepijn_template:
     unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
     friendly_name: "Pepijn Template"
     icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp
 
   floris_template:
     unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
     friendly_name: "Floris Template"
     icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp
 
   trapkast_template:
     unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
     friendly_name: "Trapkast Template"
     icon_template: mdi:bulkhead-light
-    level_template: *level
-    value_template: *value
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
 
   slaapkamer_plafond_template:
     unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
     friendly_name: "Slaapkamer Plafond Template"
     icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp
 
   werkkamer_martijn_plafond_template:
     unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
     friendly_name: "Werkkamer Martijn Plafond Template"
     icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp
 
   wasmachinehoek_template:
     unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
     friendly_name: "Wasmachinehoek Template"
     icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp
 
   badkamer_zolder_template:
     unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
     friendly_name: "Badkamer Zolder Template"
     icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-    level_template: *level
-    value_template: *value
-    temperature_template: *temperature
-    min_mireds_template: *min_mireds
-    max_mireds_template: *max_mireds
-    availability_template: *availablity
-    turn_on: *turn_on
-    turn_off: *turn_off
-    set_level: *set_level
-    set_temperature: *set_temperature
-    effect_list_template: *effect_list_template
-    effect_template: *effect_template
-    set_effect: *set_effect
+    <<: *config_general
+    <<: *config_brightness
+    <<: *config_color_temp

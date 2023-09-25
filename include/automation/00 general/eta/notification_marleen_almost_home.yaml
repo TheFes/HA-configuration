@@ -34,10 +34,10 @@ action:
   - variables:
       target: >
         {%- 
-          if is_state('media_player.zolder_werkkamer_stereo', 'playing')
+          if is_state('media_player.werkkamer_martijn_stereo', 'playing')
           or is_state('sensor.location_phone_martijn', 'Zolder') 
         %}
-          [ 'media_player.keuken_hub', 'media_player.zolder_werkkamer_stereo' ]
+          [ 'media_player.keuken_hub', 'media_player.werkkamer_martijn_stereo' ]
         {%- else %}
           [ 'media_player.keuken_hub' ]
         {%- endif %}
