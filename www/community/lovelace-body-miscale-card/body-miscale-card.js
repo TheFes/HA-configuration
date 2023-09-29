@@ -1443,7 +1443,7 @@ function(e){return class extends e{createRenderRoot(){const e=this.constructor,{
       </score-card-card>
     </score-card-row>`;return`${e.key}_list`in t.attributes&&(a||o)?this.renderDropdown(S,e.key,e.service):S}renderIcon(e){const t=this.hass.states[this.config.entity],i="water"===e.key&&"water_icon"in this.stateObj.attributes?this.stateObj.attributes.water_icon:e.icon;return"none"!==t.attributes.problem&&"mdi:alert"===i?N`<ha-icon class="problem" icon="${i}"></ha-icon>`:N`<ha-icon icon="${i}" style="margin-right: 10px; ${this.config.styles.icon}"></ha-icon>`}renderIconbody(e){const t="Water"===e.key&&"water_icon"in this.stateObj.attributes?this.stateObj.attributes.water_icon:e.icon;return N`<ha-icon
       class="image"
-      style="-webkit-mask-box-image: url('${t}'); ${this.config.styles.iconbody}"
+      style="-webkit-mask-image: url('${t}');-webkit-mask-size: 24px; ${this.config.styles.iconbody}"
     ></ha-icon>`}renderButton(e){return this.config.show_buttons?e&&!1!==e.show?N`<ha-icon-button
           @click="${()=>this.callService(e.service,e.service_data)}"
           title="${e.label||""}"
