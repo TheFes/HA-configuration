@@ -1,24 +1,26 @@
-screens_unavailable:
-  name: "Screens"
-  title: >
-    {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
-    {%- set names = iif(names, names, []) %}
-    🚨 Screen{{ iif(names | count == 1, '', 's') }} niet beschikbaar
-  message: >
-    {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
-    {%- set names = iif(names, names, []) %}
-    De volgende screens zijn niet beschikbaar: {{ names | join(', ') }}
-  entity_id: binary_sensor.cover_unavailable
-  state: "on"
-  repeat: 30
-  can_acknowledge: true
-  skip_first: true
-  notifiers:
-    - mobile_app_pixel_7_pro
-  data:
-    tag: screen_alert
-    channel: Screens
-    ttl: 0
-    priority: high
-    notification_icon: mdi:blinds
-  done_message: "clear_notification"
+# disabled because screens are not working
+#
+# screens_unavailable:
+#   name: "Screens"
+#   title: >
+#     {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
+#     {%- set names = iif(names, names, []) %}
+#     🚨 Screen{{ iif(names | count == 1, '', 's') }} niet beschikbaar
+#   message: >
+#     {%- set names = state_attr('binary_sensor.cover_unavailable', 'name') %}
+#     {%- set names = iif(names, names, []) %}
+#     De volgende screens zijn niet beschikbaar: {{ names | join(', ') }}
+#   entity_id: binary_sensor.cover_unavailable
+#   state: "on"
+#   repeat: 30
+#   can_acknowledge: true
+#   skip_first: true
+#   notifiers:
+#     - mobile_app_pixel_7_pro
+#   data:
+#     tag: screen_alert
+#     channel: Screens
+#     ttl: 0
+#     priority: high
+#     notification_icon: mdi:blinds
+#   done_message: "clear_notification"
