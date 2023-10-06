@@ -3,7 +3,7 @@
   one list item per language, each time fraction contains a list with the singular, plural and abbriviated phrase
   combine contains the text to combine the last time fraction, and error the text to display on wrong date input
 #}
-{%- set time_period_phrases = [
+{%- set _time_period_phrases = [
                                 {
                                   'language': 'en',
                                   'phrases':
@@ -162,25 +162,22 @@
 {%- endmacro -%}
 
 {# macro to output a timedelta in a readable format #}
-{%- macro relative_time_plus(date, parts, week, time, abbr, language, compare_date, verbose) -%}
+{%- macro relative_time_plus(date, parts=1, abbr=false, verbose=false, language='en', compare_date=now(), week=true, time=true) -%}
   {#- set defaults for input if not entered #}
     {%- set date = date | as_datetime if date is string or date is number else date -%}
-    {%- set compare_date = compare_date if compare_date is defined else now() -%}
     {%- set compare_date = compare_date | as_datetime if compare_date is string or compare_date is number else compare_date -%}
-    {%- set phrases = time_period_phrases -%}
   {#- select correct phrases bases on language input #}
-    {%- set language = language | default() -%}
+    {%- set phrases = _time_period_phrases -%}
     {%- set languages = phrases | map(attribute='language') | list -%}
-    {%- set language = iif(language in languages, language, languages | first) -%}
+    {%- set language = iif(language in languages, language, 'en') -%}
     {%- set phr = phrases | selectattr('language', 'eq', language) | map(attribute='phrases') | list | first -%}
   {#- check for valid datetime (using as_timestamp) #}
     {%- if as_timestamp(date, default='error') != 'error' -%}
       {%- set date = date | as_local -%}
-      {%- set parts = parts | default(1) | int(1) -%}
-      {%- set week = week | default(true) | bool(true) -%}
-      {%- set time = time | default(true) | bool(true) -%}
-      {%- set abbr = abbr | default(false) | bool(false) or verbose | default(false) | bool(false) -%}
-      {%- set language = language | default('first') -%}
+      {%- set parts = parts | int(1) -%}
+      {%- set week = week | bool(true) -%}
+      {%- set time = time | bool(true) -%}
+      {%- set abbr = abbr | bool(false) or verbose | bool(false) -%}
       {%- set date = date if time else today_at().replace(year=date.year, month=date.month, day=date.day) -%}
       {%- set tp = time_split(date, time, compare_date) | from_json -%}
     {#- create mapping #}
@@ -199,7 +196,7 @@
     {#- find first non zero time period #}
       {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first -%}
     {#- set variable to reject weeks if set and find index of first non zero time period #}
-      {%- set week_reject = 'wks' if not week -%}
+      {%- set week_reject = 'wks' if not week else '' -%}
       {%- set index = (dur.keys() | reject('eq', week_reject) | list).index(first) -%}
     {#-select non zero items based on input #}
       {%- set items = (dur.keys() | reject('eq', week_reject) | list)[index:index + parts] -%}
