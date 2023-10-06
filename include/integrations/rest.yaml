@@ -1,13 +1,19 @@
 rest:
-  - resource_template: !secret postcodeloterij
+  - resource_template: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_MT_P{{ (now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")}}/?resultSize=10
+    method: POST
+    payload: !secret postcodeloterij
     headers:
-      User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+      Content-Type: application/x-www-form-urlencoded
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+    scan_interval: 43200
     sensor:
       - name: Postcodeloterij prizecount
         unique_id: 0160fb4d-485f-4233-ae17-1b6a6a1e4cea
+        icon: mdi:gift
         value_template: "{{ value_json.prizeCount }}"
       - name: Postcodeloterij wonprizes
         unique_id: d4d462fa-d078-47a5-9ffc-349650297b8f
+        icon: mdi:gift
         value_template: >
           {% set ns = namespace(prizes=[]) %}
           {% for p in value_json.wonPrizes %}
