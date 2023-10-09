@@ -1,6 +1,6 @@
 {#
-  set phrases to be used in the relative_time_period macro
-  one list item per language, each time fraction contains a list with the singular, plural and abbriviated phrase
+  set phrases to be used in the relative_time_period macro 
+  one list item per language, each time fraction contains a list with the singular, plural and abbriviated phrase 
   combine contains the text to combine the last time fraction, and error the text to display on wrong date input
 #}
 {%- set _time_period_phrases = [
@@ -15,7 +15,7 @@
                                     'hour': ['hour', 'hours', 'hr'],
                                     'minute': ['minute', 'minutes', 'min'],
                                     'second': ['second', 'seconds', 'sec'],
-                                    'combine': ' and ',
+                                    'combine': 'and',
                                     'error': 'Invalid date'
                                   }
                                 },
@@ -30,7 +30,7 @@
                                     'hour': ['godzina', 'godzin', 'godz'],
                                     'minute': ['minuta', 'minut', 'min'],
                                     'second': ['sekunda', 'sekund', 'sek'],
-                                    'combine': ' i ',
+                                    'combine': 'i',
                                     'error': 'Niepoprawna data'
                                   }
                                 },
@@ -45,7 +45,7 @@
                                     'hour': ['heure', 'heures', 'h'],
                                     'minute': ['minute', 'minutes', 'min'],
                                     'second': ['seconde', 'secondes', 'sec'],
-                                    'combine': ' et ',
+                                    'combine': 'et',
                                     'error': 'Date non valide'
                                     }
                                 },
@@ -60,7 +60,7 @@
                                 'hour': ['ora', 'ore', 'h'],
                                 'minute': ['minuto', 'minuti', 'min'],
                                 'second': ['secondo', 'secondi', 'sec'],
-                                'combine': ' e ',
+                                'combine': 'e',
                                 'error': 'Data non valida'
                                 }
                                 },
@@ -75,7 +75,7 @@
                                     'hour': ['uur', 'uur', 'u'],
                                     'minute': ['minuut', 'minuten', 'min'],
                                     'second': ['seconde', 'seconden', 'sec'],
-                                    'combine': ' en ',
+                                    'combine': 'en',
                                     'error': 'Ongeldige datum'
                                   }
                                 },
@@ -90,7 +90,7 @@
                                     'hour': ['Stunde', 'Stunden', 'Std.'],
                                     'minute': ['Minute', 'Minuten', 'Min.'],
                                     'second': ['Sekunde', 'Sekunden', 'Sek.'],
-                                    'combine': ' und ',
+                                    'combine': 'und',
                                     'error': 'Falsches Datum'
                                   }
                                 },
@@ -105,7 +105,7 @@
                                     'hour': ['hora', 'horas', 'h'],
                                     'minute': ['minuto', 'minutos', 'min'],
                                     'second': ['segundo', 'segundos', 'seg'],
-                                    'combine': ' e ',
+                                    'combine': 'e',
                                     'error': 'Data Inválida'
                                   }
                                 },
@@ -120,7 +120,7 @@
                                     'hour': ['time', 'timer', 't.'],
                                     'minute': ['minut', 'minuter', 'min.'],
                                     'second': ['sekund', 'sekunder', 'sek.'],
-                                    'combine': ' og ',
+                                    'combine': 'og',
                                     'error': 'Ugyldig dato'
                                   }
                                 }
@@ -141,10 +141,10 @@
     {%- set b = [n, date] | min -%}
   {#- set time periods in seconds #}
     {%- set m, h, d, w = 60, 3600, 86400, 604800 -%}
-  {#- set numer of years, and set n to value using this number of years #}
+  {#- set numer of years, and set lowest date using this number of years #}
     {%- set yrs = a.year - b.year - (1 if a.replace(year=b.year) < b else 0) -%}
     {%- set a = a.replace(year=a.year - yrs) -%}
-  {#- set numer of months, and set n to value using this number of months #}
+  {#- set numer of months, and set lowest date using this number of months #}
     {%- set mth = (a.month - b.month - (1 if a.day < b.day else 0) + 12) % 12 -%}
     {%- set month_new = (((a.month - mth) + 12) % 12) | default(12, true) -%}
     {%- set day_max = ((a.replace(day=1, month=month_new) + timedelta(days=31)).replace(day=1) - timedelta(days=1)).day -%}
@@ -183,31 +183,36 @@
     {#- create mapping #}
       {%- set wk = tp.w if week else 0 -%}
       {%- set dy = tp.d if week else tp.d + tp.w * 7 -%}
+      {#- macro to create the phrases for each time period -#}
+        {%- macro set_phrase(value, time_period, abbr) -%}
+            {%- set phr_abbr = phr[time_period][2] -%}
+            {%- set phr_verb = phr[time_period][1] if value != 1 else phr[time_period][0] -%}
+            {{- '{} {}'.format(value, phr_abbr if abbr else phr_verb) -}} 
+        {%- endmacro -%}
       {%- set dur = dict(
-                          yrs = dict(a=tp.y, d=phr.year[2] if abbr else phr.year[1] if tp.y > 1 else phr.year[0]),
-                          mth = dict(a=tp.mo, d=phr.month[2] if abbr else phr.month[1] if tp.mo > 1 else phr.month[0]),
-                          wks = dict(a=wk, d=phr.week[2] if abbr else phr.week[1] if wk > 1 else phr.week[0]),
-                          day = dict(a=dy, d=phr.day[2] if abbr else phr.day[1] if dy > 1 else phr.day[0]),
-                          hrs = dict(a=tp.h, d=phr.hour[2] if abbr else phr.hour[1] if tp.h > 1 else phr.hour[0]),
-                          min = dict(a=tp.m, d=phr.minute[2] if abbr else phr.minute[1] if tp.m > 1 else phr.minute[0]),
-                          sec = dict(a=tp.s, d=phr.second[2] if abbr else phr.second[1] if tp.s > 1 else phr.second[0])
+                          yrs = dict(a=tp.y, d=set_phrase(tp.y, 'year', abbr)),
+                          mth = dict(a=tp.mo, d=set_phrase(tp.mo, 'month', abbr)),
+                          wks = dict(a=wk, d=set_phrase(wk, 'week', abbr)),
+                          day = dict(a=dy, d=set_phrase(dy, 'day', abbr)),
+                          hrs = dict(a=tp.h, d=set_phrase(tp.h, 'hour', abbr)),
+                          min = dict(a=tp.m, d=set_phrase(tp.m, 'minute', abbr)),
+                          sec = dict(a=tp.s, d=set_phrase(tp.s, 'second', abbr))
                         )
       -%}
     {#- find first non zero time period #}
-      {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first -%}
-    {#- set variable to reject weeks if set and find index of first non zero time period #}
-      {%- set week_reject = 'wks' if not week else '' -%}
-      {%- set index = (dur.keys() | reject('eq', week_reject) | list).index(first) -%}
+      {%- set first = dur.items() | rejectattr('1.a', 'eq', 0) | map(attribute='0') | first | default('sec') -%}
     {#-select non zero items based on input #}
-      {%- set items = (dur.keys() | reject('eq', week_reject) | list)[index:index + parts] -%}
-      {%- set selection = dur.items() | selectattr('0', 'in', items) | rejectattr('1.a', 'eq', 0) | list -%}
-    {#- create list of texts per selected time period #}
-      {%- set ns = namespace(text = []) -%}
-      {%- for i in selection -%}
-        {%- set ns.text = ns.text + [ i[1].a ~ ' ' ~ i[1].d] -%} 
-      {%- endfor -%}
+      {%- set index_first = (dur.keys() | reject('eq', 'wks' if not week else '') | list).index(first) -%}
+      {%- set items = (dur.keys() | reject('eq', 'wks' if not week else '') | list)[index_first:index_first + parts] -%} 
+      {%- set text = dur.items()
+                            | selectattr('0', 'in', items)
+                            | rejectattr('1.a', 'eq', 0)
+                            | map(attribute='1.d')
+                            | list
+                            | default([dur.sec.d], true)
+      -%} 
     {#- join texts in a string, using phr.combine for the last item #}
-      {{- ns.text[:-1] | join(', ') ~ phr.combine ~ ns.text[-1] if ns.text | count > 1 else ns.text | first -}}
+      {{- '{} {} {}'.format(text[:-1] | join(', '), phr.combine, text[-1]) if text | count > 1 else text | first -}}
     {%- else -%}
       {{- phr.error -}}
     {%- endif -%}
