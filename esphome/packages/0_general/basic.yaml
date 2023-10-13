@@ -7,20 +7,11 @@ time:
       - component.update: sensor_uptime_timestamp
 
 text_sensor:
-  # ESPHome version
-  - platform: version
-    hide_timestamp: true
-    name: "ESPHome Version"
-    entity_category: diagnostic
   # IP Address & SSID
   - platform: wifi_info
     ip_address:
       name: "IP Address"
       icon: mdi:wifi
-      entity_category: diagnostic
-    ssid:
-      name: "Connected SSID"
-      icon: mdi:wifi-strength-2
       entity_category: diagnostic
 
 # Sensors with general information.
@@ -55,10 +46,4 @@ button:
   # safe mode button
   - platform: safe_mode
     name: "Safe Mode"
-    entity_category: diagnostic
-
-binary_sensor:
-  # API Connection status
-  - platform: status
-    name: Status
     entity_category: diagnostic
