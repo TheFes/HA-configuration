@@ -1,5 +1,11 @@
-dinner_time:
+party_time:
   action:
+    - service: spotcast.start
+      data:
+        uri: spotify:track:4pLLveAWoLGxcSXNDAeJZH
+        entity_id: media_player.werkkamer_martijn_stereo
+        force_playback: true
+        start_volume: 20
     - alias: "Send message to Ulanzi clock"
       service: mqtt.publish
       data:
@@ -8,13 +14,13 @@ dinner_time:
         topic: awtrix_dd3300/notify
         payload: >
           {{ dict(
-                  text= 'Dinner time!',
+                  text= 'FEEST!!',
                   repeat=2,
                   rainbow=true,
-                  icon='food',
+                  icon='hanew',
                   pushIcon=0,
                   textCase=1
                   ) | to_json
           }}
   speech:
-    text: "Bericht verstuurd"
+    text: "Er mag gedanst worden!"
