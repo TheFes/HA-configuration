@@ -21,16 +21,20 @@ trigger:
 action:
   - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
     then:
-      - service: select.select_option
-        data:
-          option: Manual
-        target:
-          entity_id: select.awtrix_ed56c0_brightness_mode
-      - service: light.turn_on
-        target:
-          entity_id: light.awtrix_ed56c0_matrix
-        data:
-          brightness: 2
+      - if: "{{ not is_state('select.awtrix_ed56c0_brightness_mode', 'Manual') }}"
+        then:
+          - service: select.select_option
+            data:
+              option: Manual
+            target:
+              entity_id: select.awtrix_ed56c0_brightness_mode
+      - if: "{{ not is_state_attr('light.awtrix_ed56c0_matrix', 'brightness', 2) }}"
+        then:
+          - service: light.turn_on
+            target:
+              entity_id: light.awtrix_ed56c0_matrix
+            data:
+              brightness: 2
       - service: mqtt.publish
         data:
           qos: 0
@@ -70,14 +74,18 @@ action:
                     text = now().strftime('%-I:%M')
                   )
             }}
-      - service: select.select_option
+      - if: "{{ not is_state('select.awtrix_ed56c0_brightness_mode', 'Auto') }}"
+        then:
+          - service: select.select_option
+            data:
+              option: Auto
+            target:
+              entity_id: select.awtrix_ed56c0_brightness_mode
+  - if: "{{ not is_state('sensor.awtrix_ed56c0_current_app', 'sleep_clock') }}"
+    then:
+      - service: mqtt.publish
         data:
-          option: Auto
-        target:
-          entity_id: select.awtrix_ed56c0_brightness_mode
-  - service: mqtt.publish
-    data:
-      qos: 0
-      retain: false
-      topic: awtrix_pepijn/switch
-      payload: "{{ dict(name = 'sleep_clock') }}"
+          qos: 0
+          retain: false
+          topic: awtrix_pepijn/switch
+          payload: "{{ dict(name = 'sleep_clock') }}"
