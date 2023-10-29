@@ -96,9 +96,8 @@ script:
       default_selection: "Huis groep"
       reset_booleans: True
     sequence:
-      - service: script.google_home_settings
-        response_variable: settings
       - variables:
+          settings: "{{ state_attr('script.google_home_resume', 'settings') }}"
           target: >
             {%
               set target = expand(boolean)

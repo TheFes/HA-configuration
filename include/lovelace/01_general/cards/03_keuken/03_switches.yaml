@@ -12,29 +12,29 @@ cards:
     icon: mdi:coffee-maker
     icon_color: >-
       {{ 'blue' if is_state('switch.espresso', 'on') }}
-    card_mod:
-      style:
-        mushroom-shape-icon$: |
-          ha-icon {
-            {{ '--icon-animation: java 4s linear infinite;' if states('sensor.espresso_power') | float(0) > 0 }}
-          }
-          @keyframes java {
-            0%, 80%, 100% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 0 100%); }
-            10% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 79%, 63% 76%, 67% 70%, 66% 54%, 42% 55%, 42% 70%, 47% 77%, 55% 80%, 57% 100%, 0 100%); }
-            15% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 79%, 63% 76%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 47% 77%, 55% 80%, 55% 100%, 0 100%); }
-            20% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 76%, 63% 76%, 67% 70%, 66% 54%, 42% 55%, 42% 70%, 47% 76%, 55% 76%, 57% 100%, 0 100%); }
-            25% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 76%, 63% 76%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 47% 76%, 55% 76%, 56% 100%, 0 100%); }
-            30% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 73%, 64% 73%, 66% 70%, 66% 55%, 42% 55%, 42% 69%, 44% 73%, 55% 73%, 57% 100%, 0 100%); }
-            35% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 73%, 64% 73%, 66% 70%, 66% 55%, 42% 54%, 42% 69%, 44% 73%, 55% 73%, 56% 100%, 0 100%); }
-            40% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 70%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 57% 70%, 57% 100%, 0 100%); }
-            45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 70%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 55% 70%, 56% 100%, 0 100%); }
-            50% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 66%, 67% 65%, 66% 54%, 42% 54%, 42% 65%, 57% 65%, 57% 100%, 0 100%); }
-            55% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 66%, 67% 65%, 66% 54%, 42% 54%, 42% 65%, 55% 65%, 56% 100%, 0 100%); }
-            60% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 60%, 66% 60%, 66% 54%, 42% 54%, 42% 60%, 57% 60%, 57% 100%, 0 100%); }
-            65% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 60%, 66% 60%, 66% 54%, 42% 54%, 42% 60%, 55% 60%, 56% 100%, 0 100%); }
-            70% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 56%, 66% 56%, 66% 54%, 42% 54%, 42% 56%, 57% 56%, 57% 100%, 0 100%); }
-            75% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 56%, 66% 56%, 66% 54%, 42% 54%, 42% 56%, 55% 56%, 55% 100%, 0 100%); }
-          }
+    # card_mod:
+    #   style:
+    #     mushroom-shape-icon$: |
+    #       ha-icon {
+    #         {{ '--icon-animation: java 4s linear infinite;' if states('sensor.espresso_power') | float(0) > 0 }}
+    #       }
+    #       @keyframes java {
+    #         0%, 80%, 100% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 0 100%); }
+    #         10% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 79%, 63% 76%, 67% 70%, 66% 54%, 42% 55%, 42% 70%, 47% 77%, 55% 80%, 57% 100%, 0 100%); }
+    #         15% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 79%, 63% 76%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 47% 77%, 55% 80%, 55% 100%, 0 100%); }
+    #         20% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 76%, 63% 76%, 67% 70%, 66% 54%, 42% 55%, 42% 70%, 47% 76%, 55% 76%, 57% 100%, 0 100%); }
+    #         25% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 76%, 63% 76%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 47% 76%, 55% 76%, 56% 100%, 0 100%); }
+    #         30% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 73%, 64% 73%, 66% 70%, 66% 55%, 42% 55%, 42% 69%, 44% 73%, 55% 73%, 57% 100%, 0 100%); }
+    #         35% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 73%, 64% 73%, 66% 70%, 66% 55%, 42% 54%, 42% 69%, 44% 73%, 55% 73%, 56% 100%, 0 100%); }
+    #         40% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 70%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 57% 70%, 57% 100%, 0 100%); }
+    #         45% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 70%, 67% 70%, 66% 54%, 42% 54%, 42% 70%, 55% 70%, 56% 100%, 0 100%); }
+    #         50% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 66%, 67% 65%, 66% 54%, 42% 54%, 42% 65%, 57% 65%, 57% 100%, 0 100%); }
+    #         55% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 66%, 67% 65%, 66% 54%, 42% 54%, 42% 65%, 55% 65%, 56% 100%, 0 100%); }
+    #         60% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 60%, 66% 60%, 66% 54%, 42% 54%, 42% 60%, 57% 60%, 57% 100%, 0 100%); }
+    #         65% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 60%, 66% 60%, 66% 54%, 42% 54%, 42% 60%, 55% 60%, 56% 100%, 0 100%); }
+    #         70% { clip-path: polygon(0 0, 100% 0, 100% 32%, 47% 32%, 47% 43%, 100% 43%, 100% 100%, 55% 100%, 55% 56%, 66% 56%, 66% 54%, 42% 54%, 42% 56%, 57% 56%, 57% 100%, 0 100%); }
+    #         75% { clip-path: polygon(0 0, 100% 0, 100% 100%, 55% 100%, 55% 56%, 66% 56%, 66% 54%, 42% 54%, 42% 56%, 55% 56%, 55% 100%, 0 100%); }
+    #       }
   - type: custom:mushroom-template-card
     entity: switch.waterkoker
     primary: Waterkoker
@@ -47,24 +47,24 @@ cards:
       {{ 'blue' if is_state('switch.waterkoker', 'on') }}
     tap_action:
       action: toggle
-    card_mod:
-      style:
-        mushroom-shape-icon$: |
-          ha-icon {
-            {{ '--icon-animation: boil 500ms infinite;'  if states('sensor.waterkoker_power') | float(0) > 0 }}
-          }
-          @keyframes boil {
-            0%, 100% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            10% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); clip-path: polygon(0 0, 66% 10%, 67% 30%, 88% 52%, 100% 100%, 0 100%); }
-            20% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            30% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            40% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            50% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            60% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            70% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            80% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-            90% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
-          }
+    # card_mod:
+    #   style:
+    #     mushroom-shape-icon$: |
+    #       ha-icon {
+    #         {{ '--icon-animation: boil 500ms infinite;'  if states('sensor.waterkoker_power') | float(0) > 0 }}
+    #       }
+    #       @keyframes boil {
+    #         0%, 100% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         10% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); clip-path: polygon(0 0, 66% 10%, 67% 30%, 88% 52%, 100% 100%, 0 100%); }
+    #         20% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         30% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         40% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         50% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         60% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         70% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         80% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #         90% { transform: translate({{ range(-20, 20) | random / 10 }}px, {{ range(-20, 20) | random / 10 }}px) rotate({{ range(-15, 15) | random }}deg); }
+    #       }
   - type: custom:mushroom-template-card
     entity: switch.afzuigkap
     primary: Afzuigkap

@@ -57,96 +57,141 @@ cards:
           square: false
           columns: 5
           cards:
-            - type: custom:mushroom-template-card
-              secondary: Radio 2
-              icon_color: "{{ 'blue' if is_state(entity, 'NPO Radio 2') }}"
-              entity: input_select.radio_channel
-              layout: vertical
-              picture: /local/pictures/radio/npo_radio_2.png
-              tap_action:
-                action: call-service
-                service: input_select.select_option
-                data:
-                  option: "NPO Radio 2"
-                target:
-                  entity_id: input_select.radio_channel
-              card_mod:
-                style: |
-                  ha-card { 
-                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'NPO Radio 2') }};
-                  }
-            - type: custom:mushroom-template-card
-              secondary: Veronica
-              picture: /local/pictures/radio/radio_veronica.png
-              layout: vertical
-              icon_color: "{{ 'blue' if is_state(entity, 'Radio Veronica') }}"
-              entity: input_select.radio_channel
-              tap_action:
-                action: call-service
-                service: input_select.select_option
-                data:
-                  option: "Radio Veronica"
-                target:
-                  entity_id: input_select.radio_channel
-              card_mod:
-                style: |
-                  ha-card { 
-                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'Radio Veronica') }};
-                  }
-            - type: custom:mushroom-template-card
-              secondary: Willy
-              picture: /local/pictures/radio/willy.png
-              layout: vertical
-              icon_color: "{{ 'blue' if is_state(entity, 'Willy') }}"
-              entity: input_select.radio_channel
-              tap_action:
-                action: call-service
-                service: input_select.select_option
-                data:
-                  option: "Willy"
-                target:
-                  entity_id: input_select.radio_channel
-              card_mod:
-                style: |
-                  ha-card { 
-                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'Willy') }};
-                  }
-            - type: custom:mushroom-template-card
-              secondary: KINK
-              picture: /local/pictures/radio/kink.jpg
-              layout: vertical
-              icon_color: "{{ 'blue' if is_state(entity, 'KINK') }}"
-              entity: input_select.radio_channel
-              tap_action:
-                action: call-service
-                service: input_select.select_option
-                data:
-                  option: "KINK"
-                target:
-                  entity_id: input_select.radio_channel
-              card_mod:
-                style: |
-                  ha-card { 
-                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'KINK') }};
-                  }
-            - type: custom:mushroom-template-card
-              secondary: StuBru
-              picture: /local/pictures/radio/stu_bru.png
-              layout: vertical
-              icon_color: "{{ 'blue' if is_state(entity, 'VRT Studio Brussel') }}"
-              entity: input_select.radio_channel
-              tap_action:
-                action: call-service
-                service: input_select.select_option
-                data:
-                  option: "VRT Studio Brussel"
-                target:
-                  entity_id: input_select.radio_channel
-              card_mod:
-                style: |
-                  ha-card { 
-                    background-color: {{ '#1D3447' if is_state('input_select.radio_channel', 'VRT Studio Brussel') }};
-                  }
+            - type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  secondary: Radio 2
+                  icon_color: "{{ 'blue' if is_state(entity, 'NPO Radio 2') }}"
+                  entity: input_select.radio_channel
+                  layout: vertical
+                  picture: /local/pictures/radio/npo_radio_2.png
+                  alignment: center
+                  <<: &tap_2
+                    tap_action:
+                      action: call-service
+                      service: input_select.select_option
+                      data:
+                        option: "NPO Radio 2"
+                      target:
+                        entity_id: input_select.radio_channel
+                - type: custom:mushroom-chips-card
+                  alignment: center
+                  chips:
+                    - type: template
+                      icon: >
+                        {{ 'mdi:circle' if is_state(entity, 'NPO Radio 2') else 'mdi:circle-outline' }}
+                      icon_color: >
+                        {{ 'blue' if is_state(entity, 'NPO Radio 2') }}
+                      entity: input_select.radio_channel
+                      <<: *tap_2
+            - type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  secondary: Veronica
+                  picture: /local/pictures/radio/radio_veronica.png
+                  layout: vertical
+                  icon_color: "{{ 'blue' if is_state(entity, 'Radio Veronica') }}"
+                  entity: input_select.radio_channel
+                  alignment: center
+                  <<: &tap_ver
+                    tap_action:
+                      action: call-service
+                      service: input_select.select_option
+                      data:
+                        option: "Radio Veronica"
+                      target:
+                        entity_id: input_select.radio_channel
+                - type: custom:mushroom-chips-card
+                  alignment: center
+                  chips:
+                    - type: template
+                      icon: >
+                        {{ 'mdi:circle' if is_state(entity, 'Radio Veronica') else 'mdi:circle-outline' }}
+                      icon_color: >
+                        {{ 'blue' if is_state(entity, 'Radio Veronica') }}
+                      entity: input_select.radio_channel
+                      <<: *tap_ver
+            - type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  secondary: Willy
+                  picture: /local/pictures/radio/willy.png
+                  layout: vertical
+                  icon_color: "{{ 'blue' if is_state(entity, 'Willy') }}"
+                  entity: input_select.radio_channel
+                  alignment: center
+                  <<: &tap_willy
+                    tap_action:
+                      action: call-service
+                      service: input_select.select_option
+                      data:
+                        option: "Willy"
+                      target:
+                        entity_id: input_select.radio_channel
+                - type: custom:mushroom-chips-card
+                  alignment: center
+                  chips:
+                    - type: template
+                      icon: >
+                        {{ 'mdi:circle' if is_state(entity, 'Willy') else 'mdi:circle-outline' }}
+                      icon_color: >
+                        {{ 'blue' if is_state(entity, 'Willy') }}
+                      entity: input_select.radio_channel
+                      <<: *tap_willy
+            - type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  secondary: KINK
+                  picture: /local/pictures/radio/kink.jpg
+                  layout: vertical
+                  icon_color: "{{ 'blue' if is_state(entity, 'KINK') }}"
+                  entity: input_select.radio_channel
+                  alignment: center
+                  <<: &tap_kink
+                    tap_action:
+                      action: call-service
+                      service: input_select.select_option
+                      data:
+                        option: "KINK"
+                      target:
+                        entity_id: input_select.radio_channel
+                - type: custom:mushroom-chips-card
+                  alignment: center
+                  chips:
+                    - type: template
+                      icon: >
+                        {{ 'mdi:circle' if is_state(entity, 'KINK') else 'mdi:circle-outline' }}
+                      icon_color: >
+                        {{ 'blue' if is_state(entity, 'KINK') }}
+                      entity: input_select.radio_channel
+                      <<: *tap_kink
+            - type: custom:vertical-stack-in-card
+              cards:
+                - type: custom:mushroom-template-card
+                  secondary: StuBru
+                  picture: /local/pictures/radio/stu_bru.png
+                  layout: vertical
+                  icon_color: "{{ 'blue' if is_state(entity, 'VRT Studio Brussel') }}"
+                  entity: input_select.radio_channel
+                  alignment: center
+                  <<: &tap_bru
+                    tap_action:
+                      action: call-service
+                      service: input_select.select_option
+                      data:
+                        option: "VRT Studio Brussel"
+                      target:
+                        entity_id: input_select.radio_channel
+                - type: custom:mushroom-chips-card
+                  alignment: center
+                  chips:
+                    - type: template
+                      icon: >
+                        {{ 'mdi:circle' if is_state(entity, 'VRT Studio Brussel') else 'mdi:circle-outline' }}
+                      icon_color: >
+                        {{ 'blue' if is_state(entity, 'VRT Studio Brussel') }}
+                      entity: input_select.radio_channel
+                      <<: *tap_bru
   - type: grid
     square: false
     columns: 4

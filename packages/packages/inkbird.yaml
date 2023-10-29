@@ -27,7 +27,7 @@ template:
         unit_of_measurement: &unit "°C"
         availability: &availability_template >
           {{
-            states(probe_entity) not in ['unavailable, unknown']
+            has_value(probe_entity)
             and now() - states[probe_entity].last_updated < timedelta(minutes=10)
           }}
         attributes: &attributes

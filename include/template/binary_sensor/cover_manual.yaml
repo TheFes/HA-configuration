@@ -1,51 +1,45 @@
 - trigger:
-    - platform: template
-      value_template: "{{ states.cover.floris.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_rechts.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_midden.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_links.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_rechts_template.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_midden_template.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.floris_links_template.context.user_id is not none }}"
+    - platform: state
+      entity_id:
+        - cover.floris
+        - cover.floris_links
+        - cover.floris_links_template
+        - cover.floris_midden
+        - cover.floris_midden_template
+        - cover.floris_rechts
+        - cover.floris_rechts_template
   binary_sensor:
     - unique_id: c41a8db2-ed9c-4078-8d16-d746a1df37e0
       name: "Screen Floris manual"
-      state: "{{ true }}"
-      auto_off: "01:00:00"
+      <<: &config
+        state: "{{ has_value(trigger.entity_id) and states[trigger.entity_id].context.user_id is not none }}"
+        auto_off: "01:00:00"
 
 - trigger:
-    - platform: template
-      value_template: "{{ states.cover.pepijn.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.pepijn_template.context.user_id is not none }}"
+    - platform: state
+      entity_id:
+        - cover.pepijn_template
+        - cover.pepijn
   binary_sensor:
     - unique_id: 9c94b737-a7a4-4616-888c-d6a3658397f0
       name: "Screen Pepijn manual"
-      state: "{{ true }}"
-      auto_off: "01:00:00"
+      <<: *config
 
 - trigger:
-    - platform: template
-      value_template: "{{ states.cover.werkkamer_marleen.context.user_id is not none }}"
-    - platform: template
-      value_template: "{{ states.cover.werkkamer_marleen_template.context.user_id is not none }}"
+    - platform: state
+      entity_id:
+        - cover.werkkamer_marleen_template
+        - cover.werkkamer_marleen
   binary_sensor:
     - unique_id: cdcaa056-9cd9-46cd-9554-5f306b339d2e
       name: "Screen Werkkamer Marleen manual"
-      state: "{{ true }}"
-      auto_off: "01:00:00"
+      <<: *config
 
 - trigger:
-    - platform: template
-      value_template: "{{ states.cover.veranda.context.user_id is not none }}"
+    - platform: state
+      entity_id:
+        - cover.veranda
   binary_sensor:
     - unique_id: ed19a4be-2a67-4100-b63f-3e9fa69905fa
       name: "Screen Veranda manual"
-      state: "{{ true }}"
-      auto_off: "01:00:00"
+      <<: *config

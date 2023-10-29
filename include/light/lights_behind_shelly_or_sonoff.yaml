@@ -28,64 +28,15 @@ lights:
           or states('switch.sonoff_' ~ room) | bool('na') is boolean
         }}
       turn_on:
-        - variables:
-            room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
-        - if: >
-            {{ states('light.' ~ room) | bool('na') is boolean }}
-          then:
-            - variables:
-                script: "{{ 'script.' ~ room ~ '_toggle' }}"
-            - if: "{{ script | has_value }}"
-              then:
-                - service: >
-                    {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-                    script.{{ room }}_toggle
-                  data:
-                    action: "on"
-              else:
-                - service: light.turn_on
-                  target:
-                    entity_id: light.{{ room }}
-          else:
-            - service: switch.turn_on
-              target:
-                entity_id: >
-                  {{
-                    [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                      | select('has_value')
-                      | list
-                  }}
+        - service: script.template_lights_actions
+          data:
+            template_light: "{{ this.entity_id }}"
+            action: turn_on
       turn_off:
-        - variables:
-            room: "{{ this.entity_id | regex_replace('light.|_template', '') }}"
-        - if: >
-            {{
-              states('light.' ~ room) | bool('na') is boolean
-              and not is_state('sensor.house_mode', 'Vakantihhhe')
-            }}
-          then:
-            - variables:
-                script: "{{ 'script.' ~ room ~ '_toggle' }}"
-            - if: "{{ script | has_value }}"
-              then:
-                - service: >
-                    {% set room = this.entity_id | regex_replace('light.|_template', '') %}
-                    script.{{ room }}_toggle
-                  data:
-                    action: "off"
-              else:
-                - service: light.turn_off
-                  target:
-                    entity_id: light.{{ room }}
-          else:
-            - service: switch.turn_off
-              target:
-                entity_id: >
-                  {{
-                    [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-                      | select('has_value')
-                      | list
-                  }}
+        - service: script.template_lights_actions
+          data:
+            template_light: "{{ this.entity_id }}"
+            action: turn_off
       effect_list_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
         {% set effect = state_attr(light, 'effect_list') | default([], true) %}
@@ -97,25 +48,11 @@ lights:
         {% set effect = [def, custom] | reject('eq', 'None') | list %}
         {{ effect | first if effect else 'None' }}
       set_effect:
-        - variables:
-            light: "{{ this.entity_id | regex_replace('_template', '') }}"
-            built_in: "{{ state_attr(light, 'effect_list') | default([], true) }}"
-        - if: "{{ effect in built_in }}"
-          then:
-            - service: light.turn_on
-              target:
-                entity_id: "{{ light }}"
-              data:
-                effect: "{{ effect }}"
-          else:
-            - service: script.turn_on
-              target:
-                entity_id: script.light_blink
-              data:
-                variables:
-                  light: "{{ this.entity_id }}"
-                  toggle_entity: "{{ light }}"
-                  effect: "{{ effect }}"
+        - service: script.template_lights_actions
+          data:
+            template_light: "{{ this.entity_id }}"
+            action: set_effect
+            effect: "{{ effect }}"
     <<: &config_brightness
       level_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
@@ -125,26 +62,21 @@ lights:
           {{ state_attr(light, 'brightness') | int(255) }}
         {% endif %}
       set_level:
-        - service: light.turn_on
+        - service: script.template_lights_actions
           data:
-            entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
-            brightness: >
-              {% set light = this.entity_id | regex_replace('_template', '') %}
-              {% if light in integration_entities('esphome') %}
-                {{ (brightness | float * 0.855 + 255*0.145) | round }}
-              {% else %}
-                {{ brightness }}
-              {% endif %}
+            template_light: "{{ this.entity_id }}"
+            action: set_level
+            brightness: "{{ brightness }}"
     <<: &config_color_temp
       temperature_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
-        {{ [ 153, state_attr(light, 'color_temp') | int(0)] | max }}
+        {{ state_attr(light, 'color_temp') }}
       min_mireds_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
-        {{ state_attr(light, 'min_mireds') | int(153) }}
+        {{ state_attr(light, 'min_mireds') }}
       max_mireds_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
-        {{ state_attr(light, 'max_mireds') | int(370) }}
+        {{ state_attr(light, 'max_mireds') }}
       set_temperature:
         - service: light.turn_on
           data:

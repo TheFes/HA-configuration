@@ -339,17 +339,17 @@ binary_sensor:
               click_type: release
         - if:
             condition:
-              or:
-                - switch.is_on: control_light_active
-                - not:
-                    - api.connected:
+              - or:
+                  - switch.is_on: control_light_active
+                  - not:
+                      - api.connected:
+              - or:
+                  - script.is_running: script_dim_up_timer
+                  - script.is_running: script_dim_down_timer
+              - light.is_on: dimmer
             then:
-              - if:
-                  condition:
-                    light.is_on:
-                      id: dimmer
-                  then:
-                    - script.stop: script_dim_down_timer
+              - script.stop: script_dim_down_timer
+              - script.stop: script_dim_up_timer
 
 button:
   - platform: template
