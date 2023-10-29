@@ -1,10 +1,36 @@
 {%- macro _format_date(datetime, time_format) -%}
+    {%- set datetime = datetime | as_local -%}
     {%- if time_format is not none -%}
         {%- set format = dict(time12='%I:%M %p', time24='%H:%M') -%}
         {{- datetime.strftime(format[time_format] | default(time_format)) -}}
     {%- else -%}
         {{- datetime.isoformat() -}}
     {%- endif -%}
+{%- endmacro -%}
+
+{%- macro _find_attr(sensor, type) -%}
+    {%- set td = now().date() | string -%}
+    {%- set tm = (now() + timedelta(days=1)).date() | string -%}
+    {%- for a in states[sensor].attributes.items() | rejectattr('1', 'string') | rejectattr('1', 'mapping') | selectattr('1', 'iterable') -%}
+        {%- if a[1][0] is mapping -%}
+        {%- set ns = namespace(td=false, tm=false) -%}
+        {%- for i in a[1] -%}
+            {%- set ns.td = i.values() | map('string') | select('contains', td) | list | count > 0 if not ns.td else true %}
+            {%- set ns.tm = i.values() | map('string') | select('contains', tm) | list | count > 0 if not ns.tm else true %}
+        {%- endfor -%}
+        {%- set results = 
+                            {
+                                'all': ns.td and ns.tm,
+                                'today': ns.td and not ns.tm,
+                                'tomorrow': not ns.td and ns.tm
+                            }
+        -%}
+        {%- if results[type] -%}
+            {{ a[0] }}
+            {%- break -%}
+        {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
 {%- endmacro -%}
 
 {%- macro cheapest_energy_hours(
@@ -15,6 +41,7 @@
                                     hours,
                                     attr_today='raw_today',
                                     attr_tomorrow='raw_tomorrow',
+                                    attr_all='prices',
                                     time_key='start',
                                     value_key='value',
                                     mode='start',
@@ -23,20 +50,61 @@
                                     include_tomorrow=false,
                                     lowest=true,
                                     look_ahead=false,
+                                    precision=5,
                                     no_weight_points=1,
                                     weight=none,
-                                    program=none
+                                    program=none,
+                                    plot_sensor='sensor.energy_plots',
+                                    plot_attr='energy_plots'
                                 ) -%}
-    {%- set modes = ['min', 'max', 'average', 'start', 'end', 'list', 'weighted_average','time_min','time_max', 'split'] -%}
-    {# Get data out of the selected entity #}
+    {%- set modes = ['min', 'max', 'average', 'start', 'end', 'list', 'weighted_average','time_min','time_max', 'split', 'all'] -%}
+    {# Get data out of the selected entity, find right attributes if needed #}
         {%- set today = state_attr(sensor, attr_today) -%}
         {%- set tomorrow = state_attr(sensor, attr_tomorrow) -%}
+        {%- set all = state_attr(sensor, attr_all) -%}
+        {# Check if data is available and as expected #}
+            {%- set today_check = not include_today or today is list and today and today[0] is mapping -%}
+            {%- set tomorrow_check = not include_tomorrow or tomorrow is list and today and today[0] is mapping -%}
+            {%- set all_check = not (today_check and tomorrow_check) and all is list and today and today[0] is mapping -%}
+        {# try to find correct attributes if no valid data was found #}
+            {%- set attr_today = (attr_today if today_check else _find_attr(sensor, 'today')) | default(attr_today, true) -%}
+            {%- set attr_tomorrow = (attr_tomorrow if tomorrow_check else _find_attr(sensor, 'tomorrow')) | default(attr_tomorrow, true)  -%}
+            {%- set attr_all = (attr_all if all_check else _find_attr(sensor, 'all')) | default(attr_all, true) -%}
+        {# set empty lists if data is not requires becasue of include parameters #}
+            {%- set today = (state_attr(sensor, attr_today) if include_today) | default([], true) -%}
+            {%- set tomorrow = (state_attr(sensor, attr_tomorrow) if include_tomorrow) | default([], true) -%}
+        {%- set data = (today + tomorrow) or state_attr(sensor, attr_all) | default([], true) -%}
+    {# Try to find the right time_key and value_key if provided parameters are not found #}
+        {%- if data[0] | default is mapping -%}
+            {%- if time_key not in data[0] %}
+                {%- set tk_list =
+                        data[0].items()
+                            | rejectattr('1', 'is_number')
+                            | sort(attribute='1')
+                            | list
+                -%}
+                {%- set tk_value = tk_list[0][1] | string if tk_list else '' -%}
+                {%- set yd, td, tm = (now() - timedelta(days=1)).date() | string, now().date() | string, (now() + timedelta(days=1)).date() | string -%}
+                {%- set tk_valid = tk_value and (yd in tk_value or td in tk_value or tm in tk_value) -%}
+                {%- set time_key = tk_list[0][0] if tk_valid else time_key -%}
+            {%- endif -%}
+            {%- if value_key not in data[0] %}
+                {%- set vk_list =
+                        data[0].items()
+                            | selectattr('1', 'is_number')
+                            | map(attribute='0')
+                            | list
+                -%}
+                {%- set value_key = vk_list | first if vk_list else value_key -%}
+            {%- endif -%}
+        {%- endif -%}
         {%- set h = hours | default(1) | float(1) -%}
         {%- set use_voe = value_on_error is defined -%}
     {# set weight points based on energy plot sensor #}
         {%-if program is not none-%}
-            {%- set weight = state_attr('sensor.energy_plots', 'energy_plots').get(program, {}).get('data') | default(none, true) -%}
-            {%- set no_weight_points = state_attr('sensor.energy_plots', 'energy_plots').get(program, {}).get('no_weight_points', 1) -%}
+            {%- set plot_data = state_attr(plot_sensor, plot_attr) | default({}, true) -%}
+            {%- set weight = plot_data.get(program, {}).get('data') | default(none, true) -%}
+            {%- set no_weight_points = plot_data.get(program, {}).get('no_weight_points', 1) -%}
         {%- endif -%}
         {%- set w = weight | map('float', none) | reject('none') | list
                     if weight is iterable and weight is not string
@@ -55,15 +123,15 @@
         {%- endif -%}
     {# Return error messages for input #}
         {%- set errors = [
-                            'No valid data in selected sensor' if not today and not tomorrow,
-                            'Time key not found in data' if today is not none and time_key not in today[0],
-                            'Value key not found in data' if today is not none and value_key not in today[0],
-                            'Invalid mode selected' if mode not in modes,
-                            'Boolean input expected for include_today' if include_today | bool('') is not boolean,
-                            'Boolean input expected for include_tomorrow' if include_tomorrow | bool('') is not boolean,
-                            'Boolean input expected for look_ahead' if look_ahead | bool('') is not boolean,
-                            'Boolean input expected for lowest' if lowest | bool('') is not boolean,
-                            'Selected program is not available or has no data' if program is not none and w is none
+                            'No valid data in {}'.format(sensor) if data == [],
+                            'Time key "{}" not found in data'.format(time_key) if data and time_key not in data[0],
+                            'Value key "{}" not found in data'.format(value_key) if data and value_key not in data[0],
+                            'Invalid mode "{}" selected'.format(mode) if mode not in modes,
+                            'Boolean input expected for include_today, "{}" can not be processed as a boolean'.format(include_today) if include_today | bool('') is not boolean,
+                            'Boolean input expected for include_tomorrow, "{}" can not be processed as a boolean'.format(include_tomorrow) if include_tomorrow | bool('') is not boolean,
+                            'Boolean input expected for look_ahead, "{}" can not be processed as a boolean'.format(look_ahead) if look_ahead | bool('') is not boolean,
+                            'Boolean input expected for lowest, "{}" can not be processed as a boolean'.format(lowest) if lowest | bool('') is not boolean,
+                            'Selected program "{}" is not available or has no data'.format(program) if program is not none and w is none
                         ] | select() | list
         -%}
         {%- if errors | count > 0 -%}
@@ -79,7 +147,7 @@
                 {%- set e = e + timedelta(days=1) if not include_today and end is defined else e -%}
             {# Rebuild data from sensor to generic format #}
                 {%- set rebuild = namespace(data=[]) -%}
-                {%- for item in (today if include_today else []) + (tomorrow if include_tomorrow else []) -%}
+                {%- for item in data -%}
                     {%- set time = item[time_key] -%}
                     {%- set time = as_datetime(time) if time is string else time -%}
                     {%- set rebuild.data = rebuild.data + [dict(time=time, value=item[value_key])] -%}
@@ -94,7 +162,6 @@
                                     | selectattr('value', 'is_number')
                                     | list
                 -%}
-        {%- endif -%}
             {# set variables to check if numbeer of wp/h match dp/h #}
                 {%- set dp_minutes, wp_minutes = 60 / dph, 60/no_weight_points -%}
                 {%- set check_list = [dp_minutes, wp_minutes] | sort -%}
@@ -145,7 +212,7 @@
                                 {%- endif -%}
                             {%- endif -%}
                         {# create output for all modes #}
-                            {%- set output = namespace(average=none, start=none, min=none, max=none, weighted_average=none, time_min=none, time_max=none, list=[]) -%}
+                            {%- set output = namespace(average=none, start=none, min=none, max=none, weighted_average=none, time_min=none, time_max=none, list=[], all={}) -%}
                             {%- set last_values = int(h*no_weight_points) -%}
                             {%- for i in range(values|count-(last_values-1)) -%}
                                 {%- set list = values[i:i+last_values] | map(attribute='value') | list -%}
@@ -163,22 +230,38 @@
                                 {%- set b = output.weighted_average -%}
                                 {%- set min, max = list | min, list | max -%}
                                 {%- if output.average is none or ((a < b) if lowest else (a > b)) -%}
-                                    {%- set output.list = list -%}
-                                    {%- set output.min = min -%}
-                                    {%- set output.max = max -%}
-                                    {%- set output.weighted_average = a -%}
-                                    {%- set output.average = list | average -%}
+                                    {%- set pr = precision | default(5) -%}
+                                    {%- set output.list = list | map('round', pr) | list -%}
+                                    {%- set output.min = min | round(pr) -%}
+                                    {%- set output.max = max | round(pr) -%}
+                                    {%- set output.weighted_average = a | round(5) -%}
+                                    {%- set output.average = list | average | round(pr) -%}
                                     {%- set output.start = _format_date(values[i].time, time_format | default(none)) -%}
                                     {%- set output.end = _format_date(values[i].time + timedelta(hours=h), time_format | default(none)) -%}
-                                    {%- set index_min = output.list.index(output.min) -%}
-                                    {%- set index_max = output.list.index(max) -%}
+                                    {%- set index_min, index_max = list.index(min), list.index(max) -%}
                                     {%- set output.time = values[i:i+last_values] | map(attribute='time') | list -%}
                                     {%- set output.time_min = _format_date(output.time[index_min], time_format | default(none)) -%}
                                     {%- set output.time_max = _format_date(output.time[index_max], time_format | default(none)) -%}
                                 {%- endif -%}
                             {%- endfor -%}
                         {# output date based on the selected mode #}
-                            {{- output[mode] | round(5) if output[mode] | is_number else output[mode] -}}
+                            {%- if mode == 'all' -%}
+                                {{
+                                    dict(
+                                            start=output.start,
+                                            end=output.end,
+                                            min=output.min,
+                                            max=output.max,
+                                            time_min=output.time_min,
+                                            time_max=output.time_max,
+                                            average=output.average,
+                                            weighted_average=output.weighted_average,
+                                            list=output.list
+                                        ) | to_json
+                                }}
+                            {%- else -%}
+                                {{- output[mode] -}}
+                            {%- endif -%}
                     {%- endif -%}
                 {%- else -%}
                     {%- set error_msg = 
@@ -188,4 +271,5 @@
                     -%}
                     {{- value_on_error if use_voe else error_msg -}}
                 {%- endif -%}
+        {%- endif -%}
 {%- endmacro -%}
