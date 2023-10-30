@@ -206,7 +206,7 @@ transition_lights:
                 use_ct: "{{ use_ct | default(true) }}"
                 max_steps: "{{ max_steps | default(none) }}"
                 mode: "{{ mode | default('single') }}"
-                split_service: "{{ split_service | default(fasle) }}"
+                split_service: "{{ split_service | default(false) }}"
 
 transition_lights_perform_transition:
   alias: "00 - Perform transition light brightness, color temperature and/or RGB values (helper script)"
