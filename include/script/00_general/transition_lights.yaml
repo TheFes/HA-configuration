@@ -206,7 +206,7 @@ transition_lights:
                 use_ct: "{{ use_ct | default(true) }}"
                 max_steps: "{{ max_steps | default(none) }}"
                 mode: "{{ mode | default('single') }}"
-                split_service: "{{ split_service | default(fasle) }}"
+                split_service: "{{ split_service | default(false) }}"
 
 transition_lights_perform_transition:
   alias: "00 - Perform transition light brightness, color temperature and/or RGB values (helper script)"
@@ -341,7 +341,7 @@ transition_lights_perform_transition:
                 value_template: >
                   {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
                   {{
-                    state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 1.5) | int, (br + br_step | abs * 1.5) | int + 1) if br else true
+                    state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 5) | int, (br + br_step | abs * 5) | int + 1) if br else true
                   }}
               - alias: "Check for unexepcted color temperature change"
                 condition: template
@@ -349,7 +349,7 @@ transition_lights_perform_transition:
                   {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
                   {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
                   {{
-                    state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 1.5) | int, (ct + ct_step | abs * 1.5) | int + 1) if ct else true
+                    state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 5) | int, (ct + ct_step | abs * 5) | int + 1) if ct else true
                   }}
               - alias: "Check for unexepcted color RGB change"
                 condition: template
@@ -368,9 +368,9 @@ transition_lights_perform_transition:
                   {%- endif %}
                   {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
                   {{
-                    (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 1.5) | int, (rgb[0] + rgb_step[0] | abs * 1.5) | int + 1) if rgb else true)
-                    and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 1.5) | int, (rgb[1] + rgb_step[1] | abs * 1.5) | int + 1) if rgb else true)
-                    and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 1.5) | int, (rgb[2] + rgb_step[2] | abs * 1.5) | int + 1) if rgb else true)
+                    (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 5) | int, (rgb[0] + rgb_step[0] | abs * 5) | int + 1) if rgb else true)
+                    and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 5) | int, (rgb[1] + rgb_step[1] | abs * 5) | int + 1) if rgb else true)
+                    and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 5) | int, (rgb[2] + rgb_step[2] | abs * 5) | int + 1) if rgb else true)
                   }}
             sequence:
               - variables:
@@ -414,7 +414,7 @@ transition_lights_perform_transition:
                     value_template: >
                       {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
                       {{
-                        state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 1.5) | int, (br + br_step | abs * 1.5) | int + 1) if br else true
+                        state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 5) | int, (br + br_step | abs * 5) | int + 1) if br else true
                       }}
                   - alias: "Check for unexepcted color temperature change"
                     condition: template
@@ -422,7 +422,7 @@ transition_lights_perform_transition:
                       {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
                       {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
                       {{
-                        state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 1.5) | int, (ct + ct_step | abs * 1.5) | int + 1) if ct else true
+                        state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 5) | int, (ct + ct_step | abs * 5) | int + 1) if ct else true
                       }}
                   - alias: "Check for unexepcted color RGB change"
                     condition: template
@@ -441,9 +441,9 @@ transition_lights_perform_transition:
                       {%- endif %}
                       {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
                       {{
-                        (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 1.5) | int, (rgb[0] + rgb_step[0] | abs * 1.5) | int + 1) if rgb else true)
-                        and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 1.5) | int, (rgb[1] + rgb_step[1] | abs * 1.5) | int + 1) if rgb else true)
-                        and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 1.5) | int, (rgb[2] + rgb_step[2] | abs * 1.5) | int + 1) if rgb else true)
+                        (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 5) | int, (rgb[0] + rgb_step[0] | abs * 5) | int + 1) if rgb else true)
+                        and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 5) | int, (rgb[1] + rgb_step[1] | abs * 5) | int + 1) if rgb else true)
+                        and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 5) | int, (rgb[2] + rgb_step[2] | abs * 5) | int + 1) if rgb else true)
                       }}
                 then:
                   - alias: "Peform actions"
