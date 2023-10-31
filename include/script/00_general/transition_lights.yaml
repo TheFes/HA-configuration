@@ -34,7 +34,6 @@ transition_lights:
     br_start:
       description: "Start brightness of the transition (0-255) - Default is current value of the light - Use either value or percentage, not both"
       name: Brightness start value
-      default: Current setting
       example: 25
       required: false
       selector:
@@ -44,7 +43,6 @@ transition_lights:
     br_start_pct:
       description: "Start brightness percentage of the transition (0 - 100%) - Default is current value of the light - Use either value or percentage, not both"
       name: Brightness start percentage
-      default: Current setting
       example: 10
       required: false
       selector:
@@ -55,7 +53,6 @@ transition_lights:
     br_end:
       description: "End brightness of the transition (0-255) - Using 0 will turn the light off, use either value or percentage, not both"
       name: Brightness end value
-      default: 255
       example: 230
       required: false
       selector:
@@ -83,7 +80,6 @@ transition_lights:
     ct_start:
       description: "Start color_temp in Kelvin of the transition - Default is current value of the light"
       name: Color temperature start
-      default: Current setting
       example: 500
       required: false
       selector:
@@ -91,11 +87,10 @@ transition_lights:
           min: 2000
           max: 10000
           step: 50
-          unit_of_measurement: "mireds"
+          unit_of_measurement: "Kelvin"
     ct_end:
       description: "End color_temp in Kelvin of the transition - Default is max value (coldest light)"
       name: Color temparature end
-      default: Lowest value possible
       example: 6500
       required: false
       selector:
@@ -103,11 +98,10 @@ transition_lights:
           min: 2000
           max: 10000
           step: 50
-          unit_of_measurement: "mireds"
+          unit_of_measurement: "Kelvin"
     ct_start_pct:
       description: "Start color_temp of the transition in % (0% is warmes, 100% is coldest) - Default is current value of the light"
       name: Color temperature start percentage
-      default: Current setting
       example: 90
       required: false
       selector:
@@ -118,7 +112,7 @@ transition_lights:
     ct_end_pct:
       description: "End color_temp of the transition in % (0% is warmest, 100% is coldest)"
       name: Color temparature end percentage
-      default: 0
+      default: 100
       example: 10
       required: false
       selector:
@@ -257,7 +251,7 @@ transition_lights_perform_transition:
                   target:
                     entity_id: "{{ light }}"
                   data:
-                    brightness: "{{ br_start }}"
+                    brightness: "{{ [br_start, 1] | max }}"
             - if: "{{ ct_start_set }}"
               then:
                 - alias: "Set start color temperature"
@@ -286,7 +280,7 @@ transition_lights_perform_transition:
               target:
                 entity_id: "{{ light }}"
               data: >
-                {%- set br = dict(brightness=br_start) if br_start_set else {} %}
+                {%- set br = dict(brightness=[br_start, 1] | max) if br_start_set else {} %}
                 {%- set ct = dict(color_temp_kelvin=ct_start) if ct_start_set else {} %}
                 {%- set rgb = dict(rgb_color=rgb_start) if iif(rgb_start) else {} %}
                 {{ dict(dict(br, **ct), **rgb) }}
@@ -448,10 +442,10 @@ transition_lights_perform_transition:
                 then:
                   - alias: "Peform actions"
                     choose:
-                      - conditions: "{{ br_end == 0 }}"
+                      - conditions: "{{ br_next == 0 }}"
                         sequence:
-                          - alias: "Use light.turn_off when br_end is 0"
-                            if: "{{ br_change and use_br and br_end == 0 }}"
+                          - alias: "Use light.turn_off when br_next is 0"
+                            if: "{{ br_change and use_br and br_next == 0 }}"
                             then:
                               - service: light.turn_off
                                 target:
