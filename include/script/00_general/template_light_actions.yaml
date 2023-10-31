@@ -7,11 +7,12 @@ template_lights_actions:
         room: "{{ template_light | regex_replace('light.|_template', '') }}"
         script: "{{ 'script.' ~ room ~ '_toggle' }}"
         switch: >
-          {{
-            [ 'switch.shelly1_'~ room, 'switch.sonoff_'~ room]
-              | select('has_value')
-              | list
-          }}
+          {% set switch = states.switch
+              | selectattr('object_id', 'search', room ~ '_relay')
+              | map(attribute='entity_id')
+              | list 
+          %}
+          {{ switch | first if switch else none }}
     - choose:
         - conditions: "{{ action == 'turn_on' }}"
           sequence:
