@@ -44,16 +44,16 @@ cards:
   - type: custom:mushroom-template-card
     entity: switch.bureau_martijn_template
     primary: Bureau Martijn 2
-    badge_icon: "{{ 'mdi:alert' if is_state('switch.bureau_martijn_2', 'unavailable') }}"
+    badge_icon: "{{ 'mdi:alert' if is_state('switch.shelly1pm_bureau_martijn_relay', 'unavailable') }}"
     badge_color: red
     secondary: >-
       {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
-      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.bureau_martijn_2', 'on') }}
+      {{ (' | ' ~ states('sensor.bureau_martijn_2_power') ~ ' W') if is_state('switch.shelly1pm_bureau_martijn_relay', 'on') }}
     icon: mdi:human-male-male
     icon_color: >
       {% if is_state('script.computer_martijn_off' , 'on') %}
         orange
-      {% elif is_state('switch.bureau_martijn_2', 'on') %}
+      {% elif is_state('switch.shelly1pm_bureau_martijn_relay', 'on') %}
         blue
       {% endif %}
     tap_action:

@@ -7,25 +7,34 @@ lights:
     <<: &config_general
       value_template: >
         {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+        {% set light = 'light.' ~ room %}
+        {% set switch = states.switch
+            | selectattr('object_id', 'search', room ~ '_relay')
+            | map(attribute='entity_id')
+            | list 
+        %}
+        {% set switch = switch | first if switch else none %}
         {{
-          is_state('light.' ~ room, 'on')
+          is_state(light, 'on')
           or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
           or 
             (
-              not states('light.' ~ room) | bool('na') is boolean
-              and 
-                (
-                  is_state('switch.shelly1_' ~ room, 'on')
-                  or is_state('switch.sonoff_' ~ room, 'on')
-                )
+              not states(light) | bool('na') is boolean
+              and (is_state(switch, 'on') if switch else true)
             )
         }}
       availability_template: >
         {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+        {% set light = 'light.' ~ room %}
+        {% set switch = states.switch
+            | selectattr('object_id', 'search', room ~ '_relay')
+            | map(attribute='entity_id')
+            | list 
+        %}
+        {% set switch = switch | first if switch else none %}
         {{
-          states('light.' ~ room) | bool('na') is boolean
-          or states('switch.shelly1_' ~ room) | bool('na') is boolean
-          or states('switch.sonoff_' ~ room) | bool('na') is boolean
+          states(light) | bool('na') is boolean
+          or states(switch) | bool('na') is boolean
         }}
       turn_on:
         - service: script.template_lights_actions
@@ -43,7 +52,7 @@ lights:
         {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
       effect_template: >
         {% set light = this.entity_id | regex_replace('_template', '') %}
-        {% set custom =  state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
+        {% set custom = state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
         {% set def = state_attr(light, effect) | default('None') %}
         {% set effect = [def, custom] | reject('eq', 'None') | list %}
         {{ effect | first if effect else 'None' }}

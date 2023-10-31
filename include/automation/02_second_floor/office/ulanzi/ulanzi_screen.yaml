@@ -17,13 +17,13 @@ trigger:
       update: &update >
         {{
           is_state('person.martijn', 'home')
-          and is_state('switch.bureau_martijn_2', 'on')
+          and is_state('switch.shelly1pm_bureau_martijn_relay', 'on')
           and is_state('script.computer_martijn_off', 'off')
           if action == 'on'
           else true
         }}
   - platform: state
-    entity_id: switch.bureau_martijn_2
+    entity_id: switch.shelly1pm_bureau_martijn_relay
     to: ~
     variables:
       action: >
