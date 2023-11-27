@@ -18,12 +18,12 @@ trigger:
 
   - platform: state
     entity_id:
-      - sensor.werkkamer_martijn_multi_temperature
-      - sensor.werkkamer_martijn_multi_humidity
+      - sensor.werkkamer_martijn_temp
+      - sensor.werkkamer_martijn_vocht
     not_to: unavailable
     variables:
-      app: "{{ trigger.entity_id.split('_') | last }}"
-      text: "{{ trigger.to_state.state | round(1) }} {{ '°C' if app == 'temperature' else '%' }}"
+      app: "{{ trigger.to_state.attributes.device_class }}"
+      text: "{{ states(trigger.entity_id, with_unit=true) }}"
       icon: >
         {% if app == 'humidity' %}
           humidity
