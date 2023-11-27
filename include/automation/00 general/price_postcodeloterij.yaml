@@ -3,13 +3,14 @@ alias: "00 - Prize Postcodeloterij"
 trigger:
   - platform: state
     entity_id: sensor.postcodeloterij_prizecount
-    not_from:
-      - unavailable
-      - unknown
     not_to:
       - "0"
       - unavailable
       - unknown
+condition:
+  - >
+    {% set lt = this.attributes.last_triggered %}
+    {{ lt is none or lt.year ~ lt.month != now().year ~ now().month }}
 action:
   - alias: "Send notification"
     service: notify.mobile_app_pixel_7_pro
