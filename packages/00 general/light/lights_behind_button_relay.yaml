@@ -1,0 +1,543 @@
+# Create template lights
+light:
+  - platform: template
+    lights:
+      eettafel_template:
+        unique_id: 847f5495-8971-4656-8fde-7a636e983735
+        friendly_name: "Eettafel Template"
+        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+        <<: &config_general
+          value_template: >
+            {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+            {% set light = 'light.' ~ room %}
+            {% set switch = states.switch
+                | selectattr('object_id', 'search', room ~ '_relay')
+                | map(attribute='entity_id')
+                | list 
+            %}
+            {% set switch = switch | first if switch else none %}
+            {{
+              is_state(light, 'on')
+              or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
+              or 
+                (
+                  not states(light) | bool('na') is boolean
+                  and (is_state(switch, 'on') if switch else true)
+                )
+            }}
+          availability_template: >
+            {% set room = this.entity_id | regex_replace('light.|_template', '') %}
+            {% set light = 'light.' ~ room %}
+            {% set switch = states.switch
+                | selectattr('object_id', 'search', room ~ '_relay')
+                | map(attribute='entity_id')
+                | list 
+            %}
+            {% set switch = switch | first if switch else none %}
+            {{
+              states(light) | bool('na') is boolean
+              or ((states(switch) | bool('na') is boolean) if switch is not none else true)
+            }}
+          turn_on:
+            - service: script.template_lights_actions
+              data:
+                template_light: "{{ this.entity_id }}"
+                action: turn_on
+          turn_off:
+            - service: script.template_lights_actions
+              data:
+                template_light: "{{ this.entity_id }}"
+                action: turn_off
+          effect_list_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {% set effect = state_attr(light, 'effect_list') | default([], true) %}
+            {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
+          effect_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {% set custom = state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
+            {% set def = state_attr(light, effect) | default('None') %}
+            {% set effect = [def, custom] | reject('eq', 'None') | list %}
+            {{ effect | first if effect else 'None' }}
+          set_effect:
+            - service: script.template_lights_actions
+              data:
+                template_light: "{{ this.entity_id }}"
+                action: set_effect
+                effect: "{{ effect }}"
+        <<: &config_brightness
+          level_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {% if light in integration_entities('esphome') %}
+              {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
+            {% else %}
+              {{ state_attr(light, 'brightness') | int(255) }}
+            {% endif %}
+          set_level:
+            - service: script.template_lights_actions
+              data:
+                template_light: "{{ this.entity_id }}"
+                action: set_level
+                brightness: "{{ brightness }}"
+        <<: &config_color_temp
+          temperature_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {{ state_attr(light, 'color_temp') }}
+          min_mireds_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {{ state_attr(light, 'min_mireds') }}
+          max_mireds_template: >
+            {% set light = this.entity_id | regex_replace('_template', '') %}
+            {{ state_attr(light, 'max_mireds') }}
+          set_temperature:
+            - service: light.turn_on
+              data:
+                entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
+                color_temp: "{{ color_temp }}"
+
+      werkkamer_marleen_template:
+        unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
+        friendly_name: "Werkamer Marleen Template"
+        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+
+      pepijn_template:
+        unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
+        friendly_name: "Pepijn Template"
+        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      floris_template:
+        unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+        friendly_name: "Floris Template"
+        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      trapkast_template:
+        unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
+        friendly_name: "Trapkast Template"
+        icon_template: mdi:bulkhead-light
+        <<: *config_general
+        <<: *config_brightness
+
+      slaapkamer_plafond_template:
+        unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
+        friendly_name: "Slaapkamer Plafond Template"
+        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      werkkamer_martijn_plafond_template:
+        unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
+        friendly_name: "Werkkamer Martijn Plafond Template"
+        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      wasmachinehoek_template:
+        unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
+        friendly_name: "Wasmachinehoek Template"
+        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      badkamer_zolder_template:
+        unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
+        friendly_name: "Badkamer Zolder Template"
+        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      speelhoek_template:
+        unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
+        friendly_name: "Speelhoek Template"
+        icon_template: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      tv_template:
+        unique_id: 6adf6928-c15c-4945-8416-ef2c2e20b52b
+        friendly_name: "TV Lamp Template"
+        icon_template: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+# Scripts to perform actions
+script:
+  # General actions for all lights
+  template_lights_actions:
+    alias: 00 - Template Light Actions
+    mode: parallel
+    max: 25
+    sequence:
+      - variables:
+          light: "{{ template_light | regex_replace('_template', '') }}"
+          built_in_effect: "{{ state_attr(light, 'effect_list') | default([], true) }}"
+          room: "{{ template_light | regex_replace('light.|_template', '') }}"
+          script: "{{ 'script.' ~ room ~ '_toggle' }}"
+          switch: >
+            {% set switch = states.switch
+                | selectattr('object_id', 'search', room ~ '_relay')
+                | map(attribute='entity_id')
+                | list 
+            %}
+            {{ switch | first if switch else none }}
+      - choose:
+          - conditions: "{{ action == 'turn_on' }}"
+            sequence:
+              - if: >
+                  {{ states('light.' ~ room) | bool('na') is boolean }}
+                then:
+                  - if: "{{ script | has_value }}"
+                    then:
+                      - service: "{{ script }}"
+                        data:
+                          action: "on"
+                    else:
+                      - service: light.turn_on
+                        target:
+                          entity_id: "{{ light }}"
+                else:
+                  - if: "{{ switch is not none }}"
+                    then:
+                      - service: switch.turn_on
+                        target:
+                          entity_id: "{{ switch }}"
+          - conditions: "{{ action == 'turn_off' }}"
+            sequence:
+              - if: >
+                  {{
+                    states('light.' ~ room) | bool('na') is boolean
+                    and not is_state('sensor.house_mode', 'Vakantie')
+                  }}
+                then:
+                  - if: "{{ script | has_value }}"
+                    then:
+                      - service: "{{ script }}"
+                        data:
+                          action: "off"
+                    else:
+                      - service: light.turn_off
+                        target:
+                          entity_id: "{{ light }}"
+                else:
+                  - if: "{{ switch is not none }}"
+                    then:
+                      - service: switch.turn_off
+                        target:
+                          entity_id: "{{ switch }}"
+          - conditions: "{{ action == 'set_level' }}"
+            sequence:
+              - service: light.turn_on
+                data:
+                  entity_id: "{{ light }}"
+                  brightness: >
+                    {% if light in integration_entities('esphome') %}
+                      {{ (brightness | float * 0.855 + 255*0.145) | round }}
+                    {% else %}
+                      {{ brightness }}
+                    {% endif %}
+          - conditions: "{{ action == 'set_effect' }}"
+            sequence:
+              - choose:
+                  - conditions: "{{ effect in built_in_effect }}"
+                    sequence:
+                      - service: light.turn_on
+                        target:
+                          entity_id: "{{ light }}"
+                        data:
+                          effect: "{{ effect }}"
+                  - conditions: "{{ effect is not none }}"
+                    sequence:
+                      - service: script.turn_on
+                        target:
+                          entity_id: script.light_blink
+                        data:
+                          variables:
+                            light: "{{ this.entity_id }}"
+                            toggle_entity: "{{ light }}"
+                            effect: "{{ effect }}"
+                default:
+                  - service: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data:
+                      effect: None
+
+  # Specific actions in case template lights are turned on/off
+  floris_toggle:
+    alias: "F1F - Actions for template light Floris"
+    icon: mdi:ceiling-light
+    sequence:
+      - alias: "On"
+        if: "{{ action == 'on' }}"
+        then:
+          - alias: "Turn on light dimmed"
+            service: light.turn_on
+            target:
+              entity_id: light.floris
+            data:
+              brightness: 76
+              color_temp: 306
+          - alias: "Set input booleand to dim"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.floris_dim
+        else:
+          - alias: "Turn light group off"
+            service: light.turn_off
+            target:
+              entity_id: light.groep_floris
+
+  pepijn_toggle:
+    alias: "F1P - Actions for template light Pepijn"
+    icon: mdi:ceiling-light
+    sequence:
+      - alias: "On"
+        if: "{{ action == 'on' }}"
+        then:
+          - alias: "No transaction active and not yet dimmed?"
+            choose:
+              - alias: "No transaction active and not yet dimmed"
+                conditions:
+                  - alias: "No transition active?"
+                    condition: template
+                    value_template: "{{ 'light.pepijn' not in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
+                  - alias: "Not yet dimmed?"
+                    condition: state
+                    entity_id: input_boolean.dimmed_pepijn
+                    state: "off"
+                sequence:
+                  - alias: "Turn on input boolean"
+                    service: input_boolean.turn_on
+                    target:
+                      entity_id: input_boolean.dimmed_pepijn
+                  - alias: "Time of day?"
+                    choose:
+                      - alias: "Morning"
+                        conditions:
+                          - condition: time
+                            after: input_datetime.pepijn_transition_on
+                            before: input_datetime.pepijn_transition_off
+                        sequence:
+                          - alias: "Turn on light using transition script"
+                            service: script.turn_on
+                            target:
+                              entity_id: script.transition_lights
+                            data:
+                              variables:
+                                lights:
+                                  - light.pepijn
+                                duration: 60
+                                br_start: 39
+                                ct_start_pct: 100
+                      - alias: "Evening or night"
+                        conditions:
+                          - condition: or
+                            conditions:
+                              - condition: time
+                                after: input_datetime.pepijn_dim_on
+                              - condition: time
+                                before: input_datetime.pepijn_dim_off
+                        sequence:
+                          - alias: "Turn on light dimmed"
+                            service: light.turn_on
+                            data:
+                              entity_id: light.pepijn
+                              brightness: 40
+                              color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
+                    default:
+                      - alias: "Ceiling light to 100%"
+                        service: light.turn_on
+                        target:
+                          entity_id: light.pepijn
+                        data:
+                          brightness: 255
+                      - alias: "Bed time?"
+                        condition: time
+                        after: "18:00:00"
+                        before: "20:00:00"
+                      - alias: "Bed group"
+                        service: light.turn_on
+                        target:
+                          entity_id: light.groep_bed_pepijn
+                        data:
+                          color_temp_kelvin: 3000
+                          brightness_pct: 20
+            default:
+              - alias: "Light on with current brightness and color temp"
+                service: light.turn_on
+                target:
+                  entity_id: light.pepijn
+              - alias: "Bed time?"
+                condition: time
+                after: "18:00:00"
+                before: "20:00:00"
+              - alias: "Bed group"
+                service: light.turn_on
+                target:
+                  entity_id: light.groep_bed_pepijn
+                data:
+                  color_temp_kelvin: 3000
+                  brightness_pct: 20
+        else:
+          - alias: "Turn light group off"
+            service: light.turn_off
+            target:
+              entity_id: light.groep_pepijn
+
+  badkamer_zolder_toggle:
+    alias: "F2B - Actions for template light bathroom 2nd floor"
+    icon: "mdi:light-recessed"
+    mode: restart
+    sequence:
+      - alias: "On"
+        if: "{{ action == 'on' }}"
+        then:
+          - if:
+              - alias: "Check if house mode is Slapen?"
+                condition: state
+                entity_id: sensor.house_mode
+                state: "Slapen"
+            then:
+              - alias: "Turn on light dimmed"
+                service: light.turn_on
+                target:
+                  entity_id: light.badkamer_zolder
+                data:
+                  brightness: 25
+            else:
+              - alias: "Light on 100% during daytime"
+                service: light.turn_on
+                target:
+                  entity_id: light.badkamer_zolder
+                data:
+                  brightness: 255
+                  color_temp_kelvin: 6535
+        else:
+          - alias: "Light off"
+            service: light.turn_off
+            target:
+              entity_id: light.badkamer_zolder
+
+  slaapkamer_plafond_toggle:
+    alias: "F2B - Actions for template light master bedroom"
+    icon: "mdi:light-recessed"
+    mode: restart
+    sequence:
+      - alias: "On"
+        if: "{{ action == 'on' }}"
+        then:
+          - alias: "Light off no transition active?"
+            choose:
+              - conditions:
+                  - alias: "Not yet dimmed?"
+                    condition: state
+                    entity_id: input_boolean.dimmed_slaapkamer
+                    state: "off"
+                sequence:
+                  - alias: "Time of day?"
+                    choose:
+                      - alias: "Morning"
+                        conditions:
+                          - condition: time
+                            after: input_datetime.slaapkamer_transition_on
+                            before: input_datetime.slaapkamer_transition_off
+                        sequence:
+                          - alias: "Turn on light dimmed"
+                            service: light.turn_on
+                            target:
+                              entity_id: light.slaapkamer_plafond
+                            data:
+                              brightness: 1
+                              color_temp_kelvin: 2000
+                          - delay: 0.1
+                          - alias: "Increase brightness"
+                            service: light.turn_on
+                            target:
+                              entity_id: light.slaapkamer_plafond
+                            data:
+                              brightness_pct: 100
+                              transition: 6535
+                          - alias: "Turn on input_boolean"
+                            service: input_boolean.turn_on
+                            target:
+                              entity_id: input_boolean.dimmed_slaapkamer
+                      - conditions:
+                          - alias: "Evening"
+                            condition: or
+                            conditions:
+                              - condition: time
+                                after: input_datetime.slaapkamer_dim_on
+                              - condition: time
+                                before: input_datetime.slaapkamer_dim_off
+                        sequence:
+                          - alias: "Light on"
+                            service: light.turn_on
+                            target:
+                              entity_id: light.slaapkamer_plafond
+                            data:
+                              brightness: 128
+                          - delay: 0.1
+                          - alias: "Dim light"
+                            service: light.turn_on
+                            target:
+                              entity_id: light.slaapkamer_plafond
+                            data:
+                              brightness_pct: 10
+                              color_temp_kelvin: 2200
+                              transition: 60
+                          - delay: 60
+                          - alias: "Turn on input_boolean"
+                            service: input_boolean.turn_on
+                            target:
+                              entity_id: input_boolean.dimmed_slaapkamer
+                    default:
+                      - alias: "Light on 100% during daytime"
+                        service: light.turn_on
+                        target:
+                          entity_id: light.slaapkamer_plafond
+                        data:
+                          brightness: 255
+                          color_temp_kelvin: 6535
+                      - alias: "Turn on input_boolean"
+                        service: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.dimmed_slaapkamer
+            default:
+              - alias: "Light on with current setting if it has already been turned on before"
+                service: light.turn_on
+                target:
+                  entity_id: light.slaapkamer_plafond
+        else:
+          - alias: "Input boolean on"
+            service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.dimmed_slaapkamer
+          - alias: "Dim light first in evening"
+            choose:
+              - conditions:
+                  - condition: time
+                    after: "22:00:00"
+                    before: "06:00:00"
+                sequence:
+                  - service: light.turn_on
+                    target:
+                      entity_id: light.slaapkamer_plafond
+                    data:
+                      brightness: 1
+                      transition: 5
+          - alias: "Light off"
+            service: light.turn_off
+            target:
+              entity_id: light.slaapkamer_plafond
