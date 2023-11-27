@@ -81,7 +81,7 @@
     'lose': 'strata',
     'gain': 'zosilnenie',
     'time':{
-      'format': '12-hod',
+      'format': '12-hr',
       'year': [
         'rok',
         'rok',
@@ -1031,8 +1031,32 @@
 {%- endfor %}
 {%- endmacro %}
 
+{%- macro translate(k1, k2=None, k3=None, k4=None, k5=None, index=None, fallback=None, language=None) %}
+{#- This macro is ugly, but fast, don't change it #}
+{%- set l = language or default_language %}
+{%- set dflt = _bad_value if fallback is none else fallback %}
+{%- if k2 is not none and k3 is not none and k4 is not none and k5 is not none %}
+{%- set output = languages.get(l, {}).get(k1, {}).get(k2, {}).get(k3, {}).get(k4, {}).get(k5) %}
+{%- elif k2 is not none and k3 is not none and k4 is not none and k5 is none %}
+{%- set output = languages.get(l, {}).get(k1, {}).get(k2, {}).get(k3, {}).get(k4) %}
+{%- elif k2 is not none and k3 is not none and k4 is none and k5 is none %}
+{%- set output = languages.get(l, {}).get(k1, {}).get(k2, {}).get(k3) %}
+{%- elif k2 is not none and k3 is none and k4 is none and k5 is none %}
+{%- set output = languages.get(l, {}).get(k1, {}).get(k2) %}
+{%- else %}
+{%- set output = languages.get(l, {}).get(k1) %}
+{%- endif %}
+{%- if output is none %}
+{{- dflt }}
+{%- elif index is not none and index is integer and output is list %}
+{{- output[index] }}
+{%- else %}
+{{- output}}
+{%- endif %}
+{%- endmacro %}
+
 {%- macro _get_language_time_format(override, language) %}
-{%- set lang_fmat = languages.get(language, {}).get('time', {}).get('format', _bad_value) %}
+{%- set lang_fmat = translate('time', 'format', language=language) %}
 {%- set fmat = _time_formats.get(override, _default_time_format) if override in _time_formats.keys() else _time_formats.get(lang_fmat, _default_time_format) %}
 {{- fmat }}
 {%- endmacro %}
@@ -1064,7 +1088,7 @@
 
 {%- macro _to_datetime(input, attribute=None, utc=False) -%}
 {#- Already a datetime -#}
-{%- if input.date is defined and input.date is callable -%}
+{%- if input is datetime -%}
   {%- if input.tzinfo is none and utc -%}
     {{- _toutc(input) -}}
   {%- elif input.tzinfo is none -%}
@@ -1119,17 +1143,23 @@
 
 {%- macro _get_period_max(id, uptime_seconds) %}
 {%- set duration = _durations.get(id, 1) %}
-{%- set period = _periods.get(id) %}
 {{- uptime_seconds // duration }}
 {%- endmacro %}
 
+{%- macro _get_period_round(id, uptime_seconds) %}
+{%- set duration = _durations.get(id, 1) %}
+{{- (uptime_seconds / duration) | round }}
+{%- endmacro %}
+
 {# macro to generate a time #}
-{%- macro _phrase(id, uptime_seconds, language, max, raw) %}
-{%- set lang = languages.get(language, {}).get('time', {}).get(id, [_bad_value]*3) %}
-{%- set abbr, single, plural = lang %}
+{%- macro _phrase(id, uptime_seconds, language, max, raw, round_value=False) %}
+{%- if round_value %}
+{%- set func = _get_period_round %}
+{%- else %}
 {%- set func = _get_period_max if max else _get_period_value %}
+{%- endif %}
 {%- set value = func(id, uptime_seconds) | int %}
-{%- set name = plural if value != 1 else single %}
+{%- set name = translate('time', id, index=2, language=language) if value != 1 else translate('time', id, index=1, language=language) %}
 {{- '{} {}'.format(value, name) if value | int > 0 or raw else '' -}}
 {% endmacro %}
 
@@ -1141,56 +1171,66 @@
 {{- dict.from_keys(ns.ret) | to_json }}
 {%- endmacro %}
 
-{%- macro _phrases(seconds, values, language, raw) %}
-{%- set ns = namespace(ret=[]) %}
-{#- ensure we have a list of values #}
-{%- set values = [ values ] if values is string else values %}
-{#- filter values to only have items in _default_values #}
-{%- set values = values | select('in', _default_values) | list %}
-{#- this should be a good list of values if the previous 2 filters didn't remove anything #}
-{%- set values = _default_values | select('in', values) | list if values else _default_values %}
-{%- set biggest = values | first | default %}
-{%- set index = values.index(biggest) %}
-{%- for item in values[index:] %}
-  {%- set phrase = _phrase(item, seconds, language, loop.first, raw) %}
-  {%- if phrase %}
-    {%- set ns.ret = ns.ret + [phrase] %}
-  {%- endif %}
-{%- endfor %}
-{{- ns.ret | to_json }}
-{%- endmacro %}
-
 {# macro to generate a friendly phrase #}
-{%- macro _just_time(seconds, language, values, biggest, raw=False) %}
+{%- macro _just_time(seconds, language, values, biggest, raw=False, short=False, floor=False) %}
 {%- if seconds < 1 %}
-  {{- languages.get(language, {}).get('now', _bad_value) }}
+  {{- translate('now', language=language) }}
 {%- else %}
-  {%- set phrases = _phrases(seconds, values, language, raw) | from_json %}
-  {%- if phrases | length > 0 %}
-    {%- if biggest %}
-      {{- phrases[0] }}
-    {%- else %}
-      {%- set word_for_and = languages.get(language, {}).get('and', _bad_value) %}
-      {{- phrases[:-1] | join(', ') ~ ' ' ~ word_for_and ~ ' ' ~ phrases[-1] if phrases | length > 1 else phrases | first  | default }}
+  {#- this used to be a macro, was slow because it converted to/from json #}
+  {%- set ns = namespace(ret=[]) %}
+  {#- ensure we have a list of values #}
+  {%- set values = [ values ] if values is string else values %}
+  {#- filter values to only have items in _default_values #}
+  {%- set values = values | select('in', _default_values) | list %}
+  {#- this should be a good list of values if the previous 2 filters didn't remove anything #}
+  {%- set values = _default_values | select('in', values) | list if values else _default_values %}
+  {%- set index = values.index(values | first | default) %}
+  {%- for item in values[index:] %}
+    {%- set duration = _durations.get(item, 1) %}
+    {%- set period = _periods.get(item, 1) %}
+    {%- set value = ((seconds // duration) % (period if period else duration)) | int %}
+    {%- if value > 0 or raw %}
+      {%- if ns.ret | length == 0 %}
+        {%- set chosen = (seconds / duration) | round if biggest and not floor else seconds // duration %}
+      {%- else %}
+        {%- set chosen = value %}
+      {%- endif %}
+      {%- set chosen = chosen | int %}
+      {%- if short %}
+        {%- set units = translate('time', item, index=0, language=language) %}
+      {%- else %}
+        {%- set units = translate('time', item, index=2, language=language) if chosen != 1 else translate('time', item, index=1, language=language) %}
+        {%- set units = ' %s' % units %}
+      {%- endif %}
+      {%- set ns.ret = ns.ret + [ '%s%s' % (chosen, units) ] %}
+      {%- if biggest and ns.ret | length == 1 %}
+        {%- break %}
+      {%- endif %}
     {%- endif %}
+  {%- endfor %}
+  {%- set phrases = ns.ret %}
+  {#- add our langauges to the phrases #}
+  {%- if phrases | length > 0 %}
+    {%- set word_for_and = ' ' if short else ' %s ' % translate('and', language=language) %}
+    {{- phrases[:-1] | join(', ') ~ word_for_and ~ phrases[-1] if phrases | length > 1 else phrases | first | default }}
   {%- else %}
-    {{- _just_time(seconds, language, values, biggest, True) }}
+    {{- _just_time(seconds, language, values, biggest, True, short, floor) }}
   {%- endif %}
 {%- endif %}
 {%- endmacro %}
 
 {# macro to generate a friendly time phrase #}
-{%- macro _time(input, attribute, language, values, biggest, utc) %}
+{%- macro _time(input, attribute, language, values, biggest, utc, short=False, floor=False) %}
 {%- set duration_sensor = _check_for_duration_sensor(input) %}
 {%- if duration_sensor %}
   {%- set seconds = as_timedelta(duration_sensor).total_seconds() %}
-  {{- _just_time(seconds, language, values, biggest) }}
+  {{- _just_time(seconds, language, values, biggest, short=short, floor=floor) }}
 {%- else %}
   {%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
   {%- if uptime %}
     {%- set value = _delta_seconds(now(), uptime) | int %}
     {%- set seconds = value | abs %}
-    {{- _just_time(seconds, language, values, biggest) }}
+    {{- _just_time(seconds, language, values, biggest, short=short, floor=floor) }}
   {%- else %}
     {{- _bad_value }}
   {%- endif %}
@@ -1208,52 +1248,52 @@
 {%- endmacro -%}
 
 {# Returns the most significant time.  e.g.  3 hours #}
-{%- macro easy_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- macro easy_time(uptime, attribute=None, language=default_language, utc=False, max_period='year', short=False, floor=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
-{{- _time(uptime, attribute, language, values, True, utc) }}
+{{- _time(uptime, attribute, language, values, True, utc, short, floor) }}
 {%- endmacro %}
 
 {# Returns a large time phrase without missing any detail.  e.g.  3 hours, 4 minutes and 1 second #}
-{%- macro big_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- macro big_time(uptime, attribute=None, language=default_language, utc=False, max_period='year', short=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
-{{- _time(uptime, attribute, language, values, False, utc) }}
+{{- _time(uptime, attribute, language, values, False, utc, short) }}
 {%- endmacro %}
 
 {# Returns a time phrase with only the details you care about most of the time.  e.g.  3 hours and 4 minutes #}
-{%- macro custom_time(uptime, values='', language=default_language, utc=False) %}
+{%- macro custom_time(uptime, values='', language=default_language, utc=False, short=False) %}
 {%- set args = values.replace(' ','').split(',') | list if values is string else [] %}
 {%- if args %}
-  {{- _time(uptime, None, language, args, False, utc) }}
+  {{- _time(uptime, None, language, args, False, utc, short) }}
 {%- else %}
-  {{- _time(uptime, attribute, language, _default_values, False, utc) }}
+  {{- _time(uptime, attribute, language, _default_values, False, utc, short) }}
 {%- endif %}
 {%- endmacro %}
 
-{%- macro custom_time_attr(uptime, attribute, values='', language=default_language, utc=False) %}
+{%- macro custom_time_attr(uptime, attribute, values='', language=default_language, utc=False, short=False) %}
 {%- set args = values.replace(' ','').split(',') | list if values is string else [] %}
 {%- if args %}
-  {{- _time(uptime, attribute, language, args, False, utc) }}
+  {{- _time(uptime, attribute, language, args, False, utc, short) }}
 {%- else %}
-  {{- _time(uptime, attribute, language, _default_values, False, utc) }}
+  {{- _time(uptime, attribute, language, _default_values, False, utc, short) }}
 {%- endif %}
 {%- endmacro %}
 
-{%- macro easy_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- macro easy_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year', short=False, floor=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
 {%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
-{{- _just_time(seconds, language, values, True) }}
+{{- _just_time(seconds, language, values, True, short=short, floor=floor) }}
 {%- endmacro %}
 
-{%- macro big_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- macro big_time_between(t1, t2, attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year', short=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
 {%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
-{{- _just_time(seconds, language, values, False) }}
+{{- _just_time(seconds, language, values, False, short=short) }}
 {%- endmacro %}
 
-{%- macro custom_time_between(t1, t2, values='', attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year') %}
+{%- macro custom_time_between(t1, t2, values='', attr1=None, attr2=None, language=default_language, utc1=False, utc2=False, max_period='year', short=False) %}
 {%- set values = values.replace(' ','').split(',') | list if values is string else [] %}
 {%- set seconds = _time_between(_delta_seconds, t1, attr1, utc1, t2, attr2, utc2) | float | abs %}
-{{- _just_time(seconds, language, values, False) }}
+{{- _just_time(seconds, language, values, False, short=short) }}
 {%- endmacro %}
 
 {%- macro time_between(t1, t2, attr1=None, attr2=None, utc1=False, utc2=False) %}
@@ -1261,21 +1301,21 @@
 {%- endmacro %}
 
 {# macro to generate a friendly relative time phrase #}
-{%- macro _relative_time(input, attribute, language, values, biggest, utc)  %}
+{%- macro _relative_time(input, attribute, language, values, biggest, utc, short=False, floor=False)  %}
 {%- set uptime = _to_datetime(input, attribute, utc) | as_datetime %}
 {%- if uptime %}
   {%- set value = _delta_seconds(now(), uptime) | int %}
   {%- set seconds = value | abs %}
   {%- set future = value / seconds > 0 %}
-  {%- set items = _just_time(seconds, language, values, biggest) %}
+  {%- set items = _just_time(seconds, language, values, biggest, short=short, floor=floor) %}
   {%- if future %}
-    {{- languages.get(language, {}).get('in', _bad_value) }} {{ items }}
+    {{- translate('in', language=language) }} {{ items }}
   {%- else %}
-    {%- set t = languages.get(language, {}).get('ago', _bad_value) %}
+    {%- set t = translate('ago', language=language) %}
     {%- if '%s' in t %}
       {{ t % items }}
     {%- else %}
-      {{- items }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+      {{- items }} {{ translate('ago', language=language) }}
     {%- endif %}
   {%- endif %}
 {%- else %}
@@ -1284,33 +1324,33 @@
 {%- endmacro %}
 
 {# Returns the most significant time.  e.g.  in 3 hours #}
-{%- macro easy_relative_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- macro easy_relative_time(uptime, attribute=None, language=None, utc=False, max_period='year', short=False, floor=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
-{{- _relative_time(uptime, attribute, language, values, True, utc) }}
+{{- _relative_time(uptime, attribute, language, values, True, utc, short, floor) }}
 {%- endmacro %}
 
 {# Returns a large time phrase without missing any detail.  e.g.  in 3 hours, 4 minutes and 1 second #}
-{%- macro big_relative_time(uptime, attribute=None, language=default_language, utc=False, max_period='year') %}
+{%- macro big_relative_time(uptime, attribute=None, language=None, utc=False, max_period='year', short=False) %}
 {%- set values = _default_values[_default_values.index(max_period):] if max_period in _default_values else _default_values %}
-{{- _relative_time(uptime, attribute, language, values, False, utc) }}
+{{- _relative_time(uptime, attribute, language, values, False, utc, short) }}
 {%- endmacro %}
 
 {# Returns a time phrase with only the details you care about most of the time.  e.g.  in 3 hours and 4 minutes #}
-{%- macro custom_relative_time(uptime, values='', language=default_language, utc=False) %}
+{%- macro custom_relative_time(uptime, values='', language=None, utc=False, short=False) %}
 {%- set args = values.replace(' ','').split(',') | list if values is string else [] %}
 {%- if args %}
-  {{- _relative_time(uptime, None, language, args, False, utc) }}
+  {{- _relative_time(uptime, None, language, args, False, utc, short) }}
 {%- else %}
-  {{- _relative_time(uptime, attribute, language, _default_values, False, utc) }}
+  {{- _relative_time(uptime, attribute, language, _default_values, False, utc, short) }}
 {%- endif %}
 {%- endmacro %}
 
-{%- macro custom_relative_time_attr(uptime, attribute, values='', language=default_language, utc=False) %}
+{%- macro custom_relative_time_attr(uptime, attribute, values='', language=None, utc=False, short=False) %}
 {%- set args = values.replace(' ','').split(',') | list if values is string else [] %}
 {%- if args %}
-  {{- _relative_time(uptime, attribute, language, args, False, utc) }}
+  {{- _relative_time(uptime, attribute, language, args, False, utc, short) }}
 {%- else %}
-  {{- _relative_time(uptime, attribute, language, _default_values, False, utc) }}
+  {{- _relative_time(uptime, attribute, language, _default_values, False, utc, short) }}
 {%- endif %}
 {%- endmacro %}
 
@@ -1441,13 +1481,13 @@
 {%- endmacro %}
 
 {# What will happen next dst? #}
-{% macro next_dst_phrase(language=default_language) %}
+{% macro next_dst_phrase(language=None) %}
 {%- set t = now().replace(hour=0, minute=0, second=0, microsecond=0) %}
 {%- set delta = _find_delta(t, 'days', 365) | int %}
 {%- if delta > 0 %}
-  {{- languages.get(language, {}).get('lose', _bad_value) }} {{ easy_time(delta | abs) }}
+  {{- translate('lose', language=language) }} {{ easy_time_between(0, delta | abs) }}
 {%- else %}
-  {{- languages.get(language, {}).get('gain', _bad_value) }} {{ easy_time(delta | abs) }}
+  {{- translate('gain', language=language) }} {{ easy_time_between(0, delta | abs) }}
 {%- endif %}
 {%- endmacro %}
 
@@ -1457,7 +1497,7 @@
 {{- (next - today_at()).days if next is not none else 0 }}
 {%- endmacro %}
 
-{%- macro clock(fmat=None, language=default_language) %}
+{%- macro clock(fmat=None, language=None) %}
 {{- now().strftime(_get_language_time_format(fmat, language)) }}
 {%- endmacro %}
 
@@ -1473,31 +1513,41 @@
 {%- endif -%}
 {%- endmacro -%}
 
-{%- macro month(month=None, language=default_language) %}
-{%- set idx = (month - 1) % 12 if month is integer and month > 0 else now().month - 1 %}
-{{- languages.get(language, {}).get('months', [_bad_value]*12)[idx] }}
+{%- macro month(month=None, language=None) %}
+{%- if month is datetime %}
+{%- set idx = month.month - 1 %}
+{%- elif month is integer and month > 0 %}
+{%- set idx = (month - 1) % 12 %}
+{%- else %}
+{%- set idx = now().month - 1 %}
+{%- endif %}
+{{- translate('months', index=idx, language=language) }}
 {%- endmacro %}
 
-{%- macro weekday(weekday=None, language=default_language) %}
-{%- set idx = (weekday - 1) % 7 if weekday is integer and weekday > 0 else now().weekday() %}
-{{- languages.get(language, {}).get('days', [_bad_value]*7)[idx] }}
+{%- macro weekday(weekday=None, language=None) %}
+{%- if weekday is datetime %}
+{%- set idx = weekday.weekday() %}
+{%- elif weekday is integer and weekday > 0 %}
+{%- set idx = (weekday - 1) % 7 %}
+{%- else %}
+{%- set idx = now().weekday() %}
+{%- endif %}
+{{- translate('days', index=idx, language=language) }}
 {%- endmacro %}
 
 {%- macro count_the_days(input, attr, utc=False) %}
 {%- set input = _to_datetime(input, attr, utc) | as_datetime %}
 {%- set midnight = today_at() %}
-{{ (input - midnight).days }}
+{{- (input - midnight).days }}
 {%- endmacro %}
 
-{%- macro speak_the_days(input, attr, language=default_language, utc=False) %}
-{%- set lang_fmat = languages.get(language, {}).get('delta', {}) %}
-{%- set _days = {'-1': lang_fmat.get('yesterday', _bad_value), '0': lang_fmat.get('today', _bad_value), '1': lang_fmat.get('tomorrow', _bad_value)} %}
+{%- macro speak_the_days(input, attr, language=None, utc=False) %}
+{%- set _days = {-1: translate('delta', 'yesterday', language=language), 0: translate('delta', 'today', language=language), 1: translate('delta', 'tomorrow', language=language)} %}
 {%- set midnight = today_at() %}
 {%- set ns = namespace(days=[]) %}
 {%- for i in range(-7, 14) %}
-  {%- set strindex = i | string %}
-  {%- set prefix = lang_fmat.get('last', _bad_value) ~ ' ' if i < -1 else lang_fmat.get('next', _bad_value) ~ ' ' if i > 6 else '' %}
-  {%- set ns.days = ns.days + [ (strindex, prefix ~  _days.get(strindex, weekday(midnight.weekday() + i + 1, language))) ] %}
+  {%- set prefix = translate('delta', 'last', language=language) ~ ' ' if i < -1 else translate('delta', 'next', language=language)  ~ ' ' if i > 6 else '' %}
+  {%- set ns.days = ns.days + [ (i | string, prefix ~  _days.get(i, weekday(midnight.weekday() + i + 1, language))) ] %}
 {%- endfor %}
 {%- set collection = dict.from_keys(ns.days) %}
 {%- set days = count_the_days(input, attr, utc) %}
@@ -1505,15 +1555,15 @@
   {{- collection.get(days) }}
 {%- else %}
   {%- set days = days | int %}
-  {%- set ret = _phrase('day', days | abs * 86400, language, 'day', True) %}
+  {%- set ret = _phrase('day', days | abs * 86400, language, True, True) %}
   {%- if days > 0 %}
-    {{- languages.get(language, {}).get('in', _bad_value) }} {{ ret }}
+    {{- translate('in', language=language) }} {{ ret }}
   {%- else %}
-    {%- set t = languages.get(language, {}).get('ago', _bad_value) %}
+    {%- set t = translate('ago', language=language) %}
     {%- if '%s' in t %}
       {{- t % ret }}
     {%- else %}
-      {{- ret }} {{ languages.get(language, {}).get('ago', _bad_value) }}
+      {{- ret }} {{ translate('ago', language=language) }}
     {%- endif %}
   {%- endif %}
 {%- endif %}
