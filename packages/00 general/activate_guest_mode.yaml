@@ -80,19 +80,19 @@ script:
                 event_data:
                   action: "ignore_guest_{{ guest }}"
                 id: ignore
-            timeout: "01:00:00"
+            timeout: "03:00:00"
             continue_on_timeout: false
           - if: "{{ wait.trigger.id == 'add' }}"
             then:
               - alias: "Change template sensor if needed"
                 event: wifi_always_guest
                 event_data:
-                  name: "{{ added }}"
+                  name: "{{ guest }}"
             else:
               - alias: "Change template sensor if needed"
                 event: wifi_ignore
                 event_data:
-                  name: "{{ added }}"
+                  name: "{{ guest }}"
 
 template:
   - trigger:
