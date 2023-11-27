@@ -8,15 +8,15 @@ trigger:
       minutes: 5
   - platform: time
     at:
-      - "21:00"
-      - "09:00"
+      - "21:00:00"
+      - "09:00:00"
 condition:
   - condition: state
     entity_id: light.bedside_lamp
     state: "unavailable"
   - condition: time
-    after: "09:00"
-    before: "21:00"
+    after: "09:00:00"
+    before: "21:00:01"
 action:
   - service: switch.turn_off
     target:
