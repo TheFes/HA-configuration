@@ -194,7 +194,7 @@ template:
                   {% else %}
                     {% set values = key_items | select('is_number') | list %}
                     {% if values | count > 0 %}
-                      {% set add_value = key_items | average | round(2) %}
+                      {% set add_value = values | average | round(2) %}
                       {% set add_dict = {key: add_value} %}
                       {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                     {% endif %}
