@@ -116,7 +116,18 @@ template:
               {{ [] }}
             {% else %}
               {% set entity = trigger.event.data.entity %}
-              {{ (current + [entity]) | unique | list }}
+              {% set entities = (current + [entity]) | unique | list %}
+              {% set ns = namespace(integrations=[], entities=[]) %}
+              {% for e in entities %}
+                {% set integration = device_attr(e, 'identifiers')| map(attribute='0') | join %}
+                {% if integration and integration not in ns.integrations %}
+                  {% set ns.entities = ns.entities + [e] %}
+                  {% set ns.integrations = ns.integrations + [integration] %}
+                {% elif not iif(integration) %}
+                  {% set ns.entities = ns.entities + [e] %}
+                {% endif %}
+              {% endfor %} 
+              {{ ns.entities }}
             {% endif %}
 
   - trigger:
@@ -179,7 +190,7 @@ template:
                   {% set add_dict = {key: add_value} %}
                   {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                 {% else %}
-                  {% set values = key_items | select('is_nubmer') | list %}
+                  {% set values = key_items | select('is_number') | list %}
                   {% if values | count > 0 %}
                     {% set add_value = key_items | average | round(2) %}
                     {% set add_dict = {key: add_value} %}
@@ -347,13 +358,13 @@ weather:
     forecast_hourly_template: "{{ state_attr('sensor.weather_forecasts', 'hourly') }}"
     forecast_daily_template: "{{ state_attr('sensor.weather_forecasts', 'daily') }}"
     attribution_template: >
-      {% set hourly = state_attr('sensor.weather_forecast_entities', 'hourly') %}
-      {% set daily = state_attr('sensor.weather_forecast_entities', 'daily') %}
+      {%- set hourly = state_attr('sensor.weather_forecast_entities', 'hourly') %}
+      {%- set daily = state_attr('sensor.weather_forecast_entities', 'daily') %}
       {%- if hourly -%}
-        Entities used for hourly forecast: {{ (hourly[:-1] | join(', ') ~ ' and ' ~ hourly[-1]) if hourly | count > 1 else hourly[0] }}
+        Entities used for hourly forecast - {{ (hourly[:-1] | join(', ') ~ ' and ' ~ hourly[-1]) if hourly | count > 1 else hourly[0] }}
       {%- endif -%}
-      {%- if daily -%}
-        Entities used for daily forecast: {{ (daily[:-1] | join(', ') ~ ' and ' ~ daily[-1]) if daily | count > 1 else daily[0] }}
+      {% if daily -%}
+        {{ ' ||' if hourly | count > 0 }} Entities used for daily forecast - {{ (daily[:-1] | join(', ') ~ ' and ' ~ daily[-1]) if daily | count > 1 else daily[0] }}
       {%- endif -%}
 
 logger:
