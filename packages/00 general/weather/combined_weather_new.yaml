@@ -64,6 +64,9 @@ script:
                     and entity in forecast
                     and forecast[entity].forecast is list
                     and forecast[entity].forecast | count > 0
+                    and forecast[entity].forecast[0] is mapping
+                    and forecast[entity].forecast[0].datetime is defined
+                    and forecast[entity].forecast[0].datetime | as_datetime is non none
                   }}
             - if: "{{ valid }}"
               then:
@@ -176,9 +179,12 @@ template:
                   {% set add_dict = {key: add_value} %}
                   {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                 {% else %}
-                  {% set add_value = key_items | average | round(2)  %}
-                  {% set add_dict = {key: add_value} %}
-                  {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                  {% set values = key_items | select('is_nubmer') | list %}
+                  {% if values | count > 0 %}
+                    {% set add_value = key_items | average | round(2) %}
+                    {% set add_dict = {key: add_value} %}
+                    {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                  {% endif %}
                 {% endif %}
               {% endfor %}
               {% set ns.forecast = ns.forecast + [dt_ns.forecast] %}
@@ -353,4 +359,4 @@ weather:
 logger:
   filters:
     homeassistant.components.script.weather_update_entities:
-      - "Weather Update Entities: Repeat at step 4: Error executing script. Error for call_service at pos 1: Weather entity '.*' does not support 'hourly' forecast"
+      - "Weather Update Entities: Repeat at step .*: Error executing script. Error for call_service at pos 1: Weather entity '.*' does not support 'hourly' forecast"
