@@ -570,7 +570,7 @@
                                     {%- set output.time = values[i:i+last_values] | map(attribute=time_key) | list -%}
                                     {%- set output.time_min = _format_date(output.time[index_min], time_format | default(none)) -%}
                                     {%- set output.time_max = _format_date(output.time[index_max], time_format | default(none)) -%}
-                                    {%- set output.is_now = output.time[index_min] < now() < output.time[index_max] -%}
+                                    {%- set output.is_now = values[i][time_key] < now() < values[i][time_key] + timedelta(hours=h) -%}
                                 {%- endif -%}
                             {%- endfor -%}
                         {#- output date based on the selected mode -#}

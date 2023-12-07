@@ -156,6 +156,7 @@
       {%- set mth = (date_max.month - date_min.month - (1 if date_max.day < date_min.day else 0) + 12) % 12 -%}
       {%- set month_new = (((date_max.month - mth) + 12) % 12) | default(12, true) -%}
       {%- set day_max = ((date_max.replace(day=1, month=month_new) + timedelta(days=31)).replace(day=1) - timedelta(days=1)).day -%}
+      {%- set extra_days = [0, date_max.day - day_max] | max -%}
       {%- set date_temp = date_max.replace(month=month_new, day=[date_max.day, day_max]|min) -%}
       {%- set date_max = date_temp if date_temp <= date_max else date_temp.replace(year=date_max.year-1) -%}
       {%- set mth = mth + yrs * 12 if 'year' in not_use else mth -%}
@@ -163,7 +164,7 @@
     {%- set date_max = date_max.replace(year=date_max.year + yrs) if 'year' in not_use and 'month' in not_use else date_max -%}
     {%- set yrs = 0 if 'year' in not_use else yrs -%}
   {#- set other time period variables #}
-    {%- set s = (date_max - date_min).total_seconds() -%}
+    {%- set s = (date_max - date_min).total_seconds() + extra_days | default(0) * 86400 -%}
     {%- set wks = 0 if 'week' in not_use else (s // w) | int -%}
     {%- set day = 0 if 'day' in not_use else ((s - wks * w) // d) | int -%}
     {%- set hrs = 0 if 'hour' in not_use else ((s - wks * w - day * d) // h) | int -%}
@@ -220,6 +221,7 @@
           {%- endfor -%}
           {%- set always_show = ns.always_show | unique | list -%}
         {%- endif -%}
+        {%- set parts = [parts, always_show | count] | max -%}
         {%- set to_show = (time_parts.items() | selectattr('1') | map(attribute='0') | list + always_show) | unique | list | default([always_return], true) -%}
         {%- set first = do_use | select('in', to_show) | first -%}
       {#-select itemw to show based on input #}
