@@ -152,97 +152,60 @@ template:
           entity_id: "{{ state_attr('sensor.weather_forecast_entities', 'daily') }}"
         response_variable: forecast_daily
     sensor:
-      - unique_id: 6fb08900-f963-4874-a3d7-864f0e9dcbd1
-        name: Weather Forecasts
-        state: OK
-        attributes:
-          hourly: >
-            {% set type = 'hourly' %}
-            {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
-            {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
-            {% set compare_start = today_at() if type == 'daily' else now() - timedelta(hours=1) %}
-            {% set compare_end = now() + timedelta(days=3 if type == 'hourly' else 10) %}
-            {# align datetimes #}
-            {% set ns = namespace(aligned=[], forecast=[]) %}
-            {% for item in all if compare_start <= as_datetime(item.datetime) <= compare_end %}
-              {% set new_dt = item.datetime | as_datetime | as_local %}
-              {% set new_dt = new_dt.isoformat() if type == 'hourly' else new_dt.replace(hour=0, minute=0).isoformat() %}
-              {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
-            {% endfor %}
-            {# set list of unique datetime #}
-            {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort | list %}
-            {% for dt in dt_list %}
-              {% set forecasts = ns.aligned | selectattr('datetime', 'eq', dt) | list %}
-              {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt)) %}
-              {% for item in forecasts %}
-                {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
+      - unique_id: 8ac60964-9166-446f-ad17-5a934fbd5ee9
+        name: Hourly Weather Forecast
+        <<: &config
+          state: OK
+          icon: mdi:weather-lightning-rainy
+          attributes:
+            forecast: >
+              {% set type = 'hourly' if 'hourly' in this.entity_id else 'daily' %}
+              {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
+              {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
+              {% set compare_start = today_at() if type == 'daily' else now() - timedelta(hours=1) %}
+              {% set compare_end = now() + timedelta(days=3 if type == 'hourly' else 10) %}
+              {# align datetimes #}
+              {% set ns = namespace(aligned=[], forecast=[]) %}
+              {% for item in all if compare_start <= as_datetime(item.datetime) <= compare_end %}
+                {% set new_dt = item.datetime | as_datetime | as_local %}
+                {% set new_dt = new_dt.isoformat() if type == 'hourly' else new_dt.replace(hour=0, minute=0).isoformat() %}
+                {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
               {% endfor %}
-              {% set keys_list = dt_ns.keys | unique | reject('in', ['datetime', 'wind_speed_bft', 'sun_chance']) %}
-              {% for key in keys_list %}
-                {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
-                {% if key == 'condition' %}
-                  {% set count = namespace(condition=[]) %}
-                  {% for condition in key_items | unique %}
-                  {% set cond_count = key_items | select('eq', condition) | list | count %}
-                    {% set count.condition = count.condition + [dict(condition=condition, count=cond_count)] %}
-                  {% endfor %}
-                  {% set add_value = count.condition | sort(attribute='count') | map(attribute='condition') | list | first %}
-                  {% set add_dict = {key: add_value} %}
-                  {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
-                {% else %}
-                  {% set values = key_items | select('is_number') | list %}
-                  {% if values | count > 0 %}
-                    {% set add_value = key_items | average | round(2) %}
+              {# set list of unique datetime #}
+              {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort | list %}
+              {% for dt in dt_list %}
+                {% set forecasts = ns.aligned | selectattr('datetime', 'eq', dt) | list %}
+                {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt)) %}
+                {% for item in forecasts %}
+                  {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
+                {% endfor %}
+                {% set keys_list = dt_ns.keys | unique | reject('in', ['datetime', 'wind_speed_bft', 'sun_chance']) %}
+                {% for key in keys_list %}
+                  {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
+                  {% if key == 'condition' %}
+                    {% set count = namespace(condition=[]) %}
+                    {% for condition in key_items | unique %}
+                    {% set cond_count = key_items | select('eq', condition) | list | count %}
+                      {% set count.condition = count.condition + [dict(condition=condition, count=cond_count)] %}
+                    {% endfor %}
+                    {% set add_value = count.condition | sort(attribute='count') | map(attribute='condition') | list | first %}
                     {% set add_dict = {key: add_value} %}
                     {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                  {% else %}
+                    {% set values = key_items | select('is_number') | list %}
+                    {% if values | count > 0 %}
+                      {% set add_value = key_items | average | round(2) %}
+                      {% set add_dict = {key: add_value} %}
+                      {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                    {% endif %}
                   {% endif %}
-                {% endif %}
+                {% endfor %}
+                {% set ns.forecast = ns.forecast + [dt_ns.forecast] %}
               {% endfor %}
-              {% set ns.forecast = ns.forecast + [dt_ns.forecast] %}
-            {% endfor %}
-            {{ ns.forecast }}
-          daily: >
-            {% set type = 'daily' %}
-            {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
-            {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
-            {% set compare_start = today_at() if type == 'daily' else now() - timedelta(hours=1) %}
-            {% set compare_end = now() + timedelta(days=3 if type == 'hourly' else 10) %}
-            {# align datetimes #}
-            {% set ns = namespace(aligned=[], forecast=[]) %}
-            {% for item in all if compare_start <= as_datetime(item.datetime) <= compare_end %}
-              {% set new_dt = item.datetime | as_datetime | as_local %}
-              {% set new_dt = new_dt.isoformat() if type == 'hourly' else new_dt.replace(hour=0, minute=0).isoformat() %}
-              {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
-            {% endfor %}
-            {# set list of unique datetime #}
-            {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort | list %}
-            {% for dt in dt_list %}
-              {% set forecasts = ns.aligned | selectattr('datetime', 'eq', dt) | list %}
-              {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt)) %}
-              {% for item in forecasts %}
-                {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
-              {% endfor %}
-              {% set keys_list = dt_ns.keys | unique | reject('in', ['datetime', 'wind_speed_bft', 'sun_chance']) %}
-              {% for key in keys_list %}
-                {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
-                {% if key == 'condition' %}
-                  {% set count = namespace(condition=[]) %}
-                  {% for condition in key_items | unique %}
-                  {% set cond_count = key_items | select('eq', condition) | list | count %}
-                    {% set count.condition = count.condition + [dict(condition=condition, count=cond_count)] %}
-                  {% endfor %}
-                  {% set add_value = count.condition | sort(attribute='count') | map(attribute='condition') | list | first %}
-                  {% set add_dict = {key: add_value} %}
-                  {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
-                {% else %}
-                  {% set add_value = key_items | average | round(2)  %}
-                  {% set add_dict = {key: add_value} %}
-                  {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
-                {% endif %}
-              {% endfor %}
-              {% set ns.forecast = ns.forecast + [dt_ns.forecast] %}
-            {% endfor %}
-            {{ ns.forecast }}
+              {{ ns.forecast }}
+      - unique_id: 541b990b-5576-4d17-bed2-54900cf49a92
+        name: Daily Weather Forecast
+        <<: *config
 
 weather:
   # Combined template weather entity using hourly forecasts
@@ -355,8 +318,8 @@ weather:
     wind_speed_unit: "km/h"
     visibility_unit: "km"
     precipitation_unit: "mm"
-    forecast_hourly_template: "{{ state_attr('sensor.weather_forecasts', 'hourly') }}"
-    forecast_daily_template: "{{ state_attr('sensor.weather_forecasts', 'daily') }}"
+    forecast_hourly_template: "{{ state_attr('sensor.hourly_weather_forecast', 'forecast') }}"
+    forecast_daily_template: "{{ state_attr('sensor.daily_weather_forecast', 'forecast') }}"
     attribution_template: >
       {%- set hourly = state_attr('sensor.weather_forecast_entities', 'hourly') %}
       {%- set daily = state_attr('sensor.weather_forecast_entities', 'daily') %}
