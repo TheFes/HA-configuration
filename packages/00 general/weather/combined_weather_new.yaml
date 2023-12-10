@@ -83,7 +83,7 @@ template:
     sensor:
       - unique_id: d82efa90-1eeb-4b07-a093-8c6cc4ee55b4
         name: Weather Forecast Entities
-        state: OK
+        state: "{{ now().replace(microsecond=0).isoformat() }}"
         attributes:
           hourly: >
             {% set a = 'hourly' %}
@@ -155,7 +155,7 @@ template:
       - unique_id: 8ac60964-9166-446f-ad17-5a934fbd5ee9
         name: Hourly Weather Forecast
         <<: &config
-          state: OK
+          state: "{{ now().replace(microsecond=0).isoformat() }}"
           icon: mdi:weather-lightning-rainy
           attributes:
             forecast: >
@@ -330,7 +330,15 @@ weather:
         {{ ' ||' if hourly | count > 0 }} Entities used for daily forecast - {{ (daily[:-1] | join(', ') ~ ' and ' ~ daily[-1]) if daily | count > 1 else daily[0] }}
       {%- endif -%}
 
+# don't log error messages about unsupported forecast types
 logger:
   filters:
     homeassistant.components.script.weather_update_entities:
       - "Weather Update Entities: Repeat at step .*: Error executing script. Error for call_service at pos 1: Weather entity '.*' does not support '.*' forecast"
+
+# don't store the forecasts in the database
+recorder:
+  exclude:
+    entities:
+      - sensor.daily_weather_forecast
+      - sensor.hourly_weather_forecast
