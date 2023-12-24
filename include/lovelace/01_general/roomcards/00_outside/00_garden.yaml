@@ -7,8 +7,8 @@ cards:
     layout: horizontal
     secondary: >-
       {{
-        state_attr('weather.combined_daily', 'temperature') ~ '°C | '
-        if state_attr('weather.combined_daily', 'temperature') | is_number
+        state_attr('weather.combined', 'temperature') ~ '°C | '
+        if state_attr('weather.combined', 'temperature') | is_number
       }}
       {{ states('sensor.br_irradiance') | int ~ ' W/m²' if states('sensor.br_irradiance') | is_number }}
     tap_action:
@@ -24,6 +24,19 @@ cards:
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: input_boolean.christmas_time
+            state: "on"
+        card:
+          type: custom:mushroom-template-card
+          entity: switch.ijspegels
+          layout: vertical
+          icon: "mdi:snowflake"
+          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+          badge_icon: "{{ 'mdi:alert' if not entity | has_value }}"
+          badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.veranda
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
