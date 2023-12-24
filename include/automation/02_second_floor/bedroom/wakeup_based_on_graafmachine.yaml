@@ -40,7 +40,7 @@ condition:
   - alias: "Bedroom light not already on"
     condition: state
     entity_id: light.slaapkamer_plafond
-    to: "off"
+    state: "off"
 variables:
   light_on: >
     {% set end = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(seconds=states('input_number.leestijd_pepijn') | int * 60 + out_of_bed_seconds) %}

@@ -15,12 +15,12 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - if: "{{ not is_state('light.trapkast', 'unavailable') }}"
+          - if: "{{ 'light.trapkast' | has_value }}"
             then:
               - alias: "Toggle light"
                 service: light.toggle
                 target:
-                  entity_id: light.trapkast
+                  entity_id: light.trapkast_template
             else:
               - alias: "Toggle Sonoff"
                 service: switch.toggle

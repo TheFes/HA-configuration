@@ -37,12 +37,12 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'double' }}"
         sequence:
-          - if: "{{ main in state_attr('group.transition_active') or main | replace('_template', '') in state_attr('group.transition_active') }}"
+          - if: "{{ main in state_attr('group.transition_active', 'entity_id') or main | replace('_template', '') in state_attr('group.transition_active', 'entity_id') }}"
             then:
               - service: light.turn_off
                 target:
                   entity_id: "{{ main }}"
-              - wait_template: "{{ not (main in state_attr('group.transition_active') or main | replace('_template', '') in state_attr('group.transition_active')) }}"
+              - wait_template: "{{ not (main in state_attr('group.transition_active', 'entity_id') or main | replace('_template', '') in state_attr('group.transition_active', 'entity_id')) }}"
           - alias: "Light on 100% brightness"
             service: light.turn_on
             target:

@@ -250,7 +250,7 @@ script:
           - conditions: "{{ action == 'set_effect' }}"
             sequence:
               - choose:
-                  - conditions: "{{ effect in built_in_effect }}"
+                  - conditions: "{{ effect is not none and effect in built_in_effect }}"
                     sequence:
                       - service: light.turn_on
                         target:

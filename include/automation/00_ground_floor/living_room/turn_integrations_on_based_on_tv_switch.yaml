@@ -1,0 +1,15 @@
+id: b16d009d-f7ee-4ed2-9759-b0a5fc344843
+alias: F0l - Toggle integrations for Shield when TV Switch toggles
+variables:
+  integrations:
+    android_debug_bridge_shield_tv: 31bdf4849ec5cddbd575b635bd63ae27
+    android_tv_remote_shield_tv: 189fcfb19a59f8e6843f6cf6c84a8d8c
+trigger:
+  - platform: state
+    entity_id: switch.tv_meubel
+    to: ~
+action:
+  - delay: "{{ 0 if trigger.to_state.state == 'off' else 60 }}"
+  - service: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+    data:
+      config_entry_id: "{{ integrations.values() | list }}"

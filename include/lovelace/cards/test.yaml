@@ -1,0 +1,57 @@
+type: custom:mushroom-chips-card
+alignment: center
+chips:
+  - type: entity
+    entity: sensor.test_list_dict
+    name: Test
+    icon: mdi:test-tube
+    show_state: false
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Test
+          content:
+            type: custom:vertical-stack-in-card
+            cards:
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:vertical-stack-in-card
+                    cards:
+                      - type: custom:mushroom-template-card
+                        secondary: Radio 2
+                        icon_color: "{{ 'blue' if is_state(entity, 'NPO Radio 2') }}"
+                        entity: input_select.radio_channel
+                        layout: vertical
+                        picture: /local/pictures/radio/npo_radio_2.png
+                        alignment: center
+                      - type: custom:mushroom-chips-card
+                        alignment: center
+                        chips:
+                          - type: template
+                            icon: >
+                              {{ 'mdi:circle' if is_state(entity, 'NPO Radio 2') else 'mdi:circle-outline' }}
+                            icon_color: >
+                              {{ 'blue' if is_state(entity, 'NPO Radio 2') }}
+                            entity: input_select.radio_channel
+                  - type: custom:vertical-stack-in-card
+                    cards:
+                      - type: custom:mushroom-template-card
+                        secondary: Veronica
+                        picture: /local/pictures/radio/radio_veronica.png
+                        layout: vertical
+                        icon_color: "{{ 'blue' if is_state(entity, 'Radio Veronica') }}"
+                        entity: input_select.radio_channel
+                        alignment: center
+                      - type: custom:mushroom-chips-card
+                        alignment: center
+                        chips:
+                          - type: template
+                            icon: >
+                              {{ 'mdi:circle' if is_state(entity, 'Radio Veronica') else 'mdi:circle-outline' }}
+                            icon_color: >
+                              {{ 'blue' if is_state(entity, 'Radio Veronica') }}
+                            entity: input_select.radio_channel

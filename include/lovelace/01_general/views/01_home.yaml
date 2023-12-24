@@ -4,7 +4,7 @@ title: Grid layout
 type: custom:grid-layout
 path: home
 layout:
-  grid-template-columns: 12.5% 25% 25% 25% 12.5%
+  grid-template-columns: 9.5% 27% 27% 27% 9.5%
   grid-template-rows: auto
   grid-template-areas: |
     ". badges badges badges ."
@@ -31,4 +31,13 @@ layout:
         ". messages messages ."
         "ground ground first first"
         "outside outside second second"
+    "(max-width: 1600px)":
+      grid-template-columns: 33% 34% 33%
+      grid-template-rows: auto
+      grid-template-areas: |
+        "badges badges badges"
+        "header header header"
+        ". messages ."
+        "ground first second"
+        ". outside ."
 cards: !include_dir_list /config/include/lovelace/01_general/cards/00_home/

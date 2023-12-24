@@ -2,11 +2,8 @@ recorder:
   # db_url: !secret mariadb_url
   purge_keep_days: 2
   exclude:
-    entities:
-      - sensor.weather_forecasts_hourly
-      - sensor.weather_forecasts_daily
     domains:
-      - updater
+      - update
       - scene
       - weblink
       - calendar

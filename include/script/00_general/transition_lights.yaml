@@ -210,7 +210,7 @@ transition_lights_perform_transition:
   max_exceeded: silent
   sequence:
     - alias: "Remove group if this is the only instance of the script active"
-      if: "{{ state_attr(this.entity_id, 'current') == 1 }}"
+      if: "{{ state_attr(this.entity_id, 'current') == 1 and states.group.transition_active is not none }}"
       then:
         - alias: "Remove group"
           service: group.remove

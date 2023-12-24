@@ -1,0 +1,25 @@
+alias: "F2T - Charge drill battery"
+id: 39b292df-8104-44c7-8bea-6beae6e712bb
+trigger:
+  - platform: time
+    at: "09:00"
+    id: "on"
+  - platform: time
+    at: "09:15"
+    id: "off"
+  - platform: numeric_state
+    entity_id: sensor.accu_boormachine_power
+    below: 50
+    for:
+      minutes: 2
+    id: "off"
+condition:
+  - or:
+      - condition: trigger
+        id: "off"
+      - condition: time
+        weekday: fri
+action:
+  - service: switch.turn_{{ trigger.id }}
+    target:
+      entity_id: switch.accu_boormachine

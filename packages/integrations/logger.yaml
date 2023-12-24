@@ -2,3 +2,6 @@ logger:
   default: warning
   logs:
     custom_components.overkiz: debug
+  filters:
+    homeassistant.loader:
+      - "We found a custom integration .* which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant"

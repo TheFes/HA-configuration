@@ -6,9 +6,9 @@ trigger:
     entity_id: binary_sensor.trend_floris_temp
     to: "on"
   - platform: template
-    value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
+    value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
   - platform: template
-    value_template: "{{ state_attr('weather.combined_hourly', 'forecast')[0].condition in [ 'sunny', 'partlycloudy'] if state_attr('weather.combined_daily', 'forecast') else false }}"
+    value_template: "{{ state_attr('sensor.weather_forecasts', 'hourly')[0].condition in [ 'sunny', 'partlycloudy'] if state_attr('sensor.weather_forecasts', 'daily') else false }}"
   - platform: numeric_state
     entity_id: sensor.floris_temp
     above: 20
@@ -36,14 +36,14 @@ action:
         state: "above_horizon"
       - alias: "Warm day"
         condition: template
-        value_template: "{{ state_attr('weather.combined_daily', 'forecast')[0].temperature > 18 if state_attr('weather.combined_daily', 'forecast') else false }}"
+        value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
       - alias: "Sunny or partly cloudy"
         condition: template
         value_template: >
           {{
-            ('sunny' in state_attr('weather.combined_hourly', 'forecast')[0:1] | map(attribute='condition') | list
-            or 'partlycloudy' in state_attr('weather.combined_hourly', 'forecast')[0:1] | map(attribute='condition') | list)
-            if state_attr('weather.combined_hourly', 'forecast') else false 
+            ('sunny' in state_attr('sensor.weather_forecasts', 'hourly')[0:1] | map(attribute='condition') | list
+            or 'partlycloudy' in state_attr('sensor.weather_forecasts', 'hourly')[0:1] | map(attribute='condition') | list)
+            if state_attr('sensor.weather_forecasts', 'hourly') else false 
           }}
       - alias: "No rain upcoming"
         condition: state

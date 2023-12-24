@@ -1,5 +1,6 @@
 id: 1bb3f63c-c210-4299-a36e-14e70a2e6950
 alias: "F1P - Update ulanzi"
+mode: parallel
 trigger:
   - platform: time_pattern
     seconds: "0"
@@ -16,7 +17,7 @@ trigger:
     from:
       - "unavailable"
   - platform: state
-    entity_id: weather.combined_daily
+    entity_id: weather.combined
     to: ~
 action:
   - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
@@ -70,7 +71,7 @@ action:
           payload: >
             {{
               dict(
-                    icon = states('weather.combined_daily'),
+                    icon = states('weather.combined'),
                     text = now().strftime('%-I:%M')
                   )
             }}

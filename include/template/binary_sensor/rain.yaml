@@ -41,25 +41,25 @@
       state: >-
         {%- set end = today_at('13:00') %}
         {%- set end = end + timedelta(days=1) if now() > end else end %}
-        {%- set rain = state_attr('weather.combined_hourly', 'forecast')
+        {%- set rain = state_attr('sensor.weather_forecasts', 'hourly')
                           | selectattr('datetime', '<=', end.isoformat())
                           | map(attribute='precipitation')
                           | sum
         %}
         {{ iif(rain) }}
       icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-      availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"
+      availability: "{{ iif(state_attr('sensor.weather_forecasts', 'hourly')) }}"
 
     - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
       name: "Rain until morning"
       state: >-
         {%- set end = today_at('8:00') %}
         {%- set end = end + timedelta(days=1) if now() > end %}
-        {%- set rain = state_attr('weather.combined_hourly', 'forecast')
+        {%- set rain = state_attr('sensor.weather_forecasts', 'hourly')
                           | selectattr('datetime', '<=', end.isoformat())
                           | map(attribute='precipitation')
                           | sum
         %}
         {{ iif(rain) }}
       icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-      availability: "{{ iif(state_attr('weather.combined_hourly', 'forecast')) }}"
+      availability: "{{ iif(state_attr('sensor.weather_forecasts', 'hourly')) }}"

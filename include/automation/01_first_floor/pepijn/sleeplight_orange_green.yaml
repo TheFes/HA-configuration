@@ -30,7 +30,7 @@ condition:
     state: "on"
 action:
   - choose:
-      - conditions: "{{ trigger is defined and  trigger.get('id') == 'orange' }}"
+      - conditions: "{{ trigger is defined and trigger.get('id') == 'orange' }}"
         sequence:
           - service: script.turn_on
             target:

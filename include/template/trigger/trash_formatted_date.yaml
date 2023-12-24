@@ -24,9 +24,10 @@
         availability: "{{ trigger.to_state.state not in [ 'unknown', 'unavailable', 'Geen' ] }}"
         attributes:
           waste_type: >
+            {% set name = this.attributes.friendly_name %}
             {{
-              this.name if trigger.to_state.state != states('sensor.afvalwijzer_kerstbomen')
-              else this.name | replace(' & ', ', ') ~ ' & 🌲'
+              name if trigger.to_state.state != states('sensor.afvalwijzer_kerstbomen')
+              else name | replace(' & ', ', ') ~ ' & 🌲'
             }}
           collection_date: >
             {{ as_datetime(trigger.to_state.attributes.year_month_day_date).date() }}
