@@ -1,4 +1,4 @@
-{%- set _version = '5.0.0b8' -%}
+{%- set _version = '5.0.2' -%}
 
 {#- sub-macro to format datetimes to selected time_format -#}
 {%- macro _format_date(datetime, time_format) -%}
@@ -191,22 +191,34 @@
         {%- endif -%}
         {%- if sensor | has_value -%}
         {#- Get data out of the selected entity, find right attributes if needed -#}
-            {%- set today = state_attr(sensor, attr_today) -%}
-            {%- set tomorrow = state_attr(sensor, attr_tomorrow) -%}
-            {%- set all = state_attr(sensor, attr_all) -%}
-        {#- Check if data is available and as expected -#}
+            {%- set today = state_attr(sensor, attr_today) | default([], true)-%}
+            {%- set tomorrow = state_attr(sensor, attr_tomorrow) | default([], true) -%}
+            {%- set all = state_attr(sensor, attr_all) | default([], true) -%}
+        {# Check if there is an all attribute in the sensor #}
+            {%- set all_check = all is list and all and all[0] is mapping -%}
             {%- set today_check = not include_today or today is list and today and today[0] is mapping -%}
             {%- set tomorrow_check = not include_tomorrow or tomorrow is list and today and today[0] is mapping -%}
-            {%- set all_check = not (today_check and tomorrow_check) and all is list and all and all[0] is mapping -%}
-        {#- try to find correct attributes if no valid data was found -#}
-            {%- set attr_today = (attr_today if today_check else _find_attr(sensor, 'today')) | default('attr_today_not_found', true) -%}
-            {%- set attr_tomorrow = (attr_tomorrow if tomorrow_check else _find_attr(sensor, 'tomorrow')) | default('attr_tomorrow_not_found', true)  -%}
-            {%- set attr_all = (attr_all if (all_check or today_check and tomorrow_check) else _find_attr(sensor, 'all')) | default('attr_all_not_found', true) -%}
-        {#- set set dataset with all attributes -#}
-            {%- set today = state_attr(sensor, attr_today) | default([], true) -%}
-            {%- set tomorrow = state_attr(sensor, attr_tomorrow) | default([], true) -%}
-            {%- set all = state_attr(sensor, attr_all) | default([], true) if all is list and all[0] is mapping else [] -%}
-            {%- set data = (today + tomorrow) or all -%}
+        {# Check if right attributes are already provided #}
+            {%- if all_check or (today_check or tomorrow_check) -%}
+                {%- set data = all or today + tomorrow -%}
+            {%- else -%}
+                {%- set attr_all = attr_all if all_check else _find_attr(sensor, 'all') | default('attr_all_not_found', true) -%}
+                {%- set all = all if all_check else state_attr(sensor, attr_all) | default([], true) -%}
+                {%- set all_check = all_check or (all is list and all and all[0] is mapping) -%}
+            {# use all atrribute if available, and otherwise use tomorrow and today #}
+                {%- if all_check -%}
+                    {%- set data = all -%}
+                {%- else -%}
+                {#- Check if data is available and as expected -#}
+                {#- try to find correct attributes if no valid data was found -#}
+                    {%- set attr_today = (attr_today if today_check else _find_attr(sensor, 'today')) | default('attr_today_not_found', true) -%}
+                    {%- set attr_tomorrow = (attr_tomorrow if tomorrow_check else _find_attr(sensor, 'tomorrow')) | default('attr_tomorrow_not_found', true)  -%}
+                {#- set set dataset with all attributes -#}
+                    {%- set today = state_attr(sensor, attr_today) | default([], true) -%}
+                    {%- set tomorrow = state_attr(sensor, attr_tomorrow) | default([], true) -%}
+                    {%- set data = today + tomorrow -%}
+                {%- endif -%}
+            {%- endif -%}
         {#- Try to find the right time_key and value_key if provided parameters are not found -#}
             {%- set day = timedelta(days=1) -%}
             {#- time key -#}
@@ -349,7 +361,7 @@
         {%- if debug -%}
             {%- set macro_input = dict(
                                         sensor=sensor,
-                                        hours=h | round(3),
+                                        hours=h | default(hours) | default(1) | round(3),
                                         value_on_error= value_on_error | default(none),
                                         start=start.isoformat() if start is datetime else start,
                                         end=end.isoformat() if end is datetime else end,
@@ -381,10 +393,11 @@
         {%- set data = data | default(none) -%}
     {#- Return error messages for input -#}
         {%- set start_end = start > end -%}
-        {%- set end_start = ((end-start).total_seconds() / 3600) | round(3) -%}
+        {%- set end_start = ((end-start).total_seconds() / 3600) | round(3) if start is datetime and end is datetime else h -%}
+        {%- set valid_sensor = sensor | has_value %}
         {%- set errors = [
-                            "No valid sensor found" if not sensor | has_value,
-                            "No valid data in {}".format(sensor) if data == [],
+                            "No valid sensor found" if not valid_sensor,
+                            "No valid data in {}".format(sensor) if data == [] and valid_sensor,
                             "Time key '{}' not found in data".format(time_key) if data and time_key not in data[0],
                             "Value key '{}' not found in data".format(value_key) if data and value_key not in data[0],
                             "Invalid mode '{}' selected".format(mode) if mode not in modes,
@@ -393,9 +406,9 @@
                             "Boolean input expected for look_ahead, '{}' can not be processed as a boolean".format(look_ahead) if look_ahead | bool("") is not boolean,
                             "Boolean input expected for lowest, '{}' can not be processed as a boolean".format(lowest) if lowest | bool("") is not boolean,
                             "Selected program '{}' is not available or has no data".format(program) if program is not none and w is none,
-                            "Selected start parameter is after the end parameter" if start_end,
-                            "{} hours between start and end, where {} hours are required".format(end_start, h | round(3)) if not start_end and end_start < h,
-                            "Invalid combination of source data points per hour '{}' and number of weight points '{}'".format(dp, dph) if not wp_check
+                            "Selected start parameter is after the end parameter" if start_end and data,
+                            "{} hours between start and end, where {} hours are required".format(end_start, h | round(3)) if not start_end and end_start < h and data,
+                            "Invalid combination of source data points per hour '{}' and number of weight points '{}'".format(dp, dph) if data and not wp_check
                         ] | select() | list
         -%}
         {%- set use_voe = value_on_error is defined -%}
