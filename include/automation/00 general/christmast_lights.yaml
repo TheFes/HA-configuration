@@ -23,7 +23,7 @@ trigger:
     from:
       - "on"
       - "off"
-    id: vase
+    id: lantarn
   - platform: event
     event_type: esphome.button_pressed
     event_data:
@@ -44,23 +44,23 @@ action:
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
               entity_id: "{{ 'switch.ijspegels' }}"
-      - conditions: "{{ trigger.id == 'vase'}}"
+      - conditions: "{{ trigger.id == 'lantarn'}}"
         sequence:
-          - alias: "Wait until vase is available"
-            wait_template: "{{ states('switch.kerstvaas') not in [ 'unavailable', 'unknown'] }}"
-          - alias: "vase schakelen met tvlamp"
+          - alias: "Wait until lantarn is available"
+            wait_template: "{{ states('switch.kerstlantaarn') not in [ 'unavailable', 'unknown'] }}"
+          - alias: "lantarn schakelen met tvlamp"
             service: "switch.turn_{{ trigger.to_state.state }}"
             target:
-              entity_id: "{{ 'switch.kerstvaas' }}"
+              entity_id: "{{ 'switch.kerstlantaarn' }}"
       - conditions: "{{ trigger.id == 'tree_star'}}"
         sequence:
           - alias: "Turn christmas tree and star on"
             service: switch.turn_on
             target:
-              entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerststerren'] }}"
+              entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerstbal'] }}"
       - conditions: "{{ trigger.id == 'to_bed'}}"
         sequence:
           - alias: "Turn christmas tree and star off"
             service: switch.turn_off
             target:
-              entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerststerren'] }}"
+              entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerstsbal'] }}"
