@@ -189,16 +189,28 @@ states:
                       title: >-
                         {%- set s = states.update | selectattr('state', 'eq', 'on') | list | count %}
                         Er {{ 'is' if s == 1 else 'zijn' }} nu {{ 'geen' if s == 0 else s }} update{{'s' if not s == 1 }}.
+                    - type: conditional
+                      conditions:
+                        - entity: binary_sensor.esphome_updates_available
+                          state: "on"
+                      card:
+                        type: entities
+                        show_header_toggle: false
+                        entities:
+                          - entity: button.skip_esphome_updates
                     - type: custom:auto-entities
                       card:
                         type: custom:vertical-stack-in-card
                       card_param: cards
                       filter:
                         include:
-                          - entity_id: update.*
+                          - domain: update
                             state: "on"
                             options:
-                              type: custom:mushroom-update-card
+                              type: tile
+                              features:
+                                - type: update-actions
+                                  backup: ask
                     - type: entities
                       show_header_toggle: false
                       entities:
