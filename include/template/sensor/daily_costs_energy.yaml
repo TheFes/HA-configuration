@@ -1,0 +1,67 @@
+- trigger:
+    - platform: time
+      at: "00:00"
+      variables:
+        factor: 1
+    - platform: time
+      at: "00:02"
+      variables:
+        factor: 0
+  sensor:
+    # Energy daily
+    - name: Energy daily tariff
+      unique_id: aa1c3151-659f-4f44-bb1b-5370f727fb7a
+      state: >
+        {% set delivery = 0.35705 %}
+        {% set capacity = 0.73338 %}
+        {% set tax_free = -1.63075 %}
+        {{ (delivery + capacity + tax_free) * factor }}
+      icon: mdi:cash
+      unit_of_measurement: "€/kWh"
+    # Gas daily
+    - name: Gas daily tariff
+      unique_id: 69d9ebeb-487a-4a06-8054-09de54151c7c
+      state: >
+        {% set delivery = 0.35705 %}
+        {% set capacity = 0.51110 %}
+        {{ (delivery + capacity) * factor }}
+      icon: mdi:cash
+      unit_of_measurement: "€/m³"
+
+- trigger:
+    - platform: time
+      at: "00:01"
+      variables:
+        factor: 1
+    - platform: time
+      at: "00:03"
+      variables:
+        factor: 0
+  sensor:
+    # Energy daily
+    - name: Energy daily
+      unique_id: 750be2ff-3d2d-44bc-ae7c-cb13436b1a13
+      state: &state >
+        {% set date_created = '2024-01-02' %}
+        {% set date_check = as_datetime(date_created).date() + timedelta(days=1) == now().date() %}
+        {{
+          factor * now().strftime('%j') | int
+          if date_check
+          else factor
+        }}
+      icon: mdi:lightning-bolt
+      unit_of_measurement: "kWh"
+      device_class: energy
+      <<: &extra_attr
+        state_class: total
+        attributes:
+          last_reset: "1970-01-01T00:00:00+00:00"
+
+    # Gas daily
+    - name: Gas daily
+      unique_id: afb8e550-7b32-4278-bd1c-ed69d7dc4269
+      state: *state
+      icon: mdi:gas-burner
+      unit_of_measurement: "m³"
+      device_class: gas
+      <<: *extra_attr
