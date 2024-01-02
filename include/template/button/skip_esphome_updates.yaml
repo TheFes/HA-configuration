@@ -1,0 +1,9 @@
+- button:
+    - name: Skip ESPHome Updates
+      unique_id: 0ad105f3-3128-481b-b14e-641bfcd1bdd7
+      device_class: update
+      press:
+        - service: update.skip
+          target:
+            entity_id: >
+              {{ integration_entities('esphome') | select('search', '^update.') | select('is_state', 'on') | list }}

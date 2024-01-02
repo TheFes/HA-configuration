@@ -96,7 +96,7 @@ script:
         only_on:
           - light.slaapkamer_plafond_template
           - light.pepijn_template
-          - light.pepijn_leeslamp
+          - light.graafmachine
           - light.floris
           - light.leeslamp_floris
           - light.werkkamer_martijn_plafond_template
@@ -168,6 +168,14 @@ script:
         service: scene.turn_on
         target:
           entity_id: scene.before
+      - delay:
+          seconds: 10
+      - alias: "Disable blinking"
+        service: light.turn_on
+        data:
+          effect: "None"
+        target:
+          entity_id: "{{ effect | select('is_state', 'on') | list }}"
 
 # Template sensor to store lights for which script is active
 template:
@@ -255,7 +263,7 @@ light:
               variables:
                 light: "{{ this.entity_id }}"
                 toggle_entity: >
-                  {% set id = light | regex_replace('light.|_template', '') %}
+                  {% set id = this.entity_id | regex_replace('light.|_template', '') %}
                   {% set switch = states.switch
                       | selectattr('object_id', 'search', id ~ '_relay')
                       | map(attribute='entity_id')

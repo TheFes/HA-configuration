@@ -6,10 +6,8 @@ trigger:
   - platform: state
     entity_id: sensor.house_mode
     to: "Afwezig"
-  - platform: homeassistant
-    event: start
-  - platform: event
-    event_type: automation_reloaded
+    for:
+      seconds: 10
 condition:
   - alias: "Niemand thuis?"
     condition: state

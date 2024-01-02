@@ -38,7 +38,7 @@ action:
             data:
               variables:
                 lights:
-                  - light.graafmachine
+                  - light.pepijn_leeslamp
                 br_start: 1
                 br_end: 255
                 rgb_start:
@@ -57,7 +57,7 @@ action:
             data:
               variables:
                 lights:
-                  - light.graafmachine
+                  - light.pepijn_leeslamp
                 use_br: false
                 use_ct: false
                 br_start: 255
@@ -75,13 +75,13 @@ action:
           - delay: 10
           - service: light.turn_on
             target:
-              entity_id: light.graafmachine
+              entity_id: light.pepijn_leeslamp
             data:
               rgb_color:
                 - 0
                 - 237
                 - 0
-          - wait_template: "{{ is_state('light.graafmachine', 'off')}}"
+          - wait_template: "{{ is_state('light.pepijn_leeslamp', 'off')}}"
           - service: button.press
             data:
               entity_id: button.reset_graafmachine_time

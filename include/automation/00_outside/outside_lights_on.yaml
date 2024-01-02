@@ -5,8 +5,6 @@ max_exceeded: silent
 trigger:
   - platform: homeassistant
     event: start
-  - platform: event
-    event_type: automation_reloaded
   - platform: state
     entity_id: sun.sun
     to:
