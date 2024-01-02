@@ -64,7 +64,8 @@
           {{ dict(message=message | default(''), level='warning' if is_state(active, ['Vandaag', 'Today']) else 'info') }}
         diswasher: >-
           {%- if is_state('binary_sensor.dishwasher_active', 'on') %}
-            {%- set time_set = as_local(as_datetime(states('sensor.dishwasher_end_time'))) %}
+            {%- set time_set = as_datetime(states('sensor.dishwasher_end_time')) %}
+            {%- set time_set = as_local(time_set) if time_set is not none else as_datetime(1) %}
             {%- if now() < time_set %}
               {%- set seconds = (time_set - now()).total_seconds() %}
               {%- set hours = (seconds / 3600) | int %}
