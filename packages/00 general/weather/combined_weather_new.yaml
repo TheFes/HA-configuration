@@ -133,7 +133,7 @@ template:
   - trigger:
       - platform: time_pattern
         minutes: "0"
-        seconds: "10"
+        seconds: "30"
       - platform: homeassistant
         event: start
     action:
@@ -159,6 +159,8 @@ template:
           icon: mdi:weather-lightning-rainy
           attributes:
             forecast: >
+              {# set number of days to use for forecasts #}
+                {% set forecast_days = dict(hourly=3, daily=8) %}
               {# deterimine which forecast to use #}
                 {% set type = 'hourly' if 'hourly' in this.entity_id else 'daily' %}
                 {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
@@ -166,7 +168,7 @@ template:
                 {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
               {# make sure no old forecasts are included, and only 3 days for hourly forecasts, and 10 days for daily #}
                 {% set compare_start = today_at() if type == 'daily' else now() - timedelta(hours=1) %}
-                {% set compare_end = now() + timedelta(days=3 if type == 'hourly' else 10) %}
+                {% set compare_end = now() + timedelta(days=forecast_days[type]) %}
               {# align datetimes so they all use local timezone, and the same start time for daily forecasts #}
                 {% set ns = namespace(aligned=[], forecast=[]) %}
                 {% for item in all if compare_start <= as_datetime(item.datetime) <= compare_end %}
@@ -191,24 +193,15 @@ template:
                       {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
                       {# find most frequent item for condition #}
                         {% if key == 'condition' %}
-                          {% set count = namespace(condition=[]) %}
-                          {% for condition in key_items | unique %}
-                          {% set cond_count = key_items | select('eq', condition) | list | count %}
-                            {% set count.condition = count.condition + [dict(condition=condition, count=cond_count)] %}
-                          {% endfor %}
-                          {% set add_value = count.condition | sort(attribute='count') | map(attribute='condition') | list | first %}
-                          {% set add_dict = {key: add_value} %}
+                          {% set add_dict = dict(condition=statistical_mode(key_items, none)) %}
                           {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
                       {# find median for other (numeric) forecast types #}
                         {% else %}
                           {# filter out non numeric values #}
                             {% set values = key_items | select('is_number') | list | sort %}
                             {% if values | count > 0 %}
-                              {# find median value #}
-                                {% set n = values | count - 1 %}
-                                {% set add_value = (values[n // 2] + values[n // 2 + n % 2]) / 2 %}
                               {# add forecast item to forecast #}
-                                {% set add_dict = {key: add_value} %}
+                                {% set add_dict = {key: median(values)} %}
                                 {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                             {% endif %}
                         {% endif %}
@@ -228,128 +221,110 @@ weather:
     name: Combined
     unique_id: 97b3c060-3146-41dd-91d9-0765d2e15e16
     condition_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | map(attribute='state')
           | list
       -%}
-      {%- set ns = namespace(most_common={'item':none,'count':none}) -%}
-      {%- for item in v | unique -%}
-        {%- set cnt = v | select('eq', item) | list | length -%}
-        {%- if loop.first or cnt > ns.most_common.count -%}
-          {%- set ns.most_common = {'item':item,'count':cnt} -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{ ns.most_common.item if ns.most_common.item else none }}
+      {{ statistical_mode(values, none) }}
     temperature_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.temperature', 'defined')
           | map(attribute='attributes.temperature')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     humidity_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.humidity', 'defined')
           | map(attribute='attributes.humidity')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     pressure_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.pressure', 'defined')
           | map(attribute='attributes.pressure')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     wind_bearing_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.wind_bearing', 'defined')
           | map(attribute='attributes.wind_bearing')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     wind_speed_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.wind_speed', 'defined')
           | map(attribute='attributes.wind_speed')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     visibility_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.visibility', 'defined')
           | map(attribute='attributes.visibility')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     ozone_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr('attributes.ozone', 'defined')
           | map(attribute='attributes.ozone')
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     cloud_coverage_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr(attr, 'defined')
           | map(attribute=attr)
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     wind_gust_speed_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr(attr, 'defined')
           | map(attribute=attr)
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     apparent_temperature_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr(attr, 'defined')
           | map(attribute=attr)
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     dew_point_template: >
-      {%- set v = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
           | selectattr(attr, 'defined')
           | map(attribute=attr)
           | select('is_number')
           | list
           | sort
       -%}
-      {% set n = v | count - 1 %}
-      {{ (v[n // 2] + v[n // 2 + n % 2]) / 2 if v else none }}
+      {{ median(values, none) }}
     temperature_unit: "°C"
     pressure_unit: "hPa"
     wind_speed_unit: "km/h"
