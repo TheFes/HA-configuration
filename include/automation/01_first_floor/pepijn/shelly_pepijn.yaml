@@ -31,7 +31,7 @@ action:
                   entity_id: "{{ main }}"
               - service: script.resume_transition_lights
                 data:
-                  light: light.graafmachine
+                  light: light.pepijn_leeslamp
       - conditions:
           - alias: "Double?"
             condition: template
@@ -52,7 +52,7 @@ action:
               color_temp: "{{ state_attr(main | replace('_template', ''), 'min_mireds') }}"
           - service: script.resume_transition_lights
             data:
-              light: light.graafmachine
+              light: light.pepijn_leeslamp
       - conditions:
           - alias: "Long"
             condition: template
@@ -69,9 +69,9 @@ action:
           - if:
               - alias: "Graafmachine on"
                 condition: state
-                entity_id: light.graafmachine
+                entity_id: light.pepijn_leeslamp
                 state: "on"
             then:
               - service: script.resume_transition_lights
                 data:
-                  light: light.graafmachine
+                  light: light.pepijn_leeslamp

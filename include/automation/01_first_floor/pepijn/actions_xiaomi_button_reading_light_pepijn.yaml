@@ -20,9 +20,9 @@ action:
             service: light.toggle
             target:
               entity_id:
-                - light.pepijn_leeslamp
+                - light.graafmachine
             data:
-              brightness: 100
+              brightness: 255
               color_temp: 265
       - alias: "Actions on long press"
         conditions: "{{ trigger.to_state.state == 'hold' }}"
@@ -43,9 +43,9 @@ action:
             service: light.turn_on
             target:
               entity_id:
-                - light.pepijn_leeslamp
+                - light.graafmachine
             data:
-              brightness: 100
+              brightness: 255
               color_temp: 265
           - alias: "Send TTS"
             service: tts.google_cloud_say
