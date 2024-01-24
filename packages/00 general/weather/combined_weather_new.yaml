@@ -7,7 +7,7 @@ script:
           type: reset
       - delay: 0.5
       - repeat:
-          for_each: >
+          for_each: &non_combined >
             {{
               states.weather
                 | map(attribute='entity_id')
@@ -22,7 +22,7 @@ script:
               target:
                 entity_id: "{{ repeat.item }}"
               continue_on_error: true
-            - variables:
+            - variables: &vars
                 entity: "{{ repeat.item }}"
                 valid: >
                   {{
@@ -31,6 +31,8 @@ script:
                     and entity in forecast
                     and forecast[entity].forecast is list
                     and forecast[entity].forecast | count > 0
+                    and forecast[entity].forecast[0].datetime is defined
+                    and forecast[entity].forecast[0].datetime | as_datetime is not none
                   }}
             - if: "{{ valid }}"
               then:
@@ -40,13 +42,7 @@ script:
                   entity: "{{ entity }}"
             - delay: 0.2
       - repeat:
-          for_each: >
-            {{
-              states.weather
-                | map(attribute='entity_id')
-                | reject('search', 'combined')
-                | list
-            }}
+          for_each: *non_combined
           sequence:
             - service: weather.get_forecasts
               data:
@@ -55,19 +51,7 @@ script:
               target:
                 entity_id: "{{ repeat.item }}"
               continue_on_error: true
-            - variables:
-                entity: "{{ repeat.item }}"
-                valid: >
-                  {{
-                    forecast is defined
-                    and forecast is mapping
-                    and entity in forecast
-                    and forecast[entity].forecast is list
-                    and forecast[entity].forecast | count > 0
-                    and forecast[entity].forecast[0] is mapping
-                    and forecast[entity].forecast[0].datetime is defined
-                    and forecast[entity].forecast[0].datetime | as_datetime is not none
-                  }}
+            - variables: *vars
             - if: "{{ valid }}"
               then:
                 event: forecast_add_entity
@@ -215,8 +199,8 @@ template:
         name: Daily Weather Forecast
         <<: *config
 
+# Combined template weather entity using the generated forecasts
 weather:
-  # Combined template weather entity using hourly forecasts
   - platform: template
     name: Combined
     unique_id: 97b3c060-3146-41dd-91d9-0765d2e15e16
