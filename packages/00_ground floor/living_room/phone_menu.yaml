@@ -1,0 +1,267 @@
+automation:
+  - id: aef85bb7-d7c6-4727-84b7-c15f222d7f71
+    alias: Menu for Grandstream
+    variables:
+      allowed_callers:
+        - "**621"
+    trigger:
+      - platform: webhook
+        webhook_id: sip_call_webhook_id
+        local_only: true
+    condition:
+      - alias: Check if webhook is for incoming call
+        condition: template
+        value_template: "{{ trigger.json.event == 'incoming_call' }}"
+    action:
+      - variables:
+          number_calling: "{{ trigger.json.parsed_caller }}"
+      - choose:
+          - conditions:
+              - alias: Check if caller is in allowed caller list
+                condition: template
+                value_template: >
+                  {{
+                    number_calling in allowed_callers
+                    if allowed_callers is defined and allowed_callers | length > 0
+                    else true
+                  }}
+            sequence:
+              - alias: Start menu
+                service: hassio.addon_stdin
+                data:
+                  addon: c7744bff_ha-sip
+                  input:
+                    command: answer
+                    number: "{{ number_calling }}"
+                    menu:
+                      message: >
+                        Hallo! draai 1 om papa te bellen, 
+                        2 om mama te bellen, 
+                        3 om oma van Balloe te bellen 
+                        en 4 om oma van de Poes te bellen.
+                        Draai 5 om een muziekje af te spelen.
+                        Draai 9 om te stoppen.
+                      timeout: 30
+                      choices:
+                        "1":
+                          id: papa
+                          message: Papa wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: dad
+                                number_calling: "{{ number_calling }}"
+                          post_action: noop
+                        "2":
+                          id: mama
+                          message: Mama wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: mom
+                                number_calling: "{{ number_calling }}"
+                          post_action: noop
+                        "3":
+                          id: grandma_dog
+                          message: Oma van Balloe wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: grandma_dog
+                                number_calling: "{{ number_calling }}"
+                          post_action: noop
+                        "4":
+                          id: grandma_dog
+                          message: Oma van de Poes wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: grandma_cat
+                                number_calling: "{{ number_calling }}"
+                          post_action: noop
+                        "5":
+                          id: music
+                          message: >
+                            Gezellig! Een muziekje!
+                            Draai 1 voor Frozen,
+                            2 voor Frozen 2,
+                            3 voor Bollo de Beer
+                            en 4 voor Bobo.
+                            Draai 9 om terug te gaan naar het hoofdmenu.
+                          post_action: noop
+                          choices:
+                            "1":
+                              id: frozen
+                              message: Frozen komt er aan! De verbinding wordt verbroken
+                              action:
+                                domain: script
+                                service: turn_on
+                                entity_id: script.play_music
+                                service_data:
+                                  variables:
+                                    to_play: frozen
+                              post_action: hangup
+                            "2":
+                              id: frozen_2
+                              message: Frozen 2 komt er aan! De verbinding wordt verbroken
+                              action:
+                                domain: script
+                                service: turn_on
+                                entity_id: script.play_music
+                                service_data:
+                                  variables:
+                                    to_play: frozen_2
+                              post_action: hangup
+                            "3":
+                              id: bollo
+                              message: Bollo de beer komt er aan! De verbinding wordt verbroken
+                              action:
+                                domain: script
+                                service: turn_on
+                                entity_id: script.play_music
+                                service_data:
+                                  variables:
+                                    to_play: bollo
+                              post_action: hangup
+                            "4":
+                              id: bobo
+                              message: Bobo komt er aan! De verbinding wordt verbroken
+                              action:
+                                domain: script
+                                service: turn_on
+                                entity_id: script.play_music
+                                service_data:
+                                  variables:
+                                    to_play: bobo
+                              post_action: hangup
+                            "9":
+                              id: bye
+                              message: Oke, geen muziekje dus
+                              post_action: return
+                            default:
+                              id: wrong_code
+                              message: Verkeerde code, probeer het opnieuw
+                              post_action: return
+                        "9":
+                          id: bye
+                          message: Tot horens
+                          post_action: hangup
+                        default:
+                          id: wrong_code
+                          message: Verkeerde code, probeer het opnieuw
+                          post_action: return
+                        timeout:
+                          id: timeout
+                          message: Er is geen keuze gemaakt. Tot horens
+                          post_action: hangup
+    mode: restart
+
+script:
+  make_call:
+    alias: Make Call
+    mode: restart
+    variables:
+      sip: "@192.168.2.100"
+      phonebook:
+        dad: !secret sip_dad
+        mom: !secret sip_mom
+        grandma_dog: !secret sip_grandma_dog
+        grandma_cat: !secret sip_grandma_cat
+      internal_phonebook:
+        dad: "sip:**622@192.168.2.100"
+      wifi_connection:
+        dad: sensor.pixel_7_pro_wifi_connection
+      wifi_ssid: !secret wifi_ssid
+    sequence:
+      - variables:
+          use_internal: >
+            {{
+              internal_phonebook is defined
+              and to_call in wifi_connection
+              and is_state(wifi_connection[to_call], wifi_ssid)
+              and to_call in internal_phonebook
+            }}
+          number: "{{ internal_phonebook[to_call] if use_internal else phonebook[to_call]}}"
+          parsed: "{{ number | regex_replace('sip:|'~sip, '') }}"
+      - service: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: dial
+            number: "{{ number }}"
+            ring_timeout: 60
+            sip_account: 1
+            webhook_to_call:
+              call_established: sip_connect_call_bridge_from_menu
+              call_disconnected: sip_call_disconnected
+      - parallel:
+          - sequence:
+              - wait_for_trigger:
+                  - platform: webhook
+                    local_only: true
+                    webhook_id: sip_connect_call_bridge_from_menu
+              - service: hassio.addon_stdin
+                data:
+                  addon: c7744bff_ha-sip
+                  input:
+                    command: bridge_audio
+                    number: "{{ number_calling }}"
+                    bridge_to: "{{ number }}"
+          - sequence:
+              - repeat:
+                  while:
+                    - condition: template
+                      value_template: "{{ true }}"
+                  sequence:
+                    - wait_for_trigger:
+                        - platform: webhook
+                          webhook_id: sip_call_webhook_id
+                          local_only: true
+                    - alias: "Check if the webhook is because a call is ended"
+                      condition: template
+                      value_template: "{{ wait.trigger.json.event == 'call_disconnected'}}"
+                    - variables:
+                        parsed_hung: "{{ wait.trigger.json.parsed_caller }}"
+                        to_end: "{{ [parsed, number_calling] | reject('eq', parsed_hung) | list }}"
+                    - alias: Check if the webhook is about the correct call.
+                      condition: template
+                      value_template: "{{ to_end | count == 1 }}"
+                    - service: hassio.addon_stdin
+                      data:
+                        addon: c7744bff_ha-sip
+                        input:
+                          command: hangup
+                          number: >
+                            {% set to_end = to_end | first %}
+                            {{ number if to_end == parsed else to_end }}
+                    - stop: "Call disconnected"
+
+  play_music:
+    alias: Play Music
+    mode: restart
+    variables:
+      playlist:
+        frozen: spotify:album:3YwNovUGZkSJmGP2Y4qUyz
+        frozen_2: spotify:album:3kL8E8BhaivWmyOjnms0gl
+        bollo: spotify:album:7dBjpPf4jYSKzaIqh1fRBe
+        bobo: spotify:album:2fwkkl32gl2UTkMA3bt63z
+      play_on: media_player.beneden_groep
+    sequence:
+      - service: spotcast.start
+        data:
+          entity_id: "{{ play_on }}"
+          uri: "{{ playlist[to_play] }}"
+          force_playback: true
+          start_volume: 30
