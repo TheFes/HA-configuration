@@ -26,9 +26,13 @@ switch:
   # Switch to turn on/off the chime.
   - platform: gpio
     id: relay
-    inverted: true
     name: Chime
-    pin: GPIO0
+    pin:
+      inverted: true
+      number: GPIO0
+      mode:
+        output: true
+        open_drain: true
 
   # Switch to turn on/off chime when
   # doorbell button is pushed.
