@@ -15,9 +15,14 @@ trigger:
       url: >
         {%- 
           if what == 'Home Assistant Operating System'
-          or version(to).patch == '0' 
+          or
+            (
+              (not version(to).beta and version(to).patch == '0' )
+              or
+              (version(to).beta and version.modifier == 'b0')
+            )
         %}
-          {{ trigger.to_state.attributes.release_url }}
+          {{ 'url' }}
         {%- else %}
           https://github.com/home-assistant/core/releases/tag/{{ to }}
         {%- endif %}
@@ -25,6 +30,7 @@ action:
   - alias: "Set up variables for the actions"
     variables:
       action_update: "{{ 'UPDATE_' ~ context.id }}"
+      action_skip: "{{ 'SKIP_' ~ context.id }}"
   - alias: "Send notification to phone"
     service: notify.mobile_app_pixel_7_pro
     data:
@@ -42,6 +48,8 @@ action:
           - action: "URI"
             title: "Changelog"
             uri: "{{ url }}"
+          - action: "{{ action_skip }}"
+            title: Skip
           - action: "{{ action_update }}"
             title: Update
   - alias: "Wait for a response"
@@ -50,7 +58,19 @@ action:
         event_type: mobile_app_notification_action
         event_data:
           action: "{{ action_update }}"
-  - alias: "Update"
-    service: update.install
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "{{ action_skip }}"
+  - alias: "Update or skip"
+    service: update.{{ 'install' if 'UPDATE' in wait.trigger.event.data.action else 'skip' }}
     target:
       entity_id: "{{ trigger.entity_id }}"
+  - if: "{{ wait.trigger.event.data.action == action_update }}"
+    then:
+      - alias: "Write variables to variables template sensor"
+        event: set_variable
+        event_data:
+          key: "reboot_from_notification"
+          value: true
+          set_timestamp: false
