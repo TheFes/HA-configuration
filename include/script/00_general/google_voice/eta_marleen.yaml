@@ -7,9 +7,9 @@ eta_marleen_routine:
         message: >
           {%- if is_state('person.marleen', 'home') %}
             Marleen is al thuis
-          {%- elif is_state_attr('proximity.marleen', 'dir_of_travel', 'towards') %}
+          {%- elif is_state('sensor.thuis_marleen_direction_of_travel', 'towards') %}
             Marleen is om {{ eta }} thuis.
-          {%- elif is_state_attr('proximity.marleen', 'dir_of_travel', 'away_from') %}
+          {%- elif is_state('sensor.thuis_marleen_direction_of_travel', 'dir_of_travel', 'away_from') %}
             Marleen gaat de verkeerde kant op, maar als ze nu omdraait is ze om {{ eta }} thuis.
           {%- else %}
             Marleen is nog niet onderweg, maar als ze nu vertrekt is ze om {{ eta }} thuis.           

@@ -24,7 +24,7 @@ trigger:
       action: "no_holiday"
   - platform: numeric_state
     id: holiday_over
-    entity_id: proximity.martijn
+    entity_id: sensor.thuis_martijn_distance
     below: 10000
 action:
   - alias: "Actions holiday mode"

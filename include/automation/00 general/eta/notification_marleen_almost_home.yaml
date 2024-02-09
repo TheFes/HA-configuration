@@ -4,13 +4,12 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: numeric_state
-    entity_id: proximity.marleen
+    entity_id: sensor.thuis_marleen_distance
     below: 4000
 condition:
   - alias: "Richting huis?"
     condition: state
-    entity_id: proximity.marleen
-    attribute: "dir_of_travel"
+    entity_id: sensor.thuis_marleen_direction_of_travel
     state: "towards"
   - alias: "Marleen niet thuis?"
     condition: state
