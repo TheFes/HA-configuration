@@ -211,99 +211,121 @@ weather:
       -%}
       {{ statistical_mode(values, none) }}
     temperature_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.temperature', 'defined')
-          | map(attribute='attributes.temperature')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    humidity_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.humidity', 'defined')
-          | map(attribute='attributes.humidity')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    pressure_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.pressure', 'defined')
-          | map(attribute='attributes.pressure')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    wind_bearing_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.wind_bearing', 'defined')
-          | map(attribute='attributes.wind_bearing')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    wind_speed_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.wind_speed', 'defined')
-          | map(attribute='attributes.wind_speed')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    visibility_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.visibility', 'defined')
-          | map(attribute='attributes.visibility')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    ozone_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr('attributes.ozone', 'defined')
-          | map(attribute='attributes.ozone')
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    cloud_coverage_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr(attr, 'defined')
-          | map(attribute=attr)
-          | select('is_number')
-          | list
-          | sort
-      -%}
-      {{ median(values, none) }}
-    wind_gust_speed_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr(attr, 'defined')
-          | map(attribute=attr)
+      {%- set attribute = 'temperature' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
           | select('is_number')
           | list
           | sort
       -%}
       {{ median(values, none) }}
     apparent_temperature_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr(attr, 'defined')
-          | map(attribute=attr)
+      {%- set attribute = 'apparent_temperature' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    pressure_template: >
+      {%- set attribute = 'pressure' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    wind_speed_template: >
+      {%- set attribute = 'wind_speed' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    wind_gust_speed_template: >
+      {%- set attribute = 'wind_gust_speed' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    visibility_template: >
+      {%- set attribute = 'visibility' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    humidity_template: >
+      {%- set attribute = 'humidity' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    wind_bearing_template: >
+      {%- set attribute = 'wind_bearing' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    ozone_template: >
+      {%- set attribute = 'ozone' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | sort
+      -%}
+      {{ median(values, none) }}
+    cloud_coverage_template: >
+      {%- set attribute = 'cloud_coverage' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
           | select('is_number')
           | list
           | sort
       -%}
       {{ median(values, none) }}
     dew_point_template: >
-      {%- set values = expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-          | selectattr(attr, 'defined')
-          | map(attribute=attr)
+      {%- set attribute = 'dew_point' %}
+      {%- set values = 
+        expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+          | selectattr('attributes.'~attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
           | select('is_number')
           | list
           | sort

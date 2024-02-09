@@ -45,7 +45,7 @@
           {{ dict(message=ns.message | join('\n'), level='info') }}
         battery: >-
           {% set ns = namespace(message=[]) %}
-          {% for item in expand('sensor.battery_warning') %}
+          {% for item in expand('sensor.tablet_battery_level') %}
             {%- if item.state | float(21) <= 20 %}
               {%- set ns.message = ns.message + [ 'De batterij van '~ item.name.split(' Battery')[0] ~ ' is nog maar ' ~ item.state ~'%' ] %}
             {%- endif %}

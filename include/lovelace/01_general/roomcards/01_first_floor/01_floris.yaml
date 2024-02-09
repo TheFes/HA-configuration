@@ -20,8 +20,20 @@ cards:
       - type: custom:mushroom-template-card
         entity: light.groep_floris
         layout: vertical
-        icon: "{{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}"
-        icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+        icon: >
+          {% set lights_on = state_attr(entity, 'entity_id') | select('is_state', 'on') | list | count %}
+          {% if lights_on == 1 and states('light.floris_leeslamp', 'on') and state_attr('light.floris_leeslamp', 'brightness') < 5 %}
+            mdi:sleep
+          {% else %}
+            {{ 'mdi:lightbulb-group' if is_state(entity, 'on') else 'mdi:lightbulb-group-off' }}
+          {% endif %}
+        icon_color: >
+          {% set lights_on = state_attr('light.groep_floris', 'entity_id') | select('is_state', 'on') | list | count %}
+          {% if lights_on == 1 and states('light.floris_leeslamp', 'on') and state_attr('light.floris_leeslamp', 'brightness') < 5 %}
+            orange
+          {% else %}
+            {{ 'yellow' if is_state(entity, 'on') }}
+          {% endif %}
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
       - type: custom:mushroom-template-card
