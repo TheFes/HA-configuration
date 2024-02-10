@@ -46,7 +46,12 @@ trigger:
     to: ~
     variables:
       action: "{{ is_state('person.martijn', 'home') }}"
-      update: "{{ is_state('person.martijn', 'home') if action == 'on' else true }}"
+      update: >
+        {{
+          (is_state('switch.shelly1pm_bureau_martijn_relay', 'on') and not is_state('sensor.house_mode', 'Slapen'))
+          if action == 'on'
+          else true
+        }}
 condition:
   - "{{ update | default(true) | bool(true) }}"
 action:

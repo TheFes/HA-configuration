@@ -33,7 +33,7 @@ action:
                   color_temp_kelvin: 2000
       - conditions: "{{ event == 'hold' }}"
         sequence:
-          - if: "{{ is_state('light.matrix', 'off') }}"
+          - if: "{{ is_state('light.awtrix_dd3300_matrix', 'off') }}"
             then:
               - service: light.turn_on
                 target:
