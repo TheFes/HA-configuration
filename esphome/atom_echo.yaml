@@ -7,21 +7,11 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
-  name_add_mac_suffix: true
+  name_add_mac_suffix: false
   project:
     name: m5stack.atom-echo-voice-assistant
     version: "1.0"
-  min_version: 2023.10.0b1
-  on_boot:
-    - priority: -100
-      then:
-        - wait_until: api.connected
-        - delay: 1s
-        - if:
-            condition:
-              switch.is_on: use_wake_word
-            then:
-              - voice_assistant.start_continuous:
+  min_version: 2023.11.1
 
 esp32:
   board: m5stack-atom
@@ -35,6 +25,22 @@ packages:
 # dashboard_import:
 #   package_import_url: github://esphome/firmware/voice-assistant/m5stack-atom-echo.yaml@main
 
+wifi:
+  on_connect:
+    - delay: 5s # Gives time for improv results to be transmitted
+    - ble.disable:
+  on_disconnect:
+    - ble.enable:
+
+improv_serial:
+
+esp32_improv:
+  authorizer: none
+
+button:
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: Factory reset
 
 i2s_audio:
   i2s_lrclk_pin: GPIO33
@@ -43,7 +49,6 @@ i2s_audio:
 microphone:
   - platform: i2s_audio
     id: echo_microphone
-    # bits_per_sample: 16bit
     i2s_din_pin: GPIO23
     adc_type: external
     pdm: true
@@ -55,8 +60,6 @@ speaker:
     dac_type: external
     mode: mono
 
-esp_adf:
-
 voice_assistant:
   id: va
   microphone: echo_microphone
@@ -64,23 +67,29 @@ voice_assistant:
   noise_suppression_level: 2
   auto_gain: 31dBFS
   volume_multiplier: 2.0
-  use_wake_word: true
+  vad_threshold: 3
   on_listening:
     - light.turn_on:
         id: led
         blue: 100%
         red: 0%
         green: 0%
-        brightness: 100%
-        effect: pulse
+        effect: "Slow Pulse"
+  on_stt_vad_end:
+    - light.turn_on:
+        id: led
+        blue: 100%
+        red: 0%
+        green: 0%
+        effect: "Fast Pulse"
   on_tts_start:
     - light.turn_on:
         id: led
-        blue: 0%
+        blue: 100%
         red: 0%
-        green: 100%
+        green: 0%
         brightness: 100%
-        effect: pulse
+        effect: none
   on_end:
     - delay: 100ms
     - wait_until:
@@ -90,18 +99,27 @@ voice_assistant:
   on_error:
     - light.turn_on:
         id: led
-        blue: 0%
         red: 100%
         green: 0%
+        blue: 0%
         brightness: 100%
         effect: none
     - delay: 1s
     - script.execute: reset_led
-    - script.wait: reset_led
-    - lambda: |-
-        if (code == "wake-provider-missing") {
-          id(use_wake_word).turn_off();
-        }
+  on_client_connected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+          - script.execute: reset_led
+  on_client_disconnected:
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.stop:
+          - light.turn_off: led
 
 binary_sensor:
   - platform: gpio
@@ -112,31 +130,84 @@ binary_sensor:
     disabled_by_default: true
     entity_category: diagnostic
     id: echo_button
-    on_click:
+    on_multi_click:
+      - timing:
+          - ON for at least 250ms
+          - OFF for at least 50ms
+        then:
+          - if:
+              condition:
+                switch.is_off: use_wake_word
+              then:
+                - if:
+                    condition: voice_assistant.is_running
+                    then:
+                      - voice_assistant.stop:
+                      - script.execute: reset_led
+                    else:
+                      - voice_assistant.start:
+              else:
+                - voice_assistant.stop
+                - delay: 1s
+                - script.execute: reset_led
+                - script.wait: reset_led
+                - voice_assistant.start_continuous:
+      - timing:
+          - ON for at least 10s
+        then:
+          - button.press: factory_reset_btn
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: led
+    name: None
+    disabled_by_default: true
+    entity_category: config
+    pin: GPIO27
+    default_transition_length: 0s
+    chipset: SK6812
+    num_leds: 1
+    rgb_order: grb
+    rmt_channel: 0
+    effects:
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 250ms
+          update_interval: 250ms
+          min_brightness: 50%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 100ms
+          update_interval: 100ms
+          min_brightness: 50%
+          max_brightness: 100%
+
+script:
+  - id: reset_led
+    then:
       - if:
           condition:
-            switch.is_off: use_wake_word
+            - switch.is_on: use_wake_word
+            - switch.is_on: use_listen_light
           then:
-            - if:
-                condition: voice_assistant.is_running
-                then:
-                  - voice_assistant.stop:
-                  - script.execute: reset_led
-                else:
-                  - voice_assistant.start:
+            - light.turn_on:
+                id: led
+                red: 100%
+                green: 89%
+                blue: 71%
+                brightness: 60%
+                effect: none
           else:
-            - voice_assistant.stop
-            - delay: 1s
-            - script.execute: reset_led
-            - script.wait: reset_led
-            - voice_assistant.start_continuous:
+            - light.turn_off: led
 
 switch:
   - platform: template
-    name: Use Wake Word
+    name: Use wake word
     id: use_wake_word
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
     on_turn_on:
       - lambda: id(va).set_use_wake_word(true);
       - if:
@@ -155,52 +226,16 @@ switch:
     id: use_listen_light
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
     on_turn_on:
       - script.execute: reset_led
     on_turn_off:
       - script.execute: reset_led
 
-light:
-  - platform: esp32_rmt_led_strip
-    id: led
-    name: None
-    disabled_by_default: true
-    entity_category: config
-    pin: GPIO27
-    default_transition_length: 0s
-    chipset: SK6812
-    num_leds: 1
-    rgb_order: grb
-    rmt_channel: 0
-    effects:
-      - pulse:
-          transition_length: 250ms
-          update_interval: 250ms
-
-script:
-  - id: reset_led
-    then:
-      - if:
-          condition:
-            - switch.is_on: use_wake_word
-            - switch.is_on: use_listen_light
-          then:
-            - light.turn_on:
-                id: led
-                blue: 100%
-                red: 100%
-                green: 0%
-                brightness: 100%
-                effect: none
-          else:
-            - light.turn_off: led
-
 external_components:
   - source: github://pr#5230
     components:
       - esp_adf
-  - source: github://pr#5229
-    components:
-      - voice_assistant
-      - api
     refresh: 0s
+
+esp_adf:
