@@ -18,6 +18,7 @@ from homeassistant.components.cast.helpers import ChromeCastZeroconf
 from homeassistant.exceptions import HomeAssistantError
 
 from .spotify_controller import SpotifyController
+from .error import TokenError
 from .const import CONF_SP_DC, CONF_SP_KEY
 from .helpers import (
     get_cast_devices,
@@ -26,10 +27,6 @@ from .helpers import (
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class TokenError(Exception):
-    pass
 
 
 class SpotifyCastDevice:
@@ -208,6 +205,14 @@ class SpotifyToken:
                 allow_redirects=False,
                 headers=headers
             ) as response:
+                if (response.status == 302 and response.headers['Location'] == '/get_access_token?reason=transport&productType=web_player&_authfailed=1'):
+                    _LOGGER.error(
+                        "Unsuccessful token request, received code 302 and "
+                        "Location header %s. sp_dc and sp_key could be "
+                        "expired. Please update in config.",
+                        response.headers['Location']
+                    )
+                    raise HomeAssistantError("Expired sp_dc, sp_key")
                 if (response.status != 200):
                     _LOGGER.info(
                         "Unsuccessful token request, received code %i",
