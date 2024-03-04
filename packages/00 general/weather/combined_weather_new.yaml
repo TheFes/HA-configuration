@@ -32,7 +32,11 @@ script:
                     and forecast[entity].forecast is list
                     and forecast[entity].forecast | count > 0
                     and forecast[entity].forecast[0].datetime is defined
-                    and forecast[entity].forecast[0].datetime | as_datetime is not none
+                    and 
+                      (
+                        forecast[entity].forecast[0].datetime is datetime
+                        or forecast[entity].forecast[0].datetime | as_datetime(none) is not none
+                      )
                   }}
             - if: "{{ valid }}"
               then:
@@ -148,6 +152,29 @@ template:
               {# deterimine which forecast to use #}
                 {% set type = 'hourly' if 'hourly' in this.entity_id else 'daily' %}
                 {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
+                {% set all_attr = 
+                  [
+                    'condition',
+                    'wind_bearing',
+                    'cloud_coverage',
+                    'temperature',
+                    'wind_speed',
+                    'precipitation',
+                    'precipitation_probability',
+                    'dew_point',
+                    'uv_index',
+                    'apparent_temperature',
+                    'pressure',
+                    'humidity'
+                  ]
+                %}
+                {% set daily_attr = 
+                  [	  
+                    'templow',
+                    'wind_gust_speed',
+                  ]
+                %}
+                {% set forecast_attr = all_attr if type == 'hourly' else (all_attr + daily_attr) %}
               {# combine all forecasts in one list #}
                 {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
               {# make sure no old forecasts are included, and only 3 days for hourly forecasts, and 10 days for daily #}
@@ -155,8 +182,8 @@ template:
                 {% set compare_end = now() + timedelta(days=forecast_days[type]) %}
               {# align datetimes so they all use local timezone, and the same start time for daily forecasts #}
                 {% set ns = namespace(aligned=[], forecast=[]) %}
-                {% for item in all if compare_start <= as_datetime(item.datetime) <= compare_end %}
-                  {% set new_dt = item.datetime | as_datetime | as_local %}
+                {% for item in all if compare_start <= as_datetime(item.datetime, item.datetime) <= compare_end %}
+                  {% set new_dt = item.datetime | as_datetime(item.datetime) | as_local %}
                   {% set new_dt = new_dt.isoformat() if type == 'hourly' else new_dt.replace(hour=0, minute=0).isoformat() %}
                   {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
                 {% endfor %}
@@ -171,7 +198,7 @@ template:
                       {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
                     {% endfor %}
                     {# remove unsupported types for template weather #}
-                    {% set keys_list = dt_ns.keys | unique | reject('in', ['datetime', 'wind_speed_bft', 'sun_chance']) %}
+                    {% set keys_list = dt_ns.keys | unique | select('in', forecast_attr) %}
                   {# find value for each forecast item #}
                     {% for key in keys_list %}
                       {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
