@@ -86,89 +86,54 @@ binary_sensor:
           - ON for at most 1s
           - OFF for at least 0.2s
         then:
-          - if:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: double
+          - if: &toggle_relay
               condition:
-                - api.connected:
-                - switch.is_on: relay
-                - not:
+                - or:
                     - text_sensor.state:
                         id: button_type_state
-                        state: "Toggle"
-              then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: double
-              else:
-                - if:
-                    condition:
-                      not:
+                        state: "Momentary"
+                    - and:
                         - text_sensor.state:
                             id: button_type_state
-                            state: "Events Only"
-                    then:
-                      - switch.toggle: relay
+                            state: "Detached"
+                        - or:
+                            - not:
+                                - api.connected:
+                            - switch.is_off: relay
+                            - text_sensor.state:
+                                id: light_status
+                                state: "unavailable"
+                            - text_sensor.state:
+                                id: light_status
+                                state: "unknown"
+              then:
+                - logger.log: "Toggle relay"
+                - switch.toggle: relay
       - timing:
           - state: true
             min_length: ${long_press}
         then:
-          - if:
-              condition:
-                - api.connected:
-                - switch.is_on: relay
-                - not:
-                    - text_sensor.state:
-                        id: button_type_state
-                        state: "Toggle"
-              then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: long
-              else:
-                - if:
-                    condition:
-                      not:
-                        - text_sensor.state:
-                            id: button_type_state
-                            state: "Events Only"
-                    then:
-                      - switch.toggle: relay
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: long
+          - if: *toggle_relay
       - timing:
           - ON for at most 1s
           - OFF for at least 0.25s
         then:
-          - if:
-              condition:
-                - api.connected:
-                - switch.is_on: relay
-                - or:
-                    - text_sensor.state:
-                        id: button_type_state
-                        state: "Detached"
-                    - text_sensor.state:
-                        id: button_type_state
-                        state: "Events Only"
-              then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: short
-              else:
-                - if:
-                    condition:
-                      - or:
-                          - text_sensor.state:
-                              id: button_type_state
-                              state: "Detached"
-                          - text_sensor.state:
-                              id: button_type_state
-                              state: "Momentary"
-                    then:
-                      - switch.toggle: relay
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: short
+          - if: *toggle_relay
     on_release:
       then:
         - homeassistant.event:

@@ -35,19 +35,18 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{%- macro domain_state(domain, state, compare, attribute, attr_value, attr_compare, return) -%}
+{%- macro domain_state(domain, value, attribute=none, compare='eq', return='count') -%}
   {%- set entities = (states[domain] if domain is defined else states) | map(attribute='entity_id') | list -%}
-  {%- set compare, attr_compare = compare | default('eq'), attr_compare | default('eq') -%}
-  {%- set return = return | default('count') -%}
-  {%- set select_param = 'attributes.' ~ attribute if attribute is defined else 'state' -%}
-  {%- set valid_compare = compare in ['eq', '==', 'equalto', 'lt', 'lessthan', '<', 'le', '<=', 'gt', 'greaterthan', '>', 'ge', '>='] -%}
-  {%- set valid_return = return in [ 'entity_id', 'name', 'state', 'sum', 'count', 'average', 'sum_attr', 'avg_attr' ] -%}
-  {%- set valid_attr_compare = attr_compare in ['eq', '==', 'equalto', 'ne', '!=', 'lt', 'lessthan', '<', 'le', '<=', 'gt', 'greaterthan', '>', 'ge', '>='] -%}
+  {%- set select_param = 'attributes.' ~ attribute if attribute is not none else 'state' -%}
+  {%- set compare_options = ['eq', '==', 'equalto', 'ne', '!=', 'lt', 'lessthan', '<', 'le', '<=', 'gt', 'greaterthan', '>', 'ge', '>='] -%}
+  {%- set valid_compare = compare in compare_options -%}
+  {%- set valid_return = return in [ 'entity_id', 'name', 'state', 'sum', 'count', 'average', 'median', 'statistical_mode', 'sum_attr', 'avg_attr' ] -%}
+  {%- set valid_attr_compare = attr_compare in compare_options -%}
   {%- if not valid_compare or not valid_attr_compare or not valid_return -%}
     Invalid input
   {%- else -%}
-    {%- set state_select = entities if state is not defined else _state(entities, state, compare) | from_json -%}
-    {%- set attr_select = _attr(state_select, attribute, attr_value | default(), attr_compare) if attribute is defined else state_select -%}
+    {%- set state_select = entities if state is not defined else _state(entities, value, compare) | from_json -%}
+    {%- set attr_select = _attr(state_select, attribute, value | default(), compare) if attribute is not none else state_select -%}
     {{ _result(attr_select, return, attribute | default()) }}
   {%- endif -%}
 {%- endmacro -%}

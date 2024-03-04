@@ -118,30 +118,6 @@ states:
             service: browser_mod.popup
             data:
               content: !include /config/include/lovelace/cards/send_tts.yaml
-      - &cam
-        type: template
-        icon: mdi:webcam
-        tap_action:
-          action: fire-dom-event
-          browser_mod:
-            service: browser_mod.popup
-            data:
-              title: Camera
-              content:
-                type: vertical-stack
-                cards:
-                  - type: picture-entity
-                    aspect_ratio: 50%
-                    camera_view: live
-                    entity: camera.floriscam
-                    show_name: false
-                    show_state: false
-                  - type: picture-entity
-                    aspect_ratio: 50%
-                    camera_view: live
-                    entity: camera.pepijncam
-                    show_name: false
-                    show_state: false
       - &assist
         type: template
         icon: mdi:comment-processing-outline
@@ -222,6 +198,5 @@ states:
       - *martijn
       - *marleen
       - *tts
-      - *cam
       - *assist
       - *house

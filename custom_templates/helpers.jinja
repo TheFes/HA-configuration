@@ -1,0 +1,20 @@
+{%- macro date_week(date) %}
+    {%- set date = as_datetime(date, 'invalid') if date is string else date-%}
+    {%- set date = date.date() if date is datetime else date -%}
+    {%- if date != 'invalid' and now().date() <= date -%}
+        {%- set date = date.date() if date is datetime else date -%}
+        {%- set days = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag' ] -%}
+        {%- set days_until = (date - now().date()).days -%}
+        {%- if days_until <= 1 %}
+            {{- ['Vandaag', 'Morgen'][days_until] -}}
+        {%- elif days_until < 7 - now().isoweekday() -%}
+            {{- days[date.weekday()] | title -}}
+        {%- elif days_until <= 14 - now().isoweekday() %}
+            {{- 'Volgende week ' ~ days[date.weekday()] -}}
+        {%- else -%}
+            {{- 'Over ' ~ (days_until / 7) | round(0, 'ceil') ~ ' weken' -}}
+        {%- endif %}
+    {%- else -%}
+        {{- 'Ongeldige datuminvoer' -}}
+    {%- endif -%}
+{%- endmacro -%}

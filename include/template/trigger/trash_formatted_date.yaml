@@ -9,18 +9,8 @@
       icon: mdi:trash-can
       <<: &config
         state: >-
-          {%- set collection_date = as_datetime(trigger.to_state.attributes.year_month_day_date).date() %}
-          {%- set days = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag' ] %}
-          {%- set days_until = trigger.to_state.attributes.days_until_collection_date %}
-          {%- if days_until <= 1 %}
-            {{ ['Vandaag', 'Morgen'][days_until] }}
-          {%- elif days_until < 7 - now().isoweekday() %}
-            {{ collection_date.strftime('%A') if lang == 'EN' else days[collection_date.weekday()] | title }}
-          {%- elif days_until < 14 - now().isoweekday() %}
-            {{ 'Volgende week ' ~ days[collection_date.weekday()] }}
-          {%- else %}
-            {{ 'Over ' ~ (days_until / 7) | round(0, 'ceil') ~ ' weken' }}
-          {%- endif %}
+          {%- from 'helpers.jinja' import date_week -%}
+          {{ date_week(trigger.to_state.attributes.year_month_day_date) }}
         availability: "{{ trigger.to_state.state not in [ 'unknown', 'unavailable', 'Geen' ] }}"
         attributes:
           waste_type: >
@@ -30,7 +20,7 @@
               else name | replace(' & ', ', ') ~ ' & 🌲'
             }}
           collection_date: >
-            {{ as_datetime(trigger.to_state.attributes.year_month_day_date).date() }}
+            {{ trigger.to_state.attributes.year_month_day_date }}
           in_two_weeks: >
             {{ now().date() - as_datetime(trigger.to_state.attributes.year_month_day_date).date() <= timedelta(weeks=2) }}
 
