@@ -289,15 +289,11 @@ script:
             data:
               brightness: 76
               color_temp: 306
-          - alias: "Set input booleand to dim"
-            service: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.floris_dim
         else:
           - alias: "Turn light group off"
             service: light.turn_off
             target:
-              entity_id: light.groep_floris
+              entity_id: light.floris
 
   pepijn_toggle:
     alias: "Actions for template light Pepijn"
@@ -306,79 +302,27 @@ script:
       - alias: "On"
         if: "{{ action == 'on' }}"
         then:
-          - alias: "No transaction active and not yet dimmed?"
-            choose:
-              - alias: "No transaction active and not yet dimmed"
-                conditions:
-                  - alias: "No transition active?"
-                    condition: template
-                    value_template: "{{ 'light.pepijn' not in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
-                  - alias: "Not yet dimmed?"
-                    condition: state
-                    entity_id: input_boolean.dimmed_pepijn
-                    state: "off"
-                sequence:
-                  - alias: "Turn on input boolean"
-                    service: input_boolean.turn_on
-                    target:
-                      entity_id: input_boolean.dimmed_pepijn
-                  - alias: "Time of day?"
-                    choose:
-                      - alias: "Morning"
-                        conditions:
-                          - condition: time
-                            after: input_datetime.pepijn_transition_on
-                            before: input_datetime.pepijn_transition_off
-                        sequence:
-                          - alias: "Turn on light using transition script"
-                            service: script.turn_on
-                            target:
-                              entity_id: script.transition_lights
-                            data:
-                              variables:
-                                lights:
-                                  - light.pepijn
-                                duration: 60
-                                br_start: 39
-                                ct_start_pct: 100
-                      - alias: "Evening or night"
-                        conditions:
-                          - condition: or
-                            conditions:
-                              - condition: time
-                                after: input_datetime.pepijn_dim_on
-                              - condition: time
-                                before: input_datetime.pepijn_dim_off
-                        sequence:
-                          - alias: "Turn on light dimmed"
-                            service: light.turn_on
-                            data:
-                              entity_id: light.pepijn
-                              brightness: 40
-                              color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
-                    default:
-                      - alias: "Ceiling light to 100%"
-                        service: light.turn_on
-                        target:
-                          entity_id: light.pepijn
-                        data:
-                          brightness: 255
-                      - alias: "Bed time?"
-                        condition: time
-                        after: "18:00:00"
-                        before: "20:00:00"
-                      - alias: "Bed group"
-                        service: light.turn_on
-                        target:
-                          entity_id: light.groep_bed_pepijn
-                        data:
-                          color_temp_kelvin: 3000
-                          brightness_pct: 20
-            default:
-              - alias: "Light on with current brightness and color temp"
+          - alias: "Dimmed when sleeping"
+            if:
+              - condition: state
+                entity_id: binary_sensor.pepijn_sleeping
+                state: "on"
+            then:
+              - alias: "Turn on light dimmed"
+                service: light.turn_on
+                data:
+                  entity_id: light.pepijn
+                  brightness: 40
+                  color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
+            else:
+              - alias: "Ceiling light to 100%"
                 service: light.turn_on
                 target:
                   entity_id: light.pepijn
+                data:
+                  transition: 2
+                  brightness: 255
+                  color_temp: "{{ state_attr('light.pepijn', 'min_mireds') }}"
               - alias: "Bed time?"
                 condition: time
                 after: "18:00:00"
@@ -391,10 +335,10 @@ script:
                   color_temp_kelvin: 3000
                   brightness_pct: 20
         else:
-          - alias: "Turn light group off"
+          - alias: "Turn light off"
             service: light.turn_off
             target:
-              entity_id: light.groep_pepijn
+              entity_id: light.pepijn
 
   badkamer_zolder_toggle:
     alias: "Actions for template light bathroom 2nd floor"
@@ -438,105 +382,31 @@ script:
       - alias: "On"
         if: "{{ action == 'on' }}"
         then:
-          - alias: "Light off no transition active?"
-            choose:
-              - conditions:
-                  - alias: "Not yet dimmed?"
+          - if:
+              - or:
+                  - platform: time
+                    after: "22:00:00"
+                  - alias: "Check if house mode is Slapen?"
                     condition: state
-                    entity_id: input_boolean.dimmed_slaapkamer
-                    state: "off"
-                sequence:
-                  - alias: "Time of day?"
-                    choose:
-                      - alias: "Morning"
-                        conditions:
-                          - condition: time
-                            after: input_datetime.slaapkamer_transition_on
-                            before: input_datetime.slaapkamer_transition_off
-                        sequence:
-                          - alias: "Turn on light dimmed"
-                            service: light.turn_on
-                            target:
-                              entity_id: light.slaapkamer_plafond
-                            data:
-                              brightness: 1
-                              color_temp_kelvin: 2000
-                          - delay: 0.1
-                          - alias: "Increase brightness"
-                            service: light.turn_on
-                            target:
-                              entity_id: light.slaapkamer_plafond
-                            data:
-                              brightness_pct: 100
-                              transition: 6535
-                          - alias: "Turn on input_boolean"
-                            service: input_boolean.turn_on
-                            target:
-                              entity_id: input_boolean.dimmed_slaapkamer
-                      - conditions:
-                          - alias: "Evening"
-                            condition: or
-                            conditions:
-                              - condition: time
-                                after: input_datetime.slaapkamer_dim_on
-                              - condition: time
-                                before: input_datetime.slaapkamer_dim_off
-                        sequence:
-                          - alias: "Light on"
-                            service: light.turn_on
-                            target:
-                              entity_id: light.slaapkamer_plafond
-                            data:
-                              brightness: 128
-                          - delay: 0.1
-                          - alias: "Dim light"
-                            service: light.turn_on
-                            target:
-                              entity_id: light.slaapkamer_plafond
-                            data:
-                              brightness_pct: 10
-                              color_temp_kelvin: 2200
-                              transition: 60
-                          - delay: 60
-                          - alias: "Turn on input_boolean"
-                            service: input_boolean.turn_on
-                            target:
-                              entity_id: input_boolean.dimmed_slaapkamer
-                    default:
-                      - alias: "Light on 100% during daytime"
-                        service: light.turn_on
-                        target:
-                          entity_id: light.slaapkamer_plafond
-                        data:
-                          brightness: 255
-                          color_temp_kelvin: 6535
-                      - alias: "Turn on input_boolean"
-                        service: input_boolean.turn_on
-                        target:
-                          entity_id: input_boolean.dimmed_slaapkamer
-            default:
-              - alias: "Light on with current setting if it has already been turned on before"
+                    entity_id: sensor.house_mode
+                    state: "Slapen"
+            then:
+              - alias: "Turn on light dimmed"
                 service: light.turn_on
                 target:
                   entity_id: light.slaapkamer_plafond
+                data:
+                  brightness_pct: 25
+                  color_temp_kelvin: 2200
+            else:
+              - alias: "Light on 100% during daytime"
+                service: light.turn_on
+                target:
+                  entity_id: light.slaapkamer_plafond
+                data:
+                  brightness: 255
+                  color_temp_kelvin: 6535
         else:
-          - alias: "Input boolean on"
-            service: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.dimmed_slaapkamer
-          - alias: "Dim light first in evening"
-            choose:
-              - conditions:
-                  - condition: time
-                    after: "22:00:00"
-                    before: "06:00:00"
-                sequence:
-                  - service: light.turn_on
-                    target:
-                      entity_id: light.slaapkamer_plafond
-                    data:
-                      brightness: 1
-                      transition: 5
           - alias: "Light off"
             service: light.turn_off
             target:
