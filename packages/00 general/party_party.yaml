@@ -9,12 +9,15 @@ automation:
           - media_player.keuken_hub
           - media_player.pepijn_mini
           - media_player.slaapkamer_hub
-        attribute: media_title
         for:
           seconds: 1
     variables:
+      song_titles:
+        - europapa
+      artists:
+        - snollebollekes
       area_mapper:
-        media_player.woonkamer_home: 
+        media_player.woonkamer_home:
           area_list:
             - woonkamer
             - speelhoek
@@ -32,8 +35,13 @@ automation:
             - slaapkamer_zolder
       party_on: >
         {{
-          'europapa' in trigger.to_state.attributes.get('media_title') | lower
-          or 'snollebollekes' in trigger.to_state.attributes.get('media_artist') | lower
+          trigger.to_state.state == 'playing'
+          and
+          (
+            trigger.to_state.attributes.get('media_title') | lower is search(song_titles | default([]) | join('|') | lower)
+            or
+            trigger.to_state.attributes.get('media_artist') | lower is search(artists | default([]) | join('|') | lower)
+          )
         }}
       area_list: "{{ area_mapper[trigger.entity_id].area_list }}"
       exclude_lights: "{{ area_mapper[trigger.entity_id].get('exclude_lights', []) }}"
@@ -52,7 +60,7 @@ automation:
                       | first
                       | default({})).get('state', false)
                   }}
-                current_set_by:  >
+                current_set_by: >
                   {{
                     ((state_attr('sensor.variables', 'variables') | default({}, true)).get('party_mode', {}).items()
                       | selectattr('0', 'eq', repeat.item)
@@ -131,7 +139,7 @@ script:
             {% endif %}
           {% endfor %}
         {% endfor %}
-        {{ dict(ns.effects, **dict(lights=ns.lights)) }} 
+        {{ dict(ns.effects, **dict(lights=ns.lights)) }}
     sequence:
       - condition: template
         value_template: "{{ effect_data.lights | count > 0 }}"
@@ -199,3 +207,60 @@ script:
           - service: scene.turn_on
             target:
               entity_id: scene.before_party_all_{{ area }}
+
+light:
+  - platform: template
+    lights:
+      party_pepijn:
+        unique_id: 71f830d4-7786-4f58-9a81-76e63b8961e0
+        friendly_name: Feestverlichting Slaapkamer Pepijn
+        <<: &config
+          icon_template: mdi:party-popper
+          value_template: >
+            {% set area = area_id(this.entity_id) %}
+            {{
+              ((state_attr('sensor.variables', 'variables') | default({}, true)).get('party_mode', {}).items()
+                | selectattr('0', 'eq', area)
+                | map(attribute= '1')
+                | list
+                | first
+                | default({})).get('state', false)
+            }}
+          turn_on:
+            - variables:
+                area: "{{ area_id(this.entity_id) }}"
+                exclude_lights:
+                  slaapkamer_pepijn:
+                    - light.pepijn
+            - service: script.turn_on
+              target:
+                entity_id: script.party_party
+              data:
+                variables:
+                  area: "{{ area }}"
+                  party_on: true
+                  exclude_lights: "{{ exclude_lights[area] | default([]) }}"
+                  set_by: "light"
+          turn_off:
+            - variables:
+                area: "{{ area_id(this.entity_id) }}"
+            - service: script.turn_on
+              target:
+                entity_id: script.party_party
+              data:
+                variables:
+                  area: "{{ area }}"
+                  party_on: false
+                  set_by: "light"
+      party_keuken:
+        unique_id: 766a8a7d5-c460-464d-8732-61c80cf01930
+        friendly_name: Feestverlichting Keuken
+        <<: *config
+      party_woonkamer:
+        unique_id: 22eb9256-a6b7-4ece-a6f9-84f59fc5372f
+        friendly_name: Feestverlichting Woonkamer
+        <<: *config
+      party_slaapkamer:
+        unique_id: d6845ab8-82be-4a3d-95e8-fedb9d9a24db
+        friendly_name: Feestverlichting Slaapkamer
+        <<: *config
