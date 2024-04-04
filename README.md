@@ -4,17 +4,21 @@
 - [🧰 Hardware](#-hardware)
   - [Home Assistant](#home-assistant)
   - [Lights and light buttons](#lights-and-light-buttons)
+  - [Utilty metering](#utilty-metering)
+  - [Covers](#covers)
+  - [Sensors](#sensors)
+  - [Other](#other)
 - [☕ Coffee](#-coffee)
 
 # 👋 Hi there!
 
-I'm Martijn, but maybe better known as TheFes. Im a Home Assistant enthousiast since 2020 when I started automating my new house. Before that I was using Domoticz in a previous home. The new house came with a built in "smart" home system, which was very closed, and could only be used with their own app. Like most, I started with some small stuff, and now I multiple smart devices in every room.
+I'm Martijn, but maybe better known as TheFes. Im a Home Assistant enthousiast since 2019 when I started automating my new house. Before that I was using Domoticz in a previous home. The new house came with a built in "smart" home system, which was very closed, and could only be used with their own app. Like most, I started with some small stuff, and now I multiple smart devices in every room.
 
 You might also know me from Discord, where I'm quite active on multiple HA replated servers or as Language Leader of the Dutch language for Assist.
 
 # 🛠 My config
 
-I'm quite a big fan of the split configuration. The [video](https://www.youtube.com/watch?v=FfjSA2o_0KA) by Dr Zzs helped me to understand how that's done, and after that I expanded that to even single files for most of the Dashboard cards. 
+I'm quite a big fan of the split configuration. The [video](https://www.youtube.com/watch?v=FfjSA2o_0KA) by Dr Zzs and Frenck helped me to understand how that's done, and after that I expanded that to even single files for most of the Dashboard cards. 
 
 I'm also a big fan of Jinja templates, you will see them in my automations, scripts, dashbaord and of course in a lot of template entities.
 
@@ -44,12 +48,19 @@ My Home Assistant server runs in a Proxmox VM on an Intel i3 of the 10th generat
 ## Lights and light buttons
 
 All the wall buttons in my house are momentary buttons, and I places a smart relay behind all of them. Some have "dumb" dimmable lights, which are controlled by a Shelly Dimmer 2. Most have smart lights, which are mostly ESPHome flashed Tuya wifi filament bulbs or IKEA Tradfri GU10 spots. These smart lights are either controlled by Shelly 1 modules, or Sonoff Mini R4 modules. These are all flashed to ESPHome, and will send events to HA in case there is an API connection. If not, they will toggle the built in relay as fallback for when HA is down.
+The Sonoff modules also act as Bluetooth Proxies to ensure I have Bluetooth coverage throughout the house.
 
-## Power metering
+## Utilty metering
+
+My house came with a smart meter, which has a port you can use in comination with a P1 cable. My server is not close to the meter, so I connected a [P1 Ethernet reader](https://www.zuidwijk.com/product/p1-reader-ethernet/). Using that I can get the data for the Energy Dashboard for electricity and gas. I also have 15 solar panels on the roof. To measure the water usage I use an earlier version of the [watermeterkit](https://smarthomeshop.io/products/watermeterkit-v2-0).
 
 ## Covers
 
+For window covers I have shades with Somfy IO motors. I use a Connexxoon to connect to those, and as of HA 2023.12 the local API is supported. 
+
 ## Sensors
+
+For sensors I use a mix of Xiaomi Zigbee sensors (temp/humity, door/window, PIR) and Xiaomi Bluetooth temp/humidity sensors. The Bluetooth ones are flashed to BTHome. I like thise becasue they have a small display so you can see the values without having to open the app. In the master bedroom I have an
 
 ## Other
 
