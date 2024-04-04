@@ -1,6 +1,6 @@
 automation:
   - id: 3b350cdb-4a8e-4ce9-b239-fc2e329f931d
-    alias: "00 - Activate Guest Mode when Guest Wifi is used"
+    alias: "Activate Guest Mode when Guest Wifi is used"
     trigger:
       - platform: state
         entity_id: sensor.guest_wifi_active
@@ -48,7 +48,7 @@ automation:
 
 script:
   guest_mode_sensor:
-    alias: "00 - Trigger guest mode sensor"
+    alias: "Trigger guest mode sensor"
     mode: parallel
     max: 10
     sequence:

@@ -14,15 +14,3 @@ cards:
       service: script.turn_on
       data:
         entity_id: script.emby_start_stop
-
-  - type: custom:mushroom-template-card
-    entity: script.emby_reboot
-    icon: mdi:restart
-    icon_color: "{{ 'orange' if is_state(entity, 'on') }}"
-    primary: "Herstart Emby"
-    secondary: "{{ 'Bezig met herstart' if is_state(entity, 'on') }}"
-    tap_action:
-      action: call-service
-      service: script.turn_on
-      data:
-        entity_id: script.emby_reboot

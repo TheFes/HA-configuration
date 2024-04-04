@@ -1,0 +1,60 @@
+id: b54906bf-51b0-4e0f-919a-ced9436588d6
+alias: "Xiaomi button Guest Bed"
+trigger:
+  - platform: state
+    entity_id: sensor.knop_logeerbed_action
+    to:
+      - single
+      - double
+      - hold
+      - release
+    variables:
+      event: "{{ trigger.to_state.state }}"
+action:
+  - alias: "Which click type"
+    choose:
+      - conditions: "{{ event == 'single' }}"
+        sequence:
+          - if: "{{ is_state('light.werkkamer_martijn_plafond', 'on') }}"
+            then:
+              - service: light.turn_off
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+            else:
+              - service: light.turn_on
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  brightness: 10
+              - service: light.turn_on
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  color_temp_kelvin: 2000
+      - conditions: "{{ event == 'hold' }}"
+        sequence:
+          - if: "{{ is_state('light.awtrix_dd3300_matrix', 'off') }}"
+            then:
+              - service: light.turn_on
+                target:
+                  entity_id: light.awtrix_dd3300_matrix
+                data:
+                  brightness: 10
+              - delay: 10
+          - service: light.turn_off
+            target:
+              entity_id: light.awtrix_dd3300_matrix
+      - conditions: "{{ event == 'double' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light.werkkamer_martijn_plafond
+            data:
+              brightness: 255
+          - service: light.turn_on
+            target:
+              entity_id: light.werkkamer_martijn_plafond
+            data:
+              color_temp_kelvin: 6535
+      - conditions: "{{ event == 'release' }}"
+        sequence: []

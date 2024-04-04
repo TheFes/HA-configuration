@@ -1,0 +1,30 @@
+id: 012eb968-e871-4029-8096-a63044a42029
+alias: "Tun off desk Martijn switch"
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.computer_zolder
+      - binary_sensor.laptop_werk_martijn_lan
+      - binary_sensor.laptop_werk_martijn_wifi
+      - media_player.werkkamer_martijn_stereo
+    to:
+      - "idle"
+      - "off"
+    for: "00:30:00"
+condition:
+  - alias: "Everyting off?"
+    condition: state
+    entity_id:
+      - binary_sensor.computer_zolder
+      - binary_sensor.laptop_werk_martijn_lan
+      - binary_sensor.laptop_werk_martijn_wifi
+      - media_player.werkkamer_martijn_stereo
+    state:
+      - "idle"
+      - "off"
+    for: "00:30:00"
+action:
+  - alias: "Turn off plug"
+    service: switch.turn_off
+    target:
+      entity_id: switch.shelly1pm_bureau_martijn_relay

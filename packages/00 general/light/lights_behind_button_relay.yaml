@@ -176,7 +176,7 @@ light:
 script:
   # General actions for all lights
   template_lights_actions:
-    alias: 00 - Template Light Actions
+    alias: Template Light Actions
     mode: parallel
     max: 25
     sequence:
@@ -276,7 +276,7 @@ script:
 
   # Specific actions in case template lights are turned on/off
   floris_toggle:
-    alias: "F1F - Actions for template light Floris"
+    alias: "Actions for template light Floris"
     icon: mdi:ceiling-light
     sequence:
       - alias: "On"
@@ -300,7 +300,7 @@ script:
               entity_id: light.groep_floris
 
   pepijn_toggle:
-    alias: "F1P - Actions for template light Pepijn"
+    alias: "Actions for template light Pepijn"
     icon: mdi:ceiling-light
     sequence:
       - alias: "On"
@@ -397,7 +397,7 @@ script:
               entity_id: light.groep_pepijn
 
   badkamer_zolder_toggle:
-    alias: "F2B - Actions for template light bathroom 2nd floor"
+    alias: "Actions for template light bathroom 2nd floor"
     icon: "mdi:light-recessed"
     mode: restart
     sequence:
@@ -431,7 +431,7 @@ script:
               entity_id: light.badkamer_zolder
 
   slaapkamer_plafond_toggle:
-    alias: "F2B - Actions for template light master bedroom"
+    alias: "Actions for template light master bedroom"
     icon: "mdi:light-recessed"
     mode: restart
     sequence:

@@ -1,0 +1,61 @@
+id: 964ca72d-0e82-488d-b6e8-0ac72a5eabc0
+alias: "Ulanzi turn screen on and off"
+mode: queued
+trigger:
+  - platform: state
+    entity_id: sensor.house_mode
+    to: ~
+    variables:
+      action: >
+        {{
+          'off'
+          if is_state('sensor.house_mode', 'Slapen')
+          or now() > today_at('22:00')
+          or now() < today_at('07:00')
+          else 'on'
+        }}
+      update: &update >
+        {{
+          is_state('person.martijn', 'home')
+          and is_state('switch.shelly1pm_bureau_martijn_relay', 'on')
+          and is_state('script.computer_martijn_off', 'off')
+          if action == 'on'
+          else true
+        }}
+  - platform: state
+    entity_id: switch.shelly1pm_bureau_martijn_relay
+    to: ~
+    variables:
+      action: >
+        {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
+      update: *update
+  - platform: time
+    at:
+      - "07:00"
+      - "22:00"
+    variables:
+      action: >
+        {{
+          'off'
+          if states('sensor.house_mode') == 'Slapen' or not is_state('person.martijn', 'home')
+          else 'on'
+        }}
+      update: *update
+  - platform: state
+    entity_id: person.martijn
+    to: ~
+    variables:
+      action: "{{ is_state('person.martijn', 'home') }}"
+      update: >
+        {{
+          (is_state('switch.shelly1pm_bureau_martijn_relay', 'on') and not is_state('sensor.house_mode', 'Slapen'))
+          if action == 'on'
+          else true
+        }}
+condition:
+  - "{{ update | default(true) | bool(true) }}"
+action:
+  - alias: "Turn matrix on or off"
+    service: light.turn_{{ iif(action | default(true) | bool(true), 'on', 'off') }}
+    target:
+      entity_id: light.awtrix_dd3300_matrix

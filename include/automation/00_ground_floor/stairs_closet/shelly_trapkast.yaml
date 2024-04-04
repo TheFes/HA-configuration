@@ -1,5 +1,5 @@
 id: 1021cdb8-6a53-4e31-bc04-5d776323e1c8
-alias: "F0D - Actions for stairs closet sonoff"
+alias: "Actions for stairs closet sonoff"
 mode: parallel
 max_exceeded: silent
 trigger:
@@ -7,22 +7,21 @@ trigger:
     event_type: esphome.button_pressed
     event_data:
       device: Trapkast
+      click_type: short
+condition:
+  - condition: state
+    entity_id: select.sonoff_trapkast_button_type
+    state: Detached
 action:
-  - alias: "Click type?"
-    choose:
-      - conditions:
-          - alias: "Short?"
-            condition: template
-            value_template: "{{ trigger.event.data.click_type == 'short' }}"
-        sequence:
-          - if: "{{ 'light.trapkast' | has_value }}"
-            then:
-              - alias: "Toggle light"
-                service: light.toggle
-                target:
-                  entity_id: light.trapkast_template
-            else:
-              - alias: "Toggle Sonoff"
-                service: switch.toggle
-                target:
-                  entity_id: switch.sonoff_trapkast_relay
+  - if: "{{ 'light.trapkast' | has_value }}"
+    then:
+      - alias: "Toggle light"
+        service: light.toggle
+        target:
+          entity_id: light.trapkast_template
+    else:
+      - alias: "Toggle switch"
+        service: switch.toggle
+        target:
+          entity_id: switch.sonoff_trapkast_relay
+    

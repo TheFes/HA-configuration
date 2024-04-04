@@ -1,5 +1,5 @@
 id: eb769e97-f6dd-471a-90ee-29d4666e0718
-alias: "00 - Turn everything off when nobody is home"
+alias: "Turn everything off when nobody is home"
 mode: single
 max_exceeded: silent
 trigger:
@@ -59,43 +59,21 @@ action:
             service: switch.turn_off
             target:
               entity_id: switch.tv_meubel
-  # - alias: "Turn of desk Marleen if not active"
-  #   choose:
-  #     - conditions:
-  #         - alias: "Computer Marleen uit"
-  #           condition: state
-  #           entity_id: binary_sensor.mbp_werk_marleen
-  #           state: "off"
-  #         - condition: not
-  #           conditions:
-  #             - alias: "Printer actief"
-  #               condition: state
-  #               entity_id: sensor.dcp_l2530dw_status
-  #               state: "printing"
-  #         - alias: "Weinig verbruik"
-  #           condition: numeric_state
-  #           entity_id: sensor.bureau_marleen_power
-  #           below: 20
-  #       sequence:
-  #         - alias: "Bureau Marleen uit"
-  #           service: switch.turn_off
-  #           target:
-  #             entity_id: switch.bureau_marleen
   - alias: "Turn off desk Martijn if not active"
     choose:
       - conditions:
           - alias: "Computer Martijn uit"
             condition: state
-            entity_id: device_tracker.martijn_desktop
-            state: "not_home"
+            entity_id: binary_sensor.computer_zolder
+            state: "off"
           - alias: "Laptop werkt uit"
             condition: state
-            entity_id: device_tracker.laptop_werk_martijn
-            state: "not_home"
+            entity_id: binary_sensor.laptop_werk_martijn_lan
+            state: "off"
           - alias: "Laptop werkt uit"
             condition: state
-            entity_id: device_tracker.laptop_werk_martijn_wifi
-            state: "not_home"
+            entity_id: binary_sensor.laptop_werk_martijn_wifi
+            state: "off"
         sequence:
           - alias: "Bureau Martijn uit"
             service: switch.turn_off

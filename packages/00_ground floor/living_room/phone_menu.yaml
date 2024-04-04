@@ -1,6 +1,6 @@
 automation:
   - id: aef85bb7-d7c6-4727-84b7-c15f222d7f71
-    alias: Menu for Grandstream
+    alias: "Menu for Grandstream"
     variables:
       allowed_callers:
         - "**621"
@@ -170,7 +170,7 @@ automation:
 
 script:
   make_call:
-    alias: Make Call
+    alias: Old Phone Make Call
     mode: restart
     variables:
       sip: "@192.168.2.100"
@@ -249,7 +249,7 @@ script:
                     - stop: "Call disconnected"
 
   play_music:
-    alias: Play Music
+    alias: Old Phone Play Music
     mode: restart
     variables:
       playlist:

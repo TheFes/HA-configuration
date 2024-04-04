@@ -1,0 +1,16 @@
+id: a261ffb9-c05f-4539-a2db-0bd92a199467
+alias: "Turn on light based on trapdoor storage in office Martijn"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.knieschotluik_contact
+    from:
+      - "on"
+      - "off"
+    to:
+      - "on"
+      - "off"
+action:
+  - alias: "Turn on light"
+    service: light.turn_{{ trigger.to_state.state }}
+    target:
+      entity_id: light.knieschot_led

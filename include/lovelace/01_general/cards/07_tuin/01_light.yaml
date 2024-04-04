@@ -3,9 +3,11 @@ title: Lampen
 square: false
 columns: 2
 cards:
-  - type: custom:mushroom-light-card
+  - type: tile
     entity: light.tuinlampjes
-  - type: custom:mushroom-light-card
+  - type: tile
     entity: light.veranda
-    show_brightness_control: true
-    collapsible_controls: true
+    state_content: brightness
+    features:
+      - type: light-brightness
+

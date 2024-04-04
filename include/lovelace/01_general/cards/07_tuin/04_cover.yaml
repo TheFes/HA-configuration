@@ -1,9 +1,14 @@
-type: vertical-stack
+type: grid
+title: Zonwering
+square: false
+columns: 1
 cards:
-  - type: custom:mushroom-title-card
-    title: Zonwering
-  - type: custom:mushroom-cover-card
+  - type: tile
     entity: cover.veranda
-    show_position_control: true
-    show_buttons_control: true
     icon: mdi:storefront
+    features:
+      - type: cover-open-close
+      - type: cover-position
+    state_content:
+      - state
+      - current_position

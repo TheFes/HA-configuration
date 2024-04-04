@@ -1,5 +1,5 @@
 id: e18beec6-b22c-4ac5-88da-05b7c05b9c33
-alias: "F0 - ECU reset with switch"
+alias: "ECU reset with switch"
 trigger:
   - platform: template
     value_template: "{{ not states('sensor.solar_total_lifetime_energy_output') | is_number }}"

@@ -1,0 +1,41 @@
+type: grid
+title: Schakelaars
+square: false
+columns: 2
+cards:
+  - type: custom:mushroom-template-card
+    entity: switch.ketel
+    primary: Ketel
+    badge_icon: "{{ 'mdi:alert' if is_state(entity, 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.ketel_power', with_unit=true)) if is_state(entity, 'on') }}
+    icon: mdi:radiator
+    icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+    tap_action:
+      action: toggle
+  - type: custom:mushroom-template-card
+    entity: switch.ventilatie
+    primary: Mechanische Ventilatie
+    badge_icon: "{{ 'mdi:alert' if is_state(entity, 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.ventilatie_power', with_unit=true)) if is_state(entity, 'on') }}
+    icon: "{{ 'mdi:hvac' if is_state(entity, 'on') else 'mdi:hvac-off' }}"
+    icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+    tap_action:
+      action: toggle
+  - type: custom:mushroom-template-card
+    entity: switch.accu_boormachine
+    primary: Accu Boormachine
+    badge_icon: "{{ 'mdi:alert' if is_state(entity, 'unavailable') }}"
+    badge_color: red
+    secondary: >-
+      {{ 'Aan' if is_state(entity, 'on') else 'Uit' }}
+      {{ (' | ' ~ states('sensor.accu_boormachine_power', with_unit=true)) if is_state(entity, 'on') }}
+    icon: mdi:battery-charging-30
+    icon_color: "{{ 'blue' if is_state(entity, 'on') }}"
+    tap_action:
+      action: toggle

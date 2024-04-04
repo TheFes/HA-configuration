@@ -6,7 +6,7 @@
       to: ~
       variables: &rain
         data: >
-          {%- if state_attr("sensor.neerslag_buienradar_regen_data","data") is not none %}
+          {%- if iif(state_attr("sensor.neerslag_buienradar_regen_data","data")) %}
             {% set raindata = (state_attr("sensor.neerslag_buienradar_regen_data","data")| replace('|', ' ')).split(' ') | reject('contains', ':') | select() | map('int') | list %}
             {% set ns = namespace(raindata=[]) %}
             {%- for rain in raindata %}
@@ -14,7 +14,7 @@
               {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
               {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
             {%- endfor %}
-          {%- else %}
+          {%- elif state_attr("sensor.neerslag_buienalarm_regen_data","data") is not none %}
             {%- set raindata = state_attr("sensor.neerslag_buienalarm_regen_data","data")["precip"] %}
             {% set ns = namespace(raindata=[]) %}
             {%- for rainintensity in raindata %}
@@ -22,7 +22,7 @@
               {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
             {%- endfor %}
           {%- endif %}
-          {{ ns.raindata[0:11] }}
+          {{ ns.raindata[0:11] if ns is defined else [0] }}
     - platform: homeassistant
       event: start
       variables: *rain

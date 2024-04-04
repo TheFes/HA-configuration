@@ -1,15 +1,5 @@
-desk_martijn_switch:
-  alias: "F2O - Turn desk Martijn on"
-  icon: mdi:human-male
-  sequence:
-    - alias: "Turn switch on"
-      service: switch.turn_on
-      target:
-        entity_id: switch.bureau_martijn_template
-    - service: browser_mod.close_popup
-
 computer_martijn_off:
-  alias: "F2O - Turn desk Martijn off"
+  alias: "Turn desk Martijn off"
   icon: mdi:human-male
   sequence:
     - variables:

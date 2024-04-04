@@ -1,5 +1,5 @@
 id: 1bb3f63c-c210-4299-a36e-14e70a2e6950
-alias: "F1P - Update ulanzi"
+alias: "Update ulanzi Pepijn"
 mode: parallel
 trigger:
   - platform: time_pattern
@@ -19,6 +19,8 @@ trigger:
   - platform: state
     entity_id: weather.combined
     to: ~
+variables:
+  correction: "{{ -1 if now() < as_local(as_datetime('2024-04-02')) and now() < today_at('9:00') else 0 }}"
 action:
   - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
     then:
@@ -42,12 +44,13 @@ action:
           retain: false
           topic: awtrix_pepijn/custom/sleep_clock
           payload: >
+            {% set n = now() + timedelta(hours=correction) %}
             {% set awake_time = today_at(states('input_datetime.pepijn_time_awake')) %}
-            {% set awake_time = awake_time + timedelta(days=1) if now() > awake_time else awake_time %}
+            {% set awake_time = awake_time + timedelta(days=1) if n > awake_time else awake_time %}
             {% set read_time = awake_time - timedelta(minutes=states('input_number.leestijd_pepijn') | int) %}
-            {% set qh = ((read_time - now()).total_seconds() / 60 / 15) | round(0, 'ceil') %}
-            {% set progress = [100 - int((100/24 * qh)), 0] | max if now() < read_time or now() > today_at('19:00') else 100 %}
-            {% if read_time < now() < awake_time %}
+            {% set qh = ((read_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
+            {% set progress = [100 - int((100/24 * qh)), 0] | max if n < read_time or n > today_at('19:00') else 100 %}
+            {% if read_time < n < awake_time %}
               {% set icon = 'book' %}
             {% else %}
               {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
@@ -55,7 +58,7 @@ action:
             {{
               dict(
                     icon = icon,
-                    text = now().strftime('%-I:%M'),
+                    text = n.strftime('%-I:%M'),
                     color = [160,0,0],
                     progress = progress,
                     progressC = [0,0,0],
@@ -72,7 +75,7 @@ action:
             {{
               dict(
                     icon = states('weather.combined'),
-                    text = now().strftime('%-I:%M')
+                    text = (now() + timedelta(hours=correction)).strftime('%-I:%M')
                   )
             }}
       - if: "{{ not is_state('select.awtrix_ed56c0_brightness_mode', 'Auto') }}"

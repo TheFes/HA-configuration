@@ -1,0 +1,64 @@
+id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"
+alias: "Actions with Xiaomi Cube"
+mode: parallel
+trigger:
+  - platform: state
+    entity_id: sensor.magic_cube_action
+    from: ~
+    variables:
+      event: "{{ trigger.to_state.state }}"
+action:
+  - alias: "Which action"
+    choose:
+      - alias: "Actions with shake"
+        conditions: "{{ event == 'shake' }}"
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.shelly1pm_bureau_martijn_relay
+          - alias: "Turn on radio if morning on workday"
+            choose:
+              - conditions:
+                  - alias: "Morning"
+                    condition: time
+                    before: "10:00:00"
+                  - alias: "Workday"
+                    condition: state
+                    entity_id: binary_sensor.workday_sensor
+                    state: "on"
+                sequence:
+                  - wait_template: "{{ states('media_player.werkkamer_martijn_stereo') not in ['unknown', 'unavailable'] }}"
+                  - alias: "Set volume"
+                    service: media_player.volume_set
+                    target:
+                      entity_id: media_player.werkkamer_martijn_stereo
+                    data:
+                      volume_level: 0.1
+                  - alias: "Turn on Radio 2"
+                    service: media_player.play_media
+                    target:
+                      entity_id: media_player.werkkamer_martijn_stereo
+                    data:
+                      media_content_id: "http://icecast.omroep.nl/radio2-bb-aac"
+                      media_content_type: music
+                      extra:
+                        metadata:
+                          metadataType: 3
+                          title: "Er is maar één NPO Radio 2"
+                          artist: "NPO Radio 2"
+                          images:
+                            - url: "http://192.168.2.3:8123/local/pictures/radio/npo_radio_2.png"
+      - alias: "Actions with rotate"
+        conditions: "{{ 'rotate' in event }}"
+        sequence:
+          - variables:
+              volume: "{{ state_attr('media_player.werkkamer_martijn_stereo', 'volume_level') }}"
+          - if: "{{ volume is not none }}"
+            then:
+              - service: media_player.volume_set
+                target:
+                  entity_id: media_player.werkkamer_martijn_stereo
+                data:
+                  volume_level: >
+                    {% set c = 0.05 if event == 'rotate_right' else -0.05 %}
+                    {{ ([ 0, volume + c, 1] | sort)[1] | round(2) }}
