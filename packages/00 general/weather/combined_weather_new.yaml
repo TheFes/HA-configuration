@@ -76,7 +76,7 @@ template:
         if: "{{ type == 'daily' }}"
         then:
           <<: &get_forecast_data
-          - alias: Run through weather entities to check if there is an daily forecast provided
+          - alias: Run through weather entities to check if the right forecast is provided
             repeat:
               for_each: >
                 {{
@@ -366,6 +366,6 @@ template:
 # don't log error messages about unsupported forecast types
 logger:
   filters:
-    homeassistant.components.script.weather_update_entities:
-      - "Weather Update Entities: Repeat at step .*: Error executing script. Error for call_service at pos .*: Weather entity '.*' does not support '.*' forecast"
-      - "Weather Update Entities: Repeat at step .*: Error executing script. Error for call_service at pos .*: Service call requested response data but did not match any entities"
+    homeassistant.helpers.script.trigger_update_coordinator:
+      - "Trigger Update Coordinator: This if-then is used so it is possible to use YAML anchors: Run through weather entities to check if the right forecast is provided: Error executing script. Error for call_service at pos 1: Weather entity '.*' does not support '.*' forecast"
+      - "Trigger Update Coordinator: This if-then is used so it is possible to use YAML anchors: Run through weather entities to check if the right forecast is provided: Error executing script. Error for call_service at pos 1: Service call requested response data but did not match any entities"
