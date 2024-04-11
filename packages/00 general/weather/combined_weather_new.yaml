@@ -212,7 +212,7 @@ template:
                           {% set values = key_items | select('is_number') | list | sort %}
                           {% if values | count > 0 %}
                             {# add forecast item to forecast #}
-                              {% set round = forecast_attr | selecattr('attr', 'eq', key) | map(attribute='round') | join %}
+                              {% set round = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | join %}
                               {% set add_dict = {key: median(values)|round(1)} %}
                               {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                           {% endif %}
