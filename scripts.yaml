@@ -1,1 +1,17 @@
-{}
+test:
+  alias: test
+  sequence:
+  - service: weather.get_forecast
+    metadata: {}
+    data:
+      type: daily
+    target:
+      entity_id: weather.combined
+    response_variable: test_{{ 'variable' }}
+  - service: persistent_notification.create
+    metadata: {}
+    data:
+      title: test
+      message: '{{ test_variable }}'
+  mode: single
+  icon: mdi:test-tube

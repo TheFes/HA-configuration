@@ -8,10 +8,17 @@ trigger:
   - platform: state
     entity_id: binary_sensor.trend_werkkamer_marleen_temp
     to: "on"
-  - platform: template
-    value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
-  - platform: template
-    value_template: "{{ state_attr('sensor.weather_forecasts', 'hourly')[0].condition in [ 'sunny', 'partlycloudy'] if state_attr('sensor.weather_forecasts', 'daily') else false }}"
+  - platform: numeric_state
+    entity_id: sensor.weather_combined_max_temp_today
+    above: 18
+  - platform: state
+    entity_id: weather.combined
+    to:
+      - sunny
+      - party-cloudy
+  - platform: state
+    entity_id: binary_sensor.rain
+    to: "off"
   - platform: numeric_state
     entity_id: sensor.werkkamer_marleen_temp
     above: 20
@@ -22,16 +29,13 @@ action:
   - if: "{{ trigger.id != 'open' and not is_state('binary_sensor.screen_werkkamer_marleen_manual', 'on') }}"
     then:
       - alias: "Warm day"
-        condition: template
-        value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
+        condition: numeric_state
+        entity_id: sensor.weather_combined_max_temp_today
+        above: 18
       - alias: "Sunny or partly cloudy"
-        condition: template
-        value_template: >
-          {{
-            ('sunny' in state_attr('sensor.weather_forecasts', 'hourly')[0:1] | map(attribute='condition') | list
-            or 'partlycloudy' in state_attr('sensor.weather_forecasts', 'hourly')[0:1] | map(attribute='condition') | list)
-            if state_attr('sensor.weather_forecasts', 'hourly') else false 
-          }}
+        condition: state
+        entity_id: binary_sensor.weather_combined_sun_in_next_hours
+        state: "on"
       - alias: "No rain upcoming"
         condition: state
         entity_id: binary_sensor.rain
@@ -60,17 +64,22 @@ action:
         service: cover.close_cover
         target:
           entity_id: cover.werkkamer_marleen_template
-  - if: >
-      {% set f = state_attr('sensor.weather_forecasts', 'daily') %}
-      {% set t = f | selectattr('datetime', 'eq', (today_at('0:00') + timedelta(days=1)).isoformat()) | map(attribute='temperature') | first if f else 20 %}
-      {% set trigger = trigger.id == 'open' %}
-      {% set rain = states('binary_sensor.rain_until_morning') | bool(true) %}
-      {% set temp_low = t <= 23 %}
-      {{ trigger and (rain or temp_low) }}
+  - if:
+      - condition: numeric_state
+        entity_id: sensor.weather_combined_max_temp_tomorrow
+        below: 20.1
+      - not:
+          - condition: state
+            entity_id: binary_sensor.rain_until_morning
+            state: "off"
+      - condition: trigger
+        id: "open"
     then:
       - alias: "Screen not completely open"
-        condition: template
-        value_template: "{{ state_attr('cover.werkkamer_marleen', 'current_position') != 100 }}"
+        condition: numeric_state
+        entity_id: cover.werkkamer_marleen
+        attribute: current_position
+        below: 100
       - alias: "Open cover"
         service: cover.open_cover
         target:

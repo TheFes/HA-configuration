@@ -7,10 +7,8 @@ cards:
     icon_color: blue
     layout: horizontal
     secondary: >
-      {% set hum = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'humidity') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
-      {% set temp = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'temperature') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(1) %}
-      {% set lux = (area_entities(area_id(entity)) | select('is_state_attr', 'device_class', 'illuminance') | reject('is_hidden_entity') | map('states') | select('is_number') | map('float') | list or [0]) | average | round(0) %}
-      {{ [ (temp ~ '°C') if temp, (lux ~ ' lux') if lux, (hum ~ '%') if hum] | select() | join(' | ') }}
+      {%- from 'helpers.jinja' import area_data -%}
+      {{- area_data(entity) }}
     tap_action:
       action: navigate
       navigation_path: pepijn

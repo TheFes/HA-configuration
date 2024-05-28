@@ -1,3 +1,144 @@
+script:
+  party_party:
+    alias: Party Party
+    icon: mdi:party-popper
+    fields:
+      area:
+        description: "Select the area"
+        required: true
+        selector:
+          area:
+      party_on:
+        description: "Turn party mode on or off"
+        required: true
+        default: true
+        selector:
+          boolean:
+      exclude_lights:
+        description: "Lights to exclude from party mode (will be turned off)"
+        required: false
+        selector:
+          entity:
+            multiple: true
+            filter:
+              - domain: light
+      leave_as_is:
+        description: "Lights to exclude from party mode (will be left in the current state)"
+        required: false
+        selector:
+          entity:
+            multiple: true
+            filter:
+              - domain: light
+      set_by:
+        description: "Party mode set by"
+        required: false
+        selector:
+          text:
+    variables:
+      lights: >
+        {{
+          area_entities(area)
+            | select('has_value')
+            | select('match', 'light.')
+            | reject('in', integration_entities('template'))
+            | reject('search', 'groep|awtrix')
+            | list
+        }}
+      effect_list:
+        - Party
+        - Random
+        - Fast Pulse
+      effect_data: >
+        {% set ns = namespace(effects={}, lights=[]) %}
+        {% for e in effect_list %}
+          {% for l in lights | reject('in', ns.lights) | reject('in', exclude_lights | default([], true)) %}
+            {% if e in state_attr(l, 'effect_list') | default([], true) %}
+              {% set ns.lights = ns.lights + [l] %}
+              {% set effect_lights = ns.effects.get(e, []) + [l] %}
+              {% set add = {e: effect_lights} %}
+              {% set ns.effects = dict(ns.effects, **add) %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        {{ dict(ns.effects, **dict(lights=ns.lights)) }}
+    sequence:
+      - condition: template
+        value_template: "{{ effect_data.lights | count > 0 }}"
+      - event: set_variable
+        event_data:
+          key: party_mode
+          value: >
+            {% set add =  {area: {'state': party_on | default(false), 'set_by': set_by | default('unknown')}} %}
+            {% set current = (state_attr('sensor.variables', 'variables') | default({}, true)).get('party_mode', {}) %}
+            {{ dict(current, **add) }}
+      - if: "{{ party_on | default(false) }}"
+        then:
+          - service: scene.create
+            data:
+              scene_id: before_party_all_{{ area }}
+              snapshot_entities: "{{ lights }}"
+          - service: light.turn_off
+            target:
+              entity_id: "{{ lights }}"
+          - service: light.turn_on
+            target:
+              entity_id: "{{ effect_data.lights }}"
+          - delay: 0.5
+          - service: scene.create
+            data:
+              scene_id: before_party_effect_{{ area }}
+              snapshot_entities: "{{ effect_data.lights }}"
+          - service: light.turn_on
+            target:
+              entity_id: "{{ effect_data.lights }}"
+            data:
+              brightness: 255
+          - if: >
+              {{
+                expand(effect_data.lights)
+                  | selectattr('attributes.supported_color_modes', 'defined')
+                  | selectattr('attributes.supported_color_modes', 'contains', 'rgb')
+                  | list
+                  | count > 0
+              }}
+            then:
+              - service: light.turn_on
+                target:
+                  entity_id: >
+                    {{
+                      expand(effect_data.lights)
+                        | selectattr('attributes.supported_color_modes', 'defined')
+                        | selectattr('attributes.supported_color_modes', 'contains', 'rgb')
+                        | map(attribute='entity_id')
+                        | list
+                    }}
+                data:
+                  color_name: pink
+          - repeat:
+              for_each: >
+                {{
+                  effect_data.items()
+                    | selectattr('1')
+                    | map(attribute='0')
+                    | reject('eq', 'lights')
+                    | list
+                }}
+              sequence:
+                - service: light.turn_on
+                  target:
+                    entity_id: "{{ effect_data[repeat.item] }}"
+                  data:
+                    effect: "{{ repeat.item }}"
+        else:
+          - service: scene.turn_on
+            target:
+              entity_id: scene.before_party_effect_{{ area}}
+          - delay: 0.5
+          - service: scene.turn_on
+            target:
+              entity_id: scene.before_party_all_{{ area }}
+
 automation:
   - id: 767b2b4c-8dc6-4e42-b871-fad275273ebc
     alias: Party Time!
@@ -83,130 +224,6 @@ automation:
                       exclude_lights: "{{ exclude_lights }}"
                       set_by: "song"
                 - delay: 0.5
-
-script:
-  party_party:
-    alias: Party Party
-    icon: mdi:party-popper
-    fields:
-      area:
-        description: "Select the area"
-        required: true
-        selector:
-          area:
-      party_on:
-        description: "Turn party mode on or off"
-        required: true
-        default: true
-        selector:
-          boolean:
-      exclude_lights:
-        description: "Lights to exclude from party mode"
-        required: false
-        selector:
-          entity:
-            multiple: true
-            filter:
-              - domain: light
-      set_by:
-        description: "Party mode set by"
-        required: false
-        selector:
-          text:
-    variables:
-      lights: >
-        {{
-          area_entities(area)
-            | select('has_value')
-            | select('match', 'light.')
-            | reject('in', integration_entities('template'))
-            | reject('search', 'groep|awtrix')
-            | list
-        }}
-      effect_list:
-        - Party
-        - Random
-        - Fast Pulse
-      effect_data: >
-        {% set ns = namespace(effects={}, lights=[]) %}
-        {% for e in effect_list %}
-          {% for l in lights | reject('in', ns.lights) | reject('in', exclude_lights | default([], true)) %}
-            {% if e in state_attr(l, 'effect_list') | default([], true) %}
-              {% set ns.lights = ns.lights + [l] %}
-              {% set effect_lights = ns.effects.get(e, []) + [l] %}
-              {% set add = {e: effect_lights} %}
-              {% set ns.effects = dict(ns.effects, **add) %}
-            {% endif %}
-          {% endfor %}
-        {% endfor %}
-        {{ dict(ns.effects, **dict(lights=ns.lights)) }}
-    sequence:
-      - condition: template
-        value_template: "{{ effect_data.lights | count > 0 }}"
-      - event: set_variable
-        event_data:
-          key: party_mode
-          value: >
-            {% set add =  {area: {'state': party_on | default(false), 'set_by': set_by | default('unknown')}} %}
-            {% set current = (state_attr('sensor.variables', 'variables') | default({}, true)).get('party_mode', {}) %}
-            {{ dict(current, **add) }}
-      - if: "{{ party_on | default(false) }}"
-        then:
-          - service: scene.create
-            data:
-              scene_id: before_party_all_{{ area }}
-              snapshot_entities: "{{ lights }}"
-          - service: light.turn_off
-            target:
-              entity_id: "{{ lights }}"
-          - service: light.turn_on
-            target:
-              entity_id: "{{ effect_data.lights }}"
-          - delay: 0.5
-          - service: scene.create
-            data:
-              scene_id: before_party_effect_{{ area }}
-              snapshot_entities: "{{ effect_data.lights }}"
-          - service: light.turn_on
-            target:
-              entity_id: "{{ effect_data.lights }}"
-            data:
-              brightness: 255
-          - if: "{{ effect_data['Party'] is defined }}"
-            then:
-              - service: light.turn_on
-                target:
-                  entity_id: "{{ effect_data['Party'] }}"
-                data:
-                  effect: Party
-          - if: "{{ effect_data['Random'] is defined }}"
-            then:
-              - service: light.turn_on
-                target:
-                  entity_id: "{{ effect_data['Random'] }}"
-                data:
-                  effect: Random
-              - delay: 0.5
-              - service: light.turn_on
-                target:
-                  entity_id: "{{ random_lights }}"
-                data:
-                  color_name: pink
-          - if: "{{ effect_data['Fast Pulse'] is defined }}"
-            then:
-              - service: light.turn_on
-                target:
-                  entity_id: "{{ effect_data['Fast Pulse'] }}"
-                data:
-                  effect: Fast Pulse
-        else:
-          - service: scene.turn_on
-            target:
-              entity_id: scene.before_party_effect_{{ area}}
-          - delay: 0.5
-          - service: scene.turn_on
-            target:
-              entity_id: scene.before_party_all_{{ area }}
 
 light:
   - platform: template

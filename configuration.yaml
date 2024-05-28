@@ -1,1 +1,15 @@
 homeassistant: !include_dir_merge_named /config/include/homeassistant
+
+lock:
+  - platform: template
+    name: Garage door
+    value_template: "{{ is_state('input_boolean.test', 'on') }}"
+    unique_id: test_template_lock
+    lock:
+      service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.test
+    unlock:
+      service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.test

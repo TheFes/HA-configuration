@@ -384,7 +384,7 @@ script:
         then:
           - if:
               - or:
-                  - platform: time
+                  - condition: time
                     after: "22:00:00"
                   - alias: "Check if house mode is Slapen?"
                     condition: state

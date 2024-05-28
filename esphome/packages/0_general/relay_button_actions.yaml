@@ -4,6 +4,18 @@ substitutions:
   restore_mode: restore_default_off
   long_press: 2s
 
+event:
+  - platform: template
+    name: ""
+    id: event_entity
+    event_types:
+      - "single_press"
+      - "double_press"
+      - "triple_press"
+      - "quintuple_press"
+      - "long_press"
+      - "release"
+
 select:
   - platform: template
     name: Button Type
@@ -58,6 +70,9 @@ binary_sensor:
                     data:
                       device: ${name}
                       click_type: restart
+                - event.trigger:
+                    id: event_entity
+                    event_type: "quintuple_press"
           - button.press: restart_button
       - timing:
           - ON for at most 1s
@@ -79,6 +94,9 @@ binary_sensor:
                     data:
                       device: ${name}
                       click_type: triple
+                - event.trigger:
+                    id: event_entity
+                    event_type: "triple_press"
                 - switch.toggle: relay
       - timing:
           - ON for at most 1s
@@ -91,6 +109,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: double
+          - event.trigger:
+              id: event_entity
+              event_type: "double_press"
           - if: &toggle_relay
               condition:
                 - or:
@@ -123,6 +144,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: long
+          - event.trigger:
+              id: event_entity
+              event_type: "long_press"
           - if: *toggle_relay
       - timing:
           - ON for at most 1s
@@ -133,6 +157,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: short
+          - event.trigger:
+              id: event_entity
+              event_type: "single_press"
           - if: *toggle_relay
     on_release:
       then:
@@ -141,6 +168,9 @@ binary_sensor:
             data:
               device: ${name}
               click_type: release
+        - event.trigger:
+            id: event_entity
+            event_type: "release"
 
 text_sensor:
   - platform: homeassistant

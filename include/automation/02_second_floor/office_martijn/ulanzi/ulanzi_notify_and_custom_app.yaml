@@ -73,7 +73,7 @@ trigger:
       update: "{{ trigger.to_state.state in ['on', 'off'] }}"
       icon: rainy
       graph_max: 8
-      graph_data: "{{ trigger.to_state.attributes.raindata if trigger.to_state.state == 'on' else none}}"
+      graph_data: "{{ trigger.to_state.attributes.raindata.data if trigger.to_state.state == 'on' else none }}"
       graph_type: bar
       graph_color: [0, 0, 255]
       graph_round: ceil

@@ -4,152 +4,217 @@
   combine contains the text to combine the last time fraction, and error the text to display on wrong date input
 #}
 {%- set _time_period_phrases = [
-                                {
-                                  'language': 'en',
-                                  'phrases':
-                                  {
-                                    'year': ['year', 'years', 'yr'],
-                                    'month': ['month', 'months', 'mth'],
-                                    'week': ['week', 'weeks', 'wk'],
-                                    'day': ['day', 'days', 'day'],
-                                    'hour': ['hour', 'hours', 'hr'],
-                                    'minute': ['minute', 'minutes', 'min'],
-                                    'second': ['second', 'seconds', 'sec'],
-                                    'millisecond': ['millisecond', 'milliseconds', 'ms'],
-                                    'combine': 'and',
-                                    'error': 'Invalid date'
-                                  }
-                                },
-                                {
-                                  'language': 'pl',
-                                  'phrases':
-                                  {
-                                    'year': ['rok', 'lat', 'r'],
-                                    'month': ['miesiąc', 'miesięcy', 'msc'],
-                                    'week': ['tydzień', 'tygodni', 'tyg'],
-                                    'day': ['dzień', 'dni', 'dzień'],
-                                    'hour': ['godzina', 'godzin', 'godz'],
-                                    'minute': ['minuta', 'minut', 'min'],
-                                    'second': ['sekunda', 'sekund', 'sek'],
-                                    'millisecond': ['milisekunda', 'milisekund', 'ms'],
-                                    'combine': 'i',
-                                    'error': 'Niepoprawna data'
-                                  }
-                                },
-                                {
-                                'language': 'fr',
-                                'phrases':
-                                  {
-                                    'year': ['année', 'années', 'an'],
-                                    'month': ['mois', 'mois', 'mois'],
-                                    'week': ['semaine', 'semaines', 'sem'],
-                                    'day': ['jour', 'jours', 'j'],
-                                    'hour': ['heure', 'heures', 'h'],
-                                    'minute': ['minute', 'minutes', 'min'],
-                                    'second': ['seconde', 'secondes', 'sec'],
-                                    'millisecond': ['milliseconde', 'millisecondes', 'ms'],
-                                    'combine': 'et',
-                                    'error': 'Date non valide'
-                                    }
-                                },
-                                {
-                                'language': 'it',
-                                'phrases':
-                                {
-                                'year': ['anno', 'anni', 'aa'],
-                                'month': ['mese', 'mesi', 'mm'],
-                                'week': ['settimana', 'settimane', 'set'],
-                                'day': ['giorno', 'giorni', 'gg'],
-                                'hour': ['ora', 'ore', 'h'],
-                                'minute': ['minuto', 'minuti', 'min'],
-                                'second': ['secondo', 'secondi', 'sec'],
-                                'millisecond': ['millisecondo', 'millisecondi', 'ms'],
-                                'combine': 'e',
-                                'error': 'Data non valida'
-                                }
-                                },
-                                {
-                                  'language': 'nl',
-                                  'phrases':
-                                  {
-                                    'year': ['jaar', 'jaar', 'jr'],
-                                    'month': ['maand', 'maanden', 'mnd'],
-                                    'week': ['week', 'weken', 'wk'],
-                                    'day': ['dag', 'dagen', 'dg'],
-                                    'hour': ['uur', 'uur', 'u'],
-                                    'minute': ['minuut', 'minuten', 'min'],
-                                    'second': ['seconde', 'seconden', 'sec'],
-                                    'millisecond': ['milliseconde', 'milliseconden', 'ms'],
-                                    'combine': 'en',
-                                    'error': 'Ongeldige datum'
-                                  }
-                                },
-                                {
-                                  'language': 'de',
-                                  'phrases':
-                                  {
-                                    'year': ['Jahr', 'Jahre', 'J.'],
-                                    'month': ['Monat', 'Monate', 'M.'],
-                                    'week': ['Woche', 'Wochen', 'Wo.'],
-                                    'day': ['Tag', 'Tage', 'Tg.'],
-                                    'hour': ['Stunde', 'Stunden', 'Std.'],
-                                    'minute': ['Minute', 'Minuten', 'Min.'],
-                                    'second': ['Sekunde', 'Sekunden', 'Sek.'],
-                                    'millisecond': ['Milliseconde', 'Milliseconden', 'ms'],
-                                    'combine': 'und',
-                                    'error': 'Falsches Datum'
-                                  }
-                                },
-                                {
-                                  'language': 'pt',
-                                  'phrases':
-                                  {
-                                    'year': ['ano', 'anos', 'aa'],
-                                    'month': ['mês', 'meses', 'mm'],
-                                    'week': ['semana', 'semanas', 'sem'],
-                                    'day': ['dia', 'dias', 'd'],
-                                    'hour': ['hora', 'horas', 'h'],
-                                    'minute': ['minuto', 'minutos', 'min'],
-                                    'second': ['segundo', 'segundos', 'seg'],
-                                    'millisecond': ['millissegundo', 'millissegundos', 'ms'],
-                                    'combine': 'e',
-                                    'error': 'Data Inválida'
-                                  }
-                                },
-                                {
-                                  'language': 'dk',
-                                  'phrases':
-                                  {
-                                    'year': ['år', 'år', 'år'],
-                                    'month': ['måned', 'måneder', 'mnd'],
-                                    'week': ['uge', 'uger', 'uge'],
-                                    'day': ['dag', 'dage', 'dag'],
-                                    'hour': ['time', 'timer', 't.'],
-                                    'minute': ['minut', 'minuter', 'min.'],
-                                    'second': ['sekund', 'sekunder', 'sek.'],
-                                    'millisecond': ['millisekund', 'millisekunder', 'ms.'],
-                                    'combine': 'og',
-                                    'error': 'Ugyldig dato'
-                                  }
-                                },
-                                {
-                                  'language': 'sv',
-                                  'phrases':
-                                  {
-                                    'year': ['år', 'år', 'år'],
-                                    'month': ['månad', 'månader', 'mån'],
-                                    'week': ['vecka', 'veckor', 'v'],
-                                    'day': ['dag', 'dagar', 'dag'],
-                                    'hour': ['timme', 'timmar', 'tim'],
-                                    'minute': ['minut', 'minuter', 'min'],
-                                    'second': ['sekund', 'sekunder', 'sek'],
-                                    'millisecond': ['millisekund', 'millisekunder', 'ms'],
-                                    'combine': 'och',
-                                    'error': 'Ogiltigt datum'
-                                  }
-                                }
-                              ]
-%}
+  {
+    'language': 'en',
+    'phrases': {
+      'year': ['year', 'years', 'yr'],
+      'month': ['month', 'months', 'mth'],
+      'week': ['week', 'weeks', 'wk'],
+      'day': ['day', 'days', 'day'],
+      'hour': ['hour', 'hours', 'hr'],
+      'minute': ['minute', 'minutes', 'min'],
+      'second': ['second', 'seconds', 'sec'],
+      'millisecond': ['millisecond', 'milliseconds', 'ms'],
+      'combine': 'and',
+      'error': 'Invalid date',
+    }
+  },
+  {
+    'language': 'pl',
+    'phrases': {
+      'year': ['rok', 'lat', 'r'],
+      'month': ['miesiąc', 'miesięcy', 'msc'],
+      'week': ['tydzień', 'tygodni', 'tyg'],
+      'day': ['dzień', 'dni', 'dzień'],
+      'hour': ['godzina', 'godzin', 'godz'],
+      'minute': ['minuta', 'minut', 'min'],
+      'second': ['sekunda', 'sekund', 'sek'],
+      'millisecond': ['milisekunda', 'milisekund', 'ms'],
+      'combine': 'i',
+      'error': 'Niepoprawna data',
+    }
+  },
+  {
+    'language': 'fr',
+    'phrases': {
+      'year': ['année', 'années', 'an'],
+      'month': ['mois', 'mois', 'mois'],
+      'week': ['semaine', 'semaines', 'sem'],
+      'day': ['jour', 'jours', 'j'],
+      'hour': ['heure', 'heures', 'h'],
+      'minute': ['minute', 'minutes', 'min'],
+      'second': ['seconde', 'secondes', 'sec'],
+      'millisecond': ['milliseconde', 'millisecondes', 'ms'],
+      'combine': 'et',
+      'error': 'Date non valide',
+    }
+  },
+  {
+    'language': 'it',
+    'phrases': {
+      'year': ['anno', 'anni', 'aa'],
+      'month': ['mese', 'mesi', 'mm'],
+      'week': ['settimana', 'settimane', 'set'],
+      'day': ['giorno', 'giorni', 'gg'],
+      'hour': ['ora', 'ore', 'h'],
+      'minute': ['minuto', 'minuti', 'min'],
+      'second': ['secondo', 'secondi', 'sec'],
+      'millisecond': ['millisecondo', 'millisecondi', 'ms'],
+      'combine': 'e',
+      'error': 'Data non valida',
+    }
+  },
+  {
+    'language': 'nb',
+    'phrases': {
+      'year': ['år', 'år', 'år'],
+      'month': ['måned', 'måneder', 'mnd'],
+      'week': ['uke', 'uker', 'u'],
+      'day': ['dag', 'dager', 'd'],
+      'hour': ['time', 'timer', 't'],
+      'minute': ['minutt', 'minutter', 'min'],
+      'second': ['sekund', 'sekunder', 'sek'],
+      'millisecond': ['millisekund', 'millisekunder', 'ms'],
+      'combine': 'og',
+      'error': 'Ugyldig dato',
+    }
+  },
+  {
+    'language': 'nl',
+    'phrases': {
+      'year': ['jaar', 'jaar', 'jr'],
+      'month': ['maand', 'maanden', 'mnd'],
+      'week': ['week', 'weken', 'wk'],
+      'day': ['dag', 'dagen', 'dg'],
+      'hour': ['uur', 'uur', 'u'],
+      'minute': ['minuut', 'minuten', 'min'],
+      'second': ['seconde', 'seconden', 'sec'],
+      'millisecond': ['milliseconde', 'milliseconden', 'ms'],
+      'combine': 'en',
+      'error': 'Ongeldige datum',
+    }
+  },
+  {
+    'language': 'nn',
+    'phrases': {
+      'year': ['år', 'år', 'år'],
+      'month': ['månad', 'månader', 'mnd'],
+      'week': ['veke', 'veker', 'v'],
+      'day': ['dag', 'dagar', 'd'],
+      'hour': ['time', 'timar', 't'],
+      'minute': ['minutt', 'minutt', 'min'],
+      'second': ['sekund', 'sekund', 'sek'],
+      'millisecond': ['millisekund', 'millisekund', 'ms'],
+      'combine': 'og',
+      'error': 'Ugyldig dato',
+    }
+  },
+  {
+    'language': 'de',
+    'phrases': {
+      'year': ['Jahr', 'Jahre', 'J.'],
+      'month': ['Monat', 'Monate', 'M.'],
+      'week': ['Woche', 'Wochen', 'Wo.'],
+      'day': ['Tag', 'Tage', 'Tg.'],
+      'hour': ['Stunde', 'Stunden', 'Std.'],
+      'minute': ['Minute', 'Minuten', 'Min.'],
+      'second': ['Sekunde', 'Sekunden', 'Sek.'],
+      'millisecond': ['Milliseconde', 'Milliseconden', 'ms'],
+      'combine': 'und',
+      'error': 'Falsches Datum',
+    }
+  },
+  {
+    'language': 'pt',
+    'phrases': {
+      'year': ['ano', 'anos', 'aa'],
+      'month': ['mês', 'meses', 'mm'],
+      'week': ['semana', 'semanas', 'sem'],
+      'day': ['dia', 'dias', 'd'],
+      'hour': ['hora', 'horas', 'h'],
+      'minute': ['minuto', 'minutos', 'min'],
+      'second': ['segundo', 'segundos', 'seg'],
+      'millisecond': ['millissegundo', 'millissegundos', 'ms'],
+      'combine': 'e',
+      'error': 'Data Inválida',
+    }
+  },
+  {
+    'language': 'dk',
+    'phrases': {
+      'year': ['år', 'år', 'år'],
+      'month': ['måned', 'måneder', 'mnd'],
+      'week': ['uge', 'uger', 'uge'],
+      'day': ['dag', 'dage', 'dag'],
+      'hour': ['time', 'timer', 't.'],
+      'minute': ['minut', 'minuter', 'min.'],
+      'second': ['sekund', 'sekunder', 'sek.'],
+      'millisecond': ['millisekund', 'millisekunder', 'ms.'],
+      'combine': 'og',
+      'error': 'Ugyldig dato',
+    }
+  },
+  {
+    'language': 'sv',
+    'phrases': {
+      'year': ['år', 'år', 'år'],
+      'month': ['månad', 'månader', 'mån'],
+      'week': ['vecka', 'veckor', 'v'],
+      'day': ['dag', 'dagar', 'dag'],
+      'hour': ['timme', 'timmar', 'tim'],
+      'minute': ['minut', 'minuter', 'min'],
+      'second': ['sekund', 'sekunder', 'sek'],
+      'millisecond': ['millisekund', 'millisekunder', 'ms'],
+      'combine': 'och',
+      'error': 'Ogiltigt datum',
+    }
+  },
+  {
+    'language': 'cs',
+    'phrases': {
+      'year': ['rok', 'roky', 'rok'],
+      'month': ['měsíc', 'měsíce', 'měs'],
+      'week': ['týden', 'týdny', 'týd'],
+      'day': ['den', 'dny', 'd'],
+      'hour': ['hodina', 'hodiny', 'hod'],
+      'minute': ['minuta', 'minuty', 'min'],
+      'second': ['sekunda', 'sekundy', 'sek'],
+      'millisecond': ['millisekunda', 'millisekundy', 'ms'],
+      'combine': 'a',
+      'error': 'špatný datum'
+    }
+  },
+  {
+    'language': 'fi',
+    'phrases': {
+      'year': ['vuosi', 'vuotta', 'v'],
+      'month': ['kuukausi', 'kuukautta', 'kk'],
+      'week': ['viikko', 'viikkoa', 'vk'],
+      'day': ['päivä', 'päivää', 'pv'],
+      'hour': ['tunti', 'tuntia', 't'],
+      'minute': ['minuutti', 'minuuttia', 'min'],
+      'second': ['sekunti', 'sekuntia', 's'],
+      'millisecond': ['millisekunti', 'millisekuntia', 'ms'],
+      'combine': 'ja',
+      'error': 'Väärä päivämäärä',
+    }
+  },
+  {
+    'language': 'ru',
+    'phrases': {
+      'year': ['год', 'года', 'г'],
+      'month': ['месяц', 'месяцы', 'м'],
+      'week': ['неделя', 'недели', 'н'],
+      'day': ['день', 'дни', 'д'],
+      'hour': ['час', 'часы', 'ч'],
+      'minute': ['минута', 'минут', 'м'],
+      'second': ['секунд', 'секунды', 'с'],
+      'millisecond': ['милисекунд', 'милисекунды', 'мс'],
+      'combine': 'и',
+      'error': 'Неверная дата',
+    }
+  },
+] -%}
 
 {# macro to convert the abbreviated input for the not_use and always_show lists to the full time part names #}
 {%- macro _abbr_to_full(input) -%}

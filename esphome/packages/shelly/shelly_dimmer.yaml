@@ -19,7 +19,7 @@ esphome:
   friendly_name: ${name}
   project:
     name: thefes.shelly-dimmer-2
-    version: "1.0"
+    version: "1.1"
 
 esp8266:
   board: esp01_1m
@@ -36,6 +36,18 @@ uart:
   rx_pin: 3
   baud_rate: 115200
 
+event:
+  - platform: template
+    name: ""
+    id: event_entity
+    event_types:
+      - "single_press"
+      - "double_press"
+      - "triple_press"
+      - "quintuple_press"
+      - "long_press"
+      - "release"
+
 light:
   - platform: shelly_dimmer
     name: None
@@ -47,6 +59,8 @@ light:
     restore_mode: ${restore_mode_light}
     default_transition_length: 1s
     gamma_correct: ${gamma_correct}
+    power:
+      id: dimmer_power
     effects:
       - pulse:
           name: "Fast Pulse"
@@ -121,6 +135,16 @@ sensor:
   - platform: adc
     id: temp_analog_reading
     pin: A0
+  - platform: total_daily_energy
+    name: "Daily Energy"
+    power_id: dimmer_power
+    unit_of_measurement: "kWh"
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
 
 # globals for dim action and light control
 globals:
@@ -261,6 +285,9 @@ binary_sensor:
               condition:
                 - api.connected:
               then:
+                - event.trigger:
+                    id: event_entity
+                    event_type: "quintuple_press"
                 - homeassistant.event:
                     event: esphome.button_pressed
                     data:
@@ -279,6 +306,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: double
+          - event.trigger:
+              id: event_entity
+              event_type: "double_press"
           - if:
               condition:
                 or:
@@ -297,6 +327,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: short
+          - event.trigger:
+              id: event_entity
+              event_type: "single_press"
           - if:
               condition:
                 or:
@@ -313,6 +346,9 @@ binary_sensor:
               data:
                 device: ${name}
                 click_type: long
+          - event.trigger:
+              id: event_entity
+              event_type: "long_press"
           - if:
               condition:
                 or:
@@ -337,6 +373,9 @@ binary_sensor:
             data:
               device: ${name}
               click_type: release
+        - event.trigger:
+            id: event_entity
+            event_type: "release"
         - if:
             condition:
               - or:

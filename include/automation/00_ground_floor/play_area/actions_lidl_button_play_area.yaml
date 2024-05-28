@@ -17,10 +17,10 @@ action:
             condition: template
             value_template: "{{ event == 'on' }}"
         sequence:
-          - alias: toggle led light
+          - alias: toggle light
             service: light.toggle
             target:
-              entity_id: light.speelhoek_tafel
+              entity_id: light.speelhoek_template
       - conditions:
           - alias: "Double"
             condition: template

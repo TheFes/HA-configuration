@@ -8,10 +8,17 @@ trigger:
   - platform: state
     entity_id: sun.sun
     attribute: rising
-  - platform: template
-    value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
-  - platform: template
-    value_template: "{{ state_attr('sensor.weather_forecasts', 'hourly')[0].condition in [ 'sunny', 'partly_sunny'] if state_attr('sensor.weather_forecasts', 'daily') else false }}"
+  - platform: numeric_state
+    entity_id: sensor.weather_combined_max_temp_today
+    above: 18
+  - platform: state
+    entity_id: weather.combined
+    to:
+      - sunny
+      - party-cloudy
+  - platform: state
+    entity_id: binary_sensor.rain
+    to: "off"
   - platform: numeric_state
     entity_id: sensor.woonkamer_multi_temperature
     above: 20
@@ -21,12 +28,20 @@ trigger:
 action:
   - if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
     then:
+      - alias: "No rain"
+        condition: state
+        entity_id: binary_sensor.rain
+        state: "off"
       - alias: "Warm day"
-        condition: template
-        value_template: "{{ state_attr('sensor.weather_forecasts', 'daily')[0].temperature > 18 if state_attr('sensor.weather_forecasts', 'daily') else false }}"
+        condition: numeric_state
+        entity_id: sensor.weather_combined_max_temp_today
+        above: 18
       - alias: "Sunny or partly cloudy"
-        condition: template
-        value_template: "{{ state_attr('sensor.weather_forecasts', 'hourly')[0].condition in [ 'sunny', 'partly_sunny'] if state_attr('sensor.weather_forecasts', 'daily') else false }}"
+        condition: state
+        entity_id: weather.combined
+        state:
+          - sunny
+          - partly-cloudy
       - alias: "Temperature rising"
         condition: state
         entity_id: binary_sensor.trend_woonkamer_temp

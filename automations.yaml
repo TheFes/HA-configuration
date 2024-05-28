@@ -1,1 +1,16 @@
-[]
+- id: '1715518268856'
+  alias: Test
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_number.test
+    attribute: foo
+    to: 50
+  - platform: state
+    entity_id:
+    - input_number.test
+    to: '50'
+  condition: []
+  action: []
+  mode: single

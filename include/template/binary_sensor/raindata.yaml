@@ -1,0 +1,28 @@
+- binary_sensor:
+    - unique_id: d2920d48-13b8-47db-8518-6a7a1eb92851
+      name: Raindata
+      state: "{{ this.attributes.get('raindata', dict(source='none', data=[0]*12)).data | max > 0 }}"
+      attributes:
+        raindata: >
+          {% set radar = state_attr("sensor.neerslag_buienradar_regen_data","data") %}
+          {% set alarm = state_attr("sensor.neerslag_buienalarm_regen_data","data") %}
+          {% if radar %}
+            {% set raindata = (radar | replace('|', ' ')).split(' ') | reject('contains', ':') | select() | map('int') | list %}
+            {% set ns = namespace(raindata=[]) %}
+            {%- for rain in raindata %}
+              {%- set rainintensity = (10**((0-109)/32)) | round(2) %}
+              {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
+              {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
+            {%- endfor %}
+            {{ dict(source='buienradar', data=ns.raindata[:11]) }}
+          {% elif alarm %}
+            {%- set raindata = alarm.precip %}
+            {% set ns = namespace(raindata=[]) %}
+            {%- for rainintensity in raindata %}
+              {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
+              {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
+            {%- endfor %}
+            {{ dict(source='buienalarm', data=ns.raindata[:11]) }}
+          {% else %}
+            {{ dict(source='none', data=[0]*12) }}
+          {% endif %}
