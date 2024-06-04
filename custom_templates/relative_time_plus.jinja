@@ -119,7 +119,7 @@
       'hour': ['Stunde', 'Stunden', 'Std.'],
       'minute': ['Minute', 'Minuten', 'Min.'],
       'second': ['Sekunde', 'Sekunden', 'Sek.'],
-      'millisecond': ['Milliseconde', 'Milliseconden', 'ms'],
+      'millisecond': ['Millisekunde', 'Millisekunden', 'ms'],
       'combine': 'und',
       'error': 'Falsches Datum',
     }
@@ -214,6 +214,21 @@
       'error': 'Неверная дата',
     }
   },
+  {
+    'language': 'uk',
+    'phrases': {
+      'year': ['рік', 'років', 'р'],
+      'month': ['місяць', 'місяців', 'м'],
+      'week': ['тиждень', 'тижнів', 'тижд'],
+      'day': ['день', 'днів', 'дн'],
+      'hour': ['годину', 'годин', 'год'],
+      'minute': ['хвилину', 'хвилин', 'хв'],
+      'second': ['секунду', 'секунд', 'сек'],
+      'millisecond': ['мілісекунду', 'мілісекунд', 'мсек'],
+      'combine': 'та',
+      'error': 'Недійсна дата',
+    }
+  },
 ] -%}
 
 {# macro to convert the abbreviated input for the not_use and always_show lists to the full time part names #}
@@ -298,11 +313,15 @@
         {%- if check_mth -%}
         {#- set numer of months, and set highest date using this number of months #}
           {%- set ns = namespace(dm=date_max, mth=0) -%}
+          {%- set dmd = ns.dm.day -%}
           {%- for m in range(1, 12) -%}
               {%- set dmm, dmy = ns.dm.month, ns.dm.year -%}
+              {%- set day_max = (ns.dm.replace(day=1) - timedelta(days=1)).day -%}
               {%- set dm = ns.dm.replace(
                       month=12 if dmm == 1 else dmm - 1,
-                      year=dmy - 1 if dmm == 1 else dmy)
+                      year=dmy - 1 if dmm == 1 else dmy,
+                      day= [dmd, day_max] | min
+                      )
               -%}
               {%- if dm < date_min -%}
                   {%- break -%}
