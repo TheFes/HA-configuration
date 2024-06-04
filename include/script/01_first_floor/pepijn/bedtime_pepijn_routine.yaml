@@ -19,7 +19,22 @@ bedtime_pepijn_routine:
       service: light.turn_on
       target:
         entity_id:
-          - light.graafmachine
+          - light.leeslamp_stoel_pepijn
+    - alias: "Turn on graafmachine"
+      service: light.graafmachine
+      target:
+        entity_id: light.graafmachine
       data:
-        brightness: 255
-        color_temp: 265
+        brightness: 26
+        rgb_color:
+          - 255
+          - 148
+          - 3
+    - if: "{{ use_tts is defined and use_tts }}"
+      then:
+        - alias: "Send TTS"
+          service: tts.google_cloud_say
+          target:
+            entity_id: media_player.pepijn_mini
+          data:
+            message: "Slaap lekker Pepijn!"
