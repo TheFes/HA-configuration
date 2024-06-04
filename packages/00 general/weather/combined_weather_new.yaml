@@ -52,7 +52,7 @@ template:
               {% endfor %} 
               {{ ns.entities }}
             {% endif %}
-  
+
   # trigger based template weather entity which combines all forecasts
   - trigger:
       - platform: time_pattern
@@ -76,50 +76,46 @@ template:
         if: "{{ type == 'daily' }}"
         then:
           <<: &get_forecast_data
-          - alias: Run through weather entities to check if the right forecast is provided
-            repeat:
-              for_each: >
-                {{
-                  states.weather
-                    | map(attribute='entity_id')
-                    | reject('search', 'combined')
-                    | list
-                  }}
-              sequence:
-                - alias: Try to get forecast out
-                  service: weather.get_forecasts
-                  data:
-                    type: "{{ type }}"
-                  response_variable: forecast
-                  target:
-                    entity_id: "{{ repeat.item }}"
-                  continue_on_error: true
-                - alias: Check if forecast was available
-                  variables:
-                    entity: "{{ repeat.item }}"
-                    valid: >
-                      {{
-                        forecast is defined
-                        and forecast is mapping
-                        and entity in forecast
-                        and forecast[entity].forecast is list
-                        and forecast[entity].forecast | count > 0
-                        and forecast[entity].forecast[0].datetime is defined
-                        and 
-                          (
-                            forecast[entity].forecast[0].datetime is datetime
-                            or forecast[entity].forecast[0].datetime | as_datetime(none) is not none
-                          )
-                      }}
-                - if: "{{ valid }}"
-                  then:
-                    - alias: Store entity in template sensor
-                      event: forecast_add_entity
-                      event_data:
-                        type: "{{ type }}"
-                        entity: "{{ entity }}"
-                - alias: Short delay to make sure everything is processed
-                  delay: 0.2
+            - alias: Run through weather entities to check if the right forecast is provided
+              repeat:
+                for_each: >
+                  {{
+                    states.weather
+                      | map(attribute='entity_id')
+                      | reject('search', 'combined')
+                      | list
+                    }}
+                sequence:
+                  - alias: Try to get forecast out
+                    service: weather.get_forecasts
+                    data:
+                      type: "{{ type }}"
+                    response_variable: forecast
+                    target:
+                      entity_id: "{{ repeat.item }}"
+                    continue_on_error: true
+                  - alias: Check if forecast was available
+                    variables:
+                      entity: "{{ repeat.item }}"
+                      valid: >
+                        {{
+                          forecast is defined
+                          and forecast is mapping
+                          and entity in forecast
+                          and forecast[entity].forecast is list
+                          and forecast[entity].forecast | count > 0
+                          and forecast[entity].forecast[0].datetime is defined
+                          and forecast[entity].forecast[0].datetime | as_datetime(none) is not none
+                        }}
+                  - if: "{{ valid }}"
+                    then:
+                      - alias: Store entity in template sensor
+                        event: forecast_add_entity
+                        event_data:
+                          type: "{{ type }}"
+                          entity: "{{ entity }}"
+                  - alias: Short delay to make sure everything is processed
+                    delay: 0.2
       - alias: Set right forecast type
         variables:
           type: hourly
@@ -181,7 +177,7 @@ template:
               {% set compare_end = now() + timedelta(days=forecast_days) %}
             {# align datetimes so they all use local timezone, and the same start time for daily forecasts #}
               {% set ns = namespace(aligned=[], forecast=[]) %}
-              {% for item in all if compare_start <= as_datetime(item.datetime, item.datetime) <= compare_end %}
+              {% for item in all if compare_start <= as_datetime(item.datetime, item.datetime) | as_local <= compare_end %}
                 {% set new_dt = item.datetime | as_datetime(item.datetime) | as_local %}
                 {% set new_dt = new_dt.isoformat() if type == 'hourly' else new_dt.replace(hour=0, minute=0).isoformat() %}
                 {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
