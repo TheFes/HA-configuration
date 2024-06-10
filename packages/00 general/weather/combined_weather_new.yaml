@@ -19,7 +19,6 @@ template:
             weather.buienradar:
               current: 2
               daily: 2
-              hourly: 2
       - alias: Reset entity overview in template sensor
         event: forecast_add_entity
         event_data:
@@ -223,7 +222,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -243,7 +242,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -263,7 +262,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(2, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -283,7 +282,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -303,7 +302,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -323,7 +322,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -343,7 +342,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(0, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -363,7 +362,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -383,7 +382,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(2, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -403,7 +402,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(0, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
@@ -423,7 +422,7 @@ template:
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, none) }}
+            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
               expand(state_attr('sensor.weather_forecast_entities', 'entities'))
