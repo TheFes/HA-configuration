@@ -20,8 +20,22 @@ trigger:
       - !secret work_marleen
       - !secret work_martijn
     id: "reset"
+  - platform: event
+    id: reset
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "cancel_eta_martijn"
+    variables:
+      name: martijn
+  - platform: event
+    id: reset
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "cancel_eta_marleen"
+    variables:
+      name: marleen
 variables:
-  name: "{{ states[trigger.entity_id].object_id }}"
+  name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
   notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
   gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
   sensor: "sensor.{{ name }}_naar_huis"
@@ -53,6 +67,9 @@ action:
             ttl: 0
             priority: high
             notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
+            actions:
+              - action: "cancel_eta_{{ name }}"
+                title: "Stop updates"
       - event: set_variable
         event_data:
           key: "eta_{{ name }}"
@@ -76,6 +93,10 @@ action:
                       id: delay
                 - if: "{{ wait.trigger.id == 'delay' }}"
                   then:
+                    - event: set_variable
+                      event_data:
+                        key: "eta_{{ name }}"
+                        value: "{{ '🚴‍♂️' if vehicle == 'fiets' else '🚗'}} ETA {{ name | title }}: {{ eta }}"
                     - alias: "Send notification to phone"
                       service: "{{ notify }}"
                       data:
@@ -87,3 +108,6 @@ action:
                           ttl: 0
                           priority: high
                           notification_icon: mdi:car
+                          actions:
+                            - action: "cancel_eta_{{ name }}"
+                              title: "Stop updates"
