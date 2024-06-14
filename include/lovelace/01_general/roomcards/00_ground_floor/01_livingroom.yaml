@@ -33,7 +33,7 @@ cards:
         entity: media_player.shield_en_soundbar
         layout: vertical
         icon: "{{ 'mdi:television' if not is_state(entity, ['unavailable', 'unknown', 'off']) else 'mdi:television-off' }}"
-        icon_color: "{{ 'yellow' if not states(entity) in ['unavailable', 'unknown', 'off'] }}"
+        icon_color: "{{ 'yellow' if not states(entity) in ['unavailable', 'unknown', 'off', 'standby'] }}"
         badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
         badge_color: red
       - type: conditional

@@ -1,0 +1,251 @@
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Luchtkwaliteit
+  - type: vertical-stack
+    cards:
+      - type: tile
+        entity: fan.luchtreiniger_slaapkamer
+        features:
+          - type: fan-preset-modes
+            style: dropdown
+          - type: fan-speed
+  - type: custom:vertical-stack-in-card
+    cards:
+      - type: custom:mushroom-title-card
+        title: ""
+        alignment: center
+      - type: custom:mini-graph-card
+        hour24: true
+        entities:
+          - entity: sensor.awair_slaapkamer_score
+        align_state: center
+        color_thresholds:
+          - value: 0
+            color: red
+          - value: 60
+            color: orange
+          - value: 80
+            color: green
+        show:
+          name: false
+          extrema: true
+          icon: false
+      - square: true
+        type: grid
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Temp
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:thermometer
+            entity: sensor.awair_slaapkamer_temperature
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set mapping = 
+                [
+                  {
+                    'start': 0,
+                    'end': 9,
+                    'color': 'red'
+                  },
+                  {
+                    'start': 9,
+                    'end': 11,
+                    'color': '#FF8C00'
+                  },
+                  {
+                    'start': 11,
+                    'end': 17,
+                    'color': 'orange'
+                  },
+                  {
+                    'start': 17,
+                    'end': 18,
+                    'color': 'yellow'
+                  },
+                  {
+                    'start':18,
+                    'end': 25,
+                    'color': 'green'
+                  },
+                  {
+                    'start': 25,
+                    'end': 26,
+                    'color': 'yellow'
+                  },
+                  {
+                    'start': 26,
+                    'end': 32,
+                    'color': 'orange'
+                  },
+                  {
+                    'start': 32,
+                    'end': 34,
+                    'color': '#FF8C00'
+                  },
+                  {
+                    'start': 34,
+                    'end': 50,
+                    'color': 'red'
+                  }
+                ]
+              %}
+              {% set s = states(entity) | float(0) %}
+              {{ mapping
+                  | selectattr('start', '<=', s)
+                  | selectattr('end', '>', s)
+                  | map(attribute='color')
+                  | first
+              }}
+          - type: custom:mushroom-template-card
+            primary: Hum
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:water-percent
+            entity: sensor.awair_slaapkamer_humidity
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set mapping = 
+                [
+                  {
+                    'start': 0,
+                    'end': 15,
+                    'color': 'red'
+                  },
+                  {
+                    'start': 15,
+                    'end': 20,
+                    'color': '#FF8C00'
+                  },
+                  {
+                    'start': 20,
+                    'end': 35,
+                    'color': 'orange'
+                  },
+                  {
+                    'start': 35,
+                    'end': 40,
+                    'color': 'yellow'
+                  },
+                  {
+                    'start':40,
+                    'end': 50,
+                    'color': 'green'
+                  },
+                  {
+                    'start': 50,
+                    'end': 60,
+                    'color': 'yellow'
+                  },
+                  {
+                    'start': 60,
+                    'end': 65,
+                    'color': 'orange'
+                  },
+                  {
+                    'start': 65,
+                    'end': 80,
+                    'color': '#FF8C00'
+                  },
+                  {
+                    'start': 80,
+                    'end': 100,
+                    'color': 'red'
+                  }
+                ]
+              %}
+              {% set s = states(entity) | float(0) %}
+              {{ mapping
+                  | selectattr('start', '<=', s)
+                  | selectattr('end', '>', s)
+                  | map(attribute='color')
+                  | first
+              }}
+          - type: custom:mushroom-template-card
+            primary: CO2
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:molecule-co2
+            entity: sensor.awair_slaapkamer_carbon_dioxide
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set s = states(entity) | float(9999) %}
+              {% if s < 600 %}
+                green
+              {% elif s < 1000 %}
+                yellow
+              {% elif s < 1500 %}
+                orange
+              {% elif s < 2500 %}
+                #FF8C00
+              {% else %}
+                red
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: TVOCs
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:molecule
+            entity: sensor.awair_slaapkamer_volatile_organic_compounds
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set s = states(entity) | float(9999) %}
+              {% if s < 333 %}
+                green
+              {% elif s < 1000 %}
+                yellow
+              {% elif s < 3333 %}
+                orange
+              {% elif s < 8332 %}
+                #FF8C00
+              {% else %}
+                red
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: PM2.5
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:molecule
+            entity: sensor.awair_slaapkamer_pm2_5
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set s = states(entity) | float(9999) %}
+              {% if s < 15 %}
+                green
+              {% elif s < 35 %}
+                yellow
+              {% elif s < 55 %}
+                orange
+              {% elif s < 75 %}
+                #FF8C00
+              {% else %}
+                red
+              {% endif %}
+          - type: custom:mushroom-template-card
+            primary: PM2.5
+            secondary: "{{ states(entity, with_unit=true) }}"
+            icon: mdi:fan
+            entity: sensor.luchtreiniger_slaapkamer_pm25
+            layout: vertical
+            tap_action:
+              action: more-info
+            icon_color: |-
+              {% set s = states(entity) | float(9999) %}
+              {% if s < 15 %}
+                green
+              {% elif s < 35 %}
+                yellow
+              {% elif s < 55 %}
+                orange
+              {% elif s < 75 %}
+                #FF8C00
+              {% else %}
+                red
+              {% endif %}
+        columns: 6

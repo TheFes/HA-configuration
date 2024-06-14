@@ -1,49 +1,36 @@
-type: custom:state-switch
+type: custom:mushroom-chips-card
 view_layout:
   grid-area: badges
-entity: group
-states:
-  admin:
-    type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-      - type: menu
-      - &weather
-        type: weather
-        entity: weather.combined
-        show_conditions: false
-        show_temperature: true
-        tap_action:
-          action: navigate
-          navigation_path: weer
-      - type: entity
-        entity: sensor.net_power
-        icon_color: yellow
-        tap_action:
-          action: navigate
-          navigation_path: /energy
-      - type: entity
-        entity: sensor.watermeter_current_usage
-        icon_color: blue
-        tap_action:
-          action: navigate
-          navigation_path: /energy
-        double_tap_action:
-          action: call-service
-          service: input_boolean.toggle
-          target:
-            entity_id: input_boolean.hide_header
-
-  user:
-    type: custom:mushroom-chips-card
-    alignment: center
-    chips:
-      - type: entity
-        entity: sensor.net_power
-        icon_color: yellow
-        tap_action: none
-      - type: entity
-        entity: sensor.watermeter_current_usage
-        icon_color: blue
-        tap_action:
-          action: none
+alignment: center
+chips:
+  - type: conditional
+    conditions:
+      - condition: user
+        users:
+          - 24c8260fb51f4fb995e5aeaaaa3edd1b
+    chip:
+      type: menu
+  - type: weather
+    entity: weather.combined
+    show_conditions: false
+    show_temperature: true
+    tap_action:
+      action: navigate
+      navigation_path: weer
+  - type: entity
+    entity: sensor.net_power
+    icon_color: yellow
+    tap_action:
+      action: navigate
+      navigation_path: /energy
+  - type: entity
+    entity: sensor.watermeter_current_usage
+    icon_color: blue
+    tap_action:
+      action: navigate
+      navigation_path: /energy
+    double_tap_action:
+      action: call-service
+      service: input_boolean.toggle
+      target:
+        entity_id: input_boolean.hide_header

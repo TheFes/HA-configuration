@@ -22,6 +22,20 @@ cards:
         icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
         badge_icon: "{{ 'mdi:alert' if expand(entity) | selectattr('state', 'in', ['unavailable', 'unknown']) | list | count > 0 }}"
         badge_color: red
+      - type: conditional
+        conditions:
+          - entity: fan.luchtreiniger_slaapkamer
+            state_not: "unavailable"
+          - entity: fan.luchtreiniger_slaapkamer
+            state_not: "unknown"
+        card:
+          type: custom:mushroom-template-card
+          layout: vertical
+          entity: fan.luchtreiniger_slaapkamer
+          icon: "{{ 'mdi:fan' if is_state(entity, 'on') else 'mdi:fan-off'}}"
+          icon_color: "{{ 'yellow' if is_state(entity, 'on') }}"
+          badge_icon: "{{ 'mdi:alert' if is_state(entity, ['unavailable', 'unknown']) }}"
+          badge_color: red
       - type: custom:mushroom-template-card
         entity: cover.slaapkamer_zolder_template
         layout: vertical

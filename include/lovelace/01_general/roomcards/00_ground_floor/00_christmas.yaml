@@ -5,30 +5,18 @@ conditions:
 card:
   type: custom:vertical-stack-in-card
   cards:
-    - type: custom:state-switch
-      entity: group
-      states:
-        admin:
-          type: custom:mushroom-template-card
-          primary: Kerst
-          icon: fas:sleigh
-          icon_color: green
-          layout: horizontal
-          tap_action:
-            action: none
-          double_tap_action:
-            action: call-service
-            service: input_boolean.toggle
-            target:
-              entity_id: input_boolean.christmas_time
-        user:
-          type: custom:mushroom-template-card
-          primary: Kerst
-          icon: fas:sleigh
-          icon_color: green
-          layout: horizontal
-          tap_action:
-            action: none
+    - type: custom:mushroom-template-card
+      primary: Kerst
+      icon: fas:sleigh
+      icon_color: green
+      layout: horizontal
+      tap_action:
+        action: none
+      double_tap_action:
+        action: call-service
+        service: input_boolean.toggle
+        target:
+          entity_id: input_boolean.christmas_time
     - type: custom:auto-entities
       card:
         type: custom:vertical-stack-in-card
