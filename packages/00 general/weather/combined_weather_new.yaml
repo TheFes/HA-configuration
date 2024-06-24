@@ -196,11 +196,6 @@ template:
         variables:
           type: hourly
           hourly: *combine_forecasts
-      - alias: TEMP check wrong data
-        variables:
-          type: daily
-          data_check: >
-            {{ forecast_daily }}
     # template weather entity which will combine all the data from the other weather entities
     weather:
       - name: Combined
@@ -455,8 +450,6 @@ template:
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°C"
-        attributes:
-          data_check: "{{ data_check }}"
       - unique_id: e61acc80-7348-45ed-b83c-070109cd4fe1
         name: Weather Combined Max Temp Tomorrow
         state: "{{ daily[1].temperature }}"
