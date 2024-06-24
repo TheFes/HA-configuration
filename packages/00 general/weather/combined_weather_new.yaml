@@ -36,6 +36,7 @@ template:
                 {{
                   states.weather
                     | map(attribute='entity_id')
+                    | select('has_value')
                     | reject('search', 'combined')
                     | list
                   }}
