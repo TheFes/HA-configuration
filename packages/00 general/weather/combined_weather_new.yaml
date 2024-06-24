@@ -446,16 +446,46 @@ template:
     sensor:
       - unique_id: 7b190917-6d93-4c01-8854-4a1b7bf9d886
         name: Weather Combined Max Temp Today
-        state: "{{ daily[0].temperature }}"
+        state: >
+          {{
+            daily
+              | selectattr('datetime', 'search', now().date()| string)
+              | map(attribute='temperature')
+              | list
+              | first
+          }}
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°C"
+        availability: >
+          {{
+            daily is defined
+            and daily is list
+            and daily | selectattr('datetime', 'search', now().date() | string) | list | count > 0
+          }}
       - unique_id: e61acc80-7348-45ed-b83c-070109cd4fe1
         name: Weather Combined Max Temp Tomorrow
-        state: "{{ daily[1].temperature }}"
+        state: >
+          {{
+            daily
+              | selectattr('datetime', 'search', (now() + timedelta(days=1)).date()
+              | string)
+              | map(attribute='temperature')
+              | list
+              | first
+          }}
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°C"
+        availability: >
+          {{
+            daily is defined
+            and daily is list
+            and daily
+                  | selectattr('datetime', 'search', (now() + timedelta(days=1)).date() | string)
+                  | list
+                  | count > 0
+          }}
       - unique_id: 3098ef4f-aa24-4c27-ae00-514b699a1bfa
         name: Weather Combined daily condition
         state: "{{ daily[0].condition }}"
@@ -479,6 +509,7 @@ template:
             }
           %}
           {{ icon.get(daily[0].condition, 'mdi:cloud-alert') }}
+        availability: "{{ daily is defined and daily is list and daily | count > 0 }}"
     binary_sensor:
       - unique_id: 5e88168e-bd66-4f98-8a12-e4cab0fb42c8
         name: Weather combined sun in next hours
@@ -506,6 +537,7 @@ template:
           %}
           {% set next_hours = hourly[:3] | map(attribute='condition') | list %}
           {{ icon.get(statistical_mode(next_hours), 'mdi:cloud-alert') }}
+        availability: "{{ hourly is defined and hourly is list and hourly | count >= 3 }}"
 
   # template sensor to store which weather entities support hourly and daily forecasts
   - trigger:
