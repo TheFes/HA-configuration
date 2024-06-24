@@ -175,11 +175,11 @@ template:
                       {# find median for other (numeric) forecast types #}
                         {% else %}
                           {# filter out non numeric values #}
-                            {% set values = key_items | select('is_number') | list | sort %}
+                            {% set values = key_items  | map('replace', none, 0) | select('is_number') | map('float') | list | sort %}
                             {% if values | count > 0 %}
                               {# add forecast item to forecast #}
-                                {% set round = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | join %}
-                                {% set add_dict = {key: median(values)|round(1)} %}
+                                {% set round = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | list | first %}
+                                {% set add_dict = {key: median(values)|round(round)} %}
                                 {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
                             {% endif %}
                         {% endif %}
@@ -196,6 +196,11 @@ template:
         variables:
           type: hourly
           hourly: *combine_forecasts
+      - alias: TEMP check wrong data
+        variables:
+          type: daily
+          data_check: >
+            {{ forecast_daily }}
     # template weather entity which will combine all the data from the other weather entities
     weather:
       - name: Combined
@@ -450,6 +455,8 @@ template:
         device_class: temperature
         state_class: measurement
         unit_of_measurement: "°C"
+        attributes:
+          data_check: "{{ data_check }}"
       - unique_id: e61acc80-7348-45ed-b83c-070109cd4fe1
         name: Weather Combined Max Temp Tomorrow
         state: "{{ daily[1].temperature }}"
