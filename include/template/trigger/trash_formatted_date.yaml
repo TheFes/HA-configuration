@@ -10,8 +10,8 @@
       <<: &config
         state: >-
           {%- from 'helpers.jinja' import date_week -%}
-          {{ date_week(trigger.to_state.attributes.year_month_day_date) }}
-        availability: "{{ trigger.to_state.state not in [ 'unknown', 'unavailable', 'Geen' ] }}"
+          {{ date_week(trigger.to_state.state) }}
+        availability: "{{ trigger.entity_id | has_value }}"
         attributes:
           waste_type: >
             {% set name = this.attributes.friendly_name %}
@@ -20,9 +20,9 @@
               else name | replace(' & ', ', ') ~ ' & 🌲'
             }}
           collection_date: >
-            {{ trigger.to_state.attributes.year_month_day_date }}
+            {{ trigger.to_state.state }}
           in_two_weeks: >
-            {{ now().date() - as_datetime(trigger.to_state.attributes.year_month_day_date).date() <= timedelta(weeks=2) }}
+            {{ now().date() - as_datetime(trigger.to_state.state).date() <= timedelta(weeks=2) }}
 
 - trigger:
     - platform: state
