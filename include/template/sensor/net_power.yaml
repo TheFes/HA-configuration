@@ -1,35 +1,26 @@
 - sensor:
-    # Energy High
     - name: Net Power
-      unique_id: 199c6be9-6258-40a3-b3b7-6d8123d2464c
+      unique_id: 199c6be9-6258-40a3-b3b7-6d8123d2464d
       state: >
         {%- set p = integration_entities('dsmr')
                     | select('search', 'power')
-                    | select('search' , 'production')
-                    | list
-        %}
-        {%- set p = (
-                    expand(p)
-                      | map(attribute='state')
-                      | select('is_number')
-                      | map('float')
-                      | sum
-                    ) /2
+                    | select('search', 'production')
+                    | map('states')
+                    | select('is_number')
+                    | map('float')
+                    | sum 
+                    | multiply(500)
         %}
         {%- set c = integration_entities('dsmr')
                     | select('search', 'power')
-                    | select('search' , 'consumption')
-                    | list
+                    | select('search', 'consumption')
+                    | map('states')
+                    | select('is_number')
+                    | map('float')
+                    | sum 
+                    | multiply(500)
         %}
-        {%- set c = (
-                    expand(c)
-                      | map(attribute='state')
-                      | select('is_number')
-                      | map('float')
-                      | sum
-                    ) /2
-        %}
-        {{ ((c - p) * 1000) | round(0) }}
+        {{ (c - p) | round(0) }}
       icon: mdi:flash
       unit_of_measurement: "W"
       availability: >
