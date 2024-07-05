@@ -164,12 +164,12 @@ script:
                     entity_id: "{{ other }}"
                 - alias: "Short delay between toggle"
                   delay: 0.5
+      - delay:
+          seconds: 10
       - alias: "Restore state"
         service: scene.turn_on
         target:
           entity_id: scene.before
-      - delay:
-          seconds: 10
       - alias: "Disable blinking"
         service: light.turn_on
         data:
