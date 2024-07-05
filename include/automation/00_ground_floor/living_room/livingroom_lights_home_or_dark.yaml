@@ -89,7 +89,12 @@ action:
               - light.tv_lamp
               - light.keukenspotjes
               - light.speelhoek
-              - light.fotoboek
+          - alias: "Turn on bookcase led"
+            service: light.turn_on
+            entity_id: light.boekenkast
+            data:
+              brightness_pct: 15
+              color_temp: 500
           - alias: "TV on, bedtime children or holiday mode"
             choose:
               - conditions:
