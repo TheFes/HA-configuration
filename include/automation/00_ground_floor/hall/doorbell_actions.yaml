@@ -97,16 +97,26 @@ action:
             entity_id: sensor.house_mode
             state: "Thuis"
         sequence:
-          - alias: "Blink front door light"
-            service: light.turn_on
-            target:
-              entity_id: light.voordeur
-            data:
-              effect: Slow Pulse
-          - alias: "Blink lights using script"
-            service: script.turn_on
-            target:
-              entity_id: script.light_blink_alert
+          - parallel:
+              - sequence:
+                  - variables:
+                      light_state: "{{ states('light.voordeur') }}"
+                  - alias: "Blink front door light"
+                    repeat:
+                      count: 8
+                      sequence:
+                        - service: light.toggle
+                          target:
+                            entity_id: light.voordeur
+                        - delay: 1
+                  - alias: "Restore state"
+                    service: light.turn_{{ light_state }}
+                    target:
+                      entity_id: light.voordeur
+              - alias: "Blink lights using script"
+                service: script.turn_on
+                target:
+                  entity_id: script.light_blink_alert
       # Blink front door light when nobody is home
       - conditions:
           - alias: "Chime not active"
