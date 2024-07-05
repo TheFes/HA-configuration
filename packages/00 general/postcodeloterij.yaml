@@ -14,17 +14,30 @@ template:
       - platform: event
         event_type: update_postcodeloterij_prizes
     action:
+      - variables:
+          month: >
+            {{
+              trigger.event.data.month | int
+              if
+                trigger.platform == 'event'
+                and trigger.event.data is defined
+                and 'month' in trigger.event.data
+              else
+                (now().replace(day=1) - timedelta(days=1)).strftime("%Y%m") | int
+            }}
       - service: rest_command.postcodeloterij
+        data:
+          month: "{{ month }}"
         response_variable: prizes
       - variables:
           prizecount: "{{ prizes.content.prizeCount }}"
           prizes: >
-              {% set ns = namespace(prizes=[]) %}
-              {% for p in prizes.content.wonPrizes %}
-                {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
-              {% endfor %}
-              {{ ns.prizes }}
-      - if: "{{ prizecount > 0 }}"
+            {% set ns = namespace(prizes=[]) %}
+            {% for p in prizes.content.wonPrizes %}
+              {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
+            {% endfor %}
+            {{ ns.prizes }}
+      - if: "{{ prizecount | default(0) > 0 }}"
         then:
           - alias: "Send notification"
             service: notify.mobile_app_pixel_7_pro
@@ -32,7 +45,7 @@ template:
               title: "🏆 Winnen doe je bij..."
               message: >
                 {% set m = 'prijs' if prizecount == 1 else (prizezount ~ ' prijzen') %}
-                "We hebben {{ m }}: {{ prizes | join(', ') }}"
+                We hebben {{ m }} in de trekking van {{ month }}: {{ prizes | join(', ') }}
               data:
                 channel: LotteryPrize
                 ttl: 0
@@ -42,7 +55,8 @@ template:
     sensor:
       - name: Postcodeloterij
         unique_id: 12f71395-3d76-434a-a3d0-9f01a03b834c
-        icon: mdi:gift
+        icon: "{{ 'mdi:gift' if prizecount > 0 else 'mdi:emoticon-cry' }}"
         state: "{{ prizecount }}"
         attributes:
           prizes: "{{ prizes }}"
+          month: "{{ month }}"
