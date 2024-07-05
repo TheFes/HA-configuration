@@ -10,6 +10,10 @@ condition:
     condition: state
     entity_id: sensor.house_mode
     state: "Vakantie"
+  - alias: "Guest mode off"
+    condtion: state
+    entity_id: binary_sensor.gast
+    state: "off"
 action:
   - variables:
       light_list:
