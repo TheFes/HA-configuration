@@ -1,0 +1,48 @@
+rest_command:
+  postcodeloterij:
+    url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_MT_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
+    method: POST
+    payload: !secret postcodeloterij
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+
+template:
+  - trigger:
+      - platform: template
+        value_template: "{{ now().day == 1 and now() > today_at('18:00') }}"
+      - platform: event
+        event_type: update_postcodeloterij_prizes
+    action:
+      - service: rest_command.postcodeloterij
+        response_variable: prizes
+      - variables:
+          prizecount: "{{ prizes.content.prizeCount }}"
+          prizes: >
+              {% set ns = namespace(prizes=[]) %}
+              {% for p in prizes.content.wonPrizes %}
+                {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
+              {% endfor %}
+              {{ ns.prizes }}
+      - if: "{{ prizecount > 0 }}"
+        then:
+          - alias: "Send notification"
+            service: notify.mobile_app_pixel_7_pro
+            data:
+              title: "🏆 Winnen doe je bij..."
+              message: >
+                {% set m = 'prijs' if prizecount == 1 else (prizezount ~ ' prijzen') %}
+                "We hebben {{ m }}: {{ prizes | join(', ') }}"
+              data:
+                channel: LotteryPrize
+                ttl: 0
+                priority: high
+                notification_icon: mdi:trophy
+                tag: LotteryPrize
+    sensor:
+      - name: Postcodeloterij
+        unique_id: 12f71395-3d76-434a-a3d0-9f01a03b834c
+        icon: mdi:gift
+        state: "{{ prizecount }}"
+        attributes:
+          prizes: "{{ prizes }}"
