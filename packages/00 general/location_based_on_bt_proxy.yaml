@@ -1,20 +1,22 @@
 template:
-  - sensor:
+  - trigger:
+      - platform: state
+        entity_id: device_tracker.pixel_7_pro_beacon
+    sensor:
       - unique_id: cf3f416f-9385-48df-a37c-a2c5525107a9
         name: Location Phone Martijn BT
         state: &state >
-          {% set floor =  {
-                            '94:b9:7e:e3:94:c0': 'Zolder',
-                            '94:b9:7e:e3:8e:f0': 'Beneden | Trapkast',
-                            '94:b9:7e:e3:93:88': 'Eerste verdieping',
-                            '94:b9:7e:e3:8e:f0': 'Beneden | TV-Hoek',
-                            '00:E0:42:AE:F7:03': 'Thuis'
-                          }
-          %}
-          {% set id = this.attributes.get('id', 'unknown') %}
-          {%- set source = state_attr(this.attributes.get('id', ''), 'source') %}
-          {%- set source = source[:17] if source else '' %}
-          {{ floor[source] if source in floor else 'Niet thuis' }}
+          {% if trigger.to_state.state == 'home' %}
+            {%- set source = state_attr(trigger.entity_id, 'source') | default('none', true) | lower %}
+            {% set ns = namespace(data=[]) %}
+            {% for device in label_devices('bt_proxy') %}
+              {% set mac = dict.from_keys(device_attr(device, 'connections') | default({}, true)).get('mac', 'none') %}
+              {% set ns.data = ns.data + [dict(floor=floor_name(device), mac=mac | lower)] %}
+            {% endfor %}
+            {{ ns.data | selectattr('mac', 'eq', source) | map(attribute='floor') | list | first | default('Thuis') }}
+          {% else %}
+            {{ state_translated('person.martijn') }}
+          {% endif %}
         icon: &icon >
           {% if this.state == 'Zolder' %}
             mdi:home-floor-2
@@ -27,14 +29,12 @@ template:
           {% else %}
             mdi:tree
           {% endif %}
-        attributes:
-          id: "device_tracker.pixel_7_pro_beacon"
-      - unique_id: b90950d1-0504-436d-a5e0-b9fd3fc83695
-        name: Location Watch Martijn BT
-        state: *state
-        icon: *icon
-        attributes:
-          id: "device_tracker.pixel_watch_beacon"
+      # - unique_id: b90950d1-0504-436d-a5e0-b9fd3fc83695
+      #   name: Location Watch Martijn BT
+      #   state: *state
+      #   icon: *icon
+      #   attributes:
+      #     id: "device_tracker.pixel_watch_beacon"
 
 automation:
   - id: 22a1f4bd-d654-480e-a0d7-c3786bdee7f9
