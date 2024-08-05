@@ -12,74 +12,53 @@ input_select:
       - Zuid
     icon: mdi:map-marker
 
-# 2 RESTFul sensors to gather the data from the API.
-# Data of previous year is used to let the list start with the Summer holiday of the previous year
-sensor:
-  - platform: rest
-    name: Schoolvakanties vorig jaar
-    resource_template: >
-      {%- set y = now().year %}
-      {%- set schoolyear = [y - 2, y - 1] | join('-') if now().month < 8 else [y - 1, y] | join('-') %}
-      https://opendata.rijksoverheid.nl/v1/sources/rijksoverheid/infotypes/schoolholidays/schoolyear/{{ schoolyear }}?output=json
-    value_template: "{{ value_json.type }}"
-    json_attributes_path: "$.content[0]"
-    json_attributes:
-      - vacations
-  - platform: rest
-    name: Schoolvakanties huidig jaar
-    resource_template: >
-      {%- set y = now().year %}
-      {%- set schoolyear = [y - 1, y] | join('-') if now().month < 8 else [y, y + 1] | join('-') %}
-      https://opendata.rijksoverheid.nl/v1/sources/rijksoverheid/infotypes/schoolholidays/schoolyear/{{ schoolyear }}?output=json
-    value_template: "{{ value_json.type }}"
-    json_attributes_path: "$.content[0]"
-    json_attributes:
-      - vacations
+# Rest Command to get the data from the endpoint
+rest_command:
+  school_holidays:
+    url: https://opendata.rijksoverheid.nl/v1/infotypes/schoolholidays?output=json
 
 # Binary sensor which will be "on" in case it is currently a school holiday.
-# The attributes show the selected region, the current holiday and a list with all holidays
+# The attributes show the selected region, the current holiday and a the upcoming holidays for the current school year (next school year in case it's summer holiday)
 template:
-  - binary_sensor:
-      unique_id: 4d816314-1eaf-41d0-ab16-ec3c57bac38f
+  - trigger:
+      - platform: time
+        at: "00:00"
+      - platform: event
+        event_type: update_school_holidays
+    action:
+      - action: rest_command.school_holidays
+        response_variable: holidays
+      - variables:
+          data: >
+            {% set region = states('input_select.region') | lower %}
+            {% set holidays = holidays.get('content', []) | map(attribute='content') | sum(start=[]) | map(attribute='vacations') | sum(start=[]) %}
+            {% set ns = namespace(holidays={}) %}
+            {% for h in holidays %}
+              {% set type = h.type | trim %}
+              {% set compulsory = h.compulsorydates | bool %}
+              {% set date_info = h.regions | selectattr('region', 'search', region~'|heel Nederland') | first %}
+              {% set start = as_local(as_datetime(date_info.startdate)).date() | string %}
+              {% set end = as_local(as_datetime(date_info.enddate)).date() | string %}
+              {% set year, month = as_datetime(start).year, as_datetime(start).month %}
+              {% set startyear = year - 1 if month <= 8 else year %}
+              {% set schoolyear = startyear ~ '-' ~ (startyear + 1) %}
+              {% if end >= now().date() | string %}
+                {% set yeardata = ns.holidays.get(schoolyear, []) + [dict(type=type, compulsory=compulsory, start=start, end=end)] %}
+                {% set ns.holidays = dict(ns.holidays, **{schoolyear:yeardata}) %}
+              {% endif %}
+            {% endfor %}
+            {% set yr = (ns.holidays.items() | map(attribute='1') | sum(start=[]) | selectattr('type', 'eq', 'Zomervakantie') | map(attribute='start') | list | first | as_datetime).year %}
+            {% set current_sy = (yr - 1) ~ '-' ~ yr %}
+            {% set current = ns.holidays.get(current_sy, []) | selectattr('start', '<=', now().date() | string) | selectattr('end', '>=', now().date() | string) | first | default({}) %}
+            {% set upcoming = ns.holidays.get(current_sy, []) | rejectattr('type', 'eq',current.get('type')) | list %}
+            {% set upcoming = upcoming if upcoming else ns.holidays.get(current_sy.split('-') | map('add', 1) | map('int') | join('-'), []) %}
+            {% set data = dict(current=current, upcoming=upcoming) %}
+            {{ data }}
+    binary_sensor:
+      unique_id: 4d816314-1eaf-41d0-ab16-ec3c57bac38f5
       name: Schoolvakantie
-      state: >
-        {%- set v = state_attr('binary_sensor.schoolvakantie', 'vakanties') %}
-        {%- set c = v | selectattr('start', '<=', now().date() | string)
-                      | selectattr('end', '>=', now().date() | string)
-                      | map(attribute='name') | join
-        %}
-        {{ iif(c) }}
+      state: "{{ iif(data.current) }}"
       attributes:
         regio: "{{ states('input_select.region') }}"
-        nu: >
-          {%- set v = state_attr('binary_sensor.schoolvakantie', 'vakanties') %}
-          {%- set c = v | selectattr('start', '<=', now().date() | string)
-                        | selectattr('end', '>=', now().date() | string)
-                        | map(attribute='name') | join
-          %}
-          {{ iif(c, c, 'Geen vakantie') }}
-        vakanties: >
-          {# data summer holiday last school year #}
-            {%- set vs = state_attr('sensor.schoolvakanties_vorig_jaar', 'vacations') %}
-            {%- set vs = iif(vs, vs, [ dict(type='error rest sensor vorig jaar') ]) %}
-            {%- set r = state_attr('input_select.region', 'options').index(states('input_select.region'))
-                        if not states('input_select.region') in [ 'unavailable', 'unknown' ]
-                        else 0
-            %}
-            {%- set n = vs[-1].type.strip() %}
-            {%- set s = as_datetime(vs[-1].get('regions', [{},{},{}])[r].get('startdate', 0)).date() | string %}
-            {%- set e = as_datetime(vs[-1].get('regions', [{},{},{}])[r].get('enddate', 0)).date() | string %}
-            {%- set o = [ dict(name=n, start=s, end=e) ] %}
-          {# data school holidays current school year #}
-            {%- set vs = state_attr('sensor.schoolvakanties_huidig_jaar', 'vacations') %}
-            {%- set vs = iif(vs, vs, [ dict(type='error rest sensor huidig jaar') ]) %}
-            {%- set ns = namespace(v = []) %}
-            {%- for v in vs %}
-              {%- set n = v.type.strip() %}
-              {%- set r = 0 if v.get('regions', [ 1 ]) | count == 1 else r %}
-              {%- set s = as_datetime(v.get('regions', [{}])[r].get('startdate', 0)).date() | string %}
-              {%- set e =  as_datetime(v.get('regions', [{}])[r].get('enddate', 0)).date() | string %}
-              {%- set ns.v = ns.v + [ dict(name=n, start=s, end=e) ] %}
-            {%- endfor %}
-          {# combine data previous year and current year #}
-            {{ o + ns.v }}
+        nu: "{{ data.current.get('type', 'Geen vakantie')}}"
+        vakanties: "{{ data.upcoming }}"
