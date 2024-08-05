@@ -196,7 +196,7 @@ script:
           - conditions: "{{ action == 'turn_on' }}"
             sequence:
               - if: >
-                  {{ states('light.' ~ room) | bool('na') is boolean }}
+                  {{ light | has_value }}
                 then:
                   - if: "{{ script | has_value }}"
                     then:
@@ -215,11 +215,7 @@ script:
                           entity_id: "{{ switch }}"
           - conditions: "{{ action == 'turn_off' }}"
             sequence:
-              - if: >
-                  {{
-                    states('light.' ~ room) | bool('na') is boolean
-                    and not is_state('sensor.house_mode', 'Vakantie')
-                  }}
+              - if: "{{ light | has_value }}"
                 then:
                   - if: "{{ script | has_value }}"
                     then:
