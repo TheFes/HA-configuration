@@ -20,7 +20,7 @@ action:
           - alias: toggle light
             service: light.toggle
             target:
-              entity_id: light.speelhoek_template
+              entity_id: light.groep_speelhoek
       - conditions:
           - alias: "Double"
             condition: template
@@ -28,4 +28,4 @@ action:
         sequence:
           - service: light.toggle
             target:
-              entity_id: light.groep_speelhoek
+              entity_id: light.boekenkast

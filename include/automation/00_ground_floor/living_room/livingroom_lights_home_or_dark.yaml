@@ -16,14 +16,23 @@ trigger:
     entity_id: media_player.nvidia_shield
     from: "off"
     id: "shield"
+  - platform: state
+    entity_id:
+      - person.martijn
+      - person.marleen
+    to: "home"
+    id: "home_while_sleeping"
 condition:
-  - alias: "Holiday or at home?"
-    condition: state
-    entity_id: sensor.house_mode
-    state:
-      - "Vakantie"
-      - "Thuis"
-      - "Gast"
+  - condition: or
+    conditions:
+      - alias: "Holiday or at home?"
+        condition: state
+        entity_id: sensor.house_mode
+        state:
+          - "Vakantie"
+          - "Thuis"
+          - "Gast"
+      - "{{ trigger.id == 'home_while_sleeping' and is_state('sensor.house_mode', 'Slapen') }}"
   - alias: "Triggered by Shield which turned unavailable"
     condition: template
     value_template: "{{ not (trigger.id == 'shield' and trigger.to_state.state == 'unavailable') }}"
@@ -32,6 +41,13 @@ variables:
 action:
   - alias: "Arriving home"
     choose:
+      - conditions: "{{ trigger.id == 'home_while_sleeping' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: light.eettafel
+            data:
+              brightness: 100
       - conditions: "{{ trigger.id == 'home' }}"
         sequence:
           - alias: "Turn on exractor hood plug when arriving home"
@@ -40,7 +56,8 @@ action:
               entity_id: switch.afzuigkap
           - alias: "Not bed time yet"
             condition: time
-            before: " 22:00:00"
+            after: "06:00"
+            before: "22:00:00"
           - alias: "Google Home Event script"
             service: script.google_home_event
             data:
@@ -122,7 +139,3 @@ action:
                         - light.tv_lamp
                     data:
                       brightness: 100
-                  # - alias: "Turn play corner table light off"
-                  #   service: light.turn_off
-                  #   target:
-                  #     entity_id: light.speelhoek_tafel

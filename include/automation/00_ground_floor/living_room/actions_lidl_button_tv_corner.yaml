@@ -25,6 +25,6 @@ action:
             condition: template
             value_template: "{{ event == 'off' }}"
         sequence:
-          - service: light.toggle
+          - service: switch.toggle
             target:
-              entity_id: light.groep_woonkamer
+              entity_id: switch.tv_meubel

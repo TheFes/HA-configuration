@@ -7,7 +7,7 @@ trigger:
     to: "on"
   - platform: state
     entity_id: sun.sun
-    attribute: rising
+    to: above_horizon
   - platform: numeric_state
     entity_id: sensor.weather_combined_max_temp_today
     above: 18
@@ -15,7 +15,7 @@ trigger:
     entity_id: weather.combined
     to:
       - sunny
-      - party-cloudy
+      - partycloudy
   - platform: state
     entity_id: binary_sensor.rain
     to: "off"
@@ -41,7 +41,7 @@ action:
         entity_id: weather.combined
         state:
           - sunny
-          - partly-cloudy
+          - partlycloudy
       - alias: "Temperature rising"
         condition: state
         entity_id: binary_sensor.trend_woonkamer_temp
