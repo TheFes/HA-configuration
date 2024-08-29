@@ -29,7 +29,7 @@ template:
                 (now().replace(day=1) - timedelta(days=1)).strftime("%Y%m") | int
             }}
           month_formatted: >
-            {% set months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
+            {% set months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'october', 'november', 'december'] %}
             {{ months[month % 100 -1] ~ ' ' ~ month // 100 }}
       - action: rest_command.postcodeloterij
         data:
@@ -57,7 +57,7 @@ template:
               title: "🎁 Winnen doe je bij..."
               message: >
                 {% set m = 'prijs' if prizecount == 1 else (prizecount ~ ' prijzen') %}
-                We hebben {{ m }} in de trekking van {{ month }}: {{ prizes | join(', ') }}
+                We hebben {{ m }} in de trekking van {{ month_formatted }}: {{ prizes | join(', ') }}
               data:
                 channel: LotteryPrize
                 ttl: 0
