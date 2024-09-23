@@ -43,7 +43,7 @@ action:
             longitude: "{{ lon }}"
           set_timestamp: false
   - alias: "Update device tracker"
-    service: device_tracker.see
+    action: device_tracker.see
     data:
       dev_id: car
       host_name: Locatie Auto

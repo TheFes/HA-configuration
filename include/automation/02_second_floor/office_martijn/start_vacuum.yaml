@@ -26,14 +26,14 @@ condition:
         condition: state
         entity_id: sensor.house_mode
         state: "Vakantie"
-  - "{{ not is_state('vacuum.mi_robot_vacuum', ['unavailable', 'unknown']) }}"
+  - "{{ not is_state('vacuum.valetudo_brokenachingdragonfly', ['unavailable', 'unknown']) }}"
 action:
   - alias: "Action?"
     choose:
       - conditions: "{{ trigger.id == 'not_today' }}"
         sequence:
           - alias: "Turn on input boolean"
-            service: input_boolean.turn_on
+            action: input_boolean.turn_on
             target:
               entity_id: input_boolean.no_vacuum_today
       - conditions:
@@ -47,17 +47,17 @@ action:
                 entity_id: input_boolean.no_vacuum_today
                 state: "off"
             then:
-              - service: vacuum.start
+              - action: vacuum.start
                 target:
-                  entity_id: vacuum.mi_robot_vacuum
+                  entity_id: vacuum.valetudo_brokenachingdragonfly
             else:
               - alias: "Turn off input boolean"
-                service: input_boolean.turn_off
+                action: input_boolean.turn_off
                 target:
                   entity_id: input_boolean.no_vacuum_today
     default:
       - alias: "Notification to phones"
-        service: notify.all_phones
+        action: notify.all_phones
         data:
           message: "Is alles van de grond?"
           title: "De stofzuiger begint om 09:00"

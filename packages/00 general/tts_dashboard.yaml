@@ -116,14 +116,14 @@ script:
             state: "TTS"
         then:
           - alias: "Send TTS using Google Home Resume script"
-            service: script.turn_on
+            action: script.turn_on
             target:
               entity_id: script.google_home_resume
             data:
               variables:
                 action:
                   - alias: "Send TTS message"
-                    service: tts.google_cloud_say
+                    action: tts.google_cloud_say
                     target:
                       entity_id: "{{ target }}"
                     data:
@@ -138,7 +138,7 @@ script:
             choose:
               - conditions: "{{ True if default_volume else False }}"
                 sequence:
-                  - service: input_number.set_value
+                  - action: input_number.set_value
                     target:
                       entity_id: input_number.tts_volume
                     data:
@@ -147,7 +147,7 @@ script:
             choose:
               - conditions: "{{ default_message is defined }}"
                 sequence:
-                  - service: input_text.set_value
+                  - action: input_text.set_value
                     target:
                       entity_id: input_text.tts_message
                     data:
@@ -176,7 +176,7 @@ script:
                   url: http://icecast.vrtcdn.be/stubru.aac
                   title: "Life is Music"
           - alias: "Turn on Radio 2"
-            service: media_player.play_media
+            action: media_player.play_media
             target:
               entity_id: "{{ target }}"
             data:
@@ -190,7 +190,7 @@ script:
                   images:
                     - url: "{{ radio_data[states('input_select.radio_channel')].picture }}"
           - alias: "Reset selction"
-            service: input_select.select_option
+            action: input_select.select_option
             target:
               entity_id: input_select.radio_channel
             data:
@@ -199,6 +199,6 @@ script:
         choose:
           - conditions: "{{ reset_booleans and (boolean is defined) }}"
             sequence:
-              - service: homeassistant.turn_off
+              - action: homeassistant.turn_off
                 target:
                   entity_id: "{{ boolean }}"

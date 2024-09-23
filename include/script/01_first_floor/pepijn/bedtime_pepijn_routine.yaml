@@ -3,37 +3,28 @@ bedtime_pepijn_routine:
   icon: mdi:bed
   sequence:
     - alias: "Dim ceiling light"
-      service: light.turn_on
+      action: light.turn_on
       target:
         entity_id: light.pepijn_template
       data:
         brightness_pct: 40
     - alias: "Bed group"
-      service: light.turn_on
+      action: light.turn_on
       target:
         entity_id: light.groep_bed_pepijn
       data:
         color_temp_kelvin: 3000
         brightness_pct: 20
-    - alias: "Turn on reading light"
-      service: light.turn_on
+    - alias: "Turn on reading light and globe"
+      action: light.turn_on
       target:
         entity_id:
-          - light.leeslamp_stoel_pepijn
-    - alias: "Turn on graafmachine"
-      service: light.turn_on
-      target:
-        entity_id: light.graafmachine
-      data:
-        brightness: 26
-        rgb_color:
-          - 255
-          - 148
-          - 3
+          - light.booglamp
+          - light.wereldbol
     - if: "{{ use_tts is defined and use_tts }}"
       then:
         - alias: "Send TTS"
-          service: tts.google_cloud_say
+          action: tts.google_cloud_say
           target:
             entity_id: media_player.pepijn_mini
           data:

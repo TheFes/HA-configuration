@@ -21,15 +21,15 @@ action:
           - if: "{{ is_state(group, 'on') }}"
             then:
               - alias: "Turn off all lights in room"
-                service: light.turn_off
+                action: light.turn_off
                 target:
                   entity_id: "{{ group }}"
             else:
               - alias: "Turn on main light"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ main }}"
-              - service: script.resume_transition_lights
+              - action: script.resume_transition_lights
                 data:
                   light: light.pepijn_leeslamp
       - conditions:
@@ -39,18 +39,18 @@ action:
         sequence:
           - if: "{{ main in state_attr('group.transition_active', 'entity_id') or main | replace('_template', '') in state_attr('group.transition_active', 'entity_id') }}"
             then:
-              - service: light.turn_off
+              - action: light.turn_off
                 target:
                   entity_id: "{{ main }}"
               - wait_template: "{{ not (main in state_attr('group.transition_active', 'entity_id') or main | replace('_template', '') in state_attr('group.transition_active', 'entity_id')) }}"
           - alias: "Light on 100% brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ main | replace('_template', '') }}"
             data:
               brightness: 255
               color_temp: "{{ state_attr(main | replace('_template', ''), 'min_mireds') }}"
-          - service: script.resume_transition_lights
+          - action: script.resume_transition_lights
             data:
               light: light.pepijn_leeslamp
       - conditions:
@@ -59,7 +59,7 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'long' }}"
         sequence:
           - alias: "Toggle Bed Group"
-            service: light.toggle
+            action: light.toggle
             target:
               entity_id: light.groep_bed_pepijn
             data:
@@ -72,6 +72,6 @@ action:
                 entity_id: light.pepijn_leeslamp
                 state: "on"
             then:
-              - service: script.resume_transition_lights
+              - action: script.resume_transition_lights
                 data:
                   light: light.pepijn_leeslamp

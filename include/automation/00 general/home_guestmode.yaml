@@ -11,7 +11,7 @@ condition:
     entity_id: input_boolean.gast
     state: "on"
 action:
-  - service: notify.mobile_app_pixel_7_pro
+  - action: notify.mobile_app_pixel_7_pro
     data:
       title: "🏡 Welkom thuis"
       message: "Mag de gastmodus uit?"
@@ -40,6 +40,6 @@ action:
       - conditions: "{{ wait.trigger.event.data.action == 'guest_mode_off' }}"
         sequence:
           - alias: "Turn of guest mode"
-            service: input_boolean.turn_off
+            action: input_boolean.turn_off
             target:
               entity_id: input_boolean.gast

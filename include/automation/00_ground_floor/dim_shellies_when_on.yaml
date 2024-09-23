@@ -19,7 +19,7 @@ condition:
   - "{{ now() - trigger.to_state.last_changed > timedelta(seconds=10) }}"
 action:
   - alias: "Adjust brightness"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: "{{ light }}"
     data:

@@ -16,7 +16,7 @@ condition:
       {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_7_pro_last_notification') }}
 action:
   - alias: "Send notification to Marleen"
-    service: notify.mobile_app_marleen_app
+    action: notify.mobile_app_marleen_app
     data:
       title: "DigiD code"
       message: "{{ trigger.to_state.state }}"

@@ -1,0 +1,12 @@
+substitutions:
+  name: Booglamp
+  type: Shelly1PM
+  connected_light: light.booglamp
+  lower_name: shelly1pm-booglamp
+  ip: 192.168.2.20
+  max_temp: "70.0"
+  default_button_type: Momentary
+  restore_mode: RESTORE_DEFAULT_ON
+
+packages:
+  shelly: !include packages/shelly/shelly1_pm.yaml

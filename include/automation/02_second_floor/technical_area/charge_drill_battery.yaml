@@ -4,12 +4,12 @@ trigger:
   - platform: time
     at: "09:00"
     id: "on"
-    variables: 
+    variables:
       run: "{{ now().weekday() == 4 }}"
   - platform: time
     at: "09:15"
     id: "off"
-    variables: 
+    variables:
       run: "{{ now().weekday() == 4 }}"
   - platform: numeric_state
     entity_id: sensor.accu_boormachine_power
@@ -17,12 +17,12 @@ trigger:
     for:
       minutes: 2
     id: "off"
-    variables: 
+    variables:
       run: true
 condition:
   - condition: template
     value_template: "{{ run }}"
 action:
-  - service: switch.turn_{{ trigger.id }}
+  - action: switch.turn_{{ trigger.id }}
     target:
       entity_id: switch.accu_boormachine

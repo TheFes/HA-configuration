@@ -17,15 +17,15 @@ action:
         conditions: "{{ trigger.to_state.state == 'single' }}"
         sequence:
           - alias: "Turn on reading light"
-            service: light.toggle
+            action: light.toggle
             target:
               entity_id:
-                - light.leeslamp_stoel_pepijn
+                - light.booglamp
       - alias: "Actions on long press"
         conditions: "{{ trigger.to_state.state == 'hold' }}"
         sequence:
           - alias: "Activate script"
-            service: script.turn_on
+            action: script.turn_on
             target:
               entity_id: script.bedtime_pepijn_routine
             data:

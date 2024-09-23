@@ -19,16 +19,16 @@ action:
       - conditions: "{{ states('sensor.tv_meubel_power') | float(0) > 40 }}"
         sequence:
           - alias: "Enable guest mode to avoid that they will be in the dark"
-            service: input_boolean.turn_on
+            action: input_boolean.turn_on
             target:
               entity_id: input_boolean.gast
     default:
       - alias: "All lights off"
-        service: light.turn_off
+        action: light.turn_off
         target:
           entity_id: light.groep_huis
       - alias: "Google Home Event script"
-        service: script.google_home_event
+        action: script.google_home_event
         data:
           resume_id: away
           resume: false
@@ -45,20 +45,9 @@ action:
                 above: 1
             sequence:
               - alias: "Turn off plug"
-                service: switch.turn_off
+                action: switch.turn_off
                 target:
                   entity_id: switch.afzuigkap
-      - alias: "Turn off plug for TV if not active"
-        if:
-          - alias: "TV doesn't use much power"
-            condition: numeric_state
-            entity_id: sensor.tv_meubel_power
-            below: 40
-        then:
-          - alias: "Turn off TV table"
-            service: switch.turn_off
-            target:
-              entity_id: switch.tv_meubel
   - alias: "Turn off desk Martijn if not active"
     choose:
       - conditions:
@@ -76,6 +65,6 @@ action:
             state: "off"
         sequence:
           - alias: "Bureau Martijn uit"
-            service: switch.turn_off
+            action: switch.turn_off
             target:
               entity_id: switch.bureau_martijn_template

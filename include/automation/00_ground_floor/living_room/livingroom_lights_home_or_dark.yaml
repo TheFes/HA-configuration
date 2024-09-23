@@ -7,6 +7,7 @@ trigger:
     entity_id: binary_sensor.light_inside
     from: "on"
     to: "off"
+    id: dark
   - platform: state
     entity_id: sensor.house_mode
     from: "Afwezig"
@@ -15,43 +16,38 @@ trigger:
   - platform: state
     entity_id: media_player.nvidia_shield
     from: "off"
-    id: "shield"
+    not_to:
+      - unavailable
+      - unknown
+    id: "dark"
   - platform: state
     entity_id:
       - person.martijn
       - person.marleen
+    from: "not_home"
     to: "home"
     id: "home_while_sleeping"
-condition:
-  - condition: or
-    conditions:
-      - alias: "Holiday or at home?"
-        condition: state
-        entity_id: sensor.house_mode
-        state:
-          - "Vakantie"
-          - "Thuis"
-          - "Gast"
-      - "{{ trigger.id == 'home_while_sleeping' and is_state('sensor.house_mode', 'Slapen') }}"
-  - alias: "Triggered by Shield which turned unavailable"
-    condition: template
-    value_template: "{{ not (trigger.id == 'shield' and trigger.to_state.state == 'unavailable') }}"
-variables:
-  tv_on: "{{ is_state('switch.tv_meubel', 'on') }}"
 action:
   - alias: "Arriving home"
     choose:
-      - conditions: "{{ trigger.id == 'home_while_sleeping' }}"
+      - conditions:
+          - condition: trigger
+            id: home_while_sleeping
+          - condition: state
+            entity_id: sensor.house_mode
+            state: Slapen
         sequence:
-          - service: light.turn_on
+          - action: light.turn_on
             target:
               entity_id: light.eettafel
             data:
               brightness: 100
-      - conditions: "{{ trigger.id == 'home' }}"
+      - conditions:
+          - condition: trigger
+            id: home
         sequence:
           - alias: "Turn on exractor hood plug when arriving home"
-            service: switch.turn_on
+            action: switch.turn_on
             target:
               entity_id: switch.afzuigkap
           - alias: "Not bed time yet"
@@ -59,38 +55,19 @@ action:
             after: "06:00"
             before: "22:00:00"
           - alias: "Google Home Event script"
-            service: script.google_home_event
+            action: script.google_home_event
             data:
               resume_id: away
               resume: true
               ignore:
                 entity_id: media_player.shield
-          - if:
-              - alias: "TV plug off"
-                condition: state
-                entity_id: switch.tv_meubel
-                state: "off"
-            then:
-              - alias: "TV plug on"
-                service: switch.turn_on
-                target:
-                  entity_id: switch.tv_meubel
-              - alias: "Turn Shield off, and check if it worked, otherwise repeat"
-                repeat:
-                  sequence:
-                    - alias: "Turn Shield off"
-                      service: media_player.turn_off
-                      target:
-                        entity_id: media_player.nvidia_shield
-                    - delay: 5
-                  until:
-                    - alias: "Did it work?"
-                      condition: state
-                      entity_id: media_player.nvidia_shield
-                      state: "off"
-  - alias: "Dark inside and sun low"
-    choose:
+  - choose:
       - conditions:
+          - condition: trigger
+            id:
+              - dark
+              - shield
+              - home
           - alias: "Dark inside?"
             condition: state
             entity_id: binary_sensor.light_inside
@@ -98,16 +75,21 @@ action:
           - condition: sun
             after: sunset
             after_offset: "-03:00:00"
+          - condition: state
+            entity_id: sensor.house_mode
+            state:
+              - Thuis
+              - Gast
+              - Vakantie
         sequence:
           - alias: "Turn on lights"
-            service: light.turn_on
+            action: light.turn_on
             entity_id:
-              - light.booglamp
               - light.tv_lamp
               - light.keukenspotjes
               - light.speelhoek
           - alias: "Turn on bookcase led"
-            service: light.turn_on
+            action: light.turn_on
             entity_id: light.boekenkast
             data:
               brightness_pct: 15
@@ -115,27 +97,20 @@ action:
           - alias: "TV on, bedtime children or holiday mode"
             choose:
               - conditions:
-                  - or:
-                      - alias: "Holiday mode on?"
+                  - alias: "After bedtime?"
+                    condition: time
+                    after: "19:15:00"
+                  - not:
+                      - alias: "TV aan?"
                         condition: state
-                        entity_id: sensor.house_mode
-                        state: "Vakantie"
-                      - and:
-                          - alias: "After bedtime?"
-                            condition: time
-                            after: "19:15:00"
-                          - not:
-                              - alias: "TV aan?"
-                                condition: state
-                                entity_id: media_player.nvidia_shield
-                                state: "off"
+                        entity_id: media_player.nvidia_shield
+                        state: "off"
                 sequence:
                   - alias: "Dim some lights"
-                    service: light.turn_on
+                    action: light.turn_on
                     target:
                       entity_id:
                         - light.eettafel
                         - light.speelhoek
-                        - light.tv_lamp
                     data:
                       brightness: 100

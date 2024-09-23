@@ -11,6 +11,6 @@ trigger:
       - "off"
 action:
   - alias: "Turn on light"
-    service: light.turn_{{ trigger.to_state.state }}
+    action: light.turn_{{ trigger.to_state.state }}
     target:
       entity_id: light.technische_ruimte

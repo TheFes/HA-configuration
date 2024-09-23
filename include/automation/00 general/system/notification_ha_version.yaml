@@ -32,7 +32,7 @@ action:
       action_update: "{{ 'UPDATE_' ~ context.id }}"
       action_skip: "{{ 'SKIP_' ~ context.id }}"
   - alias: "Send notification to phone"
-    service: notify.mobile_app_pixel_7_pro
+    action: notify.mobile_app_pixel_7_pro
     data:
       title: >
         Update: {{ what }}
@@ -63,7 +63,7 @@ action:
         event_data:
           action: "{{ action_skip }}"
   - alias: "Update or skip"
-    service: update.{{ 'install' if 'UPDATE' in wait.trigger.event.data.action else 'skip' }}
+    action: update.{{ 'install' if 'UPDATE' in wait.trigger.event.data.action else 'skip' }}
     target:
       entity_id: "{{ trigger.entity_id }}"
   - if: "{{ wait.trigger.event.data.action == action_update }}"

@@ -32,6 +32,6 @@ condition:
       else true
     }}
 action:
-  - service: switch.turn_{{ 'off' if trigger.id == 'stable' else trigger.id }}
+  - action: switch.turn_{{ 'off' if trigger.id == 'stable' else trigger.id }}
     target:
       entity_id: switch.ecu_reset

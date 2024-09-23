@@ -10,7 +10,12 @@ recorder:
       - camera
       - weather
       - button
+      - device_tracker
     entity_globs:
-      - sensor.bm_*
-      - light.bm_*
-      - media_player.bm_*
+      - sensor.net_power
+      - automation.00_ulanzi_weather
+      - sensor.*_uptime
+      - sensor.chromecast_devices
+    event_types:
+      - forecast_add_entity
+      

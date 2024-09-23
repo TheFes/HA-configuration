@@ -12,11 +12,11 @@ condition:
 action:
   - if: "{{ trigger.to_state.state == 'off' }}"
     then:
-      - service: light.turn_off
+      - action: light.turn_off
         target:
           entity_id: "{{ [ 'light.zolder', 'light.wasmachinehoek'] | reject('eq', trigger.entity_id) | list }}"
     else:
-      - service: light.turn_on
+      - action: light.turn_on
         target:
           entity_id: "{{ [ 'light.zolder', 'light.wasmachinehoek'] | reject('eq', trigger.entity_id) | list }}"
         data:

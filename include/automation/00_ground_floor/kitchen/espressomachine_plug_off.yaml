@@ -37,6 +37,6 @@ action:
       - delay:
           minutes: 31
   - alias: "Turn plug off"
-    service: switch.turn_off
+    action: switch.turn_off
     target:
       entity_id: switch.espresso

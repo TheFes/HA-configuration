@@ -15,7 +15,7 @@ eta_martijn_routine:
             Martijn is nog niet onderweg, maar als hij nu vertrekt is hij om {{ eta }} thuis.
           {%- endif %}
     - alias: "Notification phone Marleen"
-      service: notify.mobile_app_marleen_app
+      action: notify.mobile_app_marleen_app
       data:
         title: "ETA Martijn"
         message: "{{ message }}"
@@ -23,11 +23,11 @@ eta_martijn_routine:
       entity_id: person.marleen
       state: "home"
     - alias: "TTS for speaker voice command"
-      service: script.google_home_voice
+      action: script.google_home_voice
       data:
         action:
           - alias: "Send TTS message"
-            service: tts.google_cloud_say
+            action: tts.google_cloud_say
             data:
               message: "{{ message }}"
             extra:

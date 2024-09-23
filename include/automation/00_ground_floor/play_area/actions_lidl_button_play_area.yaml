@@ -18,7 +18,7 @@ action:
             value_template: "{{ event == 'on' }}"
         sequence:
           - alias: toggle light
-            service: light.toggle
+            action: light.toggle
             target:
               entity_id: light.groep_speelhoek
       - conditions:
@@ -26,6 +26,6 @@ action:
             condition: template
             value_template: "{{ event == 'off' }}"
         sequence:
-          - service: light.toggle
+          - action: light.toggle
             target:
               entity_id: light.boekenkast

@@ -31,7 +31,7 @@ condition:
     value_template: "{{ now() - this.attributes.last_triggered > timedelta(seconds=30) }}"
 action:
   - alias: "Notification for phones"
-    service: notify.all_phones
+    action: notify.all_phones
     data:
       title: "🔔 Ding dong!"
       message: Er staat iemand aan de deur!
@@ -49,7 +49,7 @@ action:
             state: "off"
     then:
       - alias: "Pause Shield"
-        service: media_player.media_pause
+        action: media_player.media_pause
         target:
           entity_id: media_player.nvidia_shield
   - alias: "Google Home attic active or someone there"
@@ -70,14 +70,14 @@ action:
             state: "🏡2️⃣"
     then:
       - alias: "Send TTS using Google Home Resume script"
-        service: script.turn_on
+        action: script.turn_on
         target:
           entity_id: script.google_home_resume
         data:
           variables:
             action:
               - alias: "Send TTS message"
-                service: tts.google_cloud_say
+                action: tts.google_cloud_say
                 target:
                   entity_id: media_player.werkkamer_martijn_stereo
                 data:
@@ -105,16 +105,16 @@ action:
                     repeat:
                       count: 8
                       sequence:
-                        - service: light.toggle
+                        - action: light.toggle
                           target:
                             entity_id: light.voordeur
                         - delay: 1
                   - alias: "Restore state"
-                    service: light.turn_{{ light_state }}
+                    action: light.turn_{{ light_state }}
                     target:
                       entity_id: light.voordeur
               - alias: "Blink lights using script"
-                service: script.turn_on
+                action: script.turn_on
                 target:
                   entity_id: script.light_blink_alert
       # Blink front door light when nobody is home
@@ -129,7 +129,7 @@ action:
             state: "Afwezig"
         sequence:
           - alias: "Blink front door light"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.voordeur
             data:
@@ -157,13 +157,13 @@ action:
             {% set m = state_attr('calendar.m_m', 'message') | lower %}
             {{ m.split(' ') | last | title }}
           name: "{{ name_a or name_c }}"
-      - service: script.turn_on
+      - action: script.turn_on
         target:
           entity_id: script.google_home_resume
         data:
           variables:
             action:
-              - service: tts.google_cloud_say
+              - action: tts.google_cloud_say
                 data:
                   entity_id: media_player.beneden_groep
                   message: >

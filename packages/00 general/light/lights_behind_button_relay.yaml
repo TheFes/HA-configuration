@@ -39,12 +39,12 @@ light:
               or ((states(switch) | bool('na') is boolean) if switch is not none else true)
             }}
           turn_on:
-            - service: script.template_lights_actions
+            - action: script.template_lights_actions
               data:
                 template_light: "{{ this.entity_id }}"
                 action: turn_on
           turn_off:
-            - service: script.template_lights_actions
+            - action: script.template_lights_actions
               data:
                 template_light: "{{ this.entity_id }}"
                 action: turn_off
@@ -59,7 +59,7 @@ light:
             {% set effect = [def, custom] | reject('eq', 'None') | list %}
             {{ effect | first if effect else 'None' }}
           set_effect:
-            - service: script.template_lights_actions
+            - action: script.template_lights_actions
               data:
                 template_light: "{{ this.entity_id }}"
                 action: set_effect
@@ -73,7 +73,7 @@ light:
               {{ state_attr(light, 'brightness') | int(255) }}
             {% endif %}
           set_level:
-            - service: script.template_lights_actions
+            - action: script.template_lights_actions
               data:
                 template_light: "{{ this.entity_id }}"
                 action: set_level
@@ -89,7 +89,7 @@ light:
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {{ state_attr(light, 'max_mireds') }}
           set_temperature:
-            - service: light.turn_on
+            - action: light.turn_on
               data:
                 entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
                 color_temp: "{{ color_temp }}"
@@ -200,17 +200,17 @@ script:
                 then:
                   - if: "{{ script | has_value }}"
                     then:
-                      - service: "{{ script }}"
+                      - action: "{{ script }}"
                         data:
                           action: "on"
                     else:
-                      - service: light.turn_on
+                      - action: light.turn_on
                         target:
                           entity_id: "{{ light }}"
                 else:
                   - if: "{{ switch is not none }}"
                     then:
-                      - service: switch.turn_on
+                      - action: switch.turn_on
                         target:
                           entity_id: "{{ switch }}"
           - conditions: "{{ action == 'turn_off' }}"
@@ -219,22 +219,22 @@ script:
                 then:
                   - if: "{{ script | has_value }}"
                     then:
-                      - service: "{{ script }}"
+                      - action: "{{ script }}"
                         data:
                           action: "off"
                     else:
-                      - service: light.turn_off
+                      - action: light.turn_off
                         target:
                           entity_id: "{{ light }}"
                 else:
                   - if: "{{ switch is not none }}"
                     then:
-                      - service: switch.turn_off
+                      - action: switch.turn_off
                         target:
                           entity_id: "{{ switch }}"
           - conditions: "{{ action == 'set_level' }}"
             sequence:
-              - service: light.turn_on
+              - action: light.turn_on
                 data:
                   entity_id: "{{ light }}"
                   brightness: >
@@ -248,14 +248,14 @@ script:
               - choose:
                   - conditions: "{{ effect is not none and effect in built_in_effect }}"
                     sequence:
-                      - service: light.turn_on
+                      - action: light.turn_on
                         target:
                           entity_id: "{{ light }}"
                         data:
                           effect: "{{ effect }}"
                   - conditions: "{{ effect is not none }}"
                     sequence:
-                      - service: script.turn_on
+                      - action: script.turn_on
                         target:
                           entity_id: script.light_blink
                         data:
@@ -264,7 +264,7 @@ script:
                             toggle_entity: "{{ light }}"
                             effect: "{{ effect }}"
                 default:
-                  - service: light.turn_on
+                  - action: light.turn_on
                     target:
                       entity_id: "{{ light }}"
                     data:
@@ -279,7 +279,7 @@ script:
         if: "{{ action == 'on' }}"
         then:
           - alias: "Turn on light dimmed"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.floris
             data:
@@ -287,7 +287,7 @@ script:
               color_temp: 306
         else:
           - alias: "Turn light group off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.floris
 
@@ -305,14 +305,14 @@ script:
                 state: "on"
             then:
               - alias: "Turn on light dimmed"
-                service: light.turn_on
+                action: light.turn_on
                 data:
                   entity_id: light.pepijn
                   brightness: 40
                   color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
             else:
               - alias: "Ceiling light to 100%"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.pepijn
                 data:
@@ -324,7 +324,7 @@ script:
                 after: "18:00:00"
                 before: "20:00:00"
               - alias: "Bed group"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.groep_bed_pepijn
                 data:
@@ -332,7 +332,7 @@ script:
                   brightness_pct: 20
         else:
           - alias: "Turn light off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.pepijn
 
@@ -351,14 +351,14 @@ script:
                 state: "Slapen"
             then:
               - alias: "Turn on light dimmed"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.badkamer_zolder
                 data:
                   brightness: 25
             else:
               - alias: "Light on 100% during daytime"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.badkamer_zolder
                 data:
@@ -366,7 +366,7 @@ script:
                   color_temp_kelvin: 6535
         else:
           - alias: "Light off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.badkamer_zolder
 
@@ -388,7 +388,7 @@ script:
                     state: "Slapen"
             then:
               - alias: "Turn on light dimmed"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.slaapkamer_plafond
                 data:
@@ -396,7 +396,7 @@ script:
                   color_temp_kelvin: 2200
             else:
               - alias: "Light on 100% during daytime"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.slaapkamer_plafond
                 data:
@@ -404,6 +404,6 @@ script:
                   color_temp_kelvin: 6535
         else:
           - alias: "Light off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.slaapkamer_plafond

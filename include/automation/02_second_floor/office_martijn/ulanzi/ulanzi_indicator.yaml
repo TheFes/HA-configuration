@@ -29,7 +29,7 @@ action:
   - if: "{{ action | default(true) | bool(true) }}"
     then:
       - alias: Turn indicator on
-        service: light.turn_on
+        action: light.turn_on
         target:
           entity_id: light.awtrix_dd3300_indicator_{{ indicator | default(1) | int(1) }}
         data:
@@ -37,6 +37,6 @@ action:
           color_name: "{{ color_name | default('white') }}"
     else:
       - alias: Turn indicator off
-        service: light.turn_off
+        action: light.turn_off
         target:
           entity_id: light.awtrix_dd3300_indicator_{{ indicator }}

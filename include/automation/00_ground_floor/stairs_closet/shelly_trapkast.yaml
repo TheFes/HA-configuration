@@ -16,12 +16,11 @@ action:
   - if: "{{ 'light.trapkast' | has_value }}"
     then:
       - alias: "Toggle light"
-        service: light.toggle
+        action: light.toggle
         target:
           entity_id: light.trapkast_template
     else:
       - alias: "Toggle switch"
-        service: switch.toggle
+        action: switch.toggle
         target:
           entity_id: switch.sonoff_trapkast_relay
-    

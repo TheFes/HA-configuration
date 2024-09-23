@@ -1,3 +1,6 @@
+substitutions:
+  log_level: DEBUG
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
@@ -12,7 +15,7 @@ wifi:
 
 # Enable logging
 logger:
-  level: DEBUG
+  level: "${log_level}"
 
 # Enable Home Assistant API
 api:

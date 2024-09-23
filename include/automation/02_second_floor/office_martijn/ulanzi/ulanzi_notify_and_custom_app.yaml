@@ -88,7 +88,7 @@ action:
   - if: "{{ deactivate | default(false) }}"
     then:
       - alias: "Deactivate app"
-        service: mqtt.publish
+        action: mqtt.publish
         data:
           qos: 0
           retain: false
@@ -96,7 +96,7 @@ action:
           payload: ""
     else:
       - alias: "Update custom app or send notification"
-        service: mqtt.publish
+        action: mqtt.publish
         data:
           qos: 0
           retain: false

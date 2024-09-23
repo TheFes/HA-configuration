@@ -2,6 +2,7 @@ rest_command:
   postcodeloterij:
     url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_MT_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
     method: POST
+    # format for the payload is "query=1234AB" where 1234AB is the postal code
     payload: !secret postcodeloterij
     headers:
       Content-Type: application/x-www-form-urlencoded
@@ -9,8 +10,10 @@ rest_command:
 
 template:
   - trigger:
+        # the sensor will be automatically updated on the first 3 days of the month, after 18:00
       - platform: template
-        value_template: "{{ now().day == 1 and now() > today_at('18:00') }}"
+        value_template: "{{ now().day <= 3 and now() > today_at('18:00') }}"
+        # you can use the event below in developer tools > events to manually update the sensor
       - platform: event
         event_type: update_postcodeloterij_prizes
     action:
@@ -25,7 +28,10 @@ template:
               else
                 (now().replace(day=1) - timedelta(days=1)).strftime("%Y%m") | int
             }}
-      - service: rest_command.postcodeloterij
+          month_formatted: >
+            {% set months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'october', 'november', 'december'] %}
+            {{ months[month % 100 -1] ~ ' ' ~ month // 100 }}
+      - action: rest_command.postcodeloterij
         data:
           month: "{{ month }}"
         response_variable: prizes
@@ -37,20 +43,26 @@ template:
               {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
             {% endfor %}
             {{ ns.prizes }}
-      - if: "{{ prizecount | default(0) > 0 }}"
+        # a notification will be sent out if something is won, and it's the first time the sensor was updated this month
+        # notification parameters are optimized for the Android companion app
+      - if: >
+          {{
+            prizecount | default(0) > 0
+            and month_formatted != state_attr('sensor.postcodeloterij', 'month')  
+          }}
         then:
           - alias: "Send notification"
-            service: notify.mobile_app_pixel_7_pro
+            action: notify.mobile_app_pixel_7_pro
             data:
-              title: "🏆 Winnen doe je bij..."
+              title: "🎁 Winnen doe je bij..."
               message: >
-                {% set m = 'prijs' if prizecount == 1 else (prizezount ~ ' prijzen') %}
-                We hebben {{ m }} in de trekking van {{ month }}: {{ prizes | join(', ') }}
+                {% set m = 'prijs' if prizecount == 1 else (prizecount ~ ' prijzen') %}
+                We hebben {{ m }} in de trekking van {{ month_formatted }}: {{ prizes | join(', ') }}
               data:
                 channel: LotteryPrize
                 ttl: 0
                 priority: high
-                notification_icon: mdi:trophy
+                notification_icon: mdi:gift
                 tag: LotteryPrize
     sensor:
       - name: Postcodeloterij
@@ -59,4 +71,5 @@ template:
         state: "{{ prizecount }}"
         attributes:
           prizes: "{{ prizes }}"
-          month: "{{ month }}"
+          month: "{{ month_formatted }}"
+          last_updated: "{{ now().strftime('%d-%m-%Y %H:%M') }}"

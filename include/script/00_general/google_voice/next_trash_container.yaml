@@ -22,7 +22,7 @@ next_trash_container_routine:
             {{ days[now().weekday() + days_until] }}
           {%- endif %}
     - alias: "Send TTS to Dummy"
-      service: tts.google_cloud_say
+      action: tts.google_cloud_say
       target:
         entity_id: media_player.vlc_telnet
       data:
@@ -33,10 +33,10 @@ next_trash_container_routine:
             {{ when }} moet de {{ trash_pickup[0] }} buiten.
           {%- endif %}
     - alias: "TTS for speaker voice command"
-      service: script.google_home_voice
+      action: script.google_home_voice
       data:
         action:
-          - service: tts.google_cloud_say
+          - action: tts.google_cloud_say
             data:
               message: >
                 {%- if trash_pickup | length > 1 %}

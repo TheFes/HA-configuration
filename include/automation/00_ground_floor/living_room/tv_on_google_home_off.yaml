@@ -7,9 +7,19 @@ trigger:
     entity_id: media_player.shield
     from: "off"
 action:
-  - alias: "Turn of Google Home speakers"
-    service: media_player.turn_off
-    target:
-      entity_id:
-        - media_player.keuken_hub
-        - media_player.woonkamer_home
+  - variables:
+      playing: >
+        {{
+          [
+            'media_player.keuken_hub',
+            'media_player.woonkamer_home'
+          ]
+            | select('is_state', 'playing')
+            | list
+        }}
+  - if: "{{ playing | count > 0 }}"
+    then:
+      - alias: "Turn of Google Home speakers"
+        action: media_player.turn_off
+        target:
+          entity_id: "{{ playing }}"

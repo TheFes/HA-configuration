@@ -2,18 +2,28 @@ bedtime_floris_routine:
   alias: "Floris is going to sleep (Google Home)"
   sequence:
     - alias: "Light on"
-      service: light.turn_on
+      action: light.turn_on
       target:
         entity_id:
           - light.floris_template
           - light.floris_leeslamp
           - light.nijntje
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.floris_leeslamp
       data:
         color_temp: 250
         brightness: 150
+    - alias: "Turn on graafmachine"
+      action: light.turn_on
+      target:
+        entity_id: light.graafmachine
+      data:
+        brightness: 26
+        rgb_color:
+          - 255
+          - 148
+          - 3
     - alias: "Wait until light is turned off"
       wait_for_trigger:
         - platform: state
@@ -22,24 +32,22 @@ bedtime_floris_routine:
           from: "on"
           for:
             seconds: 0.5
-    - service: light.turn_on
+    - action: script.turn_on
       target:
-        entity_id: light.floris_leeslamp
-      data:
-        color_temp: 500
-        brightness: 1
+        entity_id: script.floris_sleep
   icon: mdi:bed
   mode: restart
 
 floris_sleep:
   alias: "Floris goes to sleep (Google Home)"
   sequence:
-    - service: light.turn_off
+    - action: light.turn_off
       target:
         entity_id:
           - light.nijntje
           - light.floris_template
-    - service: light.turn_on
+          - light.graafmachine
+    - action: light.turn_on
       data:
         color_temp: 500
         brightness: 1

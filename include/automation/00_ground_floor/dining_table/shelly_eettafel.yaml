@@ -17,7 +17,7 @@ action:
             state: "off"
         sequence:
           - alias: "Turn on shelly"
-            service: switch.turn_on
+            action: switch.turn_on
             target:
               entity_id: switch.shelly1_eettafel_relay
     default:
@@ -29,7 +29,7 @@ action:
                 value_template: "{{ trigger.event.data.click_type == 'short' }}"
             sequence:
               - alias: "Toggle light"
-                service: light.toggle
+                action: light.toggle
                 target:
                   entity_id: light.eettafel
           - conditions:
@@ -38,7 +38,7 @@ action:
                 value_template: "{{ trigger.event.data.click_type == 'double' }}"
             sequence:
               - alias: "Light on 100%"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: light.eettafel
                 data:
@@ -49,19 +49,37 @@ action:
                 value_template: "{{ trigger.event.data.click_type == 'long' }}"
             sequence:
               - alias: "Turn off lights downstairs"
-                service: light.turn_off
+                action: light.turn_off
                 target:
                   entity_id: light.groep_beneden
-              - alias: "TV off"
-                service: media_player.turn_off
-                target:
-                  entity_id: media_player.nvidia_shield
-              - alias: "Google Homes off"
-                service: media_player.turn_off
-                target:
-                  entity_id:
-                    - media_player.keuken_hub
-                    - media_player.woonkamer_home
+              - if: >
+                  {{
+                    states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+                  }}
+                then:
+                  - alias: "TV off"
+                    action: media_player.turn_off
+                    target:
+                      entity_id: media_player.nvidia_shield
+              - variables:
+                  players: >
+                    {{
+                      [
+                        'media_player.keuken_hub',
+                        'media_player.woonkamer_home'
+                      ]
+                        | reject('is_state', 'off')
+                        | list
+                    }}
+              - if: "{{ players | count > 0 }}"
+                then:
+                  - alias: "Google Homes off"
+                    action: media_player.turn_off
+                    target:
+                      entity_id:
+                        - media_player.keuken_hub
+                        - media_player.woonkamer_home
+                    continue_on_error: true
               - alias: "Extractor hood off if needed?"
                 if:
                   - alias: "Extractor hood active"
@@ -70,7 +88,7 @@ action:
                     above: 0.5
                 then:
                   - alias: "Turn off power plug extractor hood"
-                    service: switch.turn_off
+                    action: switch.turn_off
                     target:
                       entity_id: switch.afzuigkap
               - if:
@@ -82,8 +100,3 @@ action:
                   - event: set_house_mode
                     event_data:
                       mode: Slapen
-                  - delay: 20
-                  - alias: "Turn off TV plug"
-                    service: switch.turn_off
-                    target:
-                      entity_id: switch.tv_meubel

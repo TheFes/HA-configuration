@@ -7,7 +7,7 @@ wakeup_graafmachine:
         - conditions: "{{ action == 'toggle_wakeup' }}"
           sequence:
             - alias: "Notificatie to phone Martijn"
-              service: notify.mobile_app_pixel_7_pro
+              action: notify.mobile_app_pixel_7_pro
               data:
                 title: "Wakup voor Pepijn"
                 message: >
@@ -42,18 +42,18 @@ wakeup_graafmachine:
               choose:
                 - conditions: "{{ wait.trigger.event.data.action == 'martijn_wakeup_on' }}"
                   sequence:
-                    - service: input_boolean.turn_on
+                    - action: input_boolean.turn_on
                       target:
                         entity_id: input_boolean.wakeup_martijn_graafmachine
                 - conditions: "{{ wait.trigger.event.data.action == 'martijn_wakeup_off' }}"
                   sequence:
-                    - service: input_boolean.turn_off
+                    - action: input_boolean.turn_off
                       target:
                         entity_id: input_boolean.wakeup_martijn_graafmachine
         - conditions: "{{ action == 'set_time' }}"
           sequence:
             - alias: "Notificatie to phone Martijn"
-              service: notify.mobile_app_pixel_7_pro
+              action: notify.mobile_app_pixel_7_pro
               data:
                 title: "Wekker Pepijn"
                 message: >
@@ -102,32 +102,32 @@ wakeup_graafmachine:
               choose:
                 - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_reset' }}"
                   sequence:
-                    - service: button.press
+                    - action: button.press
                       target:
                         entity_id: button.reset_graafmachine_time
                     - delay: 0.5
-                    - service: button.press
+                    - action: button.press
                       target:
                         entity_id: button.set_time
                 - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_earlier' }}"
                   sequence:
-                    - service: input_datetime.set_datetime
+                    - action: input_datetime.set_datetime
                       target:
                         entity_id: input_datetime.pepijn_time_awake
                       data:
                         time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=15)).strftime('%H:%M:%S') }}"
                     - delay: 0.5
-                    - service: button.press
+                    - action: button.press
                       target:
                         entity_id: button.set_time
                 - conditions: "{{ wait.trigger.event.data.action == 'pepijn_alarm_later' }}"
                   sequence:
-                    - service: input_datetime.set_datetime
+                    - action: input_datetime.set_datetime
                       target:
                         entity_id: input_datetime.pepijn_time_awake
                       data:
                         time: "{{ (today_at(states('input_datetime.pepijn_time_awake')) + timedelta(minutes=15)).strftime('%H:%M:%S') }}"
                     - delay: 0.5
-                    - service: button.press
+                    - action: button.press
                       target:
                         entity_id: button.set_time

@@ -4,12 +4,12 @@ mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: vacuum.mi_robot_vacuum
+    entity_id: vacuum.valetudo_brokenachingdragonfly
     from: returning
     to: docked
     id: docked
   - platform: state
-    entity_id: vacuum.mi_robot_vacuum
+    entity_id: vacuum.valetudo_brokenachingdragonfly
     to: error
     id: error
   - platform: time
@@ -24,7 +24,7 @@ action:
   - if: "{{ trigger.id == 'docked' }}"
     then:
       - alias: "Increase counter"
-        service: counter.increment
+        action: counter.increment
         target:
           entity_id: counter.vacuum_dust_bin
   - choose:
@@ -41,10 +41,10 @@ action:
                 {%- if trigger.id == 'docked' %}
                   De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} ladingen in z'n bakkie.
                 {%- else %}
-                  Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.mi_robot_vacuum', 'error') }}
+                  Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.valetudo_brokenachingdragonfly', 'error') }}
                 {%- endif %}
           - alias: "Notification to phones"
-            service: notify.all_phones
+            action: notify.all_phones
             data:
               title: "{{ title }}"
               message: "{{ message }}"
@@ -71,7 +71,7 @@ action:
             state: "on"
         sequence:
           - alias: "Notification to Martijn"
-            service: notify.mobile_app_pixel_7_pro
+            action: notify.mobile_app_pixel_7_pro
             data:
               title: Bakje vol
               message: Maak het bakje van de stofzuiger leeg!
@@ -86,6 +86,6 @@ action:
       - conditions: "{{ trigger.id == 'empty' }}"
         sequence:
           - alias: "Reset counter"
-            service: counter.reset
+            action: counter.reset
             target:
               entity_id: counter.vacuum_dust_bin

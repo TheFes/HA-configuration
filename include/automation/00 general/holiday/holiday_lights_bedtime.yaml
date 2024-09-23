@@ -19,20 +19,20 @@ action:
     delay:
       minutes: "{{ range(0,30) | random }}"
   - alias: "Turn light bedroom on"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: light.slaapkamer_plafond_template
   - alias: "Random delay to turn light downstairs off"
     delay:
       minutes: "{{ range(5,10) | random }}"
   - alias: "Turn lights downstairs off"
-    service: light.turn_off
+    action: light.turn_off
     target:
       entity_id: light.groep_beneden
   - alias: "Turn all lights off"
     delay:
       minutes: "{{ range(15,20) | random }}"
   - alias: "Alle lampen uit"
-    service: light.turn_off
+    action: light.turn_off
     target:
       entity_id: light.groep_huis

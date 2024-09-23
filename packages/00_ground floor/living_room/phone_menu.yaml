@@ -27,7 +27,7 @@ automation:
                   }}
             sequence:
               - alias: Start menu
-                service: hassio.addon_stdin
+                action: hassio.addon_stdin
                 data:
                   addon: c7744bff_ha-sip
                   input:
@@ -195,7 +195,7 @@ script:
             }}
           number: "{{ internal_phonebook[to_call] if use_internal else phonebook[to_call]}}"
           parsed: "{{ number | regex_replace('sip:|'~sip, '') }}"
-      - service: hassio.addon_stdin
+      - action: hassio.addon_stdin
         data:
           addon: c7744bff_ha-sip
           input:
@@ -212,7 +212,7 @@ script:
                   - platform: webhook
                     local_only: true
                     webhook_id: sip_connect_call_bridge_from_menu
-              - service: hassio.addon_stdin
+              - action: hassio.addon_stdin
                 data:
                   addon: c7744bff_ha-sip
                   input:
@@ -238,7 +238,7 @@ script:
                     - alias: Check if the webhook is about the correct call.
                       condition: template
                       value_template: "{{ to_end | count == 1 }}"
-                    - service: hassio.addon_stdin
+                    - action: hassio.addon_stdin
                       data:
                         addon: c7744bff_ha-sip
                         input:
@@ -259,7 +259,7 @@ script:
         bobo: spotify:album:2fwkkl32gl2UTkMA3bt63z
       play_on: media_player.beneden_groep
     sequence:
-      - service: spotcast.start
+      - action: spotcast.start
         data:
           entity_id: "{{ play_on }}"
           uri: "{{ playlist[to_play] }}"

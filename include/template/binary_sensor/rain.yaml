@@ -2,37 +2,51 @@
     - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
       name: "Rain"
       state: >
-        {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-        {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-        {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
-        {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-        {%- if p4 %}
-          {%- set ns = namespace(p=[]) %}
-          {%- for item in p4.split(' ')[:4] %}
-            {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-          {%- endfor %}
-          {%- set p4 =  ns.p | sum %}
-        {%- else %}
-          {%- set p4 = 'nan' %}
-        {%- endif %}
-        {{ [p1, p2, p3, p4] | select('is_number') | max | default(0) }}
+        {% set sunrise = states('sensor.sun_next_rising') | as_datetime %}
+        {% set sunrise = sunrise - timedelta(days=1) if sunrise.date() != now().date() else sunrise %}
+        {% set around_sunrise = sunrise - timedelta(minutes=15) < now() < sunrise + timedelta(minutes=60) %}
+        {% if 'binary_sensor.regensensor_water_leak' | has_value and (not around_sunrise or is_state('binary_sensor.regensensor_water_leak', 'off')) %}
+            {{ states('binary_sensor.regensensor_water_leak') | bool }}
+        {% else %}
+            {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+            {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+            {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+            {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+            {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+            {%- if p4 %}
+              {%- set ns = namespace(p=[]) %}
+              {%- for item in p4.split(' ')[:4] %}
+                {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+              {%- endfor %}
+              {%- set p4 =  ns.p | sum %}
+            {%- else %}
+              {%- set p4 = 'nan' %}
+            {%- endif %}
+            {{ [p1, p2, p3, p4] | select('is_number') | max | default(0) }}
+        {% endif %}
       availability: >
-        {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
-        {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
-        {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
-        {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
-        {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-        {%- if p4 %}
-          {%- set ns = namespace(p=[]) %}
-          {%- for item in p4.split(' ')[:4] %}
-            {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
-          {%- endfor %}
-          {%- set p4 = ns.p | sum %}
-        {%- else %}
-          {%- set p4 = 'nan' %}
-        {%- endif %}
-        {{ [ p1, p2, p3, p4 ] | select('is_number') | list | count > 0 }}
+        {% set sunrise = states('sensor.sun_next_rising') | as_datetime %}
+        {% set sunrise = sunrise - timedelta(days=1) if sunrise.date() != now().date() else sunrise %}
+        {% set around_sunrise = sunrise - timedelta(minutes=15) < now() < sunrise + timedelta(minutes=60) %}
+        {% if 'binary_sensor.regensensor_water_leak' | has_value and not around_sunrise %}
+            {{ true }}
+        {% else %}
+            {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+            {%- set p1 = p1.precip[:4] | sum if p1 else 'nan' %}
+            {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('nan') %}
+            {%- set p3 = states('sensor.br_precipitation') | float('nan') %}
+            {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+            {%- if p4 %}
+              {%- set ns = namespace(p=[]) %}
+              {%- for item in p4.split(' ')[:4] %}
+                {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+              {%- endfor %}
+              {%- set p4 = ns.p | sum %}
+            {%- else %}
+              {%- set p4 = 'nan' %}
+            {%- endif %}
+            {{ [ p1, p2, p3, p4 ] | select('is_number') | list | count > 0 }}
+        {% endif %}
       icon: >
         {{ 'mdi:weather-sunny' if this.state is defined and this.state == 'off' else 'mdi:weather-rainy' }}
 
@@ -52,25 +66,30 @@
       state: >-
         {%- set end = today_at('13:00') %}
         {%- set end = end + timedelta(days=1) if now() > end else end %}
-        {%- set rain = hourly['weather.combined'].forecast
-                          | selectattr('datetime', '<=', end.isoformat())
-                          | map(attribute='precipitation')
-                          | sum
-        %}
-        {{ iif(rain) }}
-      icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-      availability: "{{ iif(hourly['weather.combined'].forecast) }}"
+        {{ hourly['weather.combined'].forecast
+              | selectattr('datetime', '<=', end.isoformat())
+              | map(attribute='precipitation')
+              | sum
+        }}
+      <<: &other_config
+        icon: "{{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
+        availability: >
+          {{
+            hourly is defined
+            and hourly['weather.combined'] is defined
+            and hourly['weather.combined'].forecast is defined
+            and hourly['weather.combined'].forecast is list
+            and hourly['weather.combined'].forecast | count > 0
+          }}
 
     - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
       name: "Rain until morning"
       state: >-
         {%- set end = today_at('8:00') %}
         {%- set end = end + timedelta(days=1) if now() > end %}
-        {%- set rain = hourly['weather.combined'].forecast
-                          | selectattr('datetime', '<=', end.isoformat())
-                          | map(attribute='precipitation')
-                          | sum
-        %}
-        {{ iif(rain) }}
-      icon: " {{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
-      availability: "{{ iif(hourly['weather.combined'].forecast) }}"
+        {{ hourly['weather.combined'].forecast
+              | selectattr('datetime', '<=', end.isoformat())
+              | map(attribute='precipitation')
+              | sum
+        }}
+      <<: *other_config

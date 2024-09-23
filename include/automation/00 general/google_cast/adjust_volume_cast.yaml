@@ -70,7 +70,7 @@ action:
                     value_template: "{{ app == 'Google News' }}"
                 sequence:
                   - alias: "Set volume for news"
-                    service: media_player.volume_set
+                    action: media_player.volume_set
                     target:
                       entity_id: "{{ player }}"
                     data:
@@ -81,7 +81,7 @@ action:
                     value_template: "{{ type == 'music' }}"
                 sequence:
                   - alias: "Set volume for music"
-                    service: media_player.volume_set
+                    action: media_player.volume_set
                     target:
                       entity_id: "{{ player }}"
                     data:
@@ -92,7 +92,7 @@ action:
             id: stopped_playing
         sequence:
           - alias: "Set volume to default"
-            service: media_player.volume_set
+            action: media_player.volume_set
             target:
               entity_id: "{{ player }}"
             data:

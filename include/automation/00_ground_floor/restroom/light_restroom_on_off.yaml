@@ -9,7 +9,7 @@ trigger:
     from: "off"
 action:
   - alias: "Turn light on"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: light.wc
   - repeat:
@@ -26,7 +26,7 @@ action:
         - if: "{{ wait.trigger is none }}"
           then:
             - alias: "Turn light off"
-              service: light.turn_off
+              action: light.turn_off
               target:
                 entity_id: light.wc
       until:

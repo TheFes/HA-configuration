@@ -10,23 +10,23 @@ automation:
         to: "off"
         id: "finished"
     action:
-      - service: input_select.select_option
+      - action: input_select.select_option
         target:
           entity_id: input_select.dishwasher_program
         data:
           option: Eco
-      - service: input_select.select_option
+      - action: input_select.select_option
         target:
           entity_id: input_select.dishwasher_program_extra
         data:
           option: Normaal
-      - service: input_number.set_value
+      - action: input_number.set_value
         target:
           entity_id: input_number.dishwasher_delayed_start
         data:
           value: 0
       - alias: "Notification"
-        service: notify.all_phones
+        action: notify.all_phones
         data:
           title: "💦 De vaatwasser is klaar"
           message: "Doe hem snel open zodat hij kan uitwasemen"

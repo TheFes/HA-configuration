@@ -7,10 +7,10 @@ trigger:
       - "on"
       - "off"
 action:
-  - service: automation.turn_{{ trigger.to_state.state }}
+  - action: automation.turn_{{ trigger.to_state.state }}
     target:
       entity_id: automation.f2_status_messages_for_printer
-  - service: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+  - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
     data:
       config_entry_id:
         - ca207fdeedd4443f3ffd84b518b1edae

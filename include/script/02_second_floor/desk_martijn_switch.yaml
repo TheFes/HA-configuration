@@ -6,7 +6,7 @@ computer_martijn_off:
         pc_on: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
     - if: "{{ pc_on }}"
       then:
-        - service: hassio.addon_stdin
+        - action: hassio.addon_stdin
           data:
             addon: core_rpc_shutdown
             input: computer_zolder

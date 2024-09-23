@@ -37,7 +37,7 @@ resume_transition_lights:
     - if: "{{ iif(transition_data) }}"
       then:
         - alias: "Call the script"
-          service: script.turn_on
+          action: script.turn_on
           target:
             entity_id: script.transition_lights
           data:

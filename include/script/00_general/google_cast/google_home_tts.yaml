@@ -16,12 +16,12 @@ google_home_tts_screen:
           event_type: call_service
           event_data:
             domain: media_player
-            service: play_media
+            action: play_media
             service_data:
               media_content_type: music
               entity_id: "{{ [ dummy_player ] }}"
     - alias: "Send TTS message with picture"
-      service: media_player.play_media
+      action: media_player.play_media
       target:
         entity_id: "{{ target }}"
       data:

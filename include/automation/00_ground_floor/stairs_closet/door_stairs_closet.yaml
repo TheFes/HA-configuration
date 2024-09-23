@@ -15,7 +15,7 @@ action:
             state: "on"
         sequence:
           - alias: "Light on"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.trapkast_template
             # data:
@@ -24,7 +24,7 @@ action:
           - delay:
               minutes: 5
           - alias: "Light off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.trapkast_template
       - conditions:
@@ -34,6 +34,6 @@ action:
             state: "off"
         sequence:
           - alias: "Light off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.trapkast_template

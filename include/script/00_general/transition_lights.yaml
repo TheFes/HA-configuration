@@ -165,7 +165,7 @@ transition_lights:
             - single
             - parallel
             - queued
-    split_service:
+    split_action:
       description: "split changes of eg brightness and color temperarture into seperate service calls"
       name: Split service calls
       default: false
@@ -180,7 +180,7 @@ transition_lights:
       repeat:
         for_each: "{{ lights }}"
         sequence:
-          - service: script.turn_on
+          - action: script.turn_on
             target:
               entity_id: script.transition_lights_perform_transition
             data:
@@ -200,7 +200,7 @@ transition_lights:
                 use_ct: "{{ use_ct | default(true) }}"
                 max_steps: "{{ max_steps | default(none) }}"
                 mode: "{{ mode | default('single') }}"
-                split_service: "{{ split_service | default(false) }}"
+                split_action: "{{ split_service | default(false) }}"
 
 transition_lights_perform_transition:
   alias: "Perform transition light brightness, color temperature and/or RGB values (helper script)"
@@ -213,7 +213,7 @@ transition_lights_perform_transition:
       if: "{{ state_attr(this.entity_id, 'current') == 1 and states.group.transition_active is not none }}"
       then:
         - alias: "Remove group"
-          service: group.remove
+          action: group.remove
           data:
             object_id: transition_active
     - alias: "Check if transition for this light is not already active"
@@ -226,7 +226,7 @@ transition_lights_perform_transition:
             - alias: "Wait until current transition is finished"
               wait_template: "{{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
         - alias: "Add light to group"
-          service: group.set
+          action: group.set
           data:
             object_id: transition_active
             name: Lights with transition active
@@ -247,7 +247,7 @@ transition_lights_perform_transition:
             - if: "{{ br_start_set }}"
               then:
                 - alias: "Set start brigthness"
-                  service: light.turn_on
+                  action: light.turn_on
                   target:
                     entity_id: "{{ light }}"
                   data:
@@ -255,7 +255,7 @@ transition_lights_perform_transition:
             - if: "{{ ct_start_set }}"
               then:
                 - alias: "Set start color temperature"
-                  service: light.turn_on
+                  action: light.turn_on
                   target:
                     entity_id: "{{ light }}"
                   data:
@@ -263,7 +263,7 @@ transition_lights_perform_transition:
             - if: "{{ iif(rgb_start) }}"
               then:
                 - alias: "Set start RGB values"
-                  service: light.turn_on
+                  action: light.turn_on
                   target:
                     entity_id: "{{ light }}"
                   data:
@@ -271,12 +271,12 @@ transition_lights_perform_transition:
             - if: "{{ not (br_start_set or ct_start_set or iif(rgb_start)) }}"
               then:
                 - alias: "Set start RGB values"
-                  service: light.turn_on
+                  action: light.turn_on
                   target:
                     entity_id: "{{ light }}"
           else:
             - alias: "Turn on light with start settings"
-              service: light.turn_on
+              action: light.turn_on
               target:
                 entity_id: "{{ light }}"
               data: >
@@ -447,7 +447,7 @@ transition_lights_perform_transition:
                           - alias: "Use light.turn_off when br_next is 0"
                             if: "{{ br_change and use_br and br_next == 0 }}"
                             then:
-                              - service: light.turn_off
+                              - action: light.turn_off
                                 target:
                                   entity_id: "{{ light }}"
                       - conditions: "{{ split_service }}"
@@ -455,7 +455,7 @@ transition_lights_perform_transition:
                           - alias: "Set brightness if needed"
                             if: "{{ br_change and use_br }}"
                             then:
-                              - service: light.turn_on
+                              - action: light.turn_on
                                 target:
                                   entity_id: "{{ light }}"
                                 data:
@@ -463,7 +463,7 @@ transition_lights_perform_transition:
                           - alias: "Set color temp if needed"
                             if: "{{ ct_change and use_ct }}"
                             then:
-                              - service: light.turn_on
+                              - action: light.turn_on
                                 target:
                                   entity_id: "{{ light }}"
                                 data:
@@ -471,14 +471,14 @@ transition_lights_perform_transition:
                           - alias: "Set RGB value if needed"
                             if: "{{ use_rgb }}"
                             then:
-                              - service: light.turn_on
+                              - action: light.turn_on
                                 target:
                                   entity_id: "{{ light }}"
                                 data:
                                   rgb_color: "{{ rgb_next }}"
                     default:
                       - alias: "Set new values"
-                        service: light.turn_on
+                        action: light.turn_on
                         target:
                           entity_id: "{{ light }}"
                         data: >
@@ -487,7 +487,7 @@ transition_lights_perform_transition:
                           {%- set rgb = dict(rgb_color=rgb_next) if use_rgb else {} %}
                           {{ dict(dict(br, **ct), **rgb) }}
         - alias: "Remove light from group"
-          service: group.set
+          action: group.set
           data:
             object_id: transition_active
             name: Lights with transition active

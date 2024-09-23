@@ -13,7 +13,7 @@ action:
             state: "off"
         sequence:
           - alias: "Turn off washing machine light and desk light"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.wasmachinehoek
       - conditions:
@@ -23,7 +23,7 @@ action:
             state: "on"
         sequence:
           - alias: "Turn on washing machine light with matching brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.wasmachinehoek
             data:

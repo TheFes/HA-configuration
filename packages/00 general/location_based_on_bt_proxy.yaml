@@ -49,7 +49,7 @@ automation:
         variables:
           device: "{{ 'telefoon' if 'phone' in trigger.entity_id else 'horloge' }}"
     action:
-      - service: notify.mobile_app_pixel_7_pro
+      - action: notify.mobile_app_pixel_7_pro
         data:
           message: De state van {{ device }} is van {{ trigger.from_state.state }} naar {{ trigger.to_state.state }} gegaan.
           data:

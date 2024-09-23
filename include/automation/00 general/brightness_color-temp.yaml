@@ -52,7 +52,7 @@ condition:
     value_template: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | select('search', light | replace('_template', '')) | list | count == 0 }}"
 action:
   - alias: "Set color temperature based on brightness"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: "{{ light }}"
     data:

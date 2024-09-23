@@ -20,7 +20,7 @@ action:
             id: "on_bike"
         sequence:
           - alias: "Turn on input_boolean"
-            service: input_boolean.turn_on
+            action: input_boolean.turn_on
             target:
               entity_id: input_boolean.martijn_fiets
       - conditions:
@@ -33,6 +33,6 @@ action:
             id: "back_home"
         sequence:
           - alias: "Turn off input_boolean"
-            service: input_boolean.turn_off
+            action: input_boolean.turn_off
             target:
               entity_id: input_boolean.martijn_fiets

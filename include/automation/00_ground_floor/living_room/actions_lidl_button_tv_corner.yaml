@@ -17,14 +17,11 @@ action:
             value_template: "{{ event == 'on' }}"
         sequence:
           - alias: toggle led light
-            service: light.toggle
+            action: light.toggle
             target:
-              entity_id: light.groep_tv_hoek
+              entity_id: light.tv_lamp
       - conditions:
           - alias: "Double"
             condition: template
             value_template: "{{ event == 'off' }}"
-        sequence:
-          - service: switch.toggle
-            target:
-              entity_id: switch.tv_meubel
+        sequence: []

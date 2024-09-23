@@ -48,7 +48,7 @@ action:
                     and is_state('light.groep_bed_pepijn', 'off')
                   }}
                 sequence:
-                  - service: light.turn_on
+                  - action: light.turn_on
                     target:
                       entity_id: light.pepijn_leeslamp
                     data:
@@ -58,31 +58,31 @@ action:
                       {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
                       {% set next = next + timedelta(days=1) if now() > next else next %}
                       {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
-                  - service: light.turn_off
+                  - action: light.turn_off
                     target:
                       entity_id: light.pepijn_leeslamp
               - conditions: >
                   {% set s = expand('light.groep_bed_pepijn') %}
                   {{ s | selectattr('state', 'eq', 'on') | list | count < s | list | count }}
                 sequence:
-                  - service: light.turn_on
+                  - action: light.turn_on
                     target:
                       entity_id: light.groep_bed_pepijn
                     data:
                       color_temp_kelvin: 3000
                       brightness_pct: 20
-                  - service: script.resume_transition_lights
+                  - action: script.resume_transition_lights
                     data:
                       light: light.pepijn_leeslamp
             default:
-              - service: light.turn_off
+              - action: light.turn_off
                 target:
                   entity_id: light.groep_bed_pepijn
       - alias: "Actions with long press"
         conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Turn all lights off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id: light.groep_pepijn
           - if: "{{ now() > today_at('18:30') }}"

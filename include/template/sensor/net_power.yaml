@@ -2,38 +2,19 @@
     - name: Net Power
       unique_id: 199c6be9-6258-40a3-b3b7-6d8123d2464d
       state: >
-        {%- set p = integration_entities('dsmr')
-                    | select('search', 'power')
-                    | select('search', 'production')
-                    | map('states')
-                    | select('is_number')
-                    | map('float')
-                    | sum 
-                    | multiply(500)
+        {%- set p = states('sensor.electricity_meter_energieproductie')
+                      | float
+                      | multiply(1000)
         %}
-        {%- set c = integration_entities('dsmr')
-                    | select('search', 'power')
-                    | select('search', 'consumption')
-                    | map('states')
-                    | select('is_number')
-                    | map('float')
-                    | sum 
-                    | multiply(500)
+        {%- set c = states('sensor.electricity_meter_energieverbruik')
+                      | float
+                      | multiply(1000)
         %}
         {{ (c - p) | round(0) }}
       icon: mdi:flash
       unit_of_measurement: "W"
       availability: >
-        {%- set p = integration_entities('dsmr')
-                    | select('search', 'power')
-                    | select('search' , 'production')
-                    | list
-                    | count
-        %}
-        {%- set c = integration_entities('dsmr')
-                    | select('search', 'power')
-                    | select('search' , 'consumption')
-                    | list
-                    | count
-        %}
-        {{ c == p and (c + p) > 0 }}
+        {{
+            'sensor.electricity_meter_energieverbruik' | has_value
+            and 'sensor.electricity_meter_energieproductie' | has_value
+        }}

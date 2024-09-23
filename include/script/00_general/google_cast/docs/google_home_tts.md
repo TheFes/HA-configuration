@@ -42,7 +42,7 @@ dinner_ready:
   icon: mdi:food
   sequence:
     - alias: "Call the script with the additional data as script variables"
-      service: script.turn_on
+      action: script.turn_on
       target:
         entity_id: script.google_home_tts_screen
       data:
@@ -53,7 +53,7 @@ dinner_ready:
           small_text: Quick, before it gets cold
           picture_url: http://10.0.0.5/local/pictures/food.jpg
     - alias: "Send the TTS service call to the dummy player"
-      service: tts.google_cloud_say
+      action: tts.google_cloud_say
       target: 
         entity_id: media_player.vlc_telnet
       data:

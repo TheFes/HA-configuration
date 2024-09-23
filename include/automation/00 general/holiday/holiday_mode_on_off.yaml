@@ -33,20 +33,20 @@ action:
           condition: trigger
           id: boolean_on
         sequence:
-          - service: input_boolean.turn_on
+          - action: input_boolean.turn_on
             target:
               entity_id: input_boolean.op_vakantie
       - conditions:
           condition: trigger
           id: holiday_on
         sequence:
-          - service: input_boolean.turn_off
+          - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.op_vakantie
-          - service: input_boolean.turn_on
+          - action: input_boolean.turn_on
             target:
               entity_id: input_boolean.vakantie
-          - service: notify.mobile_app_pixel_7_pro
+          - action: notify.mobile_app_pixel_7_pro
             data:
               title: "☀️ Fijne vakantie! ☀️"
               message: "Vakantiemodus is nu actief"
@@ -69,21 +69,21 @@ action:
                     | select('has_value')
                     | list
                 }}
-          - service: switch.turn_off
+          - action: switch.turn_off
             target:
               entity_id: "{{ switches }}"
       - conditions:
           condition: trigger
           id: no_holiday
         sequence:
-          - service: input_boolean.turn_off
+          - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.op_vakantie
       - conditions:
           condition: trigger
           id: holiday_over
         sequence:
-          - service: input_boolean.turn_off
+          - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.vakantie
           - if:
@@ -102,7 +102,7 @@ action:
                         | select('has_value')
                         | list
                     }}
-              - service: switch.turn_on
+              - action: switch.turn_on
                 target:
                   entity_id: "{{ switches }}"
               - delay: 20
@@ -114,6 +114,6 @@ action:
                         |select('has_value')
                         | list
                     }}
-              - service: light.turn_off
+              - action: light.turn_off
                 target:
                   entity_id: "{{ lights }}"

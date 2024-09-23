@@ -20,34 +20,44 @@
 {%- endmacro -%}
 
 {%- macro area_data(entity) -%}
-  {%- set area_players = label_entities('area_players')
-                        | select('in', area_entities(area_id(entity)))
-                        | select('is_state', 'playing')
+  {% set state_check = entity
+                        | expand
+                        | rejectattr('entity_id', 'has_value')
+                        | map(attribute='name')
                         | list
   -%}
-  {%- if area_players | count > 0 -%}
-    {%- set player = area_players | first -%}
-    {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
+  {%- if state_check | count > 0 %}
+    {{- (state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ state_check[-1])) | trim ~ ' niet beschikbaar'-}} 
   {%- else -%}
-    {%- set area_list = label_devices('area_data')
-                          | select('in', area_devices(area_id(entity)))
-                          | map('device_entities')
-                          | sum(start=[])
+    {%- set area_players = label_entities('area_players')
+                          | select('in', area_entities(area_id(entity)))
+                          | select('is_state', 'playing')
                           | list
     -%}
-    {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
-    {%- set ns = namespace(data=[]) -%}
-    {%- for i in ['temperature', 'humidity', 'illuminance'] -%}
-      {%- set data =  area_list
-                      | select('is_state_attr', 'device_class', i)
-                      | map('states')
-                      | map('float', none)
-                      | select()
-                      | average(none)
-                      | round(1 if i == 'temperature' else 0, default=none)
+    {%- if area_players | count > 0 -%}
+      {%- set player = area_players | first -%}
+      {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
+    {%- else -%}
+      {%- set area_list = label_devices('area_data')
+                            | select('in', area_devices(area_id(entity)))
+                            | map('device_entities')
+                            | sum(start=[])
+                            | list
       -%}
-      {%- set ns.data = ns.data + [data ~ unit[i]] if data else ns.data -%}
-    {%- endfor -%}
-    {{- ns.data | join(' | ') -}}
+      {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
+      {%- set ns = namespace(data=[]) -%}
+      {%- for i in ['temperature', 'humidity', 'illuminance'] -%}
+        {%- set data =  area_list
+                        | select('is_state_attr', 'device_class', i)
+                        | map('states')
+                        | map('float', none)
+                        | select()
+                        | average(none)
+                        | round(1 if i == 'temperature' else 0, default=none)
+        -%}
+        {%- set ns.data = ns.data + [data ~ unit[i]] if data else ns.data -%}
+      {%- endfor -%}
+      {{- ns.data | join(' | ') -}}
+    {%- endif -%}
   {%- endif -%}
 {%- endmacro -%}

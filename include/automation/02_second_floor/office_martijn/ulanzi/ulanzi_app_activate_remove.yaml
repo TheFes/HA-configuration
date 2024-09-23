@@ -13,7 +13,7 @@ condition:
   - "{{ update | default(true) | bool(true) }}"
 action:
   - alias: "Activate or deactivate app"
-    service: mqtt.publish
+    action: mqtt.publish
     data:
       qos: 0
       retain: false

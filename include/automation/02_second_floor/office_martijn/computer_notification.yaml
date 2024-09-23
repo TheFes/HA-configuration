@@ -23,20 +23,20 @@ action:
           condition: trigger
           id: "computer_off"
         sequence:
-          - service: switch.turn_off
+          - action: switch.turn_off
             target:
               entity_id: switch.computer_zolder
       - conditions:
           condition: trigger
           id: "computer_on"
         sequence:
-          - service: alert.turn_off
+          - action: alert.turn_off
             target:
               entity_id: alert.computer_martijn
       - conditions:
           condition: trigger
           id: "alert_on"
         sequence:
-          - service: alert.turn_on
+          - action: alert.turn_on
             target:
               entity_id: alert.computer_martijn

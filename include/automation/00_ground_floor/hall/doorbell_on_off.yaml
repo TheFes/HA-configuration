@@ -19,7 +19,7 @@ action:
             before: "07:00:00"
         sequence:
           - alias: "Turn chime off"
-            service: switch.turn_off
+            action: switch.turn_off
             data:
               entity_id: switch.doorbell_chime_active
       - conditions:
@@ -29,6 +29,6 @@ action:
             before: "19:00:00"
         sequence:
           - alias: "Turn chime on"
-            service: switch.turn_on
+            action: switch.turn_on
             data:
               entity_id: switch.doorbell_chime_active

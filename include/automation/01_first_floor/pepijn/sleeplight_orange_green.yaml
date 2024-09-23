@@ -32,7 +32,7 @@ action:
   - choose:
       - conditions: "{{ trigger is defined and trigger.get('id') == 'orange' }}"
         sequence:
-          - service: script.turn_on
+          - action: script.turn_on
             target:
               entity_id: script.transition_lights
             data:
@@ -47,11 +47,11 @@ action:
                   - 0
                 use_ct: false
                 duration: "{{ (today_at(states('input_datetime.pepijn_time_awake')) - now()).seconds }}"
-                split_service: true
+                split_action: true
                 max_steps: 90
       - conditions: "{{ trigger is defined and trigger.get('id') == 'green' }}"
         sequence:
-          - service: script.turn_on
+          - action: script.turn_on
             target:
               entity_id: script.transition_lights
             data:
@@ -71,9 +71,9 @@ action:
                   - 0
                 duration: 10
                 mode: parallel
-                split_service: true
+                split_action: true
           - delay: 10
-          - service: light.turn_on
+          - action: light.turn_on
             target:
               entity_id: light.pepijn_leeslamp
             data:
@@ -82,11 +82,11 @@ action:
                 - 237
                 - 0
           - wait_template: "{{ is_state('light.pepijn_leeslamp', 'off')}}"
-          - service: button.press
+          - action: button.press
             data:
               entity_id: button.reset_graafmachine_time
       - conditions: "{{ trigger is defined and trigger.get('id') == 'time_check' }}"
         sequence:
-          - service: button.press
+          - action: button.press
             target:
               entity_id: button.set_time

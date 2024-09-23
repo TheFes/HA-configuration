@@ -21,7 +21,7 @@ condition:
     state: "home"
 action:
   - alias: "Message to phone Martijn"
-    service: notify.mobile_app_pixel_7_pro
+    action: notify.mobile_app_pixel_7_pro
     data:
       title: "Hoera!"
       message: "Marleen is bijna thuis"
@@ -41,14 +41,14 @@ action:
           [ 'media_player.keuken_hub' ]
         {%- endif %}
   - alias: "Send TTS using Google Home Resume script"
-    service: script.turn_on
+    action: script.turn_on
     target:
       entity_id: script.google_home_resume
     data:
       variables:
         action:
           - alias: "Send TTS message"
-            service: tts.google_cloud_say
+            action: tts.google_cloud_say
             target:
               entity_id: "{{ target }}"
             data:

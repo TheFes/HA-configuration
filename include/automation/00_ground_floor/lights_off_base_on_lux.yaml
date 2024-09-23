@@ -23,7 +23,7 @@ action:
             id: light
         sequence:
           - alias: "Turn of some lights"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id:
                 - light.groep_woonkamer
@@ -31,6 +31,6 @@ action:
                 - light.keuken
     default:
       - alias: "Turn off all lights"
-        service: light.turn_off
+        action: light.turn_off
         target:
           entity_id: light.groep_beneden

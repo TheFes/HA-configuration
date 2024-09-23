@@ -24,6 +24,14 @@ const devices = {
         "hdmiInputs": 4,
         "tuner": true,
       },
+      "fire_tv_insignia_f20": {
+        "supported": true,
+        "friendlyName": "INSIGNIA TV (F20 Series)",
+        "defaultEventListenerBinPath": "/dev/input/event0",
+        "defaultRemoteStyle": "AF5",
+        "hdmiInputs": 3,
+        "tuner": true,
+      },
       "fire_tv_jvc-4k-2021": {
         "supported": true,
         "friendlyName": "JVC 4K - Fire TV with Freeview Play (2021)",
@@ -231,6 +239,33 @@ const devices = {
         "supported": true,
         "friendlyName": "Chromecast HD",
         "defaultRemoteStyle": "CC1",
+        "hdmiInputs": 0,
+      },
+
+    }
+
+  },
+
+
+  "homatics": {
+
+    "meta": {
+      "friendlyName": "Homatics",
+      "supported": false,
+    },
+
+    "noCategory": {
+
+      "dune-hd-box-4-4k-plus": {
+        "supported": false,
+        "friendlyName": "Dune HD Box R 4K Plus",
+        "defaultRemoteStyle": "HO3",
+        "hdmiInputs": 0,
+      },
+      "box-4-4k-plus": {
+        "supported": false,
+        "friendlyName": "Box R 4K Plus",
+        "defaultRemoteStyle": "HO1",
         "hdmiInputs": 0,
       },
 

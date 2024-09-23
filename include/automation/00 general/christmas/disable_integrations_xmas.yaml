@@ -7,7 +7,7 @@ trigger:
       - "on"
       - "off"
 action:
-  - service: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+  - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
     data:
       config_entry_id:
         - 48b8951b1855b53bba5a91888055fa5f

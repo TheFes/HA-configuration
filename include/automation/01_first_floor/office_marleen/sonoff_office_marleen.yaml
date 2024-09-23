@@ -21,12 +21,12 @@ action:
           - if: "{{ is_state(main, 'on') }}"
             then:
               - alias: "Turn off main light"
-                service: light.turn_off
+                action: light.turn_off
                 target:
                   entity_id: "{{ main }}"
             else:
               - alias: "Turn on main light"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ main }}"
       - conditions:
@@ -35,7 +35,7 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'double' }}"
         sequence:
           - alias: "Light to 100% brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ main }}"
             data:
@@ -46,7 +46,7 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'long' }}"
         sequence:
           - alias: "Turn on light with low brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ main }}"
             data:

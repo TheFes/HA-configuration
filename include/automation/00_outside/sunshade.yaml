@@ -51,12 +51,12 @@ action:
         entity_id: sensor.woonkamer_multi_temperature
         above: 20
       - alias: "Open cover"
-        service: cover.open_cover
+        action: cover.open_cover
         target:
           entity_id: cover.veranda
   - if: "{{ trigger.id == 'close' }}"
     then:
       - alias: "Close cover"
-        service: cover.close_cover
+        action: cover.close_cover
         target:
           entity_id: cover.veranda

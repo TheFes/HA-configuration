@@ -19,7 +19,7 @@ trigger:
 action:
   - if: "{{ 'phone' in trigger.id }}"
     then:
-      - service: device_tracker.see
+      - action: device_tracker.see
         data:
           dev_id: phone_martijn_bt
           host_name: Phone Martijn BT
@@ -36,7 +36,7 @@ action:
             {% endif %}
   - if: "{{ 'watch' in trigger.id }}"
     then:
-      - service: device_tracker.see
+      - action: device_tracker.see
         data:
           dev_id: watch_martijn_bt
           host_name: Watch Martijn BT

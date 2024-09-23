@@ -44,7 +44,7 @@ condition:
     value_template: "{{ active and volume_differs }}"
 action:
   - alias: "Sync volume"
-    service: media_player.volume_set
+    action: media_player.volume_set
     target:
       entity_id: "{{ available | reject('eq', trigger.entity_id) | list }}"
     data:

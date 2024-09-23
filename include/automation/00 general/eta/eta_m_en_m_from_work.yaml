@@ -53,11 +53,11 @@ action:
         event_data:
           key: "eta_{{ name }}"
     else:
-      - service: homeassistant.update_entity
+      - action: homeassistant.update_entity
         target:
           entity_id: "{{ sensor }}"
       - alias: "Send notification to phone"
-        service: "{{ notify }}"
+        action: "{{ notify }}"
         data:
           title: "{{ name | capitalize }} is onderweg {{ (' met de ' ~ vehicle) if name == 'martijn' else ''}}"
           message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
@@ -80,7 +80,7 @@ action:
           - repeat:
               until: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
               sequence:
-                - service: homeassistant.update_entity
+                - action: homeassistant.update_entity
                   target:
                     entity_id: "{{ sensor }}"
                 - variables:
@@ -98,7 +98,7 @@ action:
                         key: "eta_{{ name }}"
                         value: "{{ '🚴‍♂️' if vehicle == 'fiets' else '🚗'}} ETA {{ name | title }}: {{ eta }}"
                     - alias: "Send notification to phone"
-                      service: "{{ notify }}"
+                      action: "{{ notify }}"
                       data:
                         title: "{{ name | capitalize }} is vertraagd"
                         message: "{{ gender | capitalize }} zou er nu rond {{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }} moeten zijn"

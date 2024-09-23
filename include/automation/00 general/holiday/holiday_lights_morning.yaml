@@ -25,48 +25,48 @@ action:
     delay:
       minutes: "{{ range(0,60) | random }}"
   - alias: "Turn on light in master bedroom"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: light.slaapkamer_plafond_template
   - alias: "Another delay"
     delay:
       minutes: "{{ range(3,8) | random }}"
   - alias: "Turn light in one of the children bedrooms on"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: "{{ light_list[light_select] }}"
   - alias: "Another delay"
     delay:
       minutes: "{{ range(2,8) | random }}"
   - alias: "Turn on light in other bedroom"
-    service: light.turn_on
+    action: light.turn_on
     target:
       entity_id: "{{ light_list[0 if light_select == 1 else 1] }}"
   - alias: "Even more delay"
     delay:
       minutes: "{{ range(20,30) | random }}"
   - alias: "Run morning script"
-    service: script.turn_on
+    action: script.turn_on
     target:
       entity_id: script.good_morning_routine
   - alias: "Even more delay"
     delay:
       minutes: "{{ range(10,25) | random }}"
   - alias: "Turn of light in one children bedroom"
-    service: light.turn_off
+    action: light.turn_off
     target:
       entity_id: "{{ light_list[light_select2] }}"
   - alias: "Delay.. again.."
     delay:
       minutes: "{{ range(2,8) | random }}"
   - alias: "And turn off the other children bedroom's light"
-    service: light.turn_off
+    action: light.turn_off
     target:
       entity_id: "{{ light_list[0 if light_select2 == 1 else 1] }}"
   - alias: "STOP WITH THESE DELAYS!"
     delay:
       minutes: "{{ range(3,8) | random }}"
   - alias: "Turn off master bedroom light"
-    service: light.turn_off
+    action: light.turn_off
     target:
       entity_id: light.slaapkamer_plafond_template

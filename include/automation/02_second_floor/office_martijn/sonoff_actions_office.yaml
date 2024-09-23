@@ -32,12 +32,12 @@ action:
           - if: "{{ is_state(light, 'on') }}"
             then:
               - alias: "Turn off light"
-                service: light.turn_off
+                action: light.turn_off
                 target:
                   entity_id: "{{ light }}"
             else:
               - alias: "Turn on light"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ light }}"
       - conditions:
@@ -46,13 +46,13 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'double' }}"
         sequence:
           - alias: "Light to 100% brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ targets }}"
             data:
               brightness: 255
           - alias: "Set color temperature based on brightness"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ targets }}"
             data:
@@ -65,7 +65,7 @@ action:
           - if: "{{ is_state(light, 'on')}}"
             then:
               - alias: "Decrease brightness"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ targets }}"
                 data:
@@ -73,7 +73,7 @@ action:
                     {{ [1, 52, 103, 154, 205] | select('<', br) | max }}
               - delay: 0.5
               - alias: "Set color temperature based on brightness"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ targets }}"
                 data:
@@ -82,6 +82,6 @@ action:
                     {{ [min_ct, max_ct - ((br-min_br) * (ct_diff) / (max_br-min_br)) | int] | max }}
             else:
               - alias: "Turn on light"
-                service: light.turn_on
+                action: light.turn_on
                 target:
                   entity_id: "{{ light }}"

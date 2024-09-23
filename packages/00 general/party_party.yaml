@@ -74,22 +74,22 @@ script:
             {{ dict(current, **add) }}
       - if: "{{ party_on | default(false) }}"
         then:
-          - service: scene.create
+          - action: scene.create
             data:
               scene_id: before_party_all_{{ area }}
               snapshot_entities: "{{ lights }}"
-          - service: light.turn_off
+          - action: light.turn_off
             target:
               entity_id: "{{ lights }}"
-          - service: light.turn_on
+          - action: light.turn_on
             target:
               entity_id: "{{ effect_data.lights }}"
           - delay: 0.5
-          - service: scene.create
+          - action: scene.create
             data:
               scene_id: before_party_effect_{{ area }}
               snapshot_entities: "{{ effect_data.lights }}"
-          - service: light.turn_on
+          - action: light.turn_on
             target:
               entity_id: "{{ effect_data.lights }}"
             data:
@@ -103,7 +103,7 @@ script:
                   | count > 0
               }}
             then:
-              - service: light.turn_on
+              - action: light.turn_on
                 target:
                   entity_id: >
                     {{
@@ -125,17 +125,17 @@ script:
                     | list
                 }}
               sequence:
-                - service: light.turn_on
+                - action: light.turn_on
                   target:
                     entity_id: "{{ effect_data[repeat.item] }}"
                   data:
                     effect: "{{ repeat.item }}"
         else:
-          - service: scene.turn_on
+          - action: scene.turn_on
             target:
               entity_id: scene.before_party_effect_{{ area}}
           - delay: 0.5
-          - service: scene.turn_on
+          - action: scene.turn_on
             target:
               entity_id: scene.before_party_all_{{ area }}
 
@@ -214,7 +214,7 @@ automation:
                 - "{{ party_on != current_state }}"
                 - "{{ current_set_by == 'song' if not party_on else true }}"
               then:
-                - service: script.turn_on
+                - action: script.turn_on
                   target:
                     entity_id: script.party_party
                   data:
@@ -249,7 +249,7 @@ light:
                 exclude_lights:
                   slaapkamer_pepijn:
                     - light.pepijn
-            - service: script.turn_on
+            - action: script.turn_on
               target:
                 entity_id: script.party_party
               data:
@@ -261,7 +261,7 @@ light:
           turn_off:
             - variables:
                 area: "{{ area_id(this.entity_id) }}"
-            - service: script.turn_on
+            - action: script.turn_on
               target:
                 entity_id: script.party_party
               data:

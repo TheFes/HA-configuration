@@ -1,0 +1,452 @@
+automation:
+  # Close and open based on weather and inside temp
+  # Pepijn
+  - id: 27c39fe7-4505-4e6a-a739-bcc20f8f4c4b
+    alias: "Open and close cover Pepijn when needed"
+    trigger_variables:
+      cover: cover.pepijn_template
+      temp: sensor.pepijn_temp
+      manual: binary_sensor.screen_pepijn_manual
+      close_time_workday: "07:30"
+      close_time_weekend: "08:30"
+      open_time: "18:00"
+    <<: &config
+      mode: restart
+      variables:
+        open: >
+          {{
+              trigger.id == 'open'
+              and 
+                (
+                  states('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
+                  or not is_state('binary_sensor.rain_until_morning', 'off')
+                  or as_local(as_datetime(states('sensor.sun_next_rising'))).time() > today_at('07:00').time()
+                )
+          }}
+      trigger:
+        - alias: "closing time"
+          platform: template
+          value_template: >
+            {% set close_time = close_time_workday
+              if is_state('binary_sensor.workday_sensor', 'on')
+              else close_time_weekend %}
+            {{ now() > today_at(close_time) }}
+          id: close
+        - alias: "closing time"
+          platform: template
+          value_template: "{{ extra_close_time is defined and now() > today_at(extra_close_time) }}"
+          id: close
+        - alias: "outside temp above 18"
+          platform: numeric_state
+          entity_id: sensor.weather_combined_max_temp_today
+          above: 18
+          id: close
+        - alias: "currently sunny weather"
+          platform: state
+          entity_id: weather.combined
+          to:
+            - sunny
+            - partycloudy
+          id: close
+        - alias: "no rain for 15 minutes"
+          platform: state
+          entity_id: binary_sensor.rain
+          to: "off"
+          for:
+            minutes: 15
+          id: close
+        - alias: "inside temp above 20"
+          platform: template
+          value_template: "{{ states(temp) | float(0) >= 20 }}"
+          id: close
+        - alias: "waiting time after manual change over"
+          platform: template
+          value_template: "{{ is_state(manual, 'off') }}"
+        - alias: "opening time"
+          platform: template
+          value_template: "{{ now() > today_at(open_time) }}"
+          id: open
+      condition:
+        - alias: "open or close"
+          condition: or
+          conditions:
+            - alias: "open"
+              condition: and
+              conditions:
+                - alias: "open trigger"
+                  condition: trigger
+                  id: open
+                - alias: "cold day tomorrow or rain expected"
+                  condition: template
+                  value_template: >
+                    {{
+                        trigger.id == 'open'
+                        and 
+                          (
+                            is_state('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
+                            or not is_state('binary_sensor.rain_until_morning', 'off')
+                          )
+                    }}
+            - alias: "close"
+              condition: and
+              conditions:
+                - alias: "close trigger"
+                  condition: trigger
+                  id: close
+                - alias: "closing time"
+                  condition: template
+                  value_template: >
+                    {% set close_time = close_time_workday
+                      if is_state('binary_sensor.workday_sensor', 'on')
+                      else close_time_weekend %}
+                    {{ today_at(close_time) < now() < today_at(open_time)  }}
+                - alias: "outside temp above 18"
+                  condition: numeric_state
+                  entity_id: sensor.weather_combined_max_temp_today
+                  above: 18
+                - alias: "currently sunny weather"
+                  condition: state
+                  entity_id: weather.combined
+                  state:
+                    - sunny
+                    - partycloudy
+                - alias: "no rain for 15 minutes"
+                  condition: state
+                  entity_id: binary_sensor.rain
+                  state: "off"
+                - alias: "inside temp above 20"
+                  condition: template
+                  value_template: "{{ states(temp) | float(0) >= 20 }}"
+                - alias: "not manually opened/closed in the last period"
+                  condition: template
+                  value_template: >
+                    {{ 
+                        manual is undefined
+                        or not is_state(manual, 'on')
+                    }}
+      action:
+        - choose:
+            - conditions:
+                - alias: "close trigger"
+                  condition: trigger
+                  id: "close"
+                - alias: "cover is completely open or time is after 11:00"
+                  condition: template
+                  value_template: >
+                    {% set cleaning = 
+                      'floris' in cover
+                      and now().weekday() == 3
+                      and extra_close_time is defined
+                      and today_at(open_time) < now() < today_at(extra_close_time)
+                    %}
+                    {{
+                      not is_state_attr(cover, 'cover_position', 0)
+                      and
+                        (
+                          not cleaning 
+                          or is_state_attr(cover, 'cover_position', 100)
+                        )
+                    }}
+              sequence:
+                - alias: "close the cover"
+                  action: cover.close_cover
+                  target:
+                    entity_id: "{{ cover }}"
+            - conditions:
+                - alias: "open trigger"
+                  condition: trigger
+                  id: "open"
+                - alias: "cover is not already completely open"
+                  condition: template
+                  value_template: "{{ not is_state_attr(cover, 'cover_position', 100) }}"
+              sequence:
+                - alias: "open the cover"
+                  action: cover.open_cover
+                  target:
+                    entity_id: "{{ cover }}"
+
+  # Floris
+  - id: 4711e349-f3e2-4e7d-adcb-e3b000162fd8
+    alias: "Open or close covers Floris when needed"
+    trigger_variables:
+      cover: cover.floris
+      temp: sensor.floris_temp
+      manual: binary_sensor.screen_floris_manual
+      close_time_workday: "07:30"
+      close_time_weekend: "08:30"
+      extra_close_time: "11:00"
+      open_time: "22:00"
+    <<: *config
+
+  # Office Marleen
+  - id: dd78d7db-7bd2-48ce-9543-64ee16d98732
+    alias: "Open or close covers office Marleen when needed"
+    trigger_variables:
+      cover: cover.werkkamer_marleen
+      temp: sensor.werkkamer_marleen_temp
+      manual: binary_sensor.screen_werkkamer_marleen_manual
+      close_time_workday: "07:30"
+      close_time_weekend: "08:30"
+      open_time: "18:00"
+    <<: *config
+
+  # Office Marleen
+  - id: aab636cd-dac7-4837-82a8-720affe3879f
+    alias: "Open or close covers bedroom when needed"
+    trigger_variables:
+      cover: cover.slaapkamer_zolder_template
+      temp: sensor.awair_slaapkamer_temperature
+      manual: binary_sensor.screen_slaapkamer_manual
+      close_time_workday: "07:30"
+      close_time_weekend: "08:30"
+      open_time: "21:30"
+    <<: *config
+
+  # Office Marleen
+  - id: 04423f6c-4db1-4375-8f94-1b1b4438920d
+    alias: "Open or close covers landing when needed"
+    trigger_variables:
+      cover: cover.overloop_zolder_template
+      temp: sensor.awair_slaapkamer_temperature
+      manual: binary_sensor.screen_overloop_zolder_manual
+      close_time_workday: "07:30"
+      close_time_weekend: "08:30"
+      open_time: "21:30"
+    <<: *config
+
+  # Floris for cleaning
+  - id: fa2ca8c5-675c-4d6a-928b-4e0477cfed3
+    alias: Make sure cover is open for cleaning
+    mode: restart
+    trigger:
+      - platform: state
+        entity_id: cover.floris_links
+        attribute: current_position
+        to: 0
+        for:
+          minutes: 2
+      - platform: time
+        at: "08:30"
+    condition:
+      - alias: "Cleaning time"
+        condition: time
+        after: "08:30:00"
+        before: "11:00:00"
+        weekday:
+          - "thu"
+      - alias: cover closed
+        condition: state
+        entity_id: cover.floris_links
+        attribute: current_position
+        state: 0
+    action:
+      - alias: "Set middle cover to 50%"
+        action: cover.set_cover_position
+        target:
+          entity_id: cover.floris_links
+        data:
+          position: 50
+
+  # Open all screens when it starts raining
+  - id: 48718b8b-2768-4e79-9ac6-fa4f3a10cabe
+    alias: "Screens up with upcoming rain"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.rain
+        to: "on"
+        for: "00:00:10"
+      - platform: homeassistant
+        event: start
+        id: start
+    variables:
+      screens:
+        - cover.floris
+        - cover.pepijn_template
+        - cover.werkkamer_marleen
+        - cover.overloop_zolder_template
+        - cover.slaapkamer_zolder_template
+      down_entity_id: >
+        {{
+          screens
+            | select('has_value')
+            | reject('is_state_attr', 'current_position', 100)
+            | list
+        }}
+      screens_down: "{{ down_entity_id | map('state_attr', 'friendly_name') | list }}"
+      screens_unavailable: >
+        {{
+          screens
+            | reject('has_value')
+            | map('state_attr', 'friendly_name')
+            | list
+        }}
+    condition:
+      - or:
+          - alias: "Screens open?"
+            condition: template
+            value_template: "{{ screens_down | count > 0 }}"
+          - alias: "Screens unavailable?"
+            condition: template
+            value_template: "{{ screens_unavailable | count > 0 }}"
+      - alias: "Rain?"
+        condition: state
+        entity_id: binary_sensor.rain
+        state: "on"
+        for:
+          seconds: "{{ 0 if trigger.id == 'start' else 10 }}"
+    action:
+      - alias: "Open screens"
+        choose:
+          - conditions: "{{ screens_down | count > 0 }}"
+            sequence:
+              - alias: "Screens up"
+                action: cover.open_cover
+                target:
+                  entity_id: "{{ down_entity_id }}"
+      - alias: "Notificatie to phone Martijn"
+        action: notify.mobile_app_pixel_7_pro
+        data:
+          title: >
+            {%- if screens_unavailable | count > 0 %}
+              "LET OP! Niet alle screens beschikbaar"
+            {%- else %}
+              "Screens gaan open"
+            {%- endif %}
+          message: >
+            {%- if screens_unavailable | count > 0 and screens_down | count > 0 %}
+              {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, deze {{ iff(screens_down | count > 1, 'gaan', 'gaat') }} open: {{ screens_down | join(', ') }}"
+            {%- elif screens_unavailable | count > 0 %}
+              {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, er gaan geen screens open
+            {%- else %}
+              Er komt regen aan, deze screens gaan nu open: {{ screens_down | join(', ') }}
+            {%- endif %}
+          data:
+            channel: Screens
+            ttl: 0
+            priority: high
+            notification_icon: mdi:weather-rainy
+
+# binary template sensors to check if covers were manually changed
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.floris
+          - cover.floris_links
+          - cover.floris_midden
+          - cover.floris_rechts
+    binary_sensor:
+      - unique_id: c41a8db2-ed9c-4078-8d16-d746a1df37e0
+        name: "Screen Floris manual"
+        <<: &config_manual
+          state: "{{ true if this.state == 'on' else (has_value(trigger.entity_id) and states[trigger.entity_id].context.user_id is not none) }}"
+          auto_off: "01:00:00"
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.pepijn_template
+          - cover.pepijn
+    binary_sensor:
+      - unique_id: 9c94b737-a7a4-4616-888c-d6a3658397f0
+        name: "Screen Pepijn manual"
+        <<: *config_manual
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.werkkamer_marleen
+    binary_sensor:
+      - unique_id: cdcaa056-9cd9-46cd-9554-5f306b339d2e
+        name: "Screen Werkkamer Marleen manual"
+        <<: *config_manual
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.slaapkamer_zolder
+          - cover.slaapkamer_zolder_template
+    binary_sensor:
+      - unique_id: ed6b1fc6-b61d-46e4-9337-c80ff2bcab30
+        name: "Screen Slaapkamer manual"
+        <<: *config_manual
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.overloop_zolder
+          - cover.overloop_zolder_template
+    binary_sensor:
+      - unique_id: 4bcbb041-c163-42eb-b30c-1004a7ae82dc
+        name: "Screen Overloop zolder manual"
+        <<: *config_manual
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - cover.veranda
+    binary_sensor:
+      - unique_id: ed19a4be-2a67-4100-b63f-3e9fa69905fa
+        name: "Screen Veranda manual"
+        <<: *config_manual
+
+# template covers to invert status
+cover:
+  - platform: template
+    covers:
+      pepijn_template:
+        unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
+        friendly_name: "Screen Pepijn"
+        device_class: shade
+        <<: &config_invert
+          value_template: &value "{{ states(this.entity_id | replace('_template', '')) }}"
+          position_template: &position >
+            {%- set c = this.entity_id | replace('_template', '') %}
+            {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+            {%- set s = state_attr(c, 'current_position') %}
+            {%- set i = is_state(b, 'on') %}
+            {{ 100 - s if i else s }}
+          availability_template: &availability >
+            {{ (this.entity_id | replace('_template', '')) | has_value }}
+          open_cover: &open_cover
+            - service: >
+                {%- set c = this.entity_id | replace('_template', '') %}
+                {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+                {%- set i = is_state(b, 'on') %}
+                {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+              target:
+                entity_id: "{{ this.entity_id | replace('_template', '') }}"
+          close_cover: &close_cover
+            - service: >
+                {%- set c = this.entity_id | replace('_template', '') %}
+                {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+                {%- set i = is_state(b, 'on') %}
+                {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+              target:
+                entity_id: "{{ this.entity_id | replace('_template', '') }}"
+          stop_cover: &stop_cover
+            - service: cover.stop_cover
+              target:
+                entity_id: "{{ this.entity_id | replace('_template', '') }}"
+          set_cover_position: &set_cover_position
+            - service: cover.set_cover_position
+              target:
+                entity_id: "{{ this.entity_id | replace('_template', '') }}"
+              data:
+                position: >
+                  {%- set c = this.entity_id | replace('_template', '') %}
+                  {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
+                  {%- set i = is_state(b, 'on') %}
+                  {{ 100 - position if i else position }}
+
+      slaapkamer_zolder_template:
+        unique_id: 95fb6193-3557-435e-8b5b-8fdf8bdacd3f
+        friendly_name: "Screen Slaapkamer Zolder"
+        device_class: shade
+        <<: *config_invert
+
+      overloop_zolder_template:
+        unique_id: f257aa95-bd57-4f22-baf3-613754cb23ab
+        friendly_name: "Screen Overloop Zolder"
+        device_class: shade
+        <<: *config_invert

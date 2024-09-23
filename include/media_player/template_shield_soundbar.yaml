@@ -9,18 +9,11 @@ media_players:
       {{ state_attr(source_entity, 'source') }}
     value_template: >
       {% set state_entity = 'media_player.nvidia_shield_2' if not is_state('media_player.nvidia_shield', 'off') else 'media_player.samsung_soundbar' %}
-      {{ states(state_entity) if is_state('switch.tv_meubel', 'on') else 'off' }}
+      {{ states(state_entity) }}
     turn_on:
-      - if: "{{ is_state('switch.tv_meubel', 'on') }}"
-        then:
-          - wait_template: "{{ 'media_player.nvidia_shield_2' | has_value }}"
-          - service: media_player.turn_on
-            target:
-              entity_id: media_player.nvidia_shield
-        else:
-          - service: switch.turn_on
-            target:
-              entity_id: switch.tv_meubel
+      - service: media_player.turn_on
+        target:
+          entity_id: media_player.nvidia_shield
     turn_off:
       - service: media_player.turn_off
         target:

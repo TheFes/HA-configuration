@@ -15,12 +15,12 @@ action:
     choose:
       - conditions: "{{ event == 'single' }}"
         sequence:
-          - service: light.toggle
+          - action: light.toggle
             data:
               entity_id: light.keukenspotjes
       - conditions: "{{ event == 'double' }}"
         sequence:
-          - service: light.toggle
+          - action: light.toggle
             target:
               entity_id: light.keuken
       - conditions: "{{ event == 'hold' }}"

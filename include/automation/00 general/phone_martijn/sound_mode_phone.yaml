@@ -14,13 +14,13 @@ action:
         entity_id: person.martijn
         state: home
     then:
-      - service: notify.mobile_app_pixel_7_pro
+      - action: notify.mobile_app_pixel_7_pro
         data:
           message: "command_ringer_mode"
           data:
             command: "normal"
     else:
-      - service: notify.mobile_app_pixel_7_pro
+      - action: notify.mobile_app_pixel_7_pro
         data:
           message: "command_ringer_mode"
           data:

@@ -29,7 +29,7 @@ condition:
     value_template: "{{ states(sensor) != 'geen' }}"
 action:
   - alias: "Notification phones"
-    service: notify.all_phones
+    action: notify.all_phones
     data:
       title: >
         {%- if trash_pickup | length > 1 %}

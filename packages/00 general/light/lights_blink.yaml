@@ -42,7 +42,7 @@ script:
                       light: "{{ light }}"
                       effect: "{{ effect }}"
                   - alias: "Create scene with current state"
-                    service: scene.create
+                    action: scene.create
                     data:
                       scene_id: before_{{ light | replace('.', '_') }}
                       snapshot_entities: "{{ light }}"
@@ -53,13 +53,13 @@ script:
                         - variables:
                             domain: "{{ toggle_entity.split('.')[0] }}"
                         - alias: "Blink"
-                          service: "{{ domain }}.toggle"
+                          action: "{{ domain }}.toggle"
                           data:
                             entity_id: "{{ toggle_entity }}"
                         - alias: "Short delay between toggle"
                           delay: "{{ 0.5 if effect == 'Fast Pulse' else 1 }}"
                   - alias: "Restore scene"
-                    service: scene.turn_on
+                    action: scene.turn_on
                     target:
                       entity_id: scene.before_{{ light | replace('.', '_') }}
               - event: light_effect_blink
@@ -72,7 +72,7 @@ script:
                 event_data:
                   light: "{{ light }}"
               - alias: "Restore scene"
-                service: scene.turn_on
+                action: scene.turn_on
                 target:
                   entity_id: scene.before_{{ light | replace('.', '_') }}
               - stop:
@@ -119,7 +119,7 @@ script:
             }}
           other: "{{ lights | reject('in', hue + effect) | list}}"
       - alias: "Create scene with current state"
-        service: scene.create
+        action: scene.create
         data:
           scene_id: before
           snapshot_entities: "{{ lights }}"
@@ -127,7 +127,7 @@ script:
         if: "{{ lights | select('in', hue) | list | count > 0 }}"
         then:
           - alias: "Blink lights (hue_lights)"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ lights | select('in', hue) | list }}"
             data:
@@ -136,7 +136,7 @@ script:
         if: "{{ effect | count > 0 }}"
         then:
           - alias: "Blink lights"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: "{{ effect }}"
             data:
@@ -147,7 +147,7 @@ script:
           - repeat:
               for_each: "{{ other }}"
               sequence:
-                - service: script.turn_on
+                - action: script.turn_on
                   target:
                     entity_id: script.light_blink
                   data:
@@ -159,7 +159,7 @@ script:
               count: 10
               sequence:
                 - alias: "Toggle other lights"
-                  service: light.toggle
+                  action: light.toggle
                   data:
                     entity_id: "{{ other }}"
                 - alias: "Short delay between toggle"
@@ -167,11 +167,11 @@ script:
       - delay:
           seconds: 10
       - alias: "Restore state"
-        service: scene.turn_on
+        action: scene.turn_on
         target:
           entity_id: scene.before
       - alias: "Disable blinking"
-        service: light.turn_on
+        action: light.turn_on
         data:
           effect: "None"
         target:
@@ -230,7 +230,7 @@ light:
           {% set switch = switch | first if switch else 'none' %}
           {{ switch | has_value or ('switch.' ~ id) | has_value }}
         turn_on: &turn_on
-          - service: switch.turn_on
+          - action: switch.turn_on
             target:
               entity_id: >
                 {% set id = this.entity_id | regex_replace('light.|_template', '') %}
@@ -242,7 +242,7 @@ light:
                 {% set switch = switch | first if switch else 'none' %}
                 {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
         turn_off: &turn_off
-          - service: switch.turn_off
+          - action: switch.turn_off
             target:
               entity_id: >
                 {% set id = this.entity_id | regex_replace('light.|_template', '') %}
@@ -256,7 +256,7 @@ light:
         effect_list_template: &effect_list "{{ ['Fast Pulse', 'Slow Pulse', 'None'] }}"
         effect_template: &effect "{{ state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') }}"
         set_effect: &set_effect
-          - service: script.turn_on
+          - action: script.turn_on
             target:
               entity_id: script.light_blink
             data:

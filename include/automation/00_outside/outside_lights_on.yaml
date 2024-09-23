@@ -23,7 +23,7 @@ action:
             before: " 00:15:00"
         sequence:
           - alias: "Lights in garden off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id:
                 - light.tuinlampjes
@@ -35,7 +35,7 @@ action:
             state: "above_horizon"
         sequence:
           - alias: "All outside lights off"
-            service: light.turn_off
+            action: light.turn_off
             target:
               entity_id:
                 - light.groep_buiten
@@ -46,13 +46,13 @@ action:
             state: "below_horizon"
         sequence:
           - alias: "Turn front door light and garden lights on"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id:
                 - light.tuinlampjes
                 - light.voordeur
           - alias: "Turn porch light on"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.veranda
             data:
@@ -60,7 +60,7 @@ action:
           - alias: "Short delay"
             delay: 10
           - alias: "Another service call to be sure (sometimes it fails)"
-            service: light.turn_on
+            action: light.turn_on
             target:
               entity_id: light.veranda
             data:

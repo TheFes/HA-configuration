@@ -14,7 +14,7 @@ ikea_pairing:
           domain: switch
   sequence:
     - alias: Make sure the switch is on
-      service: switch.turn_on
+      action: switch.turn_on
       target:
         entity_id: "{{ switch }}"
     - alias: Delay to ensure the light(s) is on properly
@@ -25,14 +25,14 @@ ikea_pairing:
         count: 6
         sequence:
           - alias: Turn the switch off
-            service: switch.turn_off
+            action: switch.turn_off
             target:
               entity_id: "{{ switch }}"
           - alias: Wait 1 second
             delay:
               seconds: 1
           - alias: Turn the switch on again
-            service: switch.turn_on
+            action: switch.turn_on
             target:
               entity_id: "{{ switch }}"
           - alias: Wait 0.5 seconds

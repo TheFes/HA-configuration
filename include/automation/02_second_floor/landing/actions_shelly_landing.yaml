@@ -25,7 +25,7 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
           - alias: Toggle Overloop group
-            service: light.toggle
+            action: light.toggle
             data:
               entity_id: light.groep_overloop_zolder
       - conditions:
@@ -34,7 +34,7 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'double' }}"
         sequence:
           - alias: Set overloop group to 100%
-            service: light.turn_on
+            action: light.turn_on
             data:
               entity_id: light.groep_overloop_zolder
               brightness: 255
@@ -44,6 +44,6 @@ action:
             value_template: "{{ trigger.event.data.click_type == 'long' }}"
         sequence:
           - alias: Turn of all lights on 2nd floor and attic
-            service: light.turn_off
+            action: light.turn_off
             data:
               entity_id: light.groep_zolder

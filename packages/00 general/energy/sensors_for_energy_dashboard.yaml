@@ -1,0 +1,42 @@
+template:
+  - sensor:
+      - unique_id: 2a560ea5-d0fd-4c65-888d-0aecd3956477
+        name: Energy Consumption tarif 1
+        state: "{{ states('sensor.electricity_meter_energieverbruik_tarief_1') }}"
+        availability: "{{ 'sensor.electricity_meter_energieverbruik_tarief_1' | has_value }}"
+        <<: &energy_config
+          device_class: energy
+          state_class: total_increasing
+          unit_of_measurement: kWh
+          icon: mdi:lightning-bolt
+      - unique_id: 89455803-e325-4312-9309-420220b64a10
+        name: Energy Consumption tarif 2
+        availability: "{{ 'sensor.electricity_meter_energieverbruik_tarief_2' | has_value }}"
+        state: "{{ states('sensor.electricity_meter_energieverbruik_tarief_2') }}"
+        <<: *energy_config
+      - unique_id: 63151ee2-67e5-42f4-9591-04afec2a46ed
+        name: Energy Production tarif 1
+        state: "{{ states('sensor.electricity_meter_energieproductie_tarief_1') }}"
+        availability: "{{ 'sensor.electricity_meter_energieproductie_tarief_1' | has_value }}"
+        <<: *energy_config
+      - unique_id: a2ba7e64-6d3c-4b20-9078-e069cc217e54
+        name: Energy Production tarif 2
+        state: "{{ states('sensor.electricity_meter_energieproductie_tarief_2') }}"
+        availability: "{{ 'sensor.electricity_meter_energieproductie_tarief_2' | has_value }}"
+        <<: *energy_config
+      - unique_id: e0fb0aa4-9e51-4111-bbb0-34c0fff86f80
+        name: Gas Consumption
+        state: "{{ states('sensor.gas_meter_gasverbruik') }}"
+        availability: "{{ 'sensor.gas_meter_gasverbruik' | has_value }}"
+        device_class: gas
+        state_class: total_increasing
+        unit_of_measurement: "m³"
+        icon: mdi:meter-gas
+      - unique_id: 75e6a99a-9a36-43e2-ab7e-6fdda9b44c8d
+        name: Water Consumption
+        state: "{{ states('sensor.watermeter_total_consumption') }}"
+        availability: "{{ 'sensor.watermeter_total_consumption' | has_value }}"
+        device_class: water
+        state_class: total_increasing
+        unit_of_measurement: "m³"
+        icon: mdi:water

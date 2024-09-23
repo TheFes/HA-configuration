@@ -22,7 +22,7 @@ action:
   - if: "{{ bt_added in headphones }}"
     then:
       - alias: "Send notification to select right app"
-        service: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_7_pro
         data:
           title: Muziekje?
           message: Wat wil je luisteren
@@ -44,7 +44,7 @@ action:
       - delay:
           minutes: 10
   - alias: "Remove notification"
-    service: notify.mobile_app_pixel_7_pro
+    action: notify.mobile_app_pixel_7_pro
     data:
       message: "clear_notification"
       data:
