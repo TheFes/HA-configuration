@@ -42,7 +42,7 @@ template:
                   }}
               sequence:
                 - alias: Try to get forecast out
-                  service: weather.get_forecasts
+                  action: weather.get_forecasts
                   data:
                     type: "{{ type }}"
                   response_variable: forecast
@@ -81,7 +81,7 @@ template:
       - if: "{{ state_attr('sensor.weather_forecast_entities', 'hourly') | count > 0 }}"
         then:
           - alias: Get hourly forecast data out of selected entities
-            service: weather.get_forecasts
+            action: weather.get_forecasts
             data:
               type: hourly
             target:
@@ -90,7 +90,7 @@ template:
       - if: "{{ state_attr('sensor.weather_forecast_entities', 'hourly') | count > 0 }}"
         then:
           - alias: Get daily forecast data out of selected entities
-            service: weather.get_forecasts
+            action: weather.get_forecasts
             data:
               type: daily
             target:
@@ -170,6 +170,9 @@ template:
                       {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
                       {# find most frequent item for condition #}
                         {% if key == 'condition' %}
+                          {% if 'clear-night' in key_items %}
+                            {% set key_items = key_items | map('replace', 'sunny', 'clear-night') | list %}
+                          {% endif %}
                           {% set add_dict = dict(condition=statistical_mode(key_items, none)) %}
                           {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
                       {# find median for other (numeric) forecast types #}
