@@ -438,7 +438,7 @@ template:
                 | round(1, default=none)
             }}
           {% endif %}
-        temperature_unit: "°C"
+        temperature_unit: &temp_unit "°C"
         pressure_unit: "hPa"
         wind_speed_unit: "km/h"
         visibility_unit: "km"
@@ -457,15 +457,16 @@ template:
               | list
               | first
           }}
-        device_class: temperature
-        state_class: measurement
-        unit_of_measurement: "°C"
-        availability: >
-          {{
-            daily is defined
-            and daily is list
-            and daily | selectattr('datetime', 'search', now().date() | string) | list | count > 0
-          }}
+        <<: &temp_sensor_config
+          device_class: temperature
+          state_class: measurement
+          unit_of_measurement: *temp_unit
+          availability: >
+            {{
+              daily is defined
+              and daily is list
+              and daily | selectattr('datetime', 'search', now().date() | string) | list | count > 0
+            }}
       - unique_id: e61acc80-7348-45ed-b83c-070109cd4fe1
         name: Weather Combined Max Temp Tomorrow
         state: >
@@ -477,18 +478,7 @@ template:
               | list
               | first
           }}
-        device_class: temperature
-        state_class: measurement
-        unit_of_measurement: "°C"
-        availability: >
-          {{
-            daily is defined
-            and daily is list
-            and daily
-                  | selectattr('datetime', 'search', (now() + timedelta(days=1)).date() | string)
-                  | list
-                  | count > 0
-          }}
+        <<: *temp_sensor_config
       - unique_id: 3098ef4f-aa24-4c27-ae00-514b699a1bfa
         name: Weather Combined daily condition
         state: "{{ daily[0].condition }}"
