@@ -1,20 +1,20 @@
 - trigger:
-    - platform: event
+    - trigger: event
       event_type: set_house_mode
       id: event
       variables:
         mode: "{{ trigger.event.data.mode }}"
-    - platform: state
+    - trigger: state
       entity_id:
         - input_boolean.vakantie
         - input_boolean.gast
         - zone.home
       variables:
-        mode: >
+        mode: &mode_template >
           {% set home = states('zone.home') | int(0) > 0 %}
           {% set guest = is_state('input_boolean.gast', 'on') %}
           {% set holiday = is_state('input_boolean.vakantie', 'on') %}
-          {% if home and is_state('sensor.house_mode', 'Slapen') %}
+          {% if home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
             Slapen
           {% elif home %}
             Thuis
@@ -25,22 +25,22 @@
           {% else %}
             Afwezig
           {% endif %}
-    - platform: time
+    - trigger: state
+      entity_id: light.groep_zolder
+      to: "off"
+      variables:
+        mode: *mode_template
+    - trigger: state
+      entity_id: sensor.house_mode
+      to: "Tandenpoetsen"
+      for:
+        minutes: 30
+      variables:
+        mode: *mode_template
+    - trigger: time
       at: input_datetime.pepijn_time_awake
       variables:
-        mode: >
-          {% set home = states('zone.home') | int(0) > 0 %}
-          {% set guest = is_state('input_boolean.gast', 'on') %}
-          {% set holiday = is_state('input_boolean.vakantie', 'on') %}
-          {% if home %}
-            Thuis
-          {% elif guest %}
-            Gast
-          {% elif holiday %}
-            Vakantie
-          {% else %}
-            Afwezig
-          {% endif %}
+        mode: *mode_template
   sensor:
     - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
       name: House Mode
@@ -50,6 +50,7 @@
                             'Gast': 'mdi:account',
                             'Afwezig': 'mdi:home-outline',
                             'Vakantie': 'mdi:bag-suitcase',
+                            'Tandenpoetsen': 'mdi:toothbrush', 
                             'Slapen': 'mdi:bed'
                           }
         %}
