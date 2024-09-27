@@ -19,18 +19,29 @@
     {%- endif -%}
 {%- endmacro -%}
 
-{%- macro area_data(entity) -%}
-  {% set state_check = entity
+{# shows unavailable devices, what's playing or temp|humidity|lux of an area #}
+{%- macro area_data(entity_or_area) -%}
+  {% set state_check = (entity_or_area if '.' in entity_or_area else area_entities(entity_or_area))
                         | expand
-                        | rejectattr('entity_id', 'has_value')
-                        | map(attribute='name')
-                        | list
+                        | map(attribute='entity_id')
+                        | select('is_state', 'unavailable')
+                        | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
+                        | map('device_id')
+                        | reject('eq', '440db56c2fddace0d05637d2e0635dca')
+                        | select()
+                        | unique
+                        | list 
   -%}
-  {%- if state_check | count > 0 %}
-    {{- (state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ state_check[-1])) | trim ~ ' niet beschikbaar'-}} 
+  {% set ns = namespace(state_check=[]) %}
+  {% for d in state_check if device_entities(d) | select('has_value') | list | count == 0 %}
+    {% set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] %}
+  {% endfor %}
+  {%- if ns.state_check | count > 0 %}
+    {{- (ns.state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ state_check[-1])) | trim ~ ' niet beschikbaar'-}} 
   {%- else -%}
+    {% set a_id = area_id(entity_or_area) | default(entity_or_area, true) %}
     {%- set area_players = label_entities('area_players')
-                          | select('in', area_entities(area_id(entity)))
+                          | select('in', area_entities(a_id))
                           | select('is_state', 'playing')
                           | list
     -%}
@@ -39,11 +50,12 @@
       {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
     {%- else -%}
       {%- set area_list = label_devices('area_data')
-                            | select('in', area_devices(area_id(entity)))
+                            | select('in', area_devices(a_id))
                             | map('device_entities')
                             | sum(start=[])
                             | list
       -%}
+      {%- set area_list = area_list + area_entities(a_id) | select('in', label_entities('area_data')) | list -%}
       {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
       {%- set ns = namespace(data=[]) -%}
       {%- for i in ['temperature', 'humidity', 'illuminance'] -%}

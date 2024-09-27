@@ -1,0 +1,170 @@
+# template sensors for area state use /config/custom_templates/helpers.jinja
+template:
+  - sensor:
+      - unique_id: area_data_template_slaapkamer_floris
+        name: Area Data Slaapkamer Floris
+        icon: mdi:bed
+        state: &area_state >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.entity_id | replace('sensor.area_data_', '')) }}
+
+      - unique_id: area_data_template_speelhoek
+        name: Area Data Speelhoek
+        icon: mdi:toy-brick
+        state: *area_state
+
+      - unique_id: area_data_template_wc
+        name: Area Data Wc
+        icon: mdi:toilet
+        state: *area_state
+
+      - unique_id: area_data_template_hal
+        name: Area Data Hal
+        icon: mdi:door
+        state: *area_state
+
+      - unique_id: area_data_template_keuken
+        name: Area Data Keuken
+        icon: mdi:countertop
+        state: *area_state
+
+      - unique_id: area_data_template_slaapkamer_pepijn
+        name: Area Data Slaapkamer Pepijn
+        icon: mdi:unicorn
+        state: *area_state
+
+      - unique_id: area_data_template_trapkast
+        name: Area Data Trapkast
+        icon: mdi:stairs
+        state: *area_state
+
+      - unique_id: area_data_template_tuin
+        name: Area Data Tuin
+        icon: mdi:tree
+        state: *area_state
+
+      - unique_id: area_data_template_woonkamer
+        name: Area Data Woonkamer
+        icon: mdi:sofa
+        state: *area_state
+
+      - unique_id: area_data_template_overloop
+        name: Area Data Overloop
+        icon: mdi:fence
+        state: *area_state
+
+      - unique_id: area_data_template_badkamer
+        name: Area Data Badkamer
+        icon: mdi:bathtub
+        state: *area_state
+
+      - unique_id: area_data_template_overloop_zolder
+        name: Area Data Overloop Zolder
+        icon: mdi:fence
+        state: *area_state
+
+      - unique_id: area_data_template_technische_ruimte_zolder
+        name: Area Data Technische Ruimte Zolder
+        icon: mdi:radiator
+        state: *area_state
+
+      - unique_id: area_data_template_werkkamer_martijn
+        name: Area Data Werkkamer Martijn
+        icon: mdi:desk
+        state: *area_state
+
+      - unique_id: area_data_template_badkamer_zolder
+        name: Area Data Badkamer Zolder
+        icon: mdi:toilet
+        state: *area_state
+
+      - unique_id: area_data_template_slaapkamer_zolder
+        name: Area Data Slaapkamer Zolder
+        icon: mdi:bed-double
+        state: *area_state
+
+      - unique_id: area_data_template_werkkamer_zolder
+        name: Area Data Werkkamer Zolder
+        icon: mdi:desk
+        state: *area_state
+
+      - unique_id: area_data_template_vliering
+        name: Area Data Vliering
+        icon: mdi:home-floor-3
+        state: *area_state
+
+      - unique_id: floor_data_eerste_verdieping_temperature
+        name: Floor Data Eerste Verdieping Temperature
+        device_class: temperature
+        state: &floor_state >
+          {% set class = this.entity_id.split('_') | last %}
+          {% set floor = (this.entity_id | replace('sensor.floor_data_', '')).split('_')[:-1] | join('_') %}
+          {% set floor_devices = floor_areas(floor)
+                                  | map('area_entities')
+                                  | sum(start=[])
+                                  | map('device_id')
+                                  | unique
+                                  | select('in', label_devices('area_data'))
+                                  | list
+          %}
+          {% set floor_entities = floor_devices | map('device_entities') | sum(start=[]) %}
+          {{ floor_entities
+              | select('has_value')
+              | select('is_state_attr', 'device_class', class)
+              | map('states')
+              | map('float')
+              | average(-1)
+              | round(1)
+          }}
+
+      - unique_id: floor_data_eerste_verdieping_humidity
+        name: Floor Data Eerste Verdieping Humidity
+        device_class: humidity
+        state: *floor_state
+
+      - unique_id: floor_data_eerste_verdieping_illuminance
+        name: Floor Data Eerste Verdieping Illuminance
+        device_class: illuminance
+        state: *floor_state
+
+      - unique_id: floor_data_zolder_temperature
+        name: Floor Data Zolder Temperature
+        device_class: temperature
+        state: *floor_state
+
+      - unique_id: floor_data_zolder_humidity
+        name: Floor Data Zolder Humidity
+        device_class: humidity
+        state: *floor_state
+
+      - unique_id: floor_data_zolder_illuminance
+        name: Floor Data Zolder Illuminance
+        device_class: illuminance
+        state: *floor_state
+
+  - binary_sensor:
+      - unique_id: 21bc3453-4f48-479a-a216-f50fdc23b79b
+        name: Cover Floris Dashboard Helper
+        state: "{{ state_attr('cover.floris', 'current_position') < 100 }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        availability: "{{ 'cover.floris' | has_value }}"
+      - unique_id: fca7cce8-d0e7-434f-9b7e-f5a2ea24e7e8
+        name: Cover Overloop Zolder Dashboard Helper
+        state: "{{ state_attr('cover.overloop_zolder_template', 'current_position') < 100 }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        availability: "{{ 'cover.overloop_zolder' | has_value }}"
+      - unique_id: c59709fc-ab8b-495c-830f-337e87696108
+        name: Cover Pepijn Dashboard Helper
+        state: "{{ state_attr('cover.pepijn_template', 'current_position') < 100 }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        availability: "{{ 'cover.pepijn' | has_value }}"
+      - unique_id: 89c3ae41-1ba5-483f-8108-d7e6d04af2de
+        name: Cover Werkkamer Marleen Helper
+        state: "{{ state_attr('cover.werkkamer_marleen', 'current_position') < 100 }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        availability: "{{ 'cover.werkkamer_marleen' | has_value }}"
+      - unique_id: 8c9fbbee-8914-41b8-9310-3a1151c9ec22
+        name: Cover Slaapkamer Zolder
+        state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') < 100 }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        availability: "{{ 'cover.slaapkamer_zolder_template' | has_value }}"
