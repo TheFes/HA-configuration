@@ -15,12 +15,12 @@
         {%- endif %}
       icon: >-
         {%- if is_state('sensor.extractor_hood_status', 'Licht aan') %}
-          mdi:lightbulb
+          mdi:pot-steam-outline
         {%- elif is_state('sensor.extractor_hood_status', 'Afzuigen') %}
-          mdi:weather-windy
+          mdi:pot-steam
         {%- elif is_state('sensor.extractor_hood_status', 'Inactief') %}
-          mdi:lightning-bolt
+          mdi:pot-steam-outline
         {%- elif is_state('sensor.extractor_hood_status', 'Plug uit') %}
           mdi:power-plug-off-outline
         {%- endif %}
-      availability: "{{ states('sensor.afzuigkap_power') | is_number }}"
+      availability: "{{ 'switch.afzuigkap' | has_value }}"

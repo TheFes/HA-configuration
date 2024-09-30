@@ -140,6 +140,7 @@ template:
       - unique_id: floor_data_eerste_verdieping_temperature
         name: Floor Data Eerste Verdieping Temperature
         device_class: temperature
+        unit_of_measurement: "°C"
         state: &floor_state >
           {% set class = this.entity_id.split('_') | last %}
           {% set floor = (this.entity_id | replace('sensor.floor_data_', '')).split('_')[:-1] | join('_') %}
@@ -158,32 +159,37 @@ template:
               | map('states')
               | map('float')
               | average(-1)
-              | round(1)
+              | round(1 if class == 'temperature' else 0)
           }}
 
       - unique_id: floor_data_eerste_verdieping_humidity
         name: Floor Data Eerste Verdieping Humidity
         device_class: humidity
+        unit_of_measurement: "%"
         state: *floor_state
 
       - unique_id: floor_data_eerste_verdieping_illuminance
         name: Floor Data Eerste Verdieping Illuminance
         device_class: illuminance
+        unit_of_measurement: "lx"
         state: *floor_state
 
       - unique_id: floor_data_zolder_temperature
         name: Floor Data Zolder Temperature
         device_class: temperature
+        unit_of_measurement: "°C"
         state: *floor_state
 
       - unique_id: floor_data_zolder_humidity
         name: Floor Data Zolder Humidity
         device_class: humidity
+        unit_of_measurement: "%"
         state: *floor_state
 
       - unique_id: floor_data_zolder_illuminance
         name: Floor Data Zolder Illuminance
         device_class: illuminance
+        unit_of_measurement: "lx"
         state: *floor_state
 
   - binary_sensor:

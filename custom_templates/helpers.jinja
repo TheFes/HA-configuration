@@ -21,11 +21,10 @@
 
 {# shows unavailable devices, what's playing or temp|humidity|lux of an area #}
 {%- macro area_data(area, output) -%}
-  {%- set ignore_device_id = ['440db56c2fddace0d05637d2e0635dca'] -%}
   {%- set colors =
         {
           'unavailable': 'red',
-          'door_window': 'yellow',
+          'door_window_motion': 'yellow',
           'playing': 'green'
         }
   -%}
@@ -36,7 +35,7 @@
                         | select('is_state', 'unavailable')
                         | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
                         | map('device_id')
-                        | reject('in', ignore_device_id)
+                        | reject('in', label_devices(ignore_area))
                         | select()
                         | unique
                         | list 
@@ -54,7 +53,7 @@
   {%- elif ns.state_check | count > 0 -%}
     {{- (ns.state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ ns.state_check[-1])) | trim ~ ' niet beschikbaar'-}}
   {%- else -%}
-    {%- set door_window = label_devices('area_data')
+    {%- set door_window_motion = label_devices('area_data')
                             | map('device_entities')
                             | sum(start=[])
                             | select('in', area_entities(area))
@@ -62,8 +61,8 @@
                             | select('is_state', 'on')
                             | expand
                             | selectattr('attributes.device_class', 'defined')
-                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening'])
-                            | map(attribute='name')
+                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening', 'motion'])
+                            | map(attribute='entity_id')
                             | list
     -%}
     {%- set area_players = label_devices('area_data')
@@ -74,10 +73,13 @@
                             | select('is_state', 'playing')
                             | list
     -%}
-    {%- if door_window | count > 0 -%}
+    {%- if door_window_motion | count > 0 -%}
       {%- if output == 'icon_color' -%}
-        {{- colors.door_window -}}
+        {{- colors.door_window_motion -}}
+      {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list -%}
+        {{- 'Beweging detecteerd' -}}
       {%- else -%}
+        {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
         {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
       {%- endif -%}
     {%- elif area_players | count > 0 -%}
