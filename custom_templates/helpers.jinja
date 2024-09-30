@@ -35,7 +35,7 @@
                         | select('is_state', 'unavailable')
                         | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
                         | map('device_id')
-                        | reject('in', label_devices(ignore_area))
+                        | reject('in', label_devices('ignore_area'))
                         | select()
                         | unique
                         | list 
