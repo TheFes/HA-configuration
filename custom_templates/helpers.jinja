@@ -1,61 +1,101 @@
-{%- macro date_week(date) %}
+{%- macro date_week(date) -%}
     {%- set date = as_datetime(date, 'invalid') if date is string else date-%}
     {%- set date = date.date() if date is datetime else date -%}
     {%- if date != 'invalid' and now().date() <= date -%}
         {%- set date = date.date() if date is datetime else date -%}
         {%- set days = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag' ] -%}
         {%- set days_until = (date - now().date()).days -%}
-        {%- if days_until <= 1 %}
+        {%- if days_until <= 1 -%}
             {{- ['Vandaag', 'Morgen'][days_until] -}}
         {%- elif days_until < 7 - now().isoweekday() -%}
             {{- days[date.weekday()] | title -}}
-        {%- elif days_until <= 14 - now().isoweekday() %}
+        {%- elif days_until <= 14 - now().isoweekday() -%}
             {{- 'Volgende week ' ~ days[date.weekday()] -}}
         {%- else -%}
             {{- 'Over ' ~ (days_until / 7) | round(0, 'ceil') ~ ' weken' -}}
-        {%- endif %}
+        {%- endif -%}
     {%- else -%}
         {{- 'Ongeldige datuminvoer' -}}
     {%- endif -%}
 {%- endmacro -%}
 
 {# shows unavailable devices, what's playing or temp|humidity|lux of an area #}
-{%- macro area_data(entity_or_area) -%}
-  {% set state_check = (entity_or_area if '.' in entity_or_area else area_entities(entity_or_area))
+{%- macro area_data(area, output) -%}
+  {%- set ignore_device_id = ['440db56c2fddace0d05637d2e0635dca'] -%}
+  {%- set colors =
+        {
+          'unavailable': 'red',
+          'door_window': 'yellow',
+          'playing': 'green'
+        }
+  -%}
+  {%- set output = output | default('area_state') -%}
+  {%- set state_check = area_entities(area)
                         | expand
                         | map(attribute='entity_id')
                         | select('is_state', 'unavailable')
                         | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
                         | map('device_id')
-                        | reject('eq', '440db56c2fddace0d05637d2e0635dca')
+                        | reject('in', ignore_device_id)
                         | select()
                         | unique
                         | list 
   -%}
-  {% set ns = namespace(state_check=[]) %}
-  {% for d in state_check if device_entities(d) | select('has_value') | list | count == 0 %}
-    {% set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] %}
-  {% endfor %}
-  {%- if ns.state_check | count > 0 %}
-    {{- (ns.state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ state_check[-1])) | trim ~ ' niet beschikbaar'-}} 
+  {%- set ns = namespace(state_check=[]) -%}
+  {%- for d in state_check if device_entities(d) | select('has_value') | list | count == 0 -%}
+    {%- set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] -%}
+  {%- endfor -%}
+  {%- if ns.state_check | count > 0 and output == 'icon_color' -%}
+    {{- colors.unavailable -}}
+  {%- elif output == 'device_count' -%}
+    {{- ns.state_check | count -}}
+  {%- elif output == 'device_list' -%}
+    {{- ns.state_check | to_json -}}
+  {%- elif ns.state_check | count > 0 -%}
+    {{- (ns.state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ ns.state_check[-1])) | trim ~ ' niet beschikbaar'-}}
   {%- else -%}
-    {% set a_id = area_id(entity_or_area) | default(entity_or_area, true) %}
-    {%- set area_players = label_entities('area_players')
-                          | select('in', area_entities(a_id))
-                          | select('is_state', 'playing')
-                          | list
+    {%- set door_window = label_devices('area_data')
+                            | map('device_entities')
+                            | sum(start=[])
+                            | select('in', area_entities(area))
+                            | select('search', 'binary_sensor.')
+                            | select('is_state', 'on')
+                            | expand
+                            | selectattr('attributes.device_class', 'defined')
+                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening'])
+                            | map(attribute='name')
+                            | list
     -%}
-    {%- if area_players | count > 0 -%}
-      {%- set player = area_players | first -%}
-      {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
-    {%- else -%}
+    {%- set area_players = label_devices('area_data')
+                            | map('device_entities')
+                            | sum(start=[])
+                            | select('in', area_entities(area))
+                            | select('search', 'media_player.')
+                            | select('is_state', 'playing')
+                            | list
+    -%}
+    {%- if door_window | count > 0 -%}
+      {%- if output == 'icon_color' -%}
+        {{- colors.door_window -}}
+      {%- else -%}
+        {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
+      {%- endif -%}
+    {%- elif area_players | count > 0 -%}
+      {%- if output == 'icon_color' %}
+        {{- colors.playing -}}
+      {%- else -%}
+        {%- set player = area_players | first -%}
+        {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
+      {%- endif -%}
+    {%- elif output == 'icon_color' -%}
+      {{- 'default' -}}
+    {%- elif area not in ['Woonkamer', 'Tuin'] -%}
       {%- set area_list = label_devices('area_data')
-                            | select('in', area_devices(a_id))
+                            | select('in', area_devices(area))
                             | map('device_entities')
                             | sum(start=[])
                             | list
       -%}
-      {%- set area_list = area_list + area_entities(a_id) | select('in', label_entities('area_data')) | list -%}
       {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
       {%- set ns = namespace(data=[]) -%}
       {%- for i in ['temperature', 'humidity', 'illuminance'] -%}
@@ -69,7 +109,9 @@
         -%}
         {%- set ns.data = ns.data + [data ~ unit[i]] if data else ns.data -%}
       {%- endfor -%}
-      {{- ns.data | join(' | ') -}}
+      {{- ns.data | join(' | ') | default('ㅤ', true) -}}
+    {%- else -%}
+      ㅤ
     {%- endif -%}
   {%- endif -%}
 {%- endmacro -%}

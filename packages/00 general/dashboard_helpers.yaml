@@ -2,96 +2,140 @@
 template:
   - sensor:
       - unique_id: area_data_template_slaapkamer_floris
-        name: Area Data Slaapkamer Floris
+        name: >
+          {% set area_name = 'Floris' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bed
-        state: &area_state >
+        <<: &area_data
+          state: >
             {% from 'helpers.jinja' import area_data %}
-            {{ area_data(this.entity_id | replace('sensor.area_data_', '')) }}
+            {{ area_data(this.name, 'icon_color') }}
+          attributes:
+            text: >
+              {% from 'helpers.jinja' import area_data %}
+              {{ area_data(this.name) }}
+            device_list: >
+              {% from 'helpers.jinja' import area_data %}
+              {{ area_data(this.name, 'device_list') }}
 
       - unique_id: area_data_template_speelhoek
-        name: Area Data Speelhoek
+        name: >
+          {% set area_name = 'Speelhoek' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toy-brick
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_wc
-        name: Area Data Wc
+        name: >
+          {% set area_name = 'WC' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toilet
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_hal
-        name: Area Data Hal
+        name: >
+          {% set area_name = 'Hal' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:door
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_keuken
-        name: Area Data Keuken
+        name: >
+          {% set area_name = 'Keuken' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:countertop
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_slaapkamer_pepijn
-        name: Area Data Slaapkamer Pepijn
+        name: >
+          {% set area_name = 'Pepijn' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:unicorn
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_trapkast
-        name: Area Data Trapkast
+        name: >
+          {% set area_name = 'Trapkast' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:stairs
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_tuin
-        name: Area Data Tuin
+        name: >
+          {% set area_name = 'Tuin' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:tree
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_woonkamer
-        name: Area Data Woonkamer
+        name: >
+          {% set area_name = 'Woonkamer' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:sofa
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_overloop
-        name: Area Data Overloop
+        name: >
+          {% set area_name = 'Overloop' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:fence
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_badkamer
-        name: Area Data Badkamer
+        name: >
+          {% set area_name = 'Badkamer' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bathtub
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_overloop_zolder
-        name: Area Data Overloop Zolder
+        name: >
+          {% set area_name = 'Overloop Zolder' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:fence
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_technische_ruimte_zolder
-        name: Area Data Technische Ruimte Zolder
+        name: >
+          {% set area_name = 'Technische Ruimte' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:radiator
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_werkkamer_martijn
-        name: Area Data Werkkamer Martijn
+        name: >
+          {% set area_name = 'Werkkamer Martijn' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:desk
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_badkamer_zolder
-        name: Area Data Badkamer Zolder
+        name: >
+          {% set area_name = 'Badkamer Zolder' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toilet
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_slaapkamer_zolder
-        name: Area Data Slaapkamer Zolder
+        name: >
+          {% set area_name = 'Slaapkamer Zolder' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bed-double
-        state: *area_state
+        <<: *area_data
 
-      - unique_id: area_data_template_werkkamer_zolder
-        name: Area Data Werkkamer Zolder
+      - unique_id: area_data_template_werkkamer_marleen
+        name: >
+          {% set area_name = 'Werkkamer Marleen' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:desk
-        state: *area_state
+        <<: *area_data
 
       - unique_id: area_data_template_vliering
-        name: Area Data Vliering
+        name: >
+          {% set area_name = 'Vliering' %}
+          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:home-floor-3
-        state: *area_state
+        <<: *area_data
 
       - unique_id: floor_data_eerste_verdieping_temperature
         name: Floor Data Eerste Verdieping Temperature
