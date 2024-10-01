@@ -8,29 +8,54 @@ esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: false
+  min_version: 2024.9.0
   project:
     name: m5stack.atom-echo-voice-assistant
-    version: "1.0"
-  min_version: 2023.11.1
+    version: "24.7.24"
+
+wifi:
+  on_connect:
+    - delay: 5s  # Gives time for improv results to be transmitted
+    - ble.disable:
+  on_disconnect:
+    - ble.enable:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: on
+  manual_ip:
+    static_ip: ${ip}
+    gateway: 192.168.2.100
+    subnet: 255.255.255.0
+  ap:
+    ssid: "${name}"
+    password: !secret hotspot_pass
 
 esp32:
   board: m5stack-atom
   framework:
     type: esp-idf
 
-packages:
-  minimal: !include packages/0_general/minimal.yaml
-  basic: !include packages/0_general/basic.yaml
+logger:
+api:
 
-# dashboard_import:
-#   package_import_url: github://esphome/firmware/voice-assistant/m5stack-atom-echo.yaml@main
+ota:
+  - platform: esphome
+    id: ota_esphome
+  - platform: http_request
+    id: ota_http_request
 
-wifi:
-  on_connect:
-    - delay: 5s # Gives time for improv results to be transmitted
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware
+    source: https://firmware.esphome.io/voice-assistant/m5stack-atom-echo/manifest.json
+
+http_request:
+
+dashboard_import:
+  package_import_url: github://esphome/firmware/voice-assistant/m5stack-atom-echo.adopted.yaml@main
+
+
 
 improv_serial:
 
@@ -38,13 +63,18 @@ esp32_improv:
   authorizer: none
 
 button:
+  - platform: safe_mode
+    id: button_safe_mode
+    name: Safe Mode Boot
+
   - platform: factory_reset
     id: factory_reset_btn
     name: Factory reset
 
 i2s_audio:
-  i2s_lrclk_pin: GPIO33
-  i2s_bclk_pin: GPIO19
+  - id: i2s_audio_bus
+    i2s_lrclk_pin: GPIO33
+    i2s_bclk_pin: GPIO19
 
 microphone:
   - platform: i2s_audio
@@ -58,7 +88,7 @@ speaker:
     id: echo_speaker
     i2s_dout_pin: GPIO22
     dac_type: external
-    mode: mono
+    channel: mono
 
 voice_assistant:
   id: va
@@ -120,6 +150,36 @@ voice_assistant:
         then:
           - voice_assistant.stop:
           - light.turn_off: led
+  on_timer_finished:
+    - voice_assistant.stop:
+    - switch.turn_on: timer_ringing
+    - wait_until:
+        not:
+          microphone.is_capturing:
+    - light.turn_on:
+        id: led
+        red: 0%
+        green: 100%
+        blue: 0%
+        brightness: 100%
+        effect: "Fast Pulse"
+    - while:
+        condition:
+          switch.is_on: timer_ringing
+        then:
+          - lambda: id(echo_speaker).play(id(timer_finished_wave_file), sizeof(id(timer_finished_wave_file)));
+          - delay: 1s
+    - wait_until:
+        not:
+          speaker.is_playing:
+    - light.turn_off: led
+    - switch.turn_off: timer_ringing
+    - if:
+        condition:
+          switch.is_on: use_wake_word
+        then:
+          - voice_assistant.start_continuous:
+          - script.execute: reset_led
 
 binary_sensor:
   - platform: gpio
@@ -132,26 +192,32 @@ binary_sensor:
     id: echo_button
     on_multi_click:
       - timing:
-          - ON for at least 250ms
+          - ON for at least 50ms
           - OFF for at least 50ms
         then:
           - if:
               condition:
-                switch.is_off: use_wake_word
+                switch.is_on: timer_ringing
               then:
-                - if:
-                    condition: voice_assistant.is_running
-                    then:
-                      - voice_assistant.stop:
-                      - script.execute: reset_led
-                    else:
-                      - voice_assistant.start:
+                - switch.turn_off: timer_ringing
               else:
-                - voice_assistant.stop
-                - delay: 1s
-                - script.execute: reset_led
-                - script.wait: reset_led
-                - voice_assistant.start_continuous:
+                - if:
+                    condition:
+                      switch.is_off: use_wake_word
+                    then:
+                      - if:
+                          condition: voice_assistant.is_running
+                          then:
+                            - voice_assistant.stop:
+                            - script.execute: reset_led
+                          else:
+                            - voice_assistant.start:
+                    else:
+                      - voice_assistant.stop
+                      - delay: 1s
+                      - script.execute: reset_led
+                      - script.wait: reset_led
+                      - voice_assistant.start_continuous:
       - timing:
           - ON for at least 10s
         then:
@@ -222,7 +288,7 @@ switch:
       - lambda: id(va).set_use_wake_word(false);
       - script.execute: reset_led
   - platform: template
-    name: Use Listen Light
+    name: Use listen light
     id: use_listen_light
     optimistic: true
     restore_mode: RESTORE_DEFAULT_ON
@@ -231,11 +297,26 @@ switch:
       - script.execute: reset_led
     on_turn_off:
       - script.execute: reset_led
+  - platform: template
+    id: timer_ringing
+    optimistic: true
+    internal: true
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - delay: 15min
+      - switch.turn_off: timer_ringing
 
 external_components:
   - source: github://pr#5230
     components:
       - esp_adf
     refresh: 0s
+  - source: github://jesserockz/esphome-components
+    components: [file]
+    refresh: 0s
 
 esp_adf:
+
+file:
+  - id: timer_finished_wave_file
+    file: https://github.com/esphome/firmware/raw/main/voice-assistant/sounds/timer_finished.wav
