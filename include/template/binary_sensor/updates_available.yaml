@@ -4,3 +4,6 @@
       device_class: update
       state: >-
         {{ states.update | selectattr('state', 'eq', 'on') | list | count > 0 }}
+      icon: >
+        {%- set n = states.update | selectattr('state', 'eq', 'on') | list | count %} 
+        {{ 'mdi:numeric-' ~ n ~ '-box' if n < 10 else 'mdi:numeric-9-plus-box' }}
