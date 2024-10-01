@@ -4,6 +4,9 @@
       event_data:
         domain: script
         service: turn_on
+  condition:
+    - condition: template
+      value_template: "{{ trigger.event.data.service_data.entity_id == ['script.transition_lights_perform_transition'] }}"
   sensor:
     unique_id: 3bfe40b0-2f2d-4090-8740-446be10ef756
     name: "Active Transition"
@@ -12,11 +15,7 @@
     state_class: measurement
     attributes:
       transition_data: >
-        {%- if trigger.event.data.service_data.entity_id == ['script.transition_lights_perform_transition'] %}
-          {% set end_time = (now() + timedelta(seconds=trigger.event.data.service_data.variables.duration)).isoformat() %}
-          {% set v = dict(trigger.event.data.service_data.variables.items() | selectattr('1', 'defined') | selectattr('1') | rejectattr('0', 'eq', 'duration') | list) %}
-          {% set v = dict(v, **dict(end_time=end_time)) %}
-          {{ this.get('attributes', {}).get('transition_data', []) | rejectattr('end_time', '<', now().isoformat()) | rejectattr('light', 'eq', v.light) | list + [v]}}
-        {%- else %}
-          {{ this.get('attributes', {}).get('transition_data', []) | rejectattr('end_time', '<', now().isoformat()) | list }}
-        {%- endif %}
+        {% set end_time = (now() + timedelta(seconds=trigger.event.data.service_data.variables.duration)).isoformat() %}
+        {% set v = dict(trigger.event.data.service_data.variables.items() | selectattr('1', 'defined') | selectattr('1') | rejectattr('0', 'eq', 'duration') | list) %}
+        {% set v = dict(v, **dict(end_time=end_time)) %}
+        {{ this.get('attributes', {}).get('transition_data', []) | rejectattr('end_time', '<', now().isoformat()) | rejectattr('light', 'eq', v.light) | list + [v]}}
