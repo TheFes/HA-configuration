@@ -77,7 +77,7 @@
       {%- if output == 'icon_color' -%}
         {{- colors.door_window_motion -}}
       {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list -%}
-        {{- 'Beweging detecteerd' -}}
+        {{- 'Beweging gezien' -}}
       {%- else -%}
         {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
         {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
