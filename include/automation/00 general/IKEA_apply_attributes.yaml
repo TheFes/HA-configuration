@@ -1,0 +1,71 @@
+id: 8efddd53-2d4d-461e-bc80-a630a5ca244c
+alias: Apply correct settings for IKEA lights
+mode: parallel
+max: 50
+max_exceeded: silent
+triggers:
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: light
+      service: turn_on
+    id: turn_on
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: light
+      service: toggle
+    id: toggle
+variables:
+  entity_test: "{{ trigger.event.data.service_data.entity_id }}"
+  entities: >
+    {% set entities = trigger.event.data.service_data.entity_id %}
+    {% set entities = entities if entities is list else [entities] %}
+    {% set ns = namespace(ikea=[]) %}
+    {% for e in entities if device_id(e) in label_devices('ikea') %}
+      {% set ns.ikea = ns.ikea + [e] %}
+    {% endfor %}
+    {{ (entities | select('in', label_entities('ikea')) | list + ns.ikea) | unique | list }}
+  attr_data: "{{ trigger.event.data.service_data.keys() | reject('in', ['transition', 'entity_id']) | list }}"
+  toggle: "{{ trigger.event.data.service == 'toggle' }}"
+conditions:
+  - alias: Check if there is at least one IKEA light targeted, and multiple attributes changed
+    condition: template
+    value_template: "{{ entities | count > 0 and attr_data | count > 1 }}"
+actions:
+  - alias: Short delay in case the toggle service call was used to ensure the light has time to turn off
+    if: "{{ toggle }}"
+    then:
+      - alias: Short delay
+        delay: 0.5
+  - alias: Repeat loop to set each attribute to the right value
+    repeat:
+      for_each: "{{ attr_data }}"
+      sequence:
+        - alias: Set attribute to variable because repeat.item var will be overwritten
+          variables:
+            attr: "{{ repeat.item }}"
+        - alias: Repeat loop for each light
+          repeat:
+            for_each: >
+              {{ (entities | select('is_state', 'on') | list) if toggle else entities }}
+            sequence:
+              - alias: Check if attribute needs to be changed
+                if: "{{ state_attr(repeat.item, attr) != trigger.event.data.service_data[attr] }}"
+                then:
+                  - alias: Set light entity to correct attribute value
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ repeat.item }}"
+                    data: >
+                      {% set other_attr = attr_data | reject('eq', attr) | list %}
+                      {{
+                        dict(
+                              trigger.event.data.service_data.items()
+                                | rejectattr('0', 'in', ['entity_id'] + other_attr)
+                            )
+                      }}
+                  - alias: Very short delay
+                    delay:
+                      seconds: 0.1
+
