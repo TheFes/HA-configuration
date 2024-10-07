@@ -61,7 +61,7 @@
                             | select('is_state', 'on')
                             | expand
                             | selectattr('attributes.device_class', 'defined')
-                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening', 'motion'])
+                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening', 'motion', 'occupancy'])
                             | map(attribute='entity_id')
                             | list
     -%}
@@ -70,14 +70,16 @@
                             | sum(start=[])
                             | select('in', area_entities(area))
                             | select('search', 'media_player.')
-                            | select('is_state', 'playing')
+                            | select('is_state', ['playing', 'paused'])
                             | list
     -%}
     {%- if door_window_motion | count > 0 -%}
       {%- if output == 'icon_color' -%}
         {{- colors.door_window_motion -}}
-      {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list -%}
-        {{- 'Beweging gezien' -}}
+      {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list 
+          or 'occupancy' in door_window_motion | map('state_attr', 'device_class') | list 
+      -%}
+        {{- 'Bezet!' if area == 'WC' else 'Persoon aanwezig' -}}
       {%- else -%}
         {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
         {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
@@ -87,7 +89,7 @@
         {{- colors.playing -}}
       {%- else -%}
         {%- set player = area_players | first -%}
-        {{- '{}: {}'.format(state_attr(player, 'app_name'), state_attr(player, 'media_artist')) -}}
+        {{- state_attr(player, 'media_artist') or state_attr(player, 'app_name') or state_attr(active, 'source') or ' ' -}}
       {%- endif -%}
     {%- elif output == 'icon_color' -%}
       {{- 'default' -}}
