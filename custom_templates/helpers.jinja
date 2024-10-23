@@ -20,7 +20,7 @@
 {%- endmacro -%}
 
 {# shows unavailable devices, what's playing or temp|humidity|lux of an area #}
-{%- macro area_data(area, output) -%}
+{%- macro area_data(area='all', output='area_state', availability=true, binary=true, media=true, sensor=true) -%}
   {%- set colors =
         {
           'unavailable': 'red',
@@ -29,93 +29,108 @@
         }
   -%}
   {%- set output = output | default('area_state') -%}
-  {%- set state_check = area_entities(area)
-                        | expand
-                        | map(attribute='entity_id')
-                        | select('is_state', 'unavailable')
-                        | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
-                        | map('device_id')
-                        | reject('in', label_devices('ignore_area'))
-                        | select()
-                        | unique
-                        | list 
-  -%}
+  {%- set area_list = [area] if area is string else area -%}
   {%- set ns = namespace(state_check=[]) -%}
-  {%- for d in state_check if device_entities(d) | select('has_value') | list | count == 0 -%}
-    {%- set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] -%}
-  {%- endfor -%}
+  {%- if availability -%}
+    {%- set state_check = area_list
+                          | map('area_entities')
+                          | sum(start=[])
+                          | expand
+                          | map(attribute='entity_id')
+                          | select('is_state', 'unavailable')
+                          | reject('search', '^button.|^event.|^device_tracker|^media_player|internet_access')
+                          | map('device_id')
+                          | reject('in', label_devices('ignore_area'))
+                          | select()
+                          | unique
+                          | list 
+    -%}
+    {%- for d in state_check if device_entities(d) | select('has_value') | list | count == 0 -%}
+      {%- set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] -%}
+    {%- endfor -%}
+  {%- endif -%}
   {%- if ns.state_check | count > 0 and output == 'icon_color' -%}
     {{- colors.unavailable -}}
   {%- elif output == 'device_count' -%}
     {{- ns.state_check | count -}}
   {%- elif output == 'device_list' -%}
     {{- ns.state_check | to_json -}}
-  {%- elif ns.state_check | count > 0 -%}
+  {%- elif availability and ns.state_check | count > 0 -%}
     {{- (ns.state_check | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ ns.state_check[-1])) | trim ~ ' niet beschikbaar'-}}
   {%- else -%}
-    {%- set door_window_motion = label_devices('area_data')
-                            | map('device_entities')
-                            | sum(start=[])
-                            | select('in', area_entities(area))
-                            | select('search', 'binary_sensor.')
-                            | select('is_state', 'on')
-                            | expand
-                            | selectattr('attributes.device_class', 'defined')
-                            | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening', 'motion', 'occupancy'])
-                            | map(attribute='entity_id')
-                            | list
-    -%}
-    {%- set area_players = label_devices('area_data')
-                            | map('device_entities')
-                            | sum(start=[])
-                            | select('in', area_entities(area))
-                            | select('search', 'media_player.')
-                            | select('is_state', ['playing', 'paused'])
-                            | list
-    -%}
-    {%- if door_window_motion | count > 0 -%}
-      {%- if output == 'icon_color' -%}
-        {{- colors.door_window_motion -}}
-      {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list 
-          or 'occupancy' in door_window_motion | map('state_attr', 'device_class') | list 
-      -%}
-        {{- 'Bezet!' if area == 'WC' else 'Persoon aanwezig' -}}
-      {%- else -%}
-        {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
-        {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
-      {%- endif -%}
-    {%- elif area_players | count > 0 -%}
-      {%- if output == 'icon_color' %}
-        {{- colors.playing -}}
-      {%- else -%}
-        {%- set player = area_players | first -%}
-        {{- state_attr(player, 'media_artist') or state_attr(player, 'app_name') or state_attr(active, 'source') or ' ' -}}
-      {%- endif -%}
-    {%- elif output == 'icon_color' -%}
-      {{- 'default' -}}
-    {%- elif area not in ['Woonkamer', 'Tuin'] -%}
-      {%- set area_list = label_devices('area_data')
-                            | select('in', area_devices(area))
-                            | map('device_entities')
-                            | sum(start=[])
-                            | list
-      -%}
-      {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
-      {%- set ns = namespace(data=[]) -%}
-      {%- for i in ['temperature', 'humidity', 'illuminance'] -%}
-        {%- set data =  area_list
-                        | select('is_state_attr', 'device_class', i)
-                        | map('states')
-                        | map('float', none)
-                        | select()
-                        | average(none)
-                        | round(1 if i == 'temperature' else 0, default=none)
+    {%- if binary or media or sensor -%}
+      {%- set entity_list = area_list | map('area_entities') | sum(start=[]) -%}
+      {%- if binary -%}
+        {%- set door_window_motion = label_devices('area_data')
+                                | map('device_entities')
+                                | sum(start=[])
+                                | select('in', entity_list)
+                                | select('search', 'binary_sensor.')
+                                | select('is_state', 'on')
+                                | expand
+                                | selectattr('attributes.device_class', 'defined')
+                                | selectattr('attributes.device_class', 'in', ['door', 'window', 'opening', 'motion', 'occupancy'])
+                                | map(attribute='entity_id')
+                                | list
         -%}
-        {%- set ns.data = ns.data + [data ~ unit[i]] if data else ns.data -%}
-      {%- endfor -%}
-      {{- ns.data | join(' | ') | default('ㅤ', true) -}}
+      {%- endif -%}
+      {%- if media -%}
+        {%- set area_players = label_devices('area_data')
+                                | map('device_entities')
+                                | sum(start=[])
+                                | select('in', entity_list)
+                                | select('search', 'media_player.')
+                                | select('is_state', ['playing', 'paused'])
+                                | list
+        -%}
+      {%- endif -%}
+      {%- if binary and door_window_motion | count > 0 -%}
+        {%- if output == 'icon_color' -%}
+          {{- colors.door_window_motion -}}
+        {%- elif 'motion' in door_window_motion | map('state_attr', 'device_class') | list 
+            or 'occupancy' in door_window_motion | map('state_attr', 'device_class') | list 
+        -%}
+          {{- 'Bezet!' if area == 'WC' else 'Persoon aanwezig' -}}
+        {%- else -%}
+          {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
+          {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
+        {%- endif -%}
+      {%- elif media and area_players | count > 0 -%}
+        {%- if output == 'icon_color' %}
+          {{- colors.playing -}}
+        {%- else -%}
+          {%- set player = area_players | first -%}
+          {{- state_attr(player, 'media_artist') or state_attr(player, 'app_name') or state_attr(active, 'source') or ' ' -}}
+        {%- endif -%}
+      {%- elif output == 'icon_color' -%}
+        {{- 'default' -}}
+      {%- elif sensor -%}
+        {%- set device_list = area_list | map('area_devices') | sum(start=[]) | list -%}
+        {%- set area_sensor_list = label_devices('area_data')
+                                    | select('in', device_list)
+                                    | map('device_entities')
+                                    | sum(start=[])
+                                    | list
+        -%}
+        {%- set unit = dict(temperature=' °C', humidity=' %', illuminance=' lx') -%}
+        {%- set ns = namespace(data=[]) -%}
+        {%- for i in ['temperature', 'humidity', 'illuminance'] -%}
+          {%- set data =  area_sensor_list
+                          | select('is_state_attr', 'device_class', i)
+                          | map('states')
+                          | map('float', none)
+                          | select()
+                          | average(none)
+                          | round(1 if i == 'temperature' else 0, default=none)
+          -%}
+          {%- set ns.data = ns.data + [data ~ unit[i]] if data else ns.data -%}
+        {%- endfor -%}
+        {{- ns.data | join(' | ') | default('ㅤ', true) -}}
+      {%- else -%}
+        ㅤ
+      {%- endif -%}
     {%- else -%}
-      ㅤ
+      {{- 'default' if output == 'icon_color' else 'ㅤ' -}}
     {%- endif -%}
   {%- endif -%}
 {%- endmacro -%}

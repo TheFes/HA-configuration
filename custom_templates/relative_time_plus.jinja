@@ -331,12 +331,14 @@
     {%- set date = date if date is datetime else date | as_datetime('invalid') -%}
     {%- set compare_date = compare_date if compare_date is datetime else compare_date | as_datetime('invalid') -%}
     {%- set time = time | bool(true) -%}
-    {%- set parts = [parts | int(1), always_show | count] | max -%}
+    {%- set parts = [parts | int(1), always_show | count] | max -%} 
+  {# create namespace to store debug data #}
+    {%- set debug = namespace(debug="") -%}
   {# 1: check if date input is correct #}
     {%- if date is datetime and compare_date is datetime -%}
     {# convert date input to local or date only #}
       {%- set date = date | as_local if time else (date | as_local).date() -%}
-      {%- set compare_date = compare_date | as_local if time else (compare_date | as_local).date() -%}
+      {%- set compare_date = compare_date | as_local if time else (compare_date | as_local).date() -%} 
     {# determine highest and lowest date #}
       {%- set date_max = [compare_date, date] | max -%}
       {%- set date_min = [compare_date, date] | min -%}
@@ -358,7 +360,7 @@
       {%- if not not_use in [['millisecond'], []] -%}
         {%- set not_use = _abbr_to_full(not_use) | from_json -%}
       {%- endif -%}
-      {%- set not_use = not_use + ['hour', 'minute', 'second', 'millisecond' ] if not time else not_use -%}
+      {%- set not_use = not_use + ['hour', 'minute', 'second', 'millisecond' ] if not time else not_use -%} 
       {%- if always_show in [['all'], 'all'] -%}
         {%- set always_show = dur.keys() | list -%}
       {%- elif always_show != [] -%}
@@ -430,7 +432,7 @@
           {%- set first = keys | select('in', always_show | default([], true) + [first]) | first -%}
           {%- set to_use = keys[keys.index(first):] -%}
           {%- set to_output = to_use[:parts] -%}
-          {%- set last = to_output | last  |default('millisecond') -%}
+          {%- set last = dur.items() | selectattr('0', 'in', to_output) | map(attribute='0') | list | last | default('millisecond') -%}
         {# 3: check if there is anything left to use #}
           {%- if to_use -%}
             {%- set to_output = to_use[:parts] -%}
@@ -441,9 +443,10 @@
               {%- set to_reject = to_use | reject('in', to_output) | reject('in', always_show) | list -%}
               {%- set not_use = not_use + to_output[as_check*-1:] + to_reject -%}
               {%- set to_output = to_output | reject('in', not_use) | list  + always_show -%}
-              {%- set to_output = keys | select('in', to_output) | list -%}
+              {%- set to_output = keys | select('in', to_output) | list + ['extra']-%}
               {%- set output = time_split(date, parts, compare_date, not_use, always_show, time, round_mode) | from_json -%}
             {%- endif -%}
+
           {# apply round if needed #}
             {%- if round_mode in ['common', 'ceil'] and last != 'millisecond' -%}
               {# determine first and last item with data #}
@@ -452,19 +455,25 @@
                 {%- set remain_part = remain / dur[last] -%}
                 {%- set to_round = 1 if remain_part >= 0.5 and round_mode == 'common' else remain_part | round(0, round_mode) -%}
                 {%- set sec_to_add = ((dur[last] + (dur.day if last in  ['year', 'month'] else 1) - remain) | round(0, 'ceil') * to_round) / 1000 -%}
-                {%- set round_mode = 'floor' -%}
                 {%- set date_max = [compare_date, date] | max + timedelta(seconds=sec_to_add) -%}
                 {%- set date_min = [compare_date, date] | min -%}
-                {%- set output = time_split(date_max, parts, date_min, not_use, always_show, time, round_mode) | from_json -%}
+                {%- set output = time_split(date_max, parts, date_min, not_use, always_show, time, 'floor') | from_json -%}
+                {%- set output = dict(output.items() | selectattr('0', 'in', do_use)) -%}
+                {%- set keys = output.keys() | list -%}
+                {%- set with_value = output.items() | rejectattr('1', 'eq', 0) | map(attribute='0') | list -%}
+                {%- set first = with_value | first | default('millisecond') -%}
+                {%- set first = keys | select('in', always_show | default([], true) + [first]) | first -%}
+                {%- set to_use = keys[keys.index(first):] -%}
+                {%- set to_output = to_use[:parts] -%}
             {%- endif -%}
           {# output result #}
             {%- set zero_values = output.items() | selectattr('1', 'eq', 0) | map(attribute='0') | list -%}
             {%- set reject_list = zero_values | reject('in', always_show) | list -%}
-            {{- dict(output.items() | selectattr('0', 'in', to_output) | rejectattr('0', 'in', reject_list)) | default({always_return: 0}, true) | to_json -}}
-          {%- else -%} {{- dict(error='No time parts left to output') | to_json -}}
+            {{- dict(output.items() | selectattr('0', 'in', to_output) | rejectattr('0', 'in', reject_list), **dict(debug=debug.debug) if debug.debug else dict()) | default({always_return: 0}, true) | to_json-}}
+          {%- else -%} {{- dict(error='No time parts left to output') -}}
           {%- endif -%} {# 3 #}
-      {%- endif -%} {# 2 #}
-    {%- else -%} {{- dict(error='Invalid date input') | to_json -}}
+      {%- endif -%} {# 2 #} 
+    {%- else -%} {{- dict(error='Invalid date input')-}}
     {%- endif -%} {# 1 #}
 {%- endmacro -%}
 
