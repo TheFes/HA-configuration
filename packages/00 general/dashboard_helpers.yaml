@@ -6,136 +6,288 @@ template:
           {% set area_name = 'Floris' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bed
-        <<: &area_data
-          state: >
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
             {% from 'helpers.jinja' import area_data %}
-            {{ area_data(this.name, 'icon_color') }}
-          attributes:
-            text: >
-              {% from 'helpers.jinja' import area_data %}
-              {{ area_data(this.name) }}
-            device_list: >
-              {% from 'helpers.jinja' import area_data %}
-              {{ area_data(this.name, 'device_list') }}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_speelhoek
         name: >
           {% set area_name = 'Speelhoek' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toy-brick
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, sensor=false, media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, sensor=false, media=false) }}
 
       - unique_id: area_data_template_wc
         name: >
           {% set area_name = 'WC' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toilet
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', media=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, media=false, sensor=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', media=false, sensor=false) }}
 
       - unique_id: area_data_template_hal
         name: >
           {% set area_name = 'Hal' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:door
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false, sensor=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_keuken
         name: >
           {% set area_name = 'Keuken' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:countertop
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data([this.name, 'Eettafel'], 'icon_color', binary=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data([this.name, 'Eettafel'], binary=false, sensor=true) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data([this.name, 'Eettafel'], 'device_list', binary=false, sensor=true) }}
 
       - unique_id: area_data_template_slaapkamer_pepijn
         name: >
           {% set area_name = 'Pepijn' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:unicorn
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_trapkast
         name: >
           {% set area_name = 'Trapkast' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:stairs
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', sensor=false, media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, sensor=false, media=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', sensor=false, media=false) }}
 
       - unique_id: area_data_template_tuin
         name: >
           {% set area_name = 'Tuin' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:tree
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false, sensor=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_woonkamer
         name: >
           {% set area_name = 'Woonkamer' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:sofa
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_overloop
         name: >
           {% set area_name = 'Overloop' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:fence
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false, sensor=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_badkamer
         name: >
           {% set area_name = 'Badkamer' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bathtub
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false) }}
 
       - unique_id: area_data_template_overloop_zolder
         name: >
           {% set area_name = 'Overloop Zolder' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:fence
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false, sensor=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false, sensor=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_technische_ruimte_zolder
         name: >
           {% set area_name = 'Technische Ruimte' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:radiator
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, media=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', media=false) }}
 
       - unique_id: area_data_template_werkkamer_martijn
         name: >
           {% set area_name = 'Werkkamer Martijn' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:desk
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_badkamer_zolder
         name: >
           {% set area_name = 'Badkamer Zolder' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:toilet
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false, media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false, media=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false, media=false) }}
 
       - unique_id: area_data_template_slaapkamer_zolder
         name: >
           {% set area_name = 'Slaapkamer Zolder' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:bed-double
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_werkkamer_marleen
         name: >
           {% set area_name = 'Werkkamer Marleen' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:desk
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', binary=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, binary=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_vliering
         name: >
           {% set area_name = 'Vliering' %}
           {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
         icon: mdi:home-floor-3
-        <<: *area_data
+        state: >
+          {% from 'helpers.jinja' import area_data %}
+          {{ area_data(this.name, 'icon_color', media=false) }}
+        attributes:
+          text: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, media=false) }}
+          device_list: >
+            {% from 'helpers.jinja' import area_data %}
+            {{ area_data(this.name, 'device_list', media=false) }}
 
       # template sensors for floor mini badges
       - unique_id: floor_data_eerste_verdieping_temperature
@@ -193,7 +345,7 @@ template:
         unit_of_measurement: "lx"
         state: *floor_state
 
-      # sensors for dasbhoard messages
+      # sensors for dashboard messages
       - unique_id: d187a334-2fb9-4045-9904-68efdaa4955f
         icon: mdi:delete
         name: >
@@ -214,6 +366,214 @@ template:
                 | default('onbekend')
                 | join
             }}
+      - unique_id: 42e15a4b-cd5b-4b1f-aea1-606768190cfe
+        name: Dashboard ETA Martijn
+        icon: "{{ 'mdi:bike' if is_state('input_boolean.martijn_fiets', 'on') else 'mdi:car' }}"
+        state: >
+          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_martijn', 'Niet onderweg') %}
+          {% if eta != 'Niet onderweg' %}
+            ETA Martijn: {{ eta }} 
+          {% else %}
+            {{ eta }}
+          {% endif %}
+      - unique_id: bd045940-59e0-43f8-98eb-ecec92ac86d1
+        name: Dashboard ETA Marleen
+        icon: mdi:car
+        state: >
+          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_marleen', 'Niet onderweg') %}
+          {% if eta != 'Niet onderweg' %}
+            ETA Marleen: {{ eta }} 
+          {% else %}
+            {{ eta }}
+          {% endif %}
+
+      # template sensors for bedroom temp scores
+      - unique_id: 91dfc560-f68d-4537-93e0-bc6482b37833
+        name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}Temp"
+        icon: mdi:thermometer
+        state: >
+          {% set value = states('sensor.awair_slaapkamer_temperature') | float %}
+          {% set mapping = 
+            [
+              {
+                'start': 0,
+                'end': 9,
+                'color': 'red'
+              },
+              {
+                'start': 9,
+                'end': 11,
+                'color': 'deep-orange'
+              },
+              {
+                'start': 11,
+                'end': 17,
+                'color': 'orange'
+              },
+              {
+                'start': 17,
+                'end': 18,
+                'color': 'yellow'
+              },
+              {
+                'start':18,
+                'end': 25,
+                'color': 'green'
+              },
+              {
+                'start': 25,
+                'end': 26,
+                'color': 'yellow'
+              },
+              {
+                'start': 26,
+                'end': 32,
+                'color': 'orange'
+              },
+              {
+                'start': 32,
+                'end': 34,
+                'color': 'deep-orange'
+              },
+              {
+                'start': 34,
+                'end': 50,
+                'color': 'red'
+              }
+            ]
+          %}
+          {{ mapping
+              | selectattr('start', '<=', value)
+              | selectattr('end', '>', value)
+              | map(attribute='color')
+              | first
+          }}
+        availability: "{{ 'sensor.awair_slaapkamer_temperature' | has_value }}"
+        attributes:
+          value: "{{ states('sensor.awair_slaapkamer_temperature', with_unit=true) }}"
+      - unique_id: f894dddf-f242-4b87-b2a1-c5eb8ac11a7b
+        name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}Hum"
+        icon: mdi:water-percent
+        state: >
+          {% set value = states('sensor.awair_slaapkamer_humidity') | float %}
+          {% set mapping = 
+            [
+              {
+                'start': 0,
+                'end': 15,
+                'color': 'red'
+              },
+              {
+                'start': 15,
+                'end': 20,
+                'color': 'deep-orange'
+              },
+              {
+                'start': 20,
+                'end': 35,
+                'color': 'orange'
+              },
+              {
+                'start': 35,
+                'end': 40,
+                'color': 'yellow'
+              },
+              {
+                'start':40,
+                'end': 50,
+                'color': 'green'
+              },
+              {
+                'start': 50,
+                'end': 60,
+                'color': 'yellow'
+              },
+              {
+                'start': 60,
+                'end': 65,
+                'color': 'orange'
+              },
+              {
+                'start': 65,
+                'end': 80,
+                'color': 'deep-orange'
+              },
+              {
+                'start': 80,
+                'end': 100,
+                'color': 'red'
+              }
+            ]
+          %}
+          {{ mapping
+              | selectattr('start', '<=', value)
+              | selectattr('end', '>', value)
+              | map(attribute='color')
+              | first
+          }}
+        availability: "{{ 'sensor.awair_slaapkamer_humidity' | has_value }}"
+        attributes:
+          value: "{{ states('sensor.awair_slaapkamer_humidity', with_unit=true) }}"
+      - unique_id: 4825408a-a35b-4cd5-b67d-18cc4e8a9838
+        name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}CO2"
+        icon: mdi:molecule-co2
+        state: >
+          {% set s = states('sensor.awair_slaapkamer_carbon_dioxide') | float %}
+          {% if s < 600 %}
+            green
+          {% elif s < 1000 %}
+            yellow
+          {% elif s < 1500 %}
+            orange
+          {% elif s < 2500 %}
+            deep-orange
+          {% else %}
+            red
+          {% endif %}
+        availability: "{{ 'sensor.awair_slaapkamer_carbon_dioxide' | has_value }}"
+        attributes:
+          value: "{{ states('sensor.awair_slaapkamer_carbon_dioxide', with_unit=true) }}"
+      - unique_id: f340c961-5998-482f-837b-da374de34170
+        name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}PM2.5"
+        icon: mdi:molecule
+        state: >
+          {% set s = states('sensor.awair_slaapkamer_volatile_organic_compounds') | float %}
+          {% if s < 333 %}
+            green
+          {% elif s < 1000 %}
+            yellow
+          {% elif s < 3333 %}
+            orange
+          {% elif s < 8332 %}
+            deep-orange
+          {% else %}
+            red
+          {% endif %}
+        availability: "{{ 'sensor.awair_slaapkamer_volatile_organic_compounds' | has_value }}"
+        attributes:
+          value: "{{ states('sensor.awair_slaapkamer_volatile_organic_compounds', with_unit=true) }}"
+      - unique_id: aa0cc43d-a2da-4ef0-baef-87578d9789b6
+        name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}TVOCs"
+        icon: mdi:molecule
+        state: >
+          {% set s2 = states('sensor.luchtreiniger_slaapkamer_pm25') | float(-1) %}
+          {% set s = states('sensor.awair_slaapkamer_pm2_5') | float if s2 < 0 else s2 %}
+          {% if s < 15 %}
+            green
+          {% elif s < 35 %}
+            yellow
+          {% elif s < 55 %}
+            orange
+          {% elif s < 75 %}
+            deep-orange
+          {% else %}
+            red
+          {% endif %}
+        availability: "{{ 'sensor.awair_slaapkamer_pm2_5' | has_value or states('sensor.luchtreiniger_slaapkamer_pm25') | float(-1) >= 0 }}"
+        attributes:
+          value: >
+            {% set s2 = states('sensor.luchtreiniger_slaapkamer_pm25') | float(-1) %}
+            {{ states('sensor.awair_slaapkamer_pm2_5', with_unit=true) if s2 < 0 else states('sensor.luchtreiniger_slaapkamer_pm25', with_unit=true) }}
 
   - binary_sensor:
       # template binary sensors to revert active icon color for covers
@@ -242,6 +602,84 @@ template:
         state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.slaapkamer_zolder_template' | has_value }}"
+      # other binary sensors for dashboard
+      - unique_id: dd81d5ca-6c8a-4824-9611-75cfd6a1d368
+        name: Dashboard Afzuigkap
+        icon: "{{ 'mdi:pot-steam' if is_state('sensor.extractor_hood_status', 'Afzuigen') else 'mdi:pot-steam-outline' }}"
+        state: "{{ is_state('switch.afzuigkap', 'on') }}"
+        attributes:
+          text: >
+            {{ states('sensor.extractor_hood_status') if is_state('switch.afzuigkap', 'on') else 'Uit' }} {{ (' | ' ~ states('sensor.afzuigkap_power', with_unit=true)) if is_state('switch.afzuigkap', 'on') }}
+      - unique_id: 9ee78bc8-1810-460a-9621-0fb5455c7558
+        name: Dashboard Espresso
+        icon: "{{ 'mdi:coffee-maker' if states('sensor.espresso_power') | float(0) > 0 else 'mdi:coffee-maker-outline' }}"
+        state: "{{ is_state('switch.espresso', 'on') }}"
+        attributes:
+          text: >
+            {% set power = states('sensor.espresso_power') | float(0) | round(0) %}
+            {% if is_state('switch.espresso', 'on') and power > 0 %}
+              Actief | {{ power }} W
+            {% elif is_state('switch.espresso', 'on') %}
+              Inactief | {{ power }} W
+            {% else %}
+              Uit
+            {% endif %}
+      - unique_id: 82976f0d-c03a-4b2d-9a6c-1af7cda11946
+        name: Dashboard Waterkoker
+        icon: "{{ 'mdi:kettle' if states('sensor.waterkoker_power') | float(0) > 0 else 'mdi:kettle-outline' }}"
+        state: "{{ is_state('switch.waterkoker', 'on') }}"
+        attributes:
+          text: >
+            {% set power = states('sensor.waterkoker_power') | float(0) | round(0) %}
+            {% if is_state('switch.waterkoker', 'on') and power > 0 %}
+              Actief | {{ power }} W
+            {% elif is_state('switch.waterkoker', 'on') %}
+              Inactief | {{ power }} W
+            {% else %}
+              Uit
+            {% endif %}
+      # dashboard mobile
+      - unique_id: 21f51031-c3e8-42b3-bd8b-4ff0bc8df4cb
+        name: >
+          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
+          {% set on_count = entity_list | select('is_state', 'on') | list | count %}
+          {{ 'Dashboard Mobile Lights On' if this.state == 'unknown' else on_count }}
+        state: >
+          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
+          {{ entity_list | select('is_state', 'on') | list | count > 0 }}
+        icon: "{{ 'mdi:lightbulb-group' if this.state == 'on' else 'mdi:lightbulb-group-off-outline' }}"
+        attributes:
+          active: >
+            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
+            {{ entity_list | select('is_state', 'on') | list }}
+          inactive: >
+            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
+            {{ entity_list | reject('is_state', 'on') | list }}
+
+      - unique_id: 09ecb687-ea53-48e2-bc29-7d61c16340f2
+        name: >
+          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
+          {% set on_count = entity_list | select('is_state', ['playing', 'paused']) | list | count %}
+          {{ 'Dashboard Mobile Media On' if this.state == 'unknown' else on_count }}
+        state: >
+          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
+          {{ entity_list | select('is_state', ['playing', 'paused']) | list | count > 0 }}
+        icon: "{{ 'mdi:radio' if this.state == 'on' else 'mdi:radio-off' }}"
+        attributes:
+          active: >
+            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
+            {{ entity_list | select('is_state', ['playing', 'paused']) | list }}
+          inactive: >
+            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
+            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
+            {{ entity_list | reject('is_state', ['playing', 'paused']) | list }}
 
       # binary sensor for dasbboard messages
       - unique_id: 262f459f-0d43-4b72-b8b1-67667fe73f5f
@@ -286,26 +724,6 @@ template:
         icon: mdi:washing-machine
         state: >
           {{ is_state('sensor.wasmachine', 'on') }}
-      - unique_id: 42e15a4b-cd5b-4b1f-aea1-606768190cfe
-        name: Dashboard ETA Martijn
-        icon: "{{ 'mdi:bike' if is_state('input_boolean.martijn_fiets', 'on') else 'mdi:car' }}"
-        state: >
-          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_martijn', 'Niet onderweg') %}
-          {% if eta != 'Niet onderweg' %}
-            ETA Martijn: {{ eta }} 
-          {% else %}
-            {{ eta }}
-          {% endif %}
-      - unique_id: bd045940-59e0-43f8-98eb-ecec92ac86d1
-        name: Dashboard ETA Marleen
-        icon: mdi:car
-        state: >
-          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_marleen', 'Niet onderweg') %}
-          {% if eta != 'Niet onderweg' %}
-            ETA Marleen: {{ eta }} 
-          {% else %}
-            {{ eta }}
-          {% endif %}
 
       - unique_id: sensor_anniversary_martijn
         name: >
@@ -331,12 +749,13 @@ template:
             {%- set source = this.attributes.get('source', 'not ready') %}
             {{ states(source) | int(15) <= 14 }}
           icon: >
+            {%- set name = this.name -%}
             {%- set fixed_icons = {
                                     'Eerste date': 'mdi:heart-multiple',
                                     'Sinterklaas': 'mdi:gift-open'
                                   } %}
             {%- set icons = ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] %}
-            {{ fixed_icons[this.name] | default(icons | random, true) }}
+            {{ fixed_icons[name] | default(icons | random, true) }}
 
       - unique_id: sensor_anniversary_marleen
         name: >
