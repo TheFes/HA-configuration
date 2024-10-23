@@ -41,29 +41,47 @@ action:
         sequence:
           - alias: "Perform right action"
             choose:
-              - conditions: >
-                  {{
-                    states('pepijn_lux_illuminance_lux') | float(0) < 10
-                    and pepijn == 'sleeping'
-                    and is_state('light.groep_bed_pepijn', 'off')
-                  }}
+              # - conditions: >
+              #     {{
+              #       states('pepijn_lux_illuminance_lux') | float(0) < 10
+              #       and pepijn == 'sleeping'
+              #       and is_state('light.groep_bed_pepijn', 'off')
+              #     }}
+              #   sequence:
+              #     - action: light.turn_on
+              #       target:
+              #         entity_id: light.pepijn_leeslamp
+              #       data:
+              #         color_name: "{{ sleep_color }}"
+              #         brightness: 30
+              #     - delay: >
+              #         {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
+              #         {% set next = next + timedelta(days=1) if now() > next else next %}
+              #         {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
+              #     - action: light.turn_off
+              #       target:
+              #         entity_id: light.pepijn_leeslamp
+              - conditions:
+                  - condition: state
+                    entity_id: light.groep_bed_pepijn
+                    state: "off"
+                  - condition: state
+                    entity_id: binary_sensor.pepijn_sleeping
+                    state: "on"
                 sequence:
                   - action: light.turn_on
                     target:
                       entity_id: light.pepijn_leeslamp
                     data:
-                      color_name: "{{ sleep_color }}"
-                      brightness: 30
-                  - delay: >
-                      {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
-                      {% set next = next + timedelta(days=1) if now() > next else next %}
-                      {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
-                  - action: light.turn_off
-                    target:
-                      entity_id: light.pepijn_leeslamp
-              - conditions: >
-                  {% set s = expand('light.groep_bed_pepijn') %}
-                  {{ s | selectattr('state', 'eq', 'on') | list | count < s | list | count }}
+                      color_temp_kelvin: 3000
+                      brightness_pct: 20
+                  - action: script.resume_transition_lights
+                    data:
+                      light: light.pepijn_leeslamp
+              - conditions:
+                  - condition: state
+                    entity_id: light.groep_bed_pepijn
+                    state: "off"
                 sequence:
                   - action: light.turn_on
                     target:
@@ -81,13 +99,17 @@ action:
       - alias: "Actions with long press"
         conditions: "{{ event == 'hold' }}"
         sequence:
-          - alias: "Turn all lights off"
+          - alias: "Turn all lights off except for globe"
             action: light.turn_off
             target:
               entity_id: light.groep_pepijn
           - if: "{{ now() > today_at('18:30') }}"
             then:
               - event: pepijn_sleeping
+              - alias: "Turn globe on"
+                action: light.turn_on
+                target:
+                  entity_id: light.wereldbol
       - alias: "Actions on double press"
         conditions: "{{ event == 'double' }}"
         sequence: []
