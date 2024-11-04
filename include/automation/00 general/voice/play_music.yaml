@@ -1,0 +1,135 @@
+# This autamation uses ChatGPT to process the query in the sentence
+# For this I created a specific conversation agent which returns a json result
+# This conversation agent is based on this blog https://blog.jlpouffier.fr/chatgpt-powered-music-search-engine-on-a-local-voice-assistant/
+# So most credits go to JLo for all the work he did, and for writing that post
+
+# Based on that I added support for areas. You can add an area to the voice command (eg "Play the theme song of Baywatch in the master bedroom").
+# In case no area is provided in the command, it will use the area from the voice sattelite.
+# The area information has been added to the prompt used by ChatGPT
+# I also added support for playlists (only when the voice command specifically asks for a playlist) and radio stations.
+
+# This is the prompt I used, which is a mostly English, but also partly Dutch.
+
+# You are an AI process that transforms a music search query into a structured JSON.
+
+# Here is the structured JSON that I expect in response {"to_play": {"media_id":"name",  "media_type":"type", "artist":"name", "album":"name"}, "area": "area_name"}
+
+# "media_type" can be one of 5 different values: "track" if the search is about a specific track, "album" if the search is about an album, "artist" if the search is about an artist, "playlist" if the search specifically requests a playlist or "radio" in case the search is a radio channel.
+# media_type is mandatory
+# Frequently used radio channels are "Studio Brussel", "Willy", "NPO Radio 2", "Hallo Kids Radio", but other radio channels could be requested as well.
+
+# media_id is the most specific from track, album, and artist.
+# If the search is about a track: Then media_id is the track name.
+# If the search is about an album: Then media_id is the album name.
+# If the search is about an artist: Then media_id is the artist name.
+# If the search is a specific playlist: Then media_id is the requested playlist.
+# If the search is a radio channel: Then media_id is the requested channel.
+# media_id is mandatory.
+
+# If case it is needed, the fields "artist" and "album" can be used to further restrict the search.
+# For example, if the input is "Hells Bells by ACDC", then the output should be  {"media_id":"Hells Bells",  "media_type":"track", "artist":"AC/DC"}
+# "artist" and "album" are optional and never used in the case of a playlist search.
+
+# There can be 5 types of answers for the to_play dictionary:
+# Just an artist like that {"media_id": "artist name", "media_type":"artist"}.
+# An album by an artist like that {"media_id": "album name", "media_type":"album", "artist": "artist name"}.
+# A track by an artist like that {"media_id":"track name", "media_type":"track", "artist": "artist name"}.
+# Just a track if the artist is not known like that {"media_id":"track name", "media_type":"track"}.
+# Just a playlist if the request is a specific playlist {"media_id":"playlist name", "media_type":"playlist"}.
+
+# The area key is used to add the area_name of the area mentioned in the query. In case no area is provided in the search or the area cannot be matched to a area listed below, the value should be "unknown" In case multiple areas are privided, prove the names as list (for example ["Pepijn", "Floris"])
+
+# Area overview:
+# - name: Woonkamer
+#   description: Living Room also use for play area
+# - name: Keuken
+#   description: Kitchen also the dining area
+# - name: Pepijn
+#   description: bedroom of Pepijn
+# - name: Floris
+#   description: bedroom of Floris
+# - name: Werkkamer Marleen
+#   description: home work office of Marleen (mom)
+# - name: Werkkamer Martijn
+#   description: home work office of Martijn (dad)
+# - name: Slaapkamer
+#   description: master bedroom
+# - name: Begane grond
+#   description: entire ground floor (contains Woonkamer and Keuken)
+# - name: Eerste verdieping
+#   description: entire first floor, contains bedrooms of Floris and Pepijn
+# - name: Zolder
+#   description: entire attic, contains Werkkamer Martijn and Slaapkamer
+
+# You must reply with only the JSON model, nothing before nor after because your response will be processed by a search component of a media listening service.
+
+# Note that the input query can be in Dutch or English. For the "media_type" the untranslated English terms should be used, in case of a playlist search use the language used in the input.
+
+# Here are a few examples of input with the expected output:
+# "Hells Bells van ACDC in de slaapkamer van Pepijn" > {"to_play": {"media_id":"Hells Bells",  "media_type":"track", "artist":"AC/DC"}, "area": "Pepijn"}.
+# "The discography of Pink Floyd" >> {"to_play": {"media_id": "Pink Floyd", "media_type":"artist"}.
+# "The artist that composed the soundtrack of Inception in the parents bedroom" >> {"to_play": {"media_id": "Hans Zimmer", "media_type":"artist"}, "area": "Slaapkamer"}.
+# "The playlist Funny Songs in the bedrooms of Pepijn and Floris" >> {"to_play": {"media_id": "Funny Songs", "media_type":"playlist"}, "area": ["Pepijn", "Floris"]}.
+
+id: 1e45354d-4f5a-4211-883f-857c1ec64bf9
+alias: Play music based on voice command
+triggers:
+  - alias: Trigger sentence to play music
+    trigger: conversation
+    command:
+      - (Speel|Luister naar) {to_play}
+      - (Ik wil|Wij willen) {to_play} horen
+      - "[Ik wil |Wij willen |Kun je | Wil je ]{to_play} afspelen"
+      - (Ik wil|Wij willen) naar {to_play} luisteren
+actions:
+  - alias: Send search to OpenAI
+    action: conversation.process
+    data:
+      agent_id: conversation.chatgpt_music_assistant_helper
+      text: "{{ trigger.slots.to_play }}"
+    response_variable: response
+  - variables:
+      voice_area: "{{ area_name(trigger.device_id) }}"
+      value_json: "{{ response.response.speech.plain.speech }}"
+      area: >
+        {{ value_json.area if value_json.area != 'unknown' else voice_area }}
+      player: >
+        {% if area is list %}
+          {% set a_devices = area 
+                              | map('area_devices')
+                              | sum(start=[]) %}
+          {% set devices = label_devices('voice')
+                              | select('in', a_devices)
+                              | list %}
+        {% else %}
+          {% set devices = label_devices('voice')
+                              | select('in', area_devices(area))
+                              | list %}
+        {% endif %}
+        {{ devices
+            | map('device_entities')
+            | sum(start=[])
+            | select('in', integration_entities('mass'))
+            | select('match', 'media_player')
+            |  list
+        }}
+  - alias: Set response for
+    set_conversation_response: >
+      {% if area and player and value_json.to_play.media_id != 'unknown' %}
+        Hier komt {{ value_json.to_play.media_id }}
+      {% elif  value_json.to_play.media_id != 'unknown' %}
+        Ik begrijp niet wat je wil afspelen, probeer het nog eens
+      {% elif area %}
+        Er is geen apparaat om de muziek op af te spelen. Probeer het nog eens.
+      {% else %}
+        Waar wil je dat afspelen? Probeer het nog eens en geef aan in welke ruimte.
+      {% endif %}
+  - alias: Play music using Music Assistant in case all required info is available
+    if: "{{ player | count > 0 and value_json.to_play.media_id != 'unknown' }}"
+    then:
+      - alias: "Play music"
+        action: mass.play_media
+        target:
+          entity_id: "{{ player }}"
+        data: "{{ value_json.to_play }}"
+mode: single
