@@ -1,6 +1,0 @@
-current_date:
-  action: []
-  speech:
-    text: >
-      {% from 'helper_lists.jinja' import weekdays, months %}
-      {{ 'Het is {weekdag} {dag} {maand} {jaar}'.format(weekdag=weekdays[now().weekday()], dag=now().day, maand=months[now().month-1], jaar=now().year) }}
