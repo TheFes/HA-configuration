@@ -1,0 +1,162 @@
+automation:
+  - id: 2017abca-a756-420b-98fb-228824ce182a
+    alias: Voice - Manage Shield and Soundbar on voice command in living room or kitchen
+    mode: parallel
+    variables:
+      tv_playing: "{{ is_state('media_player.nvidia_shield', 'playing') }}"
+      soundbar_source: "{{ state_attr('media_player.samsung_soundbar', 'source') | default('off', true) }}"
+      living: "{{ area_name(trigger.entity_id) == 'Woonkamer' }}"
+      satellite_player: "{{ device_entities(device_id(trigger.entity_id)) | select('match', 'media_player') | list | first }}"
+    triggers:
+      - trigger: state
+        entity_id:
+          - assist_satellite.ha_voice_woonkamer_assist_satellite
+          - assist_satellite.ha_voice_keuken_assist_satellite
+        to: listening
+    actions:
+      - if: "{{ tv_playing and living }}"
+        then:
+          - alias: "Pause the Shield"
+            action: media_player.media_pause
+            target:
+              entity_id: media_player.nvidia_shield
+      - if: "{{ tv_playing }}"
+        then:
+          - alias: Create scene with current soundbar status
+            action: scene.create
+            data:
+              scene_id: soundbar_before
+              snapshot_entities:
+                - media_player.samsung_soundbar
+          - wait_for_trigger:
+              - trigger: state
+                entity_id:
+                  - assist_satellite.ha_voice_woonkamer_assist_satellite
+                  - assist_satellite.ha_voice_keuken_assist_satellite
+                to: processing
+            timeout:
+              seconds: 10
+          - variables:
+              living: "{{ area_name(wait.trigger.entity_id) == 'Woonkamer' }}"
+          - if: "{{ wait.trigger is not none }}"
+            then:
+              - alias: Set volume soundbar
+                action: media_player.volume_set
+                target:
+                  entity_id:
+                    - media_player.samsung_soundbar
+                data:
+                  volume_level: "{{ 0.1 if living else 0.02 }}"
+      - alias: Store current volume satellite
+        variables:
+          sat_vol: "{{ state_attr(satellite_player, 'volume_level') }}"
+      - alias: Set volume voice satellite
+        action: media_player.volume_set
+        target:
+          entity_id: "{{ satellite_player }}"
+        data:
+          volume_level: 0.7
+      - if: "{{ living }}"
+        then:
+          - alias: Ensure soundbar is on
+            action: media_player.turn_on
+            target:
+              entity_id: media_player.samsung_soundbar
+          - alias: Ensure Soundbar is set to aux
+            action: media_player.select_source
+            data:
+              source: aux
+            target:
+              entity_id: media_player.samsung_soundbar
+      - wait_for_trigger:
+          - trigger: template
+            value_template: "{{ is_state(trigger.entity_id, 'idle') }}"
+            for:
+              seconds: 0.5
+      - alias: Set volume voice satellite back to old setting
+        action: media_player.volume_set
+        target:
+          entity_id: "{{ satellite_player }}"
+        data:
+          volume_level: "{{ sat_vol }}"
+      - if: "{{ tv_playing }}"
+        then:
+          - alias: Apply scene with previous soundbar settings
+            action: scene.turn_on
+            target:
+              entity_id: scene.soundbar_before
+          - if: "{{ not is_state('media_player.nvidia_shield', 'playing') }}"
+            then:
+              - alias: Resume playing on Shield
+                action: media_player.media_play
+                target:
+                  entity_id: media_player.nvidia_shield
+      - if: "{{ not tv_playing and living }}"
+        then:
+          - variables:
+              player: >
+                {{
+                  integration_entities('mass')
+                    | select('in', area_entities(area_id(trigger.entity_id)))
+                    | list
+                    | first
+                    | default('unknown')
+                }}
+          - wait_template: "{{ is_state(player, 'playing') }}"
+            timeout:
+              seconds: 10
+          - variables:
+              something_played: "{{ wait.completed }}"
+          - wait_for_trigger:
+              - trigger: template
+                value_template: >
+                  {{
+                    something_played
+                    and not is_state(player, 'playing')
+                  }}
+                for:
+                  seconds: 10
+            timeout:
+              minutes: 5
+          - if: "{{ wait.trigger is not none }}"
+            then:
+              - alias: Turn soundbar off again
+                action: media_player.turn_off
+                target:
+                  entity_id: media_player.samsung_soundbar
+
+  - id: bd5c40c0-6c25-4560-9455-8318d1e3924a
+    alias: Make sure Soundbar is set to right source when something is playing
+    triggers:
+      - trigger: state
+        entity_id:
+          - media_player.nvidia_shield
+        to: playing
+        id: optical
+      - trigger: state
+        entity_id:
+          - media_player.woonkamer
+        to: playing
+        for:
+          seconds: 2
+        id: aux
+    conditions:
+      - alias: Soundbar not on right source
+        condition: template
+        value_template: "{{ not is_state_attr('media_player.samsung_soundbar', 'source', trigger.id) }}"
+    actions:
+      - if:
+          - condition: state
+            entity_id: media_player.samsung_soundbar
+            state: "off"
+        then:
+          - action: media_player.turn_on
+            target:
+              entity_id: media_player.samsung_soundbar
+          - wait_template: "{{ is_state('media_player.samsung_soundbar', 'on') }}"
+      - action: media_player.select_source
+        data:
+          source: "{{ trigger.id }}"
+        target:
+          entity_id: media_player.samsung_soundbar
+    mode: single

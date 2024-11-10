@@ -1,0 +1,60 @@
+automation:
+  - id: fe7ae331-8db2-4470-8e84-14709861edf8
+    alias: Enable Party mode for kids
+    mode: parallel
+    triggers:
+      - trigger: state
+        entity_id:
+          - event.ha_voice_floris_button_press
+          - event.ha_voice_pepijn_button_press
+        alias: Button press event
+        not_from: unavailable
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - Tijd voor een (feestje|disco)
+          - Zet (disco|feest)[ ](modus|stand) aan
+          - Ik wil (disco[{en}]|feesten)
+        id: sentence
+    conditions:
+      - alias: Double press event
+        condition: template
+        value_template: >
+          {{
+            trigger.id == 'sentence'
+            or trigger.to_state.attributes.event_type == 'triple_press'
+          }}
+    actions:
+      - alias: Set response
+        set_conversation_response: >
+          Feestmodus aan!
+      - variables:
+          area: "{{ area_id(trigger.device_id if trigger.id == 'sentence' else trigger.entity_id) }}"
+          player: >
+            {{
+              integration_entities('mass')
+                | select('in', area_entities(area))
+                | list
+            }}
+      - alias: Play Music
+        action: mass.play_media
+        target:
+          entity_id: "{{ player }}"
+        data:
+          media_type: playlist
+          media_id: Leuke liedjes Pepijn en Floris
+          enqueue: replace
+      - alias: Set shuffle
+        action: media_player.shuffle_set
+        target:
+          entity_id: "{{ player }}"
+        data:
+          shuffle: true
+      - alias: Enable Party lights
+        action: script.party_party
+        data:
+          party_on: true
+          exclude_lights:
+            - light.pepijn_template
+          set_by: voice_satellite
+          area: "{{ area }}"

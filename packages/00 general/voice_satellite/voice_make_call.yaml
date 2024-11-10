@@ -1,0 +1,182 @@
+# This autamation uses ChatGPT to process the query in the sentence
+# For this I created a specific conversation agent which returns a json result
+# I got the idea when reading this blog https://blog.jlpouffier.fr/chatgpt-powered-music-search-engine-on-a-local-voice-assistant/
+# So most credits go to JLo for all the work he did, and for writing that post
+
+# This is the prompt I used, which is a mostly English, but also partly Dutch.
+
+# You are an AI process that transforms a music search query into a structured JSON.
+
+# You are an AI process that transforms a phone call request query into a structured string
+
+# Here is the structured string that I expect in response "sip:{phone number}@192.168.2.100" where {phone number} will be an international formatted number (for example +31131234567 for a Dutch phone number). There will be no spaces or other special characters besides the + in the phone number
+
+# The following numbers are in the Phone book
+# John (father): +31612345678
+# Jane (mother): +31687654321
+# Mary (grandmother, owns a dog named Sniffles): +31698765432
+# Karen (grandmother, owns a cat named Mittenz): +31623456789
+# Alarm number (in case of emergency like fire or an accident, can also be asked as 1 1 2): +31112
+
+# In case the search is numeric, format it as an international phone number. If no country code is provided, assume it's a Dutch number and prefix it with +31
+
+# In case the search is not numeric, and cannot be related to the above mentioned phone book, return +31000000000 as the phone number.
+
+# You must reply with only the string, nothing before nor after because your response will be processed by a SIP servcice expecting the exact format decribed.
+
+# Note that the input query can be in Dutch or English.
+
+# Here are a few examples of input with the expected output:
+# "Oma van de Poes" >> sip:+31623456789@192.168.2.100
+# "Papa" >> sip:+31612345678@192.168.2.100
+# "06 12 3 4 12 34" >> sip:+31612341234@192.168.2.100
+
+automation:
+  - id: 7f409c21-989e-425f-8a8e-1fc73d57b58d
+    alias: Initiate call using Assist
+    triggers:
+      - alias: Trigger sentence to initiate call
+        trigger: conversation
+        command:
+          - (Bel|Telefoneer) [naar|met] {to_call}
+          - (Ik wil|Wij willen) [met|naar] {to_call} (bellen|praten|telefoneren|kletsen|babbelen)
+    actions:
+      - alias: Send search to OpenAI
+        action: conversation.process
+        data:
+          agent_id: conversation.chatgpt_phone_book_helper
+          text: "{{ trigger.slots.to_call }}"
+        response_variable: response
+      - alias: "Set variables"
+        variables:
+          supported_devices:
+            582822583c5a151feaca918b1c3e48ae: phone
+            dea1020edbc703c3e64857daa55730a4: sattelite
+          satellite: >
+            {{ device_entities(trigger.device_id) | select('match', 'assist_satellite') | first }}
+          phone_number: "{{ response.response.speech.plain.speech }}"
+          known_number: "{{ phone_number != 'sip:+31000000000@192.168.2.100' }}"
+      - alias: "Check if resonse comes from a supported device"
+        if: "{{ known_number and trigger.device_id in supported_devices }}"
+        then:
+          - alias: "Call script"
+            action: script.turn_on
+            target:
+              entity_id: script.make_call_assist
+            data:
+              variables:
+                to_call: "{{ phone_number }}"
+                satellite: "{{ satellite }}"
+      - alias: Set response
+        set_conversation_response: >
+          {% if known_number and trigger.device_id in supported_devices %}
+            {{ trigger.slots.to_call }} wordt gebeld {{ 'zodra je de telefoon oplegt' if supported_devices[trigger.device_id] == 'phone' }}. Neem de hoorn op zodra de telefoon rinkelt.
+          {% elif trigger.device_id not in supported_devices %}
+            Vanaf dit apparaat kun je niet bellen, probeer het met een telefoon.
+          {% else %}
+            Ik heb geen telefoonnummer voor {{ trigger.slots.to_call }}. Probeer het nog eens met een andere naam.
+          {% endif %}
+    mode: single
+
+script:
+  make_call_assist:
+    alias: Make call using Assist
+    mode: parallel
+    variables:
+      sip: "@192.168.2.100"
+      default_calling: "sip:**621@192.168.2.100"
+      parsed: "{{ to_call | regex_replace('sip:|'~sip, '') }}"
+      number_calling: "{{ number_calling if number_calling is defined else default_calling }}"
+    sequence:
+      - alias: "Wait until the voice sattelite is responding"
+        wait_template: "{{ is_state(satellite, 'responding') }}"
+      - alias: "Wait until the voice satellite is idle again to ensure they can hear the entire message"
+        wait_template: "{{ is_state(satellite, 'idle') }}"
+      - alias: "Short delay, mainly to allow to hang up the phone in case it is used for the voice command"
+        delay:
+          seconds: 2
+      - alias: "call the Grandstream connected phone"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: dial
+            number: "{{ number_calling }}"
+            ring_timeout: 60
+            sip_account: 1
+            webhook_to_call:
+              call_established: phone_picked_up
+              call_disconnected: sip_call_disconnected
+      - alias: "Wait untill the phone is picked up"
+        wait_for_trigger:
+          - platform: webhook
+            local_only: true
+            webhook_id: phone_picked_up
+        timeout:
+          seconds: 30
+        continue_on_timeout: false
+      - alias: "Call the requested number"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: dial
+            number: "{{ to_call }}"
+            ring_timeout: 60
+            sip_account: 1
+            webhook_to_call:
+              call_established: sip_connect_call_assist
+              call_disconnected: sip_call_disconnected
+      - alias: "Parallel action to allow 2 wait for triggers at the same time"
+        parallel:
+          - sequence:
+              - alias: "Wait untill connection to requested number is established"
+                wait_for_trigger:
+                  - platform: webhook
+                    local_only: true
+                    webhook_id: sip_connect_call_assist
+                timeout:
+                  seconds: 30
+                continue_on_timeout: false
+              - alias: "Connect the Grandstream connected phone with the requested number"
+                action: hassio.addon_stdin
+                data:
+                  addon: c7744bff_ha-sip
+                  input:
+                    command: bridge_audio
+                    number: "{{ number_calling }}"
+                    bridge_to: "{{ to_call }}"
+          - sequence:
+              - alias: "Repeat sequence which will wait for all sip webhooks"
+                repeat:
+                  while:
+                    - alias: "Always continue"
+                      condition: template
+                      value_template: "{{ true }}"
+                  sequence:
+                    - alias: "Wait for the webhook"
+                      wait_for_trigger:
+                        - platform: webhook
+                          webhook_id: sip_call_webhook_id
+                          local_only: true
+                    - alias: "Check if the webhook is because a call is ended"
+                      condition: template
+                      value_template: "{{ wait.trigger.json.event == 'call_disconnected'}}"
+                    - alias: "Set variables"
+                      variables:
+                        parsed_hung: "{{ wait.trigger.json.parsed_caller }}"
+                        to_end: "{{ [parsed, number_calling] | reject('eq', parsed_hung) | list }}"
+                    - alias: Check if the webhook is about the correct call.
+                      condition: template
+                      value_template: "{{ to_end | count == 1 }}"
+                    - alias: "Hang up the line of the other connection which didn't hang up first"
+                      action: hassio.addon_stdin
+                      data:
+                        addon: c7744bff_ha-sip
+                        input:
+                          command: hangup
+                          number: >
+                            {% set to_end = to_end | first %}
+                            {{ number if to_end == parsed else to_end }}
+                    - alias: Stop the script
+                      stop: "Call disconnected"

@@ -1,0 +1,34 @@
+automation:
+  - id: 318c0584-aa03-4e2f-9aa6-36538318ede7
+    alias: Return List Contents
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - wat staat er op [de|het] {query}
+    actions:
+      - variables:
+          list_entity: >
+            {{ states.todo | selectattr('name', 'search', trigger.slots.query, ignorecase=True) | map(attribute='entity_id') | first | default(none) }}
+      - if: "{{ list_entity is not none }}"
+        then:
+          - alias: "Get items from list"
+            action: todo.get_items
+            target:
+              entity_id: "{{ list_entity }}"
+            data:
+              status: needs_action
+            response_variable: response
+      - variables:
+          list_items: >
+            {{ (response.values() | first)['items'] | map(attribute='summary') | join(', ') if list_entity is not none else '' }}
+      - alias: Set response
+        set_conversation_response: >
+          {% if list_items %}
+            {{ list_items }}
+          {% elif list_entity is none %}
+            Ik kan geen lijst met de naam {{ trigger.slots.query }} vinden.
+          {% else %}
+            {{ trigger.slots.query }} is leeg
+          {% endif %}
+    mode: parallel

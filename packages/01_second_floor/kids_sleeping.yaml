@@ -1,0 +1,124 @@
+template:
+  - trigger:
+      - platform: event
+        event_type: pepijn_sleeping
+        id: "on"
+      - platform: template
+        value_template: >
+          {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
+          {{ now() > awake }}
+        id: "off"
+    binary_sensor:
+      - unique_id: 2d748636-6ecd-4941-aef7-797d7cde1d5a
+        name: Pepijn Sleeping
+        state: "{{ trigger.id | bool }}"
+        icon: "{{ 'mdi:sleep' if trigger.id | bool else 'mdi:sleep-off' }}"
+  - trigger:
+      - platform: event
+        event_type: floris_sleeping
+        id: "on"
+      - platform: template
+        value_template: >
+          {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
+          {{ now() > awake }}
+        id: "off"
+    binary_sensor:
+      - unique_id: 7cbf7bc9-03cc-4a32-a56a-e0cfeda6828e
+        name: Floris Sleeping
+        state: "{{ trigger.id | bool }}"
+        icon: "{{ 'mdi:sleep' if trigger.id | bool else 'mdi:sleep-off' }}"
+
+script:
+  bedtime_floris_routine:
+    icon: mdi:bed
+    mode: restart
+    alias: "Floris is going to sleep (Voice)"
+    sequence:
+      - event: floris_sleeping
+      - alias: "Light on"
+        action: light.turn_on
+        target:
+          entity_id:
+            - light.floris_template
+            - light.floris_leeslamp
+      - action: light.turn_on
+        target:
+          entity_id: light.floris_leeslamp
+        data:
+          color_temp: 250
+          brightness: 150
+      - alias: "Turn on graafmachine"
+        action: light.turn_on
+        target:
+          entity_id: light.graafmachine
+        data:
+          brightness: 26
+          rgb_color:
+            - 255
+            - 148
+            - 3
+
+  bedtime_pepijn_routine:
+    alias: "Pepijn is going to sleep (Voice)"
+    icon: mdi:bed
+    sequence:
+      - event: pepijn_sleeping
+      - alias: "Dim ceiling light"
+        action: light.turn_on
+        target:
+          entity_id: light.pepijn_template
+        data:
+          brightness_pct: 40
+      - alias: "Bed group"
+        action: light.turn_on
+        target:
+          entity_id: light.groep_bed_pepijn
+        data:
+          color_temp_kelvin: 3000
+          brightness_pct: 20
+      - alias: "Turn on reading light and globe"
+        action: light.turn_on
+        target:
+          entity_id:
+            - light.booglamp
+            - light.wereldbol
+
+automation:
+  - id: 7680c082-f8f8-402d-ba9c-dc2064de40b4
+    alias: Turn on nightlight for Pepijn and Floris
+    triggers:
+      - trigger: state
+        entity_id: light.groep_pepijn
+        to: "off"
+        id: pepijn
+      - trigger: state
+        entity_id: input_boolean.nachtlampje_pepijn
+        to: "on"
+        id: pepijn
+      - trigger: state
+        entity_id: light.groep_floris
+        to: "off"
+        id: floris
+      - trigger: state
+        entity_id: input_boolean.nachtlampje_floris
+        to: "on"
+        id: floris
+    conditions:
+      - "{{ is_state('input_boolean.nachtlampje_' ~ trigger.id, 'on') }}"
+      - "{{ is_state('binary_sensor.' ~ trigger.id ~ '_sleeping', 'on') }}"
+      - "{{ is_state('light.groep_' ~ trigger.id, 'off') }}"
+    actions:
+      - if: "{{ trigger.id == 'pepijn' }}"
+        then:
+          - alias: Turn on correct light
+            action: light.turn_on
+            target:
+              entity_id: light.wereldbol
+        else:
+          - alias: Turn on reading light Floris
+            action: light.turn_on
+            target:
+              entity_id: light.floris_leeslamp
+            data:
+              color_temp: 500
+              brightness: 1

@@ -1,0 +1,32 @@
+automation:
+  - id: 645ac57b-f743-429e-9765-9a14149a2f4a
+    alias: Bedtime Kids
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - (floris|pepijn) gaat naar bed
+          - de kinderen gaan naar bed
+    actions:
+      - variables:
+          who: >
+            {% if 'floris' in trigger.sentence | lower %}
+              Floris
+            {% elif 'pepijn' in trigger.sentence | lower %}
+              Pepijn
+            {% else %}
+              {{ ['Pepijn', 'Floris'] | shuffle | join(' en ') }}
+            {% endif %}
+      - alias: Start script for bedtime lights
+        action: script.turn_on
+        target:
+          entity_id: >
+            {% if ' en ' in who %}
+              [ 'script.bedtime_pepijn_routine', 'script.bedtime_pepijn_routine' ]
+            {% else %}
+              script.bedtime_{{ who | lower }}_routine
+            {% endif %}
+      - alias: Set response
+        set_conversation_response: >
+          Slaap lekker {{ who }}!
+    mode: single

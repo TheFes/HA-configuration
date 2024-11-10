@@ -1,0 +1,56 @@
+automation:
+  - id: fa1ca856-95ab-4317-bb6e-7681d74f136f
+    alias: Voice - Remaing time dishwasher
+    mode: parallel
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - hoe lang moet [de] vaatwasser [nog]
+          - (wanneer|hoe laat) is de vaatwasser klaar
+    actions:
+      - alias: Set response
+        set_conversation_response: >
+          {%- set time_set = states('sensor.dishwasher_end_time') | as_datetime %}
+          {%- if now() < time_set and is_state('binary_sensor.dishwasher_active', 'on') %}
+            {%- set seconds = (time_set | as_timestamp - now() | as_timestamp) | int %}
+            {%- set hours = (seconds / 3600) | int %}
+            {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+            {%- if hours == 0 %}
+              De vaatwasser is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar.
+            {%- else %}
+              De vaatwasser is klaar rond {{ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M') }}.
+            {%- endif %}
+          {%- elif now() < time_set | as_local %}
+            De vaatwasser is nu elk moment klaar
+          {%- else %}
+            De vaatwasser is niet actief
+          {%- endif %}
+
+  - id: f9e73c28-8d45-4148-8a9c-2b4e5323334b
+    alias: Voice - Remaing time washing machine
+    mode: parallel
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - hoe lang moet [de] wasmachine [nog]
+          - (wanneer|hoe laat) is de wasmachine klaar
+    actions:
+      - alias: Set response
+        set_conversation_response: >
+          {% set delta = as_timedelta(states('sensor.wasmachine_remain_time')) %}
+          {% if delta is none %}
+            Kan de wasmachine nu niet bereiken
+          {% else %}
+            {%- set seconds = delta.seconds %}
+            {%- set hours = (seconds / 3600) | int %}
+            {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
+            {%- if seconds == 0 %}
+              De wasmachine is niet actief
+            {%- elif hours == 0 %}
+              De vaatwasser is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar.
+            {%- else %}
+              De vaatwasser is klaar rond {{ as_datetime(states('sensor.dishwasher_end_time')).strftime('%H:%M') }}.
+            {%- endif %}
+          {% endif %}
