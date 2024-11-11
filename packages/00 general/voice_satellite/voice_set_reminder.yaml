@@ -26,7 +26,6 @@
 # The query can be in English or Dutch
 # You must reply with only the JSON model, nothing before nor after because your response will be processed by an automation.
 
-
 # Here are a few examples of input with the expected output (assumming it is currently 10th of August 2024, 13:00):
 # "Set a reminder for Marleen to do groceries tomorrow at 10" >> { "datetime": "2024-08-12T10:00:00+01:00", "to_notify": ["notify.mobile_app_marleen_app"], "reminder": "Do groceries"] }
 # "Herinner papa en mama er aan om vanmiddag om 3 uur Pepijn een knuffel te geven" >> { "datetime": "2024-08-11T15:00:00+01:00", "to_notify": ["notify.mobile_app_pixel_7_pro", "notify.mobile_app_marleen_app"], "reminder": "Pepijn een knuffel geven"] }
@@ -55,7 +54,7 @@ automation:
       - trigger: template
         value_template: >
           {% set first_reminder = 
-            state_attr('sensor.assist_reminder_helper', 'reiminders') | default([], true)
+            state_attr('sensor.assist_reminder_helper', 'reminders') | default([], true)
               | map(attribute='datetime')
               | sort
               | first
