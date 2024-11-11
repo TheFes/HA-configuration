@@ -67,8 +67,9 @@ automation:
           value_template: "{{ now() > today_at(open_time) }}"
           id: open
       condition:
-        - alias: "open or close"
-          condition: or
+        - condition: template
+          value_template: "{{ 3 <= now().month <= 9 }}"
+        - condition: or
           conditions:
             - alias: "open"
               condition: and

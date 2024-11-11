@@ -35,26 +35,3 @@ template:
       #   icon: *icon
       #   attributes:
       #     id: "device_tracker.pixel_watch_beacon"
-
-automation:
-  - id: 22a1f4bd-d654-480e-a0d7-c3786bdee7f9
-    alias: Test Automation BT location change
-    trigger:
-      - platform: state
-        entity_id:
-          - sensor.location_phone_martijn_bt
-          - sensor.location_watch_martijn_bt
-        not_from: "unavailable"
-        not_to: "unavailable"
-        variables:
-          device: "{{ 'telefoon' if 'phone' in trigger.entity_id else 'horloge' }}"
-    action:
-      - action: notify.mobile_app_pixel_7_pro
-        data:
-          message: De state van {{ device }} is van {{ trigger.from_state.state }} naar {{ trigger.to_state.state }} gegaan.
-          data:
-            channel: "Location {{ device }}"
-            tag: "location_{{ device }}"
-            ttl: 0
-            priority: high
-            notification_icon: mdi:test-tube

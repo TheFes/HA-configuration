@@ -580,27 +580,27 @@ template:
       - unique_id: 21bc3453-4f48-479a-a216-f50fdc23b79b
         name: Cover Floris Dashboard Helper
         state: "{{ state_attr('cover.floris', 'current_position') < 100 }}"
-        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.floris' | has_value }}"
       - unique_id: fca7cce8-d0e7-434f-9b7e-f5a2ea24e7e8
         name: Cover Overloop Zolder Dashboard Helper
         state: "{{ state_attr('cover.overloop_zolder_template', 'current_position') < 100 }}"
-        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.overloop_zolder' | has_value }}"
       - unique_id: c59709fc-ab8b-495c-830f-337e87696108
         name: Cover Pepijn Dashboard Helper
         state: "{{ state_attr('cover.pepijn_template', 'current_position') < 100 }}"
-        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.pepijn' | has_value }}"
       - unique_id: 89c3ae41-1ba5-483f-8108-d7e6d04af2de
         name: Cover Werkkamer Marleen Helper
         state: "{{ state_attr('cover.werkkamer_marleen', 'current_position') < 100 }}"
-        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.werkkamer_marleen' | has_value }}"
       - unique_id: 8c9fbbee-8914-41b8-9310-3a1151c9ec22
         name: Cover Slaapkamer Zolder
         state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') < 100 }}"
-        icon: "{{ 'mdi:blinds' if this.state | bool else 'mdi:blinds-open' }}"
+        icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.slaapkamer_zolder_template' | has_value }}"
       # other binary sensors for dashboard
       - unique_id: dd81d5ca-6c8a-4824-9611-75cfd6a1d368
@@ -638,48 +638,6 @@ template:
             {% else %}
               Uit
             {% endif %}
-      # dashboard mobile
-      - unique_id: 21f51031-c3e8-42b3-bd8b-4ff0bc8df4cb
-        name: >
-          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
-          {% set on_count = entity_list | select('is_state', 'on') | list | count %}
-          {{ 'Dashboard Mobile Lights On' if this.state == 'unknown' else on_count }}
-        state: >
-          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
-          {{ entity_list | select('is_state', 'on') | list | count > 0 }}
-        icon: "{{ 'mdi:lightbulb-group' if this.state == 'on' else 'mdi:lightbulb-group-off-outline' }}"
-        attributes:
-          active: >
-            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
-            {{ entity_list | select('is_state', 'on') | list }}
-          inactive: >
-            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^light') | sort | list %}
-            {{ entity_list | reject('is_state', 'on') | list }}
-
-      - unique_id: 09ecb687-ea53-48e2-bc29-7d61c16340f2
-        name: >
-          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
-          {% set on_count = entity_list | select('is_state', ['playing', 'paused']) | list | count %}
-          {{ 'Dashboard Mobile Media On' if this.state == 'unknown' else on_count }}
-        state: >
-          {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-          {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
-          {{ entity_list | select('is_state', ['playing', 'paused']) | list | count > 0 }}
-        icon: "{{ 'mdi:radio' if this.state == 'on' else 'mdi:radio-off' }}"
-        attributes:
-          active: >
-            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
-            {{ entity_list | select('is_state', ['playing', 'paused']) | list }}
-          inactive: >
-            {% set area_list = areas() | reject('in', ['algemeen', 'dak', 'weer']) | sort | list %}
-            {% set entity_list = area_list | map('area_entities') | sum(start=[]) | reject('is_hidden_entity') | reject('search', 'groep') | select('search', '^media_player') | sort | list %}
-            {{ entity_list | reject('is_state', ['playing', 'paused']) | list }}
 
       # binary sensor for dasbboard messages
       - unique_id: 262f459f-0d43-4b72-b8b1-67667fe73f5f
@@ -734,7 +692,7 @@ template:
             {%- set source = this.attributes.get('source', 'not ready') %}
             {%- set d_h = state_attr(source, 'days_until_half_anniversary') | default(999, true) %}
             {%- set h = d_h < states(source) | int(0) %}
-            {%- set d = [states(source) | int, d_h] | min %}
+            {%- set d = [states(source) | int(15), d_h] | min %}
             {%- set c = state_attr(source, 'current_years') %}
             {%- set y = c if c else none %}
             {%- set y = y + (0.5 if h else 1 if d != 0 else 0) if y is not none %}
@@ -798,8 +756,8 @@ template:
         <<: *anniversary_config
 
       - unique_id: ebdb8afc-4d13-4469-a353-8ba6b49c5618
-        name: Dashboard Werkkamer Martijn Stereo Available
-        state: "{{ 'mmedia_player.werkkamer_martijn_stereo' | has_value }}"
+        name: Dashboard Werkkamer Martijn Satellite Available
+        state: "{{ 'media_player.martijn' | has_value }}"
         icon: mdi:cast
 
       # dummy binary sensors for tile cards

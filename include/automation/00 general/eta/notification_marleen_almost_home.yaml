@@ -33,29 +33,16 @@ action:
   - variables:
       target: >
         {%- 
-          if is_state('media_player.werkkamer_martijn_stereo', 'playing')
+          if is_state('media_player.martijn', 'playing')
           or is_state('sensor.location_phone_martijn', 'Zolder') 
         %}
-          [ 'media_player.keuken_hub', 'media_player.werkkamer_martijn_stereo' ]
+          [ 'media_player.keuken', 'media_player.martijn' ]
         {%- else %}
-          [ 'media_player.keuken_hub' ]
+          [ 'media_player.keuken' ]
         {%- endif %}
-  - alias: "Send TTS using Google Home Resume script"
-    action: script.turn_on
+  - alias: "Send TTS"
+    action: tts.google_cloud_say
     target:
-      entity_id: script.google_home_resume
+      entity_id: "{{ target }}"
     data:
-      variables:
-        action:
-          - alias: "Send TTS message"
-            action: tts.google_cloud_say
-            target:
-              entity_id: "{{ target }}"
-            data:
-              message: "Hoera! Marleen is bijna thuis!"
-            extra:
-              screen_tts:
-                large_text: HOERA!
-                small_text: Marleen is bijna thuis
-                picture_url: "http://192.168.2.3:8123/local/pictures/marleen.gif"
-              volume: 0.35
+      message: "Hoera! Marleen is bijna thuis!"

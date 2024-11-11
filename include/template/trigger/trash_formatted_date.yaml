@@ -34,3 +34,33 @@
       name: "Papier & PMD"
       icon: mdi:trash-can-outline
       <<: *config
+
+- sensor:
+    - unique_id: 3f09522f-f034-401c-aa0a-efc438e80598
+      name: >
+        {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+        {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+        {{ 'First Trash' if this.state == 'unknown' or sorted | count < 2 else state_attr(sorted | first, 'waste_type') }}
+      state: >
+        {% set pickup = this.attributes.get('pickup', 'onbekend') %}
+        {{ 'red' if pickup == 'Vandaag' else 'orange' if pickup == 'Morgen' else 'default' }}
+      icon: mdi:trash-can
+      attributes:
+        pickup: >
+          {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+          {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+          {{ 'Onbekend' if sorted | count < 2 else states(sorted | first) }}
+    - unique_id: e93d478f-20db-49ac-8858-e9b4780664fe
+      name: >
+        {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+        {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+        {{ 'Second Trash' if this.state == 'unknown' or sorted | count < 2 else state_attr(sorted | last, 'waste_type') }}
+      state: >
+        {% set pickup = this.attributes.get('pickup', 'onbekend') %}
+        {{ 'red' if pickup == 'Vandaag' else 'orange' if pickup == 'Morgen' else 'default' }}
+      icon: mdi:trash-can-outline
+      attributes:
+        pickup: >
+          {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+          {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+          {{ 'Onbekend' if sorted | count < 2 else states(sorted | last) }}

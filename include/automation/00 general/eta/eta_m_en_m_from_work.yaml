@@ -73,35 +73,48 @@ action:
       - event: set_variable
         event_data:
           key: "eta_{{ name }}"
-          value: "{{ '🚴‍♂️' if vehicle == 'fiets' else '🚗'}} ETA {{ name | title }}: {{ eta }}"
+          value: "{{ eta }}"
           set_timestamp: false
       - if: "{{ vehicle == 'auto' }}"
         then:
           - repeat:
-              until: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
+              until: >
+                {{
+                  is_state(trigger.entity_id, [work[name], 'home'])
+                  or (state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_'~name, none) is none
+                }}
               sequence:
                 - action: homeassistant.update_entity
                   target:
                     entity_id: "{{ sensor }}"
                 - variables:
-                    eta: "{{ (now() + timedelta(minutes=states(sensor)|float)).timestamp() }}"
+                    eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
                 - wait_for_trigger:
                     - platform: template
                       value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
+                    - platform: event
+                      event_type: mobile_app_notification_action
+                      event_data:
+                        action: "cancel_eta_{{ name }}"
                     - platform: template
-                      value_template: "{{ ((now() + timedelta(minutes=states(sensor)|float)).timestamp() - eta) > 300 }}"
+                      value_template: >
+                        {{
+                          (now() + timedelta(minutes=states(sensor) | float)) - as_datetime(eta) > timedelta(minutes=5)
+                        }}
                       id: delay
                 - if: "{{ wait.trigger.id == 'delay' }}"
                   then:
+                    - variables:
+                        eta: "{{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }}"
                     - event: set_variable
                       event_data:
                         key: "eta_{{ name }}"
-                        value: "{{ '🚴‍♂️' if vehicle == 'fiets' else '🚗'}} ETA {{ name | title }}: {{ eta }}"
+                        value: "{{ eta }}"
                     - alias: "Send notification to phone"
                       action: "{{ notify }}"
                       data:
                         title: "{{ name | capitalize }} is vertraagd"
-                        message: "{{ gender | capitalize }} zou er nu rond {{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }} moeten zijn"
+                        message: "{{ gender | capitalize }} zou er nu rond {{ eta }} moeten zijn"
                         data:
                           channel: ETA
                           tag: eta_{{ name }}

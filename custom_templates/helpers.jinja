@@ -100,7 +100,13 @@
           {{- colors.playing -}}
         {%- else -%}
           {%- set player = area_players | first -%}
-          {{- state_attr(player, 'media_artist') or state_attr(player, 'app_name') or state_attr(active, 'source') or ' ' -}}
+          {{-
+            state_attr(player, 'media_artist')
+            or state_attr(player, 'app_name')
+            or state_attr(player, 'media_title')
+            or state_attr(player, 'source')
+            or ' '
+          -}}
         {%- endif -%}
       {%- elif output == 'icon_color' -%}
         {{- 'default' -}}

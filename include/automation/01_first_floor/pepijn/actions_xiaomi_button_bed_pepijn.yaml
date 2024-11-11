@@ -99,17 +99,10 @@ action:
       - alias: "Actions with long press"
         conditions: "{{ event == 'hold' }}"
         sequence:
-          - alias: "Turn all lights off except for globe"
+          - alias: "Turn all lights off"
             action: light.turn_off
             target:
               entity_id: light.groep_pepijn
-          - if: "{{ now() > today_at('18:30') }}"
-            then:
-              - event: pepijn_sleeping
-              - alias: "Turn globe on"
-                action: light.turn_on
-                target:
-                  entity_id: light.wereldbol
       - alias: "Actions on double press"
         conditions: "{{ event == 'double' }}"
         sequence: []

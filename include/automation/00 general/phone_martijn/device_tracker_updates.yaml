@@ -1,53 +1,26 @@
 id: 6d0dc8bd-d264-42b8-8488-10e2e44d9393
-alias: "Update device trackers for phone and watch Martijn"
+alias: "Update device trackers for phone Martijn"
 trigger:
   - platform: state
     entity_id:
       - sensor.location_phone_martijn_bt
       - sensor.pixel_7_pro_battery_level
     from: ~
-    id: phone
-  - platform: state
-    entity_id:
-      - sensor.location_watch_martijn_bt
-      - sensor.google_pixel_watch_battery_level
-    from: ~
-    id: watch
   - platform: homeassistant
     event: start
-    id: phone and watch
 action:
-  - if: "{{ 'phone' in trigger.id }}"
-    then:
-      - action: device_tracker.see
-        data:
-          dev_id: phone_martijn_bt
-          host_name: Phone Martijn BT
-          mac: "0C:C4:13:45:75:85"
-          battery: "{{ states('sensor.pixel_7_pro_battery_level') }}"
-          location_name: >
-            {% if is_state('sensor.location_phone_martijn_bt', 'Niet Thuis') %}
-              not_home
-            {% elif is_state('sensor.location_phone_martijn_bt', ['unavailable',
-            'unknown']) %}
-              {{ states('sensor.location_phone_martijn_bt') }}
-            {% else %}
-              home
-            {% endif %}
-  - if: "{{ 'watch' in trigger.id }}"
-    then:
-      - action: device_tracker.see
-        data:
-          dev_id: watch_martijn_bt
-          host_name: Watch Martijn BT
-          mac: "14:22:3B:A4:AE:57"
-          battery: "{{ states('sensor.google_pixel_watch_battery_level') }}"
-          location_name: >
-            {% if is_state('sensor.location_watch_martijn_bt', 'Niet Thuis') %}
-              not_home
-            {% elif is_state('sensor.location_watch_martijn_bt', ['unavailable',
-            'unknown']) %}
-              {{ states('sensor.location_watch_martijn_bt') }}
-            {% else %}
-              home
-            {% endif %}
+  - action: device_tracker.see
+    data:
+      dev_id: phone_martijn_bt
+      host_name: Phone Martijn BT
+      mac: "0C:C4:13:45:75:85"
+      battery: "{{ states('sensor.pixel_7_pro_battery_level') }}"
+      location_name: >
+        {% if is_state('sensor.location_phone_martijn_bt', 'Niet Thuis') %}
+          not_home
+        {% elif is_state('sensor.location_phone_martijn_bt', ['unavailable',
+        'unknown']) %}
+          {{ states('sensor.location_phone_martijn_bt') }}
+        {% else %}
+          home
+        {% endif %}
