@@ -65,8 +65,8 @@ action:
                   players: >
                     {{
                       [
-                        'media_player.keuken_hub',
-                        'media_player.woonkamer_home'
+                        'media_player.keuken',
+                        'media_player.woonkamer'
                       ]
                         | reject('is_state', 'off')
                         | list
@@ -77,8 +77,8 @@ action:
                     action: media_player.turn_off
                     target:
                       entity_id:
-                        - media_player.keuken_hub
-                        - media_player.woonkamer_home
+                        - media_player.woonkamer
+                        - media_player.keuken
                     continue_on_error: true
               - alias: "Extractor hood off if needed?"
                 if:

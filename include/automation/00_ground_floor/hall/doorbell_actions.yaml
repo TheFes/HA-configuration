@@ -52,13 +52,13 @@ action:
         action: media_player.media_pause
         target:
           entity_id: media_player.nvidia_shield
-  - alias: "Google Home attic active or someone there"
+  - alias: "Media Player office Martijn active or someone there"
     if:
       - or:
           - alias: "Speaker Martijn playing"
             condition: state
             entity_id:
-              - media_player.werkkamer_martijn_stereo
+              - media_player.martijn
             match: any
             state: "playing"
           - alias: "Someone on attic"
@@ -69,21 +69,12 @@ action:
             match: any
             state: "🏡2️⃣"
     then:
-      - alias: "Send TTS using Google Home Resume script"
-        action: script.turn_on
+      - alias: "Send TTS message"
+        action: tts.google_cloud_say
         target:
-          entity_id: script.google_home_resume
+          entity_id: media_player.martijn
         data:
-          variables:
-            action:
-              - alias: "Send TTS message"
-                action: tts.google_cloud_say
-                target:
-                  entity_id: media_player.werkkamer_martijn_stereo
-                data:
-                  message: "Ding Dong! Er staat iemand aan de deur!"
-                extra:
-                  volume: 0.35
+          message: "Ding Dong! Er staat iemand aan de deur!"
   - alias: "Chime off and someone home?"
     choose:
       # Blink lights when chime is off and someone is home
@@ -157,43 +148,31 @@ action:
             {% set m = state_attr('calendar.m_m', 'message') | lower %}
             {{ m.split(' ') | last | title }}
           name: "{{ name_a or name_c }}"
-      - action: script.turn_on
-        target:
-          entity_id: script.google_home_resume
+      - action: tts.google_cloud_say
         data:
-          variables:
-            action:
-              - action: tts.google_cloud_say
-                data:
-                  entity_id: media_player.beneden_groep
-                  message: >
-                    <speak>
-                      <par>
-                        <media xml:id="hoera" begin="0.5s">
-                          <speak><emphasis level="strong">Hoera!</emphasis></speak>
-                        </media>
-                        <media xml:id="deur" begin="hoera.end+1.5s">
-                          <speak>Er staat iemand aan de deur! Misschien is het wel visite voor {{ name }}!</speak>
-                        </media>
-                        <media begin="deur.end-0.2s" soundLevel="-6dB">
-                          <audio
-                            src="{{ ha_url }}/local/misc/roltong2.mp3"/>
-                        </media>
-                        <media begin="hoera.begin+0.5s" soundLevel="-2dB"
-                          fadeInDur="2s" fadeOutDur="0.2s">
-                          <audio
-                            src="{{ ha_url }}/local/misc/roltong1.mp3"/>
-                        </media>
-                        <media repeatCount="2" soundLevel="+2.28dB"
-                          fadeInDur="2s" fadeOutDur="0.2s" begin="0s">
-                          <audio
-                            src="{{ ha_url }}/local/misc/roltong2.mp3"/>
-                        </media>
-                      </par>
-                    </speak>
-                extra:
-                  screen_tts:
-                    large_text: "Hoera, de bel!"
-                    small_text: "Misschien is het wel visite voor {{ name }}"
-                    picture_url: "http://192.168.2.3:8123/local/pictures/tts/party-popper.jpg"
-                  volume: 0.6
+          entity_id: media_player.keuken
+          message: >
+            <speak>
+              <par>
+                <media xml:id="hoera" begin="0.5s">
+                  <speak><emphasis level="strong">Hoera!</emphasis></speak>
+                </media>
+                <media xml:id="deur" begin="hoera.end+1.5s">
+                  <speak>Er staat iemand aan de deur! Misschien is het wel visite voor {{ name }}!</speak>
+                </media>
+                <media begin="deur.end-0.2s" soundLevel="-6dB">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
+                </media>
+                <media begin="hoera.begin+0.5s" soundLevel="-2dB"
+                  fadeInDur="2s" fadeOutDur="0.2s">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong1.mp3"/>
+                </media>
+                <media repeatCount="2" soundLevel="+2.28dB"
+                  fadeInDur="2s" fadeOutDur="0.2s" begin="0s">
+                  <audio
+                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
+                </media>
+              </par>
+            </speak>

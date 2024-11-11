@@ -11,8 +11,7 @@ action:
       playing: >
         {{
           [
-            'media_player.keuken_hub',
-            'media_player.woonkamer_home'
+            'media_player.woonkamer'
           ]
             | select('is_state', 'playing')
             | list

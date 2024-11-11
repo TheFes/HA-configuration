@@ -1,37 +1,31 @@
 input_boolean:
-  keuken_hub:
-    name: Keuken Hub
+  keuken_voice:
+    name: Keuken
     icon: mdi:fridge-outline
-  slaapkamer_hub:
-    name: Slaapkamer Hub
-    icon: mdi:bed
-  pepijn_mini:
-    name: Pepijn Mini
-    icon: mdi:toy-brick
-  floris_mini:
-    name: Floris Mini
+  pepijn_voice:
+    name: Pepijn
+    icon: mdi:unicorn
+  floris_voice:
+    name: Floris
     icon: mdi:teddy-bear
-  woonkamer_home:
-    name: Woonkamer Home
+  woonkamer_voice:
+    name: Woonkamer
     icon: mdi:sofa
-  zolder_mini_marleen:
-    name: Zolder Mini Marleen
-    icon: mdi:human-female
-  werkkamer_martijn_stereo:
-    name: Werkkamer Zolder Stereo
+  martijn_voice:
+    name: Martijn
     icon: mdi:human-male
-  beneden_groep:
-    name: Beneden Groep
-    icon: mdi:home-floor-0
-  boven_groep:
-    name: Boven Groep
-    icon: mdi:home-floor-1
-  zolder_groep:
-    name: Zolder Groep
-    icon: mdi:home-floor-2
-  huis_groep:
-    name: Huis Groep
-    icon: mdi:home
+  # beneden_groep:
+  #   name: Beneden Groep
+  #   icon: mdi:home-floor-0
+  # boven_groep:
+  #   name: Boven Groep
+  #   icon: mdi:home-floor-1
+  # zolder_groep:
+  #   name: Zolder Groep
+  #   icon: mdi:home-floor-2
+  # huis_groep:
+  #   name: Huis Groep
+  #   icon: mdi:home
   tts_volume:
     name: Set volume?
     icon: mdi:volume-plus
@@ -40,17 +34,15 @@ group:
   tts_selection:
     name: "TTS target selection"
     entities: &booleans
-      - input_boolean.huis_groep
-      - input_boolean.zolder_groep
-      - input_boolean.boven_groep
-      - input_boolean.beneden_groep
-      - input_boolean.werkkamer_martijn_stereo
-      - input_boolean.zolder_mini_marleen
-      - input_boolean.slaapkamer_hub
-      - input_boolean.floris_mini
-      - input_boolean.pepijn_mini
-      - input_boolean.keuken_hub
-      - input_boolean.woonkamer_home
+      # - input_boolean.huis_groep
+      # - input_boolean.zolder_groep
+      # - input_boolean.boven_groep
+      # - input_boolean.beneden_groep
+      - input_boolean.martijn_voice
+      - input_boolean.floris_voice
+      - input_boolean.pepijn_voice
+      - input_boolean.keuken_voice
+      - input_boolean.woonkamer_voice
 
 input_number:
   tts_volume:
@@ -97,52 +89,34 @@ script:
       reset_booleans: True
     sequence:
       - variables:
-          settings: "{{ state_attr('script.google_home_resume', 'settings') }}"
+          # settings: "{{ state_attr('script.google_home_resume', 'settings') }}"
           target: >
             {%
               set target = expand(boolean)
                             | selectattr('state', 'eq', 'on')
                             | map(attribute='entity_id')
                             | map('replace', 'input_boolean', 'media_player')
+                            | map('replace', '_voice', '')
                             | list
             %}
-            {% set speaker_groups = settings.speaker_groups %}
-            {% set members_selected = speaker_groups.items() | selectattr('0', 'in', target) | map(attribute='1') | sum(start=[]) %}
-            {{ target | reject('in', members_selected) |list }}
+            {{ target }}
+            {#
+              {% set speaker_groups = settings.speaker_groups %}
+              {% set members_selected = speaker_groups.items() | selectattr('0', 'in', target) | map(attribute='1') | sum(start=[]) %}
+              {{ target | reject('in', members_selected) |list }}
+            #}
       - if:
           - alias: "TTS selected"
             condition: state
             entity_id: input_select.tts_or_radio
             state: "TTS"
         then:
-          - alias: "Send TTS using Google Home Resume script"
-            action: script.turn_on
+          - alias: "Send TTS message"
+            action: tts.google_cloud_say
             target:
-              entity_id: script.google_home_resume
+              entity_id: "{{ target }}"
             data:
-              variables:
-                action:
-                  - alias: "Send TTS message"
-                    action: tts.google_cloud_say
-                    target:
-                      entity_id: "{{ target }}"
-                    data:
-                      message: "{{ states('input_text.tts_message') }}"
-                    extra: >
-                      {{
-                        dict(volume = states('input_number.tts_volume') | float(25) / 100 | round(2))
-                        if is_state('input_boolean.tts_volume', 'on')
-                        else {}
-                      }}
-          - alias: "Reset volume"
-            choose:
-              - conditions: "{{ True if default_volume else False }}"
-                sequence:
-                  - action: input_number.set_value
-                    target:
-                      entity_id: input_number.tts_volume
-                    data:
-                      value: "{{ default_volume }}"
+              message: "{{ states('input_text.tts_message') }}"
           - alias: "Reset message"
             choose:
               - conditions: "{{ default_message is defined }}"
@@ -175,7 +149,7 @@ script:
                   picture: "http://192.168.2.3:8123/local/pictures/radio/stu_bru.png"
                   url: http://icecast.vrtcdn.be/stubru.aac
                   title: "Life is Music"
-          - alias: "Turn on Radio 2"
+          - alias: "Turn on Radio"
             action: media_player.play_media
             target:
               entity_id: "{{ target }}"

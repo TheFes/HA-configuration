@@ -146,10 +146,9 @@ automation:
     trigger:
       - platform: state
         entity_id:
-          - media_player.woonkamer_home
-          - media_player.keuken_hub
-          - media_player.pepijn_mini
-          - media_player.slaapkamer_hub
+          - media_player.floris
+          - media_player.pepijn
+          - media_player.woonkamer
         for:
           seconds: 1
     variables:
@@ -158,22 +157,18 @@ automation:
       artists:
         - snollebollekes
       area_mapper:
-        media_player.woonkamer_home:
+        media_player.woonkamer:
           area_list:
             - woonkamer
             - speelhoek
-        media_player.keuken_hub:
-          area_list:
-            - keuken
-            - eettafel
-        media_player.pepijn_mini:
+        media_player.pepijn:
           area_list:
             - slaapkamer_pepijn
           exclude_lights:
             - light.pepijn
-        media_player.slaapkamer_hub:
+        media_player.floris:
           area_list:
-            - slaapkamer_zolder
+            - slaapkamer_floris
       party_on: >
         {{
           trigger.to_state.state == 'playing'

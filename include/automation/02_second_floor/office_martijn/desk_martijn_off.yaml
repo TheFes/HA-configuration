@@ -1,12 +1,12 @@
 id: 012eb968-e871-4029-8096-a63044a42029
-alias: "Tun off desk Martijn switch"
+alias: "Turn off desk Martijn switch"
 trigger:
   - platform: state
     entity_id:
       - binary_sensor.computer_zolder
       - binary_sensor.laptop_werk_martijn_lan
       - binary_sensor.laptop_werk_martijn_wifi
-      - media_player.werkkamer_martijn_stereo
+      - media_player.martijn
     to:
       - "idle"
       - "off"
@@ -18,7 +18,7 @@ condition:
       - binary_sensor.computer_zolder
       - binary_sensor.laptop_werk_martijn_lan
       - binary_sensor.laptop_werk_martijn_wifi
-      - media_player.werkkamer_martijn_stereo
+      - media_player.martijn
     state:
       - "idle"
       - "off"

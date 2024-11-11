@@ -27,40 +27,33 @@ action:
                     entity_id: binary_sensor.workday_sensor
                     state: "on"
                 sequence:
-                  - wait_template: "{{ 'media_player.werkkamer_martijn_stereo' | has_value }}"
+                  - wait_template: "{{ 'media_player.martijn' | has_value }}"
                     timeout:
                       minutes: 3
                     continue_on_timeout: false
                   - alias: "Set volume"
                     action: media_player.volume_set
                     target:
-                      entity_id: media_player.werkkamer_martijn_stereo
+                      entity_id: media_player.martijn
                     data:
-                      volume_level: 0.1
+                      volume_level: 0.5
                   - alias: "Turn on Studio Brussel"
-                    action: media_player.play_media
+                    action: mass.play_media
                     target:
-                      entity_id: media_player.werkkamer_martijn_stereo
+                      entity_id: media_player.martijn
                     data:
-                      media_content_id: "https://vrt.streamabc.net/vrt-studiobrussel-aac-128-4334018"
-                      media_content_type: music
-                      extra:
-                        metadata:
-                          metadataType: 3
-                          title: "Life is music"
-                          artist: "VRT Studio Brussel"
-                          images:
-                            - url: "http://192.168.2.3:8123/local/pictures/radio/stu_bru.png"
+                      media_id: Studio Brussel
+                      media_type: radio
       - alias: "Actions with rotate"
         conditions: "{{ 'rotate' in event }}"
         sequence:
           - variables:
-              volume: "{{ state_attr('media_player.werkkamer_martijn_stereo', 'volume_level') }}"
+              volume: "{{ state_attr('media_player.martijn', 'volume_level') }}"
           - if: "{{ volume is not none }}"
             then:
               - action: media_player.volume_set
                 target:
-                  entity_id: media_player.werkkamer_martijn_stereo
+                  entity_id: media_player.martijn
                 data:
                   volume_level: >
                     {% set c = 0.05 if event == 'rotate_right' else -0.05 %}
