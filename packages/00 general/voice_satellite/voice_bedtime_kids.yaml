@@ -22,7 +22,7 @@ automation:
         target:
           entity_id: >
             {% if ' en ' in who %}
-              [ 'script.bedtime_pepijn_routine', 'script.bedtime_pepijn_routine' ]
+              [ 'script.bedtime_pepijn_routine', 'script.bedtime_floris_routine' ]
             {% else %}
               script.bedtime_{{ who | lower }}_routine
             {% endif %}

@@ -5,7 +5,7 @@ automation:
       - alias: Trigger sentence
         trigger: conversation
         command:
-          - Goede[ ]morgen [nabu]
+          - "{unwanted misheard stuff} Goe(d|i)e[ ]morgen [nabu] {unwanted misheard stuff}"
     actions:
       - alias: Start script for good morning lights
         action: script.turn_on

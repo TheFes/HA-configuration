@@ -155,46 +155,46 @@ automation:
           shuffle: "{{ value_json.to_play.media_type == 'playlist' }}"
         target:
           entity_id: "{{ player }}"
-        mode: single
+    mode: single
 
-      - alias: Voice - Resume or next track on double press
-        id: 34df8747-e2b0-48af-befa-f981660aba0c
-        mode: parallel
-        triggers:
-          - alias: Button press event of HA Voice device
-            trigger: state
-            entity_id:
-              - event.ha_voice_floris_button_press
-              - event.ha_voice_keuken_button_press
-              - event.ha_voice_pepijn_button_press
-              - event.ha_voice_werkkamer_martijn_button_press
-              - event.ha_voice_woonkamer_button_press
-            not_from: unavailable
-        conditions:
-          - alias: Double press event
-            condition: template
-            value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
-        actions:
-          - variables:
-              player: >
-                {{
-                  integration_entities('mass')
-                    | select('in', area_entities(area_id(trigger.entity_id)))
-                    | list
-                    | first
-                    | default('unknown')
-                }}
-              player_state: "{{ states(player) }}"
-          - choose:
-              - conditions: "{{ player_state == 'paused' }}"
-                sequence:
-                  - alias: Resume Playback
-                    action: media_player.media_play
-                    target:
-                      entity_id: "{{ player }}"
-              - conditions: "{{ player_state == 'playing' }}"
-                sequence:
-                  - alias: Resume Playback
-                    action: media_player.media_next_track
-                    target:
-                      entity_id: "{{ player }}"
+  - alias: Voice - Resume or next track on double press
+    id: 34df8747-e2b0-48af-befa-f981660aba0c
+    mode: parallel
+    triggers:
+      - alias: Button press event of HA Voice device
+        trigger: state
+        entity_id:
+          - event.ha_voice_floris_button_press
+          - event.ha_voice_keuken_button_press
+          - event.ha_voice_pepijn_button_press
+          - event.ha_voice_werkkamer_martijn_button_press
+          - event.ha_voice_woonkamer_button_press
+        not_from: unavailable
+    conditions:
+      - alias: Double press event
+        condition: template
+        value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
+    actions:
+      - variables:
+          player: >
+            {{
+              integration_entities('mass')
+                | select('in', area_entities(area_id(trigger.entity_id)))
+                | list
+                | first
+                | default('unknown')
+            }}
+          player_state: "{{ states(player) }}"
+      - choose:
+          - conditions: "{{ player_state == 'paused' }}"
+            sequence:
+              - alias: Resume Playback
+                action: media_player.media_play
+                target:
+                  entity_id: "{{ player }}"
+          - conditions: "{{ player_state == 'playing' }}"
+            sequence:
+              - alias: Resume Playback
+                action: media_player.media_next_track
+                target:
+                  entity_id: "{{ player }}"

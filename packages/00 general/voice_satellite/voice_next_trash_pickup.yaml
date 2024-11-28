@@ -1,0 +1,13 @@
+automation:
+  - id: 9df1d5c9-373c-483a-98f4-bf376942dde0
+    alias: Voice - Next trash pickup
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - Welke [afval](container|bak) [moet er [{wanneer}] (buiten|aan [de] straat)]
+          - Wanneer moet ([de] [afval](container|bak)|[het] afval) (buiten|aan [de] straat)
+    actions:
+      - alias: Set response
+        set_conversation_response: >
+          {{ state_attr('sensor.first_trash', 'pickup') }} moet {{ state_attr('sensor.first_trash', 'friendly_name') }} {{ ['buiten', 'aan straat'] | random }}.

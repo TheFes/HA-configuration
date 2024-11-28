@@ -1,0 +1,38 @@
+automation:
+  - id: c1f376c8-2a14-4d27-b55a-688a8c2635e3
+    alias: Voice - ETA Marleen & Martijn
+    triggers:
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - "(wanneer|hoe laat) is (Marleen|Martijn|mama|papa) thuis"
+          - "(wanneer|hoe laat) wordt (Marleen|Martijn|mama|papa) thuis verwacht"
+          - "(wanneer|hoe laat) kan ik (Martijn|Marleen|mama|papa) thuis verwachten"
+          - "[wat is] [de] ETA [van] (Martijn|Marleen|mama|papa)"
+    actions:
+      - alias: "Set variables for entities"
+        variables:
+          name: >
+            {{ 'Martijn' if trigger.sentence | lower is search('martijn|papa') else 'Marleen' }}
+          gender: "{{ 'hij' if name == 'Martijn' else 'ze' }}"
+          person: "person.{{ name | lower }}"
+          waze: "sensor.{{ name | lower }}_naar_huis"
+          proximity: "sensor.thuis_{{ name | lower }}_direction_of_travel"
+      - alias: "Make sure entity states are updated"
+        action: homeassistant.update_entity
+        target:
+          entity_id: "{{ [waze,proximity, person] }}"
+      - alias: "Short delay to make sure updates are done"
+        delay: 0.5
+      - alias: Set response
+        set_conversation_response: >
+          {%- set eta = (now() + timedelta(minutes=2 + states(waze) | float(0))).strftime('%H:%M') %}
+          {%- if is_state(person, 'home') %}
+            {{ name }} is al thuis
+          {%- elif is_state(waze, 'towards') %}
+            {{ name }} is om {{ eta }} thuis.
+          {%- elif is_state(proximity, 'away_from') %}
+            {{ name }} gaat de verkeerde kant op, maar als {{ gender }} nu omdraait is {{ gender }} om {{ eta }} thuis.
+          {%- else %}
+            {{ name }} is nog niet onderweg, maar als {{ gender }} nu vertrekt is {{ gender }} om {{ eta }} thuis.
+          {%- endif %}

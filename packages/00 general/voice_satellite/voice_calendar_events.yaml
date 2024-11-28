@@ -1,0 +1,60 @@
+automation:
+  - id: 4082634b-2b59-4371-b5c1-82cd3710c865
+    alias: Voice - Get calendar events
+    triggers:
+      - trigger: conversation
+        command:
+          - "wat staat er op de (agenda|kalender|planning) [[voor] {query}]"
+          - "wat staat er [voor] {query} op de (agenda|kalender|planning)"
+          - "staat er iets op de (agenda|kalender|planning) [[voor] {query}]"
+          - "staat er [voor] {query} iets op de (agenda|kalender|planning)"
+    variables:
+      calendars:
+        - calendar.thefes
+        - calendar.m_m
+        - calendar.kids
+      conversation_agent: conversation.openai_normaal
+      output_language: Dutch
+    action:
+      - alias: convert the query to the right format for the calendar.get_events action
+        action: conversation.process
+        data:
+          agent_id: "{{ conversation_agent }}"
+          text: >
+            You are an AI process that transforms a date and time query into a structured JSON.
+            The query can be in Dutch or English and can be a part of a day to multiple days. 
+            In case the request is a weekend or week end, this includes both Saturday and Sunday
+            The query is: "{{ trigger.slots.query | default("today") }}"
+
+            Here is the structured JSON that I expect in response {"start_date_time": "start_date", "end_date_time": "end_date"}
+            Both "start_date" and "end_date" should be a isoformat datetime string in the format "YYYY-MM-DD 00:00:00+01:00"
+            The timezone of the datetime string should be the timezone in the Netherlands (corrected for Daylight Savings if that is needed)
+
+            Output only the json string or "unknown" if it is not possible to convert the query to datetime values.
+            Note that when the output is "unknown", this should only be this one word, so not the json string.
+            The output will be used in further automtions, so don't add any additional text or explanation.
+        response_variable: response
+      - alias: set the output to a varialbe
+        variables:
+          output: "{{ response.response.speech.plain.speech }}"
+      - alias: check the calendars for events for these dates
+        action: calendar.get_events
+        target:
+          entity_id: "{{ calendars }}"
+        data: "{{ output if output != 'unknown' else dict(start_date_time=now().isoformat(), end_date_time=now().isoformat()) }}"
+        response_variable: events
+      - alias: create summary of the events
+        action: conversation.process
+        data:
+          agent_id: "{{ conversation_agent }}"
+          text: >
+            Give a short summary of these calendar events: {{ events }}
+            In case there are no events for a specific calendar, ignore that calendar. In case there are no events 
+            at all, mention that there are no events for the time period.
+            Combine all events of the calendars in one summary, don't mention to which calendar they belong.
+            Don't use special characters (as "*"" or "-"") as the result will be used in a Text To Speech (TTS) response.
+            Keep it short and to the point and respond in {{ output_language }}.
+        response_variable: summary
+      - alias: Set response for voice satellite
+        set_conversation_response: >
+          {{ summary.response.speech.plain.speech if output != 'unknown' else 'Ik begrijp niet voor welke datum je de agenda wil weten' }}
