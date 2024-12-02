@@ -87,7 +87,12 @@ action:
             entity_id:
               - light.tv_lamp
               - light.keukenspotjes
+          - alias: "Turn on play area light"
+            action: light.turn_on
+            entity_id:
               - light.speelhoek
+            data:
+              brightness: 80
           - alias: "Turn on bookcase led"
             action: light.turn_on
             entity_id: light.boekenkast
@@ -111,6 +116,5 @@ action:
                     target:
                       entity_id:
                         - light.eettafel
-                        - light.speelhoek
                     data:
                       brightness: 100

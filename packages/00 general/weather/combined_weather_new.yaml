@@ -101,7 +101,7 @@ template:
           type: daily
           daily: &combine_forecasts >
             {# set number of days to use for forecasts #}
-              {% set forecast_days = 3 if type == 'hourly' else 8 %}
+              {% set forecast_days = 3 if type == 'hourly' else 10 %}
             {# deterimine which forecast to use #}
               {% set hourly_check = forecast_hourly is defined %}
               {% set daily_check = forecast_daily is defined %}

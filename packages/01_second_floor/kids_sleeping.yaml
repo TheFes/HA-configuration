@@ -88,7 +88,7 @@ automation:
     alias: Turn on nightlight for Pepijn and Floris
     triggers:
       - trigger: state
-        entity_id: light.groep_pepijn
+        entity_id: light.pepijn_template
         to: "off"
         id: pepijn
       - trigger: state
@@ -96,7 +96,7 @@ automation:
         to: "on"
         id: pepijn
       - trigger: state
-        entity_id: light.groep_floris
+        entity_id: light.floris_template
         to: "off"
         id: floris
       - trigger: state
