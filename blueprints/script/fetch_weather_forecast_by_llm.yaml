@@ -11,17 +11,6 @@ blueprint:
           multiple: false
           filter:
             domain: weather
-    llm_instructions:
-      name: Instructions for LLM
-      description: Provide instructions for processing the forecast data
-      selector:
-        text:
-          multiline: true
-      default: >
-        Provide the weather forecast in a natural conversational tone, without 
-        special formatting or lists. Keep the response short and to the point,
-        and include practical tips if applicable. Round all values and don't name 
-        the city as that is known to the requester.
 mode: parallel
 max_exceeded: silent
 
@@ -61,13 +50,18 @@ sequence:
     response_variable: weather_response
   - variables:
       response:
-        instruction_for_llm: !input llm_instructions
-        weather_data: >
-          {{
-            weather_response[weather_entity].forecast
+        averaged_weather_data_for_period: >
+          {% set weather_data = weather_response[weather_entity].forecast
               | selectattr('datetime', '>=', start)
               | selectattr('datetime', '<', end)
               | list
-          }}
+          %}
+          {% set ns = namespace(combined={}) %}
+          {% for item in weather_data[0].keys() | reject('eq', 'datetime')%}
+            {% set combine = weather_data | map(attribute=item) | list %}
+            {% set combine = combine | statistical_mode if combine[0] is string else combine | average | round %}
+            {% set ns.combined = dict(ns.combined, **{item: combine}) %}
+          {% endfor %}
+          {{ dict(start_of_period=start, end_of_period=end, **ns.combined) }}
   - stop: ""
     response_variable: response

@@ -11,16 +11,6 @@ blueprint:
           multiple: true
           filter:
             domain: calendar
-    llm_instructions:
-      name: Instructions for LLM
-      description: Provide instructions for processing the events
-      selector:
-        text:
-          multiline: true
-      default: >
-        Be short and to the point. If applicable mention start and end time of the event first
-        and after that the summary. Do not use special charaters like "*" in the response, as 
-        it will be used in a Speech to Text voice response.
 mode: parallel
 max_exceeded: silent
 fields:
@@ -36,8 +26,6 @@ fields:
     name: End date time
     required: true
     description: End date and time
-variables:
-  instructions: !input llm_instructions
 sequence:
   - action: calendar.get_events
     target:
@@ -48,7 +36,6 @@ sequence:
       end_date_time: "{{end_date }}"
   - variables:
       result:
-        instructions_for_llm: !input llm_instructions
         events: >-
           {{
             response.values()
