@@ -16,14 +16,6 @@
 # The sentences here are only used by the built in Home Assistant agent. They are not used or seen by LLMs.
 conversation:
   intents:
-    WeatherGetForecastHourly:
-      - "Get weather forecast for curent day or hourly based"
-    WeatherGetForecastDaily:
-      - "Get weather forecast for next days"
-    TodoGetItems:
-      - "Get items in my TODO"
-    CalendarGetEvents:
-      - "Get events in my calendar"
     SendNotificationMartijn:
       - "Send notification to Martijn"
     SendNotificationMarleen:
@@ -32,50 +24,6 @@ conversation:
 # LLMs see the intent name, e.g. SendNotificationNikos and its description, e.g. "Sends a notification message to Nikos. Args: msg",
 # which helps them know which intent to call and how to pass any args.
 intent_script:
-  WeatherGetForecastHourly:
-    description: "Gets hourly based weather forecasts for the next period"
-    action:
-      - action: weather.get_forecasts
-        target:
-          entity_id:
-            - weather.combined
-        data:
-          type: hourly
-        response_variable: result
-      - stop: ""
-        response_variable: result
-    speech:
-      text: "{{ action_response }}"
-  WeatherGetForecastDaily:
-    description: "Gets weather forecast for next days"
-    action:
-      - action: weather.get_forecasts
-        target:
-          entity_id:
-            - weather.combined
-        data:
-          type: daily
-        response_variable: result
-      - stop: ""
-        response_variable: result
-    speech:
-      text: "{{ action_response }}"
-  CalendarGetEvents:
-    description: "Gets events in my calendar"
-    action:
-      - action: calendar.get_events
-        target:
-          entity_id:
-            - calendar.thefes
-            - calendar.m_m
-        data_template:
-          start_date_time: "{{ today_at('00:00') }}"
-          duration: { "hours": 48 }
-        response_variable: result
-      - stop: ""
-        response_variable: result
-    speech:
-      text: "{{ action_response }}"
   SendNotificationMartijn:
     description: "Sends a notification message to Martijn. Args: msg"
     action:

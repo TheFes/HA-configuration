@@ -96,7 +96,7 @@ automation:
           - variables:
               player: >
                 {{
-                  integration_entities('mass')
+                  integration_entities('music_assistant')
                     | select('in', area_entities(area_id(trigger.entity_id)))
                     | list
                     | first

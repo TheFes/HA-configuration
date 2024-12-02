@@ -110,7 +110,7 @@ automation:
             {{ devices
                 | map('device_entities')
                 | sum(start=[])
-                | select('in', integration_entities('mass'))
+                | select('in', integration_entities('music_assistant'))
                 | select('match', 'media_player')
                 |  list
             }}
@@ -145,7 +145,7 @@ automation:
         if: "{{ player | count > 0 and value_json.to_play.media_id != 'unknown' }}"
         then:
           - alias: "Play music"
-            action: mass.play_media
+            action: music_assistant.play_media
             target:
               entity_id: "{{ player }}"
             data: "{{ dict(value_json.to_play, **dict(radio_mode=value_json.to_play.media_type not in ['playlist', 'album', 'radio'])) }}"
@@ -178,7 +178,7 @@ automation:
       - variables:
           player: >
             {{
-              integration_entities('mass')
+              integration_entities('music_assistant')
                 | select('in', area_entities(area_id(trigger.entity_id)))
                 | list
                 | first

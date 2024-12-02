@@ -5,7 +5,7 @@ automation:
       - alias: Trigger sentence
         trigger: conversation
         command:
-          - "{unwanted misheard stuff} Goe(d|i)e[ ]morgen [nabu] {unwanted misheard stuff}"
+          - "[{unwanted misheard stuff} ]Goe(d|i)e[ ]morgen[ nabu][ {unwanted misheard stuff}]"
     actions:
       - alias: Start script for good morning lights
         action: script.turn_on
@@ -36,24 +36,8 @@ automation:
             Je mag een grapje maken over de voorspelling van vandaag, gebruik geen emoji.
           agent_id: conversation.chatgpt
         response_variable: response_weather
-      - action: calendar.get_events
-        data:
-          start_date_time: "{{ today_at() }}"
-          end_date_time: "{{ today_at('23:59:59') }}"
-        target:
-          entity_id: calendar.m_m
-        response_variable: response
-      - action: conversation.process
-        data:
-          text: >
-            Dit zijn de agenda items van vandaag: {{ response['calendar.m_m'].events }}
-            Geef een korte samenvatting van de items. Als er geen items zijn geef dit dan aan, maar geef geen suggesties wat te doen.
-            Houdt het alleen bij de inhoud van de agendaitems.
-          agent_id: conversation.chatgpt
-        response_variable: response_calendar
       - alias: Set response
         set_conversation_response: >
           Goedemorgen.
-          {{ response_calendar.response.speech.plain.speech if area_name(trigger.device_id) in ['Woonkamer', 'Keuken', 'Werkkamer Martijn'] }}
           {{ response_weather.response.speech.plain.speech }}
     mode: single

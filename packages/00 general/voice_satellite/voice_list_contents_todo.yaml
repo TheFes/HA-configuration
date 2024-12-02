@@ -5,17 +5,17 @@ automation:
       - alias: Trigger sentence
         trigger: conversation
         command:
-          - wat staat er op [de|het] {query}
+          - wat staat er op [de] boodschappen[ ]lijst
     actions:
-      - variables:
-          list_entity: >
-            {{ states.todo | selectattr('name', 'search', trigger.slots.query, ignorecase=True) | map(attribute='entity_id') | first | default(none) }}
+      # - variables:
+      #     list_entity: >
+      #       {{ states.todo | selectattr('name', 'search', trigger.slots.query, ignorecase=True) | map(attribute='entity_id') | first | default(none) }}
       - if: "{{ list_entity is not none }}"
         then:
           - alias: "Get items from list"
             action: todo.get_items
             target:
-              entity_id: "{{ list_entity }}"
+              entity_id: todo.boodschappenlijst
             data:
               status: needs_action
             response_variable: response
@@ -25,7 +25,7 @@ automation:
       - alias: Set response
         set_conversation_response: >
           {% if list_items %}
-            {{ list_items }}
+            Er staan {{ list_items | count }} dingen op de boodschappenlijst: {{ list_items }}
           {% elif list_entity is none %}
             Ik kan geen lijst met de naam {{ trigger.slots.query }} vinden.
           {% else %}
