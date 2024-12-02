@@ -44,6 +44,7 @@ fields:
     required: true
 sequence:
   - variables:
+      weather_entity: !input weather_entity
       start: "{{ (start_of_period | as_datetime | as_local).isoformat() }}"
       end: "{{ (end_of_period | as_datetime | as_local).isoformat() }}"
       full_days: >
