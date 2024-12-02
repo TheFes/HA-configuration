@@ -1,17 +1,22 @@
-test:
-  alias: test
-  sequence:
-  - service: weather.get_forecast
-    metadata: {}
-    data:
-      type: daily
-    target:
-      entity_id: weather.combined
-    response_variable: test_{{ 'variable' }}
-  - service: persistent_notification.create
-    metadata: {}
-    data:
-      title: test
-      message: '{{ test_variable }}'
-  mode: single
-  icon: mdi:test-tube
+fetch_weather_forecast_data:
+  alias: Fetch Weather Forecast Data
+  use_blueprint:
+    path: fetch_weather_forecast_by_llm.yaml
+    input:
+      weather_entity: weather.combined
+  description:
+    "Gets the weather forecast for either a part of a day, or one or more
+    full days. In case the weather for the weekend is requested, this means Saturday
+    and Sunday"
+  icon: mdi:weather-lightning-rainy
+fetch_calendar_events:
+  alias: Fetch Calendar Events
+  use_blueprint:
+    path: fetch_calendar_entries_by_llm.yaml
+    input:
+      calendar_entities:
+        - calendar.m_m
+        - calendar.thefes
+        - calendar.kids
+  description: Fetch calendar events from my calendar
+  icon: mdi:calendar

@@ -1,0 +1,72 @@
+blueprint:
+  name: LLM Helper script for fetching weather forecasts
+  description: Creates a script which will allow an LLM to fetch weather forecasts
+  domain: script
+  input:
+    weather_entity:
+      name: Weather entity
+      description: Select the weather entity to use for the forecast
+      selector:
+        entity:
+          multiple: false
+          filter:
+            domain: weather
+    llm_instructions:
+      name: Instructions for LLM
+      description: Provide instructions for processing the forecast data
+      selector:
+        text:
+          multiline: true
+      default: >
+        Provide the weather forecast in a natural conversational tone, without 
+        special formatting or lists. Keep the response short and to the point,
+        and include practical tips if applicable. Round all values and don't name 
+        the city as that is known to the requester.
+mode: parallel
+max_exceeded: silent
+
+description: >
+  Gets the weather forecast for either a part of a day, or one or more
+  full days. In case the weather for the weekend is requested, this means Saturday
+  and Sunday
+fields:
+  start_of_period:
+    selector:
+      datetime:
+    name: Start of period
+    description: Start of the period for which the weather is requested
+    required: true
+  end_of_period:
+    selector:
+      datetime:
+    name: End of period
+    description: End of the period for which the weather is requested
+    required: true
+sequence:
+  - variables:
+      start: "{{ (start_of_period | as_datetime | as_local).isoformat() }}"
+      end: "{{ (end_of_period | as_datetime | as_local).isoformat() }}"
+      full_days: >
+        {% set start = start | as_datetime %} {% set end = end | as_datetime %}
+        {{
+          start.time() == today_at().time()
+          and ((end - start).total_seconds() / 3600) | round | int % 24 in [23, 0, 1]
+        }}
+  - action: weather.get_forecasts
+    data:
+      type: "{{ 'daily' if full_days else 'hourly' }}"
+    target:
+      entity_id: !input weather_entity
+    response_variable: weather_response
+  - variables:
+      response:
+        instruction_for_llm: !input llm_instructions
+        weather_data: >
+          {{
+            weather_response[weather_entity].forecast
+              | selectattr('datetime', '>=', start)
+              | selectattr('datetime', '<', end)
+              | list
+          }}
+  - stop: ""
+    response_variable: response

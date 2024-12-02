@@ -1,0 +1,60 @@
+blueprint:
+  name: LLM Helper script for fetching calendar events
+  description: Creates a script which will allow an LLM to fetch calendar events
+  domain: script
+  input:
+    calendar_entities:
+      name: Calendar entities
+      description: Select the calendar entities to fetch the entries from
+      selector:
+        entity:
+          multiple: true
+          filter:
+            domain: calendar
+    llm_instructions:
+      name: Instructions for LLM
+      description: Provide instructions for processing the events
+      selector:
+        text:
+          multiline: true
+      default: >
+        Be short and to the point. If applicable mention start and end time of the event first
+        and after that the summary. Do not use special charaters like "*" in the response, as 
+        it will be used in a Speech to Text voice response.
+mode: parallel
+max_exceeded: silent
+fields:
+  start_date:
+    selector:
+      datetime:
+    name: Start date time
+    description: Start date and time
+    required: true
+  end_date:
+    selector:
+      datetime:
+    name: End date time
+    required: true
+    description: End date and time
+variables:
+  instructions: !input llm_instructions
+sequence:
+  - action: calendar.get_events
+    target:
+      entity_id: !input calendar_entities
+    response_variable: response
+    data:
+      start_date_time: "{{start_date }}"
+      end_date_time: "{{end_date }}"
+  - variables:
+      result:
+        instructions_for_llm: !input llm_instructions
+        events: >-
+          {{
+            response.values()
+              | map(attribute='events')
+              | sum(start=[])
+              | sort(attribute=start)
+          }}
+  - stop: ""
+    response_variable: result
