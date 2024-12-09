@@ -36,12 +36,12 @@ action:
           if is_state('media_player.martijn', 'playing')
           or is_state('sensor.location_phone_martijn', 'Zolder') 
         %}
-          [ 'media_player.keuken', 'media_player.martijn' ]
+          [ 'assist_satellite.keuken', 'assist_satellite.martijn' ]
         {%- else %}
-          [ 'media_player.keuken' ]
+          [ 'assist_satellite.keuken' ]
         {%- endif %}
   - alias: "Send TTS"
-    action: tts.google_cloud_say
+    action: assist_satellite.announce
     target:
       entity_id: "{{ target }}"
     data:

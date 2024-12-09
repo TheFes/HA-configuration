@@ -10,8 +10,8 @@ automation:
     triggers:
       - trigger: state
         entity_id:
-          - assist_satellite.ha_voice_woonkamer_assist_satellite
-          - assist_satellite.ha_voice_keuken_assist_satellite
+          - assist_satellite.woonkamer
+          - assist_satellite.keuken
         to: listening
     actions:
       - if: "{{ tv_playing and living }}"
@@ -31,8 +31,8 @@ automation:
           - wait_for_trigger:
               - trigger: state
                 entity_id:
-                  - assist_satellite.ha_voice_woonkamer_assist_satellite
-                  - assist_satellite.ha_voice_keuken_assist_satellite
+                  - assist_satellite.woonkamer
+                  - assist_satellite.keuken
                 to: processing
             timeout:
               seconds: 10

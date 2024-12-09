@@ -14,18 +14,6 @@ input_boolean:
   martijn_voice:
     name: Martijn
     icon: mdi:human-male
-  # beneden_groep:
-  #   name: Beneden Groep
-  #   icon: mdi:home-floor-0
-  # boven_groep:
-  #   name: Boven Groep
-  #   icon: mdi:home-floor-1
-  # zolder_groep:
-  #   name: Zolder Groep
-  #   icon: mdi:home-floor-2
-  # huis_groep:
-  #   name: Huis Groep
-  #   icon: mdi:home
   tts_volume:
     name: Set volume?
     icon: mdi:volume-plus
@@ -34,10 +22,6 @@ group:
   tts_selection:
     name: "TTS target selection"
     entities: &booleans
-      # - input_boolean.huis_groep
-      # - input_boolean.zolder_groep
-      # - input_boolean.boven_groep
-      # - input_boolean.beneden_groep
       - input_boolean.martijn_voice
       - input_boolean.floris_voice
       - input_boolean.pepijn_voice
@@ -85,26 +69,20 @@ script:
       boolean: *booleans
       default_volume: 25
       default_message: ""
-      default_selection: "Huis groep"
+      default_selection: "Martijn"
       reset_booleans: True
     sequence:
       - variables:
-          # settings: "{{ state_attr('script.google_home_resume', 'settings') }}"
           target: >
             {%
               set target = expand(boolean)
                             | selectattr('state', 'eq', 'on')
                             | map(attribute='entity_id')
-                            | map('replace', 'input_boolean', 'media_player')
+                            | map('replace', 'input_boolean', 'assist_satellite')
                             | map('replace', '_voice', '')
                             | list
             %}
             {{ target }}
-            {#
-              {% set speaker_groups = settings.speaker_groups %}
-              {% set members_selected = speaker_groups.items() | selectattr('0', 'in', target) | map(attribute='1') | sum(start=[]) %}
-              {{ target | reject('in', members_selected) |list }}
-            #}
       - if:
           - alias: "TTS selected"
             condition: state
@@ -112,7 +90,7 @@ script:
             state: "TTS"
         then:
           - alias: "Send TTS message"
-            action: tts.google_cloud_say
+            action: assist_satellite.announce
             target:
               entity_id: "{{ target }}"
             data:

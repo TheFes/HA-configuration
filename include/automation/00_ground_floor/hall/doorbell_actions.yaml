@@ -70,9 +70,9 @@ action:
             state: "🏡2️⃣"
     then:
       - alias: "Send TTS message"
-        action: tts.google_cloud_say
+        action: assist_satellite.announce
         target:
-          entity_id: media_player.martijn
+          entity_id: assist_satellite.martijn
         data:
           message: "Ding Dong! Er staat iemand aan de deur!"
   - alias: "Chime off and someone home?"
@@ -148,9 +148,15 @@ action:
             {% set m = state_attr('calendar.m_m', 'message') | lower %}
             {{ m.split(' ') | last | title }}
           name: "{{ name_a or name_c }}"
-      - action: tts.google_cloud_say
+      - action: input_select.select_option
+        target:
+          entity_id: select.ha_voice_keuken_assistent_pipeline
         data:
-          entity_id: media_player.keuken
+          option: Google House
+      - wait_template: "{{ is_state('select.ha_voice_keuken_assistent_pipeline', 'Google House') }}"
+      - action: assist_satellite.floris.announce
+        data:
+          entity_id: assist_satellite.keuken
           message: >
             <speak>
               <par>
@@ -176,3 +182,8 @@ action:
                 </media>
               </par>
             </speak>
+      - action: input_select.select_option
+        target:
+          entity_id: select.ha_voice_keuken_assistent_pipeline
+        data:
+          option: preferred
