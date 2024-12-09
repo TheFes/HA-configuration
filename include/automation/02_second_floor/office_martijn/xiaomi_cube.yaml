@@ -3,10 +3,10 @@ alias: "Actions with Xiaomi Cube"
 mode: parallel
 trigger:
   - platform: state
-    entity_id: sensor.magic_cube_action
-    from: ~
+    entity_id: event.magic_cube_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 action:
   - alias: "Which action"
     choose:

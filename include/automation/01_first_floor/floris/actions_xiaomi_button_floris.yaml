@@ -1,15 +1,11 @@
 id: 8c6c0182-b227-47b8-a53b-c88075761b1a
 alias: "Xiaomi button Floris"
 trigger:
-  - platform: state
-    entity_id: sensor.knop_leeslamp_floris_action
-    to:
-      - single
-      - double
-      - hold
-      - release
+  - trigger: state
+    entity_id: event.knop_leeslamp_floris_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 action:
   - alias: "Which click type"
     choose:
@@ -25,9 +21,9 @@ action:
             target:
               entity_id: light.floris_template
           - alias: "Send TTS"
-            action: tts.google_cloud_say
+            action: assist_satellite.announce
             target:
-              entity_id: media_player.floris
+              entity_id: assist_satellite.floris
             data:
               message: "Slaap lekker Floris!"
           - alias: "Wait untill TTS is playing"

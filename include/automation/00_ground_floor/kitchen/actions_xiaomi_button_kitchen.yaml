@@ -1,16 +1,12 @@
 id: e03d310f-0611-4d9c-9781-0487993c4976
 alias: "Xiaomi button kitchen"
-trigger:
-  - platform: state
-    entity_id: sensor.knop_keuken_action
-    to:
-      - single
-      - double
-      - hold
-      - release
+triggers:
+  - trigger: state
+    entity_id: event.knop_keuken_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
-action:
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+actions:
   - alias: "Which click type"
     choose:
       - conditions: "{{ event == 'single' }}"

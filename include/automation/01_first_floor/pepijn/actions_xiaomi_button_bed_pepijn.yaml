@@ -3,15 +3,11 @@ alias: "Xiaomi button Bed Pepijn"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: state
-    entity_id: sensor.knop_pepijn_bed_action
-    to:
-      - single
-      - double
-      - hold
-      - release
+  - trigger: state
+    entity_id: event.knop_pepijn_bed_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 variables:
   pepijn: >
     {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}

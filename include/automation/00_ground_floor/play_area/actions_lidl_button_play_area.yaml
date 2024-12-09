@@ -1,15 +1,13 @@
 id: a86036e6-5023-4298-b809-defcbb4d6df9
 alias: "LIDL button play area"
 mode: restart
-trigger:
-  - platform: state
-    entity_id: sensor.knop_speelhoek_action
-    to:
-      - "on"
-      - "off"
+triggers:
+  - trigger: state
+    entity_id: event.knop_speelhoek_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
-action:
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+actions:
   - alias: "Which click type"
     choose:
       - conditions:

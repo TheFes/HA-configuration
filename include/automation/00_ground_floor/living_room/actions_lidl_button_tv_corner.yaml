@@ -1,14 +1,12 @@
 id: 089a1b6a-4dfa-490e-bda3-675de31e1807
 alias: "LIDL button livingroom"
-trigger:
-  - platform: state
-    entity_id: sensor.knop_tv_hoek_action
-    to:
-      - "on"
-      - "off"
+triggers:
+  - trigger: state
+    entity_id: event.knop_tv_hoek_action
+    to: ~
     variables:
-      event: "{{ trigger.to_state.state }}"
-action:
+      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+actions:
   - alias: "Which click type"
     choose:
       - conditions:
