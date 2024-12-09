@@ -216,14 +216,14 @@ template:
         icon: mdi:desk
         state: >
           {% from 'helpers.jinja' import area_data %}
-          {{ area_data(this.name, 'icon_color', binary=false) }}
+          {{ area_data([this.name, 'Knieschot'], 'icon_color') }}
         attributes:
           text: >
             {% from 'helpers.jinja' import area_data %}
-            {{ area_data(this.name, binary=false) }}
+            {{ area_data([this.name, 'Knieschot']) }}
           device_list: >
             {% from 'helpers.jinja' import area_data %}
-            {{ area_data(this.name, 'device_list', binary=false) }}
+            {{ area_data([this.name, 'Knieschot'], 'device_list') }}
 
       - unique_id: area_data_template_badkamer_zolder
         name: >
