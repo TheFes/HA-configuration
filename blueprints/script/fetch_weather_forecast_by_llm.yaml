@@ -33,9 +33,14 @@ fields:
     required: true
 sequence:
   - variables:
+      version: 1.1
       weather_entity: !input weather_entity
       start: "{{ (start_of_period | as_datetime | as_local).isoformat() }}"
-      end: "{{ (end_of_period | as_datetime | as_local).isoformat() }}"
+      end: >
+        {% set start = as_datetime(start) %}
+        {% set day = start.time() == today_at().time() %}
+        {% set delta = timedelta(days=1 if day else 0, hours=0 if day else 1) %}
+        {{ (end_of_period | as_datetime(default=start+delta) | as_local).isoformat() }}
       full_days: >
         {% set start = start | as_datetime %} {% set end = end | as_datetime %}
         {{
