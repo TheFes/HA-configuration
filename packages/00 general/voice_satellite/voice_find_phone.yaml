@@ -1,0 +1,106 @@
+script:
+  phone_finder:
+    alias: Phone Finder
+    description: >
+      Script to find a mobile phone either owned by Martijn (dad of the house)
+      or Marleen (mom of the house)
+    icon: mdi:cellphone
+    fields:
+      phone_owner:
+        selector:
+          select:
+            options:
+              - Martijn
+              - Marleen
+        name: Phone Owner
+        description: Owner of the phone to be found (either Marleen or Martijn)
+        default: Martijn
+    sequence:
+      - variables:
+          phone_mapper:
+            martijn: pixel_7_pro
+            marleen: pixel_8_marleen
+          phone: "{{ phone_mapper[phone_owner | lower] | default('pixel_7_pro') }}"
+          notify_service: "{{ 'notify.mobile_app_' ~ phone }}"
+          current_vol: "{{ states('sensor.' ~ phone ~ '_volume_level_alarm') | int(4) }}"
+          current_dnd: "{{ states('sensor.' ~ phone ~ '_do_not_disturb_sensor') | default('off') }}"
+      - if: "{{ current_val != 20 }}"
+        then:
+          - action: "{{ notify_service }}"
+            data:
+              message: command_volume_level
+              data:
+                media_stream: alarm_stream
+                command: 20
+      - if: "{{ current_dnd != 'off' }}"
+        then:
+          - action: "{{ notify_service }}"
+            data:
+              message: command_dnd
+              data:
+                command: "off"
+      - repeat:
+          while:
+            - condition: state
+              entity_id: binary_sensor.pixel_7_pro_interactive
+              state: "off"
+          sequence:
+            - action: "{{ notify_service }}"
+              data:
+                title: Joehoe!
+                message: Hier ben ik!
+                data:
+                  ttl: 0
+                  priority: high
+                  channel: alarm_stream
+                  tag: find_phone
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 12
+                milliseconds: 0
+      - if: "{{ current_dnd != 'off' }}"
+        then:
+          - action: "{{ notify_service }}"
+            data:
+              message: command_dnd
+              data:
+                command: "{{ current_dnd }}"
+      - if: "{{ current_val != 20 }}"
+        then:
+          - action: "{{ notify_service }}"
+            data:
+              message: command_volume_level
+              data:
+                media_stream: alarm_stream
+                command: "{{ current_vol }}"
+  phone_finder_llm:
+    alias: Phone Finder (LLM)
+    description:
+      Script to find a mobile phone either owned by Martijn (dad of the house)
+      or Marleen (mom of the house)
+    icon: mdi:cellphone
+    fields:
+      phone_owner:
+        selector:
+          select:
+            options:
+              - Martijn
+              - Marleen
+        name: Phone Owner
+        description: Owner of the phone to be found (either Marleen or Martijn)
+        default: Martijn
+    sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.phone_finder
+        data:
+          variables:
+            phone_owner: "{{ phone_owner }}"
+      - variables:
+          response:
+            response:
+              Phone of {{ phone_owner }} will now ring, good look searching for
+              it!
+      - stop: ""
+        response_variable: response

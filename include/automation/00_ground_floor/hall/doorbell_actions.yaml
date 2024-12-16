@@ -154,7 +154,7 @@ action:
         data:
           option: Google House
       - wait_template: "{{ is_state('select.ha_voice_keuken_assistent_pipeline', 'Google House') }}"
-      - action: assist_satellite.floris.announce
+      - action: assist_satellite.announce
         data:
           entity_id: assist_satellite.keuken
           message: >
