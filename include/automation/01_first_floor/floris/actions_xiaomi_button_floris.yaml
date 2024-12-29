@@ -13,22 +13,17 @@ action:
         sequence:
           - action: light.toggle
             target:
-              entity_id: light.floris_leeslamp
+              entity_id: light.planeet
       - conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Light on"
-            action: light.turn_on
+            action: light.toggle
             target:
-              entity_id: light.floris_template
-          - alias: "Send TTS"
-            action: assist_satellite.announce
-            target:
-              entity_id: assist_satellite.floris
-            data:
-              message: "Slaap lekker Floris!"
-          - alias: "Wait untill TTS is playing"
-            wait_template: "{{ (state_attr('media_player.floris_mini', 'media_content_id') | string).startswith('https://hass.thefes.nl') }}"
+              entity_id: light.groep_floris
       - conditions: "{{ event == 'double' }}"
-        sequence: []
+        sequence:
+          - action: light.toggle
+            target:
+              entity_id: light.floris_leeslamp
       - conditions: "{{ event == 'release' }}"
         sequence: []
