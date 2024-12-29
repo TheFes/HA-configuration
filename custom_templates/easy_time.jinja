@@ -226,7 +226,24 @@
       'oktober',
       'november',
       'december',
-    ]
+    ],
+    'time_of_hour':{
+      0: '{hour} uur',
+      1: '1 over {hour}',
+      15: 'kwart over {hour}',
+      30: 'half {hour}',
+      45: 'kwart voor {hour}',
+      59: '1 vor {hour}',
+      'past_hour': '{minute} over {hour}',
+      'to_hour': '{minute} voor {hour}', 
+      'to_half_hour': '{minute} voor half {hour}',
+      'past_half_hour': '{minute} over half {hour}', 
+      'half_hour': 'half {hour}',
+    },
+    'time_of_day':{
+      'midnight': 'middernacht',
+      'noon': 'middag',
+    },
   },
   'sv':{
     '_language': 'Svenska',
@@ -1105,6 +1122,82 @@
       'midnight': 'полночь',
       'noon': 'полдень',
     },
+  },
+  'zh-Hans':{
+    '_language': '简体中文',
+    'and': '',
+    'in': '',
+    'ago': '之前',
+    'now': '现在',
+    'lose': '失去',
+    'gain': '获得',
+    'time':{
+      'format': '24-hr',
+      'year': [
+        '年',
+        '年',
+        '年',
+      ],
+      'week': [
+        '周',
+        '星期',
+        '星期',
+      ],
+      'day': [
+        '天',
+        '天',
+        '天',
+      ],
+      'hour': [
+        '时',
+        '小时',
+        '小时',
+      ],
+      'minute': [
+        '分',
+        '分钟',
+        '分钟',
+      ],
+      'second': [
+        '秒',
+        '秒',
+        '秒',
+      ],
+    },
+    'delta':{
+      'today': '今天',
+      'tomorrow': '明天',
+      'yesterday': '昨天',
+      'next': '下一个',
+      'last': '上一个',
+    },
+    'days':[
+      "星期一",
+      "星期二",
+      "星期三",
+      "星期四",
+      "星期五",
+      "星期六",
+      "星期日",
+    ],
+    'months':[
+      '一月',
+      '二月',
+      '三月',
+      '四月',
+      '五月',
+      '六月',
+      '七月',
+      '八月',
+      '九月',
+      '十月',
+      '十一月',
+      '十二月',
+    ],
+    'time_of_day':{
+      'midnight': '午夜',
+      'noon': '正午',
+    },
   }
 } %}
 
@@ -1516,6 +1609,16 @@
 {{- _next_weekday(weekday, -7) }}
 {%- endmacro %}
 
+{%- macro nearest_day(weekday) %}
+{%- set today_timestamp = as_timestamp(today_at())|int %}
+{%- set this_weekday_timestamp = as_timestamp(this_weekday(weekday))|int %}
+{%- if today_timestamp <  this_weekday_timestamp %}
+  {{- _next_weekday(weekday, 0) }}
+{%- else %}
+  {{- _next_weekday(weekday, 7) }}
+{%- endif %}
+{%- endmacro %}
+
 {%- macro days_in_month(month=None) %}
 {%- set today = today_at() %}
 {%- set input = month if month is not none else today.month %}
@@ -1632,7 +1735,7 @@
 {%- endif -%}
 {%- endmacro -%}
 
-{%- macro month(month=None, language=None) %}
+{%- macro month(month=None, language=None, short=False) %}
 {%- if month is datetime %}
 {%- set idx = month.month - 1 %}
 {%- elif month is integer and month > 0 %}
@@ -1642,10 +1745,11 @@
 {%- else %}
 {%- set idx = now().month - 1 %}
 {%- endif %}
-{{- translate('months', index=idx, language=language) }}
+{%- set ret = translate('months', index=idx, language=language) %}
+{{- ret[:3] if short else ret }}
 {%- endmacro %}
 
-{%- macro weekday(weekday=None, language=None) %}
+{%- macro weekday(weekday=None, language=None, short=False) %}
 {%- if weekday is datetime %}
 {%- set idx = weekday.weekday() %}
 {%- elif weekday is integer and weekday > 0 %}
@@ -1655,7 +1759,8 @@
 {%- else %}
 {%- set idx = now().weekday() %}
 {%- endif %}
-{{- translate('days', index=idx, language=language) }}
+{%- set ret = translate('days', index=idx, language=language) %}
+{{- ret[:3] if short else ret }}
 {%- endmacro %}
 
 {%- macro count_the_days(input, attr, utc=False) %}
@@ -1728,7 +1833,22 @@
   {%- set hour_phrase = hour(this_hour, language=language) %}
   {%- set minute_phrase = _phrase('minute', 60 * this_minute, language, True, True) if this_minute % 5 else this_minute | string %}
 {%- endif %}
-{%- if this_minute in [0, 1, 15, 30, 45, 59] %}
+{%- set this_config = translate('time_of_hour') %}
+{%- if (16 <= this_minute <= 29 and 'to_half_hour' in this_config) or (31 <= this_minute <= 44 and 'past_half_hour' in this_config) or (this_minute == 30 and 'half_hour' in this_config) %}
+  {%- set hour_phrase = hour(this_hour + 1, language=language) %}
+  {%- if 16 <= this_minute <= 29 %}
+    {%- set minute_calc = 30 - this_minute %}
+    {%- set fmat = translate('time_of_hour', 'to_half_hour', language=language) %}
+    {%- set minute_phrase = _phrase('minute', 60 * minute_calc, language, True, True) if this_minute % 5 else minute_calc | string %}
+  {%- elif 31 <= this_minute <= 44 %}
+    {%- set minute_calc = this_minute - 30 %}
+    {%- set fmat = translate('time_of_hour', 'past_half_hour', language=language) %}
+    {%- set minute_phrase = _phrase('minute', 60 * minute_calc, language, True, True) if this_minute % 5 else minute_calc | string %}
+  {%- else %}
+    {%- set minute_calc = None %}
+    {%- set fmat = translate('time_of_hour', 'half_hour', language=language) %}
+  {%- endif %}
+{%- elif this_minute in [0, 1, 15, 30, 45, 59] %}
   {%- if hour_phrase in ['noon', 'midnight'] and this_minute == 0 %}
     {%- set fmat = '{hour}' %}
   {%- else %}
