@@ -28,7 +28,7 @@ variables:
 condition:
   - alias: "Prevent running too much"
     condition: template
-    value_template: "{{ now() - this.attributes.last_triggered > timedelta(seconds=30) }}"
+    value_template: "{{ now() - this.attributes.last_triggered | default(0 | as_datetime, true) > timedelta(seconds=30) }}"
 action:
   - alias: "Notification for phones"
     action: notify.all_phones
