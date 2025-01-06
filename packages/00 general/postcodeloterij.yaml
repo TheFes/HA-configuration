@@ -10,12 +10,15 @@ rest_command:
 
 template:
   - trigger:
-        # the sensor will be automatically updated on the first 3 days of the month, after 18:00
-      - platform: template
-        value_template: "{{ now().day <= 3 and now() > today_at('18:00') }}"
+      # the sensor will be automatically updated on the first 3 days of the month, after 18:00
+      - trigger: template
+        at: "18:00"
         # you can use the event below in developer tools > events to manually update the sensor
-      - platform: event
+      - trigger: event
         event_type: update_postcodeloterij_prizes
+    condition:
+      - condition: template
+        value_template: "{{ now().day in [1,2,3] }}"
     action:
       - variables:
           month: >
