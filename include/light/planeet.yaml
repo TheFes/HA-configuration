@@ -1,0 +1,31 @@
+platform: template
+lights:
+  planeet:
+    unique_id: 6ba8eb34-2a08-43b0-8ea7-73505d46e883
+    friendly_name: Planeet
+    value_template: "{{ is_state('switch.planeet', 'on') and states('sensor.planeet_power') | float > 0 }}"
+    turn_off:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.planeet
+    turn_on:
+      - repeat:
+          count: 5
+          sequence:
+            - action: switch.turn_on
+              target:
+                entity_id: switch.planeet
+            - delay: 0.5
+      - wait_template: "{{ states('sensor.planeet_power') | float > 0 }}"
+        timeout:
+          seconds: 10
+      - if: "{{ not wait.completed }}"
+        then:
+          - repeat:
+              count: 5
+              sequence:
+                - action: switch.turn_on
+                  target:
+                    entity_id: switch.planeet
+                - delay: 0.5
+    availability_template: "{{ 'switch.planeet' | has_value and 'sensor.planeet_power' | has_value }}"
