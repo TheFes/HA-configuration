@@ -103,6 +103,11 @@ automation:
         entity_id: input_boolean.nachtlampje_floris
         to: "on"
         id: floris
+      - alias: Trigger sentence
+        trigger: conversation
+        command:
+          - floris gaat slapen
+        id: floris
     conditions:
       - "{{ is_state('input_boolean.nachtlampje_' ~ trigger.id, 'on') }}"
       - "{{ is_state('binary_sensor.' ~ trigger.id ~ '_sleeping', 'on') }}"
@@ -118,7 +123,4 @@ automation:
           - alias: Turn on reading light Floris
             action: light.turn_on
             target:
-              entity_id: light.floris_leeslamp
-            data:
-              color_temp: 500
-              brightness: 1
+              entity_id: light.planeet
