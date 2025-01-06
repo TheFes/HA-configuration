@@ -32,7 +32,7 @@ template:
           }}
         attributes: &attributes
           history: >
-            {%- set history = state_attr(probe_entity, 'history') | default([], true) %}
+            {%- set previous = state_attr(probe_entity, 'history') | default([], true) %}
             {%- set state = states(probe_entity) | float(0) %}
             {%- if state > 0 %}
               {{ [ state ] + (previous[:2] if previous else []) }}
