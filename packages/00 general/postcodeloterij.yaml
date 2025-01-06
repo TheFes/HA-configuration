@@ -1,15 +1,6 @@
 rest_command:
   postcodeloterij:
-    url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_MT_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
-    method: POST
-    # format for the payload is "query=1234AB" where 1234AB is the postal code
-    payload: !secret postcodeloterij
-    headers:
-      Content-Type: application/x-www-form-urlencoded
-      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-
-  postcodeloterij_extra:
-    url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_ET_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
+    url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_{{ 'E' if extra | default(false) | bool(false) else 'M' }}T_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
     method: POST
     # format for the payload is "query=1234AB" where 1234AB is the postal code
     payload: !secret postcodeloterij
@@ -48,8 +39,9 @@ template:
         data:
           month: "{{ month }}"
         response_variable: prizes
-      - action: rest_command.postcodeloterij_extra
+      - action: rest_command.postcodeloterij
         data:
+          extra: true
           month: >
             {% set y = month // 100 %}
             {% set m = month % 100 %}
