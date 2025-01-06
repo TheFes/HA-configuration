@@ -11,22 +11,12 @@ action:
     choose:
       - conditions: "{{ event == 'single' }}"
         sequence:
-          - if: "{{ is_state('light.werkkamer_martijn_plafond', 'on') }}"
-            then:
-              - action: light.turn_off
-                target:
-                  entity_id: light.werkkamer_martijn_plafond
-            else:
-              - action: light.turn_on
-                target:
-                  entity_id: light.werkkamer_martijn_plafond
-                data:
-                  brightness: 10
-              - action: light.turn_on
-                target:
-                  entity_id: light.werkkamer_martijn_plafond
-                data:
-                  color_temp_kelvin: 2000
+          - action: light.toggle
+            target:
+              entity_id: light.werkkamer_martijn_plafond
+            data:
+              brightness: 10
+              color_temp_kelvin: 2000
       - conditions: "{{ event == 'hold' }}"
         sequence:
           - if: "{{ is_state('light.awtrix_dd3300_matrix', 'off') }}"
@@ -42,15 +32,11 @@ action:
               entity_id: light.awtrix_dd3300_matrix
       - conditions: "{{ event == 'double' }}"
         sequence:
-          - action: light.turn_on
+          - action: light.toggle
             target:
               entity_id: light.werkkamer_martijn_plafond
             data:
               brightness: 255
-          - action: light.turn_on
-            target:
-              entity_id: light.werkkamer_martijn_plafond
-            data:
               color_temp_kelvin: 6535
       - conditions: "{{ event == 'release' }}"
         sequence: []
