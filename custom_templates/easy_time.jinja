@@ -233,7 +233,7 @@
       15: 'kwart over {hour}',
       30: 'half {hour}',
       45: 'kwart voor {hour}',
-      59: '1 vor {hour}',
+      59: '1 voor {hour}',
       'past_hour': '{minute} over {hour}',
       'to_hour': '{minute} voor {hour}', 
       'to_half_hour': '{minute} voor half {hour}',
@@ -1447,8 +1447,8 @@
 {%- endmacro %}
 
 {%- macro _time_between(func, input1, attr1, utc1, input2, attr2, utc2) -%}
-{%- set t1 = _to_datetime(input1, attr1, utc1) | as_datetime -%}
-{%- set t2 = _to_datetime(input2, attr2, utc2) | as_datetime -%}
+{%- set t1 = _to_datetime(input1, attr1, utc1) | as_datetime | as_local -%}
+{%- set t2 = _to_datetime(input2, attr2, utc2) | as_datetime | as_local -%}
 {%- if t1 is not none and t2 is not none -%}
   {{- func(t1, t2) -}}
 {%- else -%}
@@ -1764,7 +1764,7 @@
 {%- endmacro %}
 
 {%- macro count_the_days(input, attr, utc=False) %}
-{%- set input = _to_datetime(input, attr, utc) | as_datetime %}
+{%- set input = _to_datetime(input, attr, utc) | as_datetime | as_local %}
 {%- set midnight = today_at() %}
 {{- (input - midnight).days }}
 {%- endmacro %}
