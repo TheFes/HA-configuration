@@ -10,18 +10,22 @@ rest_command:
 
 template:
   - trigger:
-      # the sensor will be automatically updated on the first 3 days of the month, after 18:00
-      - trigger: time
+      # the sensor will be automatically updated on the first 3 days of the month, at 18:00
+      - alias: trigger at 18:00
+        trigger: time
         at: "18:00"
         # you can use the event below in developer tools > events to manually update the sensor
-      - trigger: event
+      - alias: trigger on manual event
+        trigger: event
         event_type: update_postcodeloterij_prizes
         id: manual
     condition:
-      - condition: template
+      - alias: Check if it triggered on the manual event, or if it is the in the first 3 days of the month
+        condition: template
         value_template: "{{ trigger.id == 'manual' or now().day in [1,2,3] }}"
     action:
-      - variables:
+      - alias: Create variables for the month to use in the rest commands and messages
+        variables:
           month: >
             {{
               trigger.event.data.month | int
@@ -35,11 +39,13 @@ template:
           month_formatted: >
             {% set months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'october', 'november', 'december'] %}
             {{ months[month % 100 -1] ~ ' ' ~ month // 100 }}
-      - action: rest_command.postcodeloterij
+      - alias: Issue rest command for the monthly draws
+        action: rest_command.postcodeloterij
         data:
           month: "{{ month }}"
         response_variable: prizes
-      - action: rest_command.postcodeloterij
+      - alias: Issue rest command for the extra draws in June and December
+        action: rest_command.postcodeloterij
         data:
           extra: true
           month: >
@@ -48,7 +54,8 @@ template:
             {% set mapping = {6: 13, 12: 14} %}
             {{ y * 100 +  mapping[m] | default(m) }}
         response_variable: prizes_extra
-      - variables:
+      - alias: Create variables for the results of the rest commands
+        variables:
           # normal monthly draw
           prizecount: "{{ prizes.content.prizeCount }}"
           prizes: >
@@ -81,7 +88,8 @@ template:
             We hebben {{ [prize_text, prize_text_extra] | select() | join(' en ') }}
         # a notification will be sent out if something is won, and it's the first time the sensor was updated this month
         # notification parameters are optimized for the Android companion app
-      - if: >
+      - alias: Send out notification to phone in case there are one of more pizes
+        if: >
           {{
             prizecount_total | default(0) > 0
             and month_formatted != state_attr('sensor.postcodeloterij', 'month')
