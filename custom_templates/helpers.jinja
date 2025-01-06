@@ -45,7 +45,13 @@
                           | unique
                           | list 
     -%}
-    {%- for d in state_check if device_entities(d) | select('has_value') | list | count == 0 -%}
+    {%- for d in state_check if device_entities(d) 
+                                  | reject('in', integration_entities('fritz'))
+                                  | reject('search', '_status$')
+                                  | select('has_value')
+                                  | list
+                                  | count == 0
+    -%}
       {%- set ns.state_check = ns.state_check + [device_attr(d, 'name_by_user') or device_attr(d, 'name')] -%}
     {%- endfor -%}
   {%- endif -%}
