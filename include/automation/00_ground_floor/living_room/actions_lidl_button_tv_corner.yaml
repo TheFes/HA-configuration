@@ -3,7 +3,9 @@ alias: "LIDL button livingroom"
 triggers:
   - trigger: state
     entity_id: event.knop_tv_hoek_action
-    to: ~
+    not_from:
+      - unavailable
+      - unknown
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 actions:

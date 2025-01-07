@@ -3,7 +3,9 @@ alias: "Xiaomi button Floris"
 trigger:
   - trigger: state
     entity_id: event.knop_leeslamp_floris_action
-    to: ~
+    not_from:
+      - unavailable
+      - unknown
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 action:

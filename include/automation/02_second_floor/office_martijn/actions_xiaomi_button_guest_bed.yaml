@@ -3,7 +3,9 @@ alias: "Xiaomi button Guest Bed"
 trigger:
   - platform: state
     entity_id: event.knop_logeerbed_action
-    to: ~
+    not_from:
+      - unavailable
+      - unknown
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 action:
@@ -19,17 +21,17 @@ action:
               color_temp_kelvin: 2000
       - conditions: "{{ event == 'hold' }}"
         sequence:
-          - if: "{{ is_state('light.awtrix_dd3300_matrix', 'off') }}"
+          - if: "{{ is_state('light.awtrix_martijn_matrix', 'off') }}"
             then:
               - action: light.turn_on
                 target:
-                  entity_id: light.awtrix_dd3300_matrix
+                  entity_id: light.awtrix_martijn_matrix
                 data:
                   brightness: 10
               - delay: 10
           - action: light.turn_off
             target:
-              entity_id: light.awtrix_dd3300_matrix
+              entity_id: light.awtrix_martijn_matrix
       - conditions: "{{ event == 'double' }}"
         sequence:
           - action: light.toggle
