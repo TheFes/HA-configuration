@@ -5,8 +5,9 @@ template:
         id: "on"
       - platform: template
         value_template: >
+          {% set correction  = states('input_number.correction_clock_pepijn') | int(0) %}
           {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
-          {{ now() > awake }}
+          {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
     binary_sensor:
       - unique_id: 2d748636-6ecd-4941-aef7-797d7cde1d5a
@@ -19,8 +20,9 @@ template:
         id: "on"
       - platform: template
         value_template: >
+          {% set correction  = states('input_number.correction_clock_floris') | int(0) %}
           {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
-          {{ now() > awake }}
+          {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
     binary_sensor:
       - unique_id: 7cbf7bc9-03cc-4a32-a56a-e0cfeda6828e
