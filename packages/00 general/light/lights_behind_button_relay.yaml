@@ -92,7 +92,7 @@ light:
             - action: light.turn_on
               data:
                 entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
-                color_temp: "{{ color_temp }}"
+                color_temp_kelvin: "{{ (1000000 / color_temp) | int }}"
 
       werkkamer_marleen_template:
         unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
@@ -284,7 +284,7 @@ script:
               entity_id: light.floris
             data:
               brightness: 76
-              color_temp: 306
+              color_temp_kelvin: 3800
         else:
           - alias: "Turn light group off"
             action: light.turn_off
@@ -309,7 +309,7 @@ script:
                 data:
                   entity_id: light.pepijn
                   brightness: 40
-                  color_temp: "{{ state_attr('light.pepijn', 'max_mireds') }}"
+                  color_temp_kelvin: "{{ state_attr('light.pepijn', 'max_color_temp_kelvin') }}"
             else:
               - alias: "Ceiling light to 100%"
                 action: light.turn_on
@@ -318,7 +318,7 @@ script:
                 data:
                   transition: 2
                   brightness: 255
-                  color_temp: "{{ state_attr('light.pepijn', 'min_mireds') }}"
+                  color_temp_kelvin: "{{ state_attr('light.pepijn', 'min_color_temp_kelvin') }}"
               - alias: "Bed time?"
                 condition: time
                 after: "18:00:00"

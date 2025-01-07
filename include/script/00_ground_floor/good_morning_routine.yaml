@@ -38,7 +38,7 @@ good_morning_routine:
               entity_id: light.boekenkast
               data:
                 brightness_pct: 15
-                color_temp: 500
+                color_temp_kelvin: 3250
         - conditions: "{{ area == 'Floris' }}"
           sequence:
             - alias: "Light on"
@@ -52,7 +52,7 @@ good_morning_routine:
               target:
                 entity_id: light.floris_leeslamp
               data:
-                color_temp: 250
+                color_temp_kelvin: 4000
                 brightness: 150
             - alias: "Turn on graafmachine"
               action: light.turn_on

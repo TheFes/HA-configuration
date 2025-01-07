@@ -49,7 +49,7 @@ action:
               entity_id: "{{ main | replace('_template', '') }}"
             data:
               brightness: 255
-              color_temp: "{{ state_attr(main | replace('_template', ''), 'min_mireds') }}"
+              color_temp_kelvin: "{{ state_attr(main | replace('_template', ''), '	max_color_temp_kelvin') }}"
           - action: script.resume_transition_lights
             data:
               light: light.pepijn_leeslamp
