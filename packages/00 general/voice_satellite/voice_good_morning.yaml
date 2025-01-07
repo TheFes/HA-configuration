@@ -14,30 +14,47 @@ automation:
         data:
           variables:
             area: "{{ area_name(trigger.device_id) }}"
-      - action: weather.get_forecasts
-        data:
-          type: daily
-        target:
-          entity_id: weather.combined
-        response_variable: response
-      - variables:
-          forecast_today: "{{ response['weather.combined'].forecast[0] }}"
-          current_temp: "{{ state_attr('weather.combined', 'temperature') ~ ' °C' }}"
-          current_state: "{{ state_translated('weather.combined') }}"
-      - action: conversation.process
-        data:
-          text: >
-            De huidige termeratuur is {{ current_temp }} en het is nu {{ current_state }}.
-            De voorspelling voor vandaag is {{ forecast_today }}.
-            Geef me een kort bericht wat begint met de huidige weersomstandigheden,
-            en dan een voorspelling voor de dag. Rond temperaturen af op hele graden.
-            Geef over de wind alleen aan hoe hard het waait, bijvoorbeeld "vandaag waait het vrij hard
-            of "vandaag is er bijna geen wind".
-            Je mag een grapje maken over de voorspelling van vandaag, gebruik geen emoji.
-          agent_id: conversation.chatgpt
-        response_variable: response_weather
+      - alias: Only use LLM to generate weather forecast if last text was created over an hour ago
+        if: >
+          {{
+            now() - state_attr('sensor.variables', 'variables').get('llm_weather', {}).timestamp
+                      | default(0)
+                      | as_datetime
+            > timedelta(hours=1)
+          }}
+        then:
+          - action: weather.get_forecasts
+            data:
+              type: daily
+            target:
+              entity_id: weather.combined
+            response_variable: response
+          - variables:
+              forecast_today: "{{ response['weather.combined'].forecast[0] }}"
+              current_temp: "{{ state_attr('weather.combined', 'temperature') ~ ' °C' }}"
+              current_state: "{{ state_translated('weather.combined') }}"
+          - action: conversation.process
+            data:
+              text: >
+                De huidige termeratuur is {{ current_temp }} en het is nu {{ current_state }}.
+                De voorspelling voor vandaag is {{ forecast_today }}.
+                Geef me een kort bericht wat begint met de huidige weersomstandigheden,
+                en dan een voorspelling voor de dag. Rond temperaturen af op hele graden.
+                Geef over de wind alleen aan hoe hard het waait, bijvoorbeeld "vandaag waait het vrij hard
+                of "vandaag is er bijna geen wind".
+                Je mag een grapje maken over de voorspelling van vandaag.
+              agent_id: conversation.chatgpt
+            response_variable: response_weather
+          - alias: Store reponse in variable sensor
+            event: llm_weather
+            event_data:
+              key: llm_weather
+              value: "{{ response_weather.response.speech.plain.speech }}"
+              set_timestamp: true
+          - alias: Short delay to ensure variable is stored
+            delay: 0.5
       - alias: Set response
         set_conversation_response: >
           Goedemorgen.
-          {{ response_weather.response.speech.plain.speech }}
+          {{ state_attr('sensor.variables', 'variables')['llm_weather']['value'] }}
     mode: single
