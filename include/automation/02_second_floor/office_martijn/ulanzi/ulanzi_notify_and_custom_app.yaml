@@ -92,7 +92,7 @@ action:
         data:
           qos: 0
           retain: false
-          topic: awtrix_dd3300/custom/{{ app }}
+          topic: awtrix_martijn/custom/{{ app }}
           payload: ""
     else:
       - alias: "Update custom app or send notification"
@@ -100,7 +100,7 @@ action:
         data:
           qos: 0
           retain: false
-          topic: awtrix_dd3300/{{ 'notify' if app | default('notify') == 'notify' else ('custom/' ~ app) }}
+          topic: awtrix_martijn/{{ 'notify' if app | default('notify') == 'notify' else ('custom/' ~ app) }}
           payload: >
             {%- set graph_type = graph_type | default('bar') %}
             {%- set graph_round = graph_round | default('common') %}

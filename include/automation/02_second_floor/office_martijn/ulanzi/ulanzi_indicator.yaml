@@ -31,7 +31,7 @@ action:
       - alias: Turn indicator on
         action: light.turn_on
         target:
-          entity_id: light.awtrix_dd3300_indicator_{{ indicator | default(1) | int(1) }}
+          entity_id: light.awtrix_martijn_indicator_{{ indicator | default(1) | int(1) }}
         data:
           brightness: "{{ brightness | default(state_attr('light.matrix', 'brightness')) | int(255) }}"
           color_name: "{{ color_name | default('white') }}"
@@ -39,4 +39,4 @@ action:
       - alias: Turn indicator off
         action: light.turn_off
         target:
-          entity_id: light.awtrix_dd3300_indicator_{{ indicator }}
+          entity_id: light.awtrix_martijn_indicator_{{ indicator }}

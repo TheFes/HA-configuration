@@ -13,31 +13,31 @@ trigger:
       - "on"
       - "off"
   - platform: state
-    entity_id: light.awtrix_ed56c0_matrix
+    entity_id: light.awtrix_pepijn_matrix
     from:
       - "unavailable"
   - platform: state
-    entity_id: 
+    entity_id:
       - weather.combined
       - input_number.correction_clock_pepijn
     to: ~
 variables:
-  correction: "{{ states('input_number.correction_clock_pepijn') | int(0) }}"
+  correction: "{{ states('input_number.correction_clock_pepijn') | float(0) }}"
 action:
   - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
     then:
-      - if: "{{ not is_state('select.awtrix_ed56c0_brightness_mode', 'Manual') }}"
+      - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Manual') }}"
         then:
           - action: select.select_option
             data:
               option: Manual
             target:
-              entity_id: select.awtrix_ed56c0_brightness_mode
-      - if: "{{ not is_state_attr('light.awtrix_ed56c0_matrix', 'brightness', 2) }}"
+              entity_id: select.awtrix_pepijn_brightness_mode
+      - if: "{{ not is_state_attr('light.awtrix_pepijn_matrix', 'brightness', 2) }}"
         then:
           - action: light.turn_on
             target:
-              entity_id: light.awtrix_ed56c0_matrix
+              entity_id: light.awtrix_pepijn_matrix
             data:
               brightness: 2
       - action: mqtt.publish
@@ -80,14 +80,14 @@ action:
                     text = (now() + timedelta(hours=correction)).strftime('%-I:%M')
                   )
             }}
-      - if: "{{ not is_state('select.awtrix_ed56c0_brightness_mode', 'Auto') }}"
+      - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Auto') }}"
         then:
           - action: select.select_option
             data:
               option: Auto
             target:
-              entity_id: select.awtrix_ed56c0_brightness_mode
-  - if: "{{ not is_state('sensor.awtrix_ed56c0_current_app', 'sleep_clock') }}"
+              entity_id: select.awtrix_pepijn_brightness_mode
+  - if: "{{ not is_state('sensor.awtrix_pepijn_current_app', 'sleep_clock') }}"
     then:
       - action: mqtt.publish
         data:

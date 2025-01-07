@@ -3,7 +3,7 @@ alias: "Ulanzi activate or deactivate app"
 mode: queued
 trigger:
   - platform: state
-    entity_id: sensor.awtrix_dd3300_battery
+    entity_id: sensor.awtrix_martijn_battery
     to: ~
     variables:
       show: "{{ trigger.to_state.state != '100' }}"
@@ -17,7 +17,7 @@ action:
     data:
       qos: 0
       retain: false
-      topic: awtrix_dd3300/apps
+      topic: awtrix_martijn/apps
       payload: >
         {{
           [

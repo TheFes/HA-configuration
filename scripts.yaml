@@ -4,7 +4,8 @@ fetch_weather_forecast_data:
     path: fetch_weather_forecast_by_llm.yaml
     input:
       weather_entity: weather.combined
-  description: Gets the weather forecast for either a part of a day, or one or more
+  description:
+    Gets the weather forecast for either a part of a day, or one or more
     full days. In case the weather for the weekend is requested, this means Saturday
     and Sunday
   icon: mdi:weather-lightning-rainy
@@ -14,37 +15,38 @@ fetch_calendar_events:
     path: fetch_calendar_entries_by_llm.yaml
     input:
       calendar_entities:
-      - calendar.thefes
-      - calendar.m_m
-      - calendar.kids
-  description: Fetch calendar events from my calendar. In case the data for the weekend
+        - calendar.thefes
+        - calendar.m_m
+        - calendar.kids
+  description:
+    Fetch calendar events from my calendar. In case the data for the weekend
     is requested, this means Saturday and Sunday
   icon: mdi:calendar
 martijn_starts_working:
   alias: Martijn Starts Working
   sequence:
-  - if:
-    - condition: numeric_state
-      entity_id: sensor.awtrix_dd3300_illuminance
-      below: 50
-    then:
-    - action: light.turn_on
+    - if:
+        - condition: numeric_state
+          entity_id: sensor.awtrix_martijn_illuminance
+          below: 50
+      then:
+        - action: light.turn_on
+          metadata: {}
+          data:
+            brightness_pct: 100
+            kelvin: 6500
+          target:
+            entity_id: light.werkkamer_martijn_plafond_template
+    - action: music_assistant.play_media
       metadata: {}
       data:
-        brightness_pct: 100
-        kelvin: 6500
+        media_type: radio
+        media_id: Studio Brussel
       target:
-        entity_id: light.werkkamer_martijn_plafond_template
-  - action: music_assistant.play_media
-    metadata: {}
-    data:
-      media_type: radio
-      media_id: Studio Brussel
-    target:
-      entity_id: media_player.martijn
-  - action: switch.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.bureau_martijn_template
+        entity_id: media_player.martijn
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.bureau_martijn_template
   description: Actions to be performed when Martijn starts working in his office
