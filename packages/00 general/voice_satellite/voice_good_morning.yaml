@@ -46,7 +46,7 @@ automation:
               agent_id: conversation.chatgpt
             response_variable: response_weather
           - alias: Store reponse in variable sensor
-            event: llm_weather
+            event: set_variable
             event_data:
               key: llm_weather
               value: "{{ response_weather.response.speech.plain.speech }}"
