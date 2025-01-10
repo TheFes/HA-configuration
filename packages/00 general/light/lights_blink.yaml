@@ -166,16 +166,17 @@ script:
                   delay: 0.5
       - delay:
           seconds: 10
-      - alias: "Restore state"
-        action: scene.turn_on
-        target:
-          entity_id: scene.before
       - alias: "Disable blinking"
         action: light.turn_on
         data:
           effect: "None"
         target:
           entity_id: "{{ effect | select('is_state', 'on') | list }}"
+      - delay: 0.5
+      - alias: "Restore state"
+        action: scene.turn_on
+        target:
+          entity_id: scene.before
 
 # Template sensor to store lights for which script is active
 template:
