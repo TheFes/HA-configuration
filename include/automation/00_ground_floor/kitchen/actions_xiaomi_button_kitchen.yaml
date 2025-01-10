@@ -3,9 +3,7 @@ alias: "Xiaomi button kitchen"
 triggers:
   - trigger: state
     entity_id: event.knop_keuken_action
-    not_from:
-      - unavailable
-      - unknown
+    not_from: unavailable
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 actions:
