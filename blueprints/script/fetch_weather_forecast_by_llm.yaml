@@ -30,17 +30,17 @@ fields:
       datetime:
     name: End of period
     description: End of the period for which the weather is requested. use an isoformat datetime string.
-    required: true
+    required: false
 sequence:
   - variables:
-      version: 1.2
+      version: 1.3
       weather_entity: !input weather_entity
       start: "{{ (start_of_period | as_datetime | as_local).isoformat() }}"
       end: >
         {% set start = as_datetime(start) %}
         {% set day = start.time() == today_at().time() %}
         {% set delta = timedelta(days=1 if day else 0, hours=0 if day else 1) %}
-        {% set end = end_of_period | as_datetime(default=start+delta) | as_local %}
+        {% set end = end_of_period | default(start) | as_datetime(default=start+delta) | as_local %}
         {{ (end if end > start else start + delta).isoformat() }}
       full_days: >
         {% set start = start | as_datetime %}
