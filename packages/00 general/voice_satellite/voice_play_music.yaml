@@ -2,7 +2,6 @@
 # It is written to work with the core Music Assistant integration
 # 1. Script for LLM:
 #    A script which guides an LLM to use the right data for Music Assistant
-#    Make sure to update the selector for the area to inlcude the areas which have a MA player
 # 2. Intent Script for custom PlayMusic sentence (custom_sentences/nl/PlayMusic.yaml):
 #    An intent script which belongs to the PlayMusic custom sentence
 #    Using this is optional, but I added it to prevent usage of the LLM as much as possible
@@ -16,7 +15,7 @@ script:
     alias: Play using Music Assistant
     description: >
       This script is used to play music based on a voice request
-      Use the options as described in the description of each option.
+      Use the paramters as described in the description of each parameter.
     mode: parallel
     max_exceeded: silent
     fields:
@@ -31,20 +30,22 @@ script:
               - radio
         name: Media Type
         description: >
-          "media_type" can be one of 5 different values:
-          - "track" if the search is about a specific track
-          - "album" if the search is about an album
+          "media_type" can only be one of 5 different values:
+          - "track" if the search is about a specific track or a list of tracks
+          - "album" if the search is about an album or a list of albums
           - "artist" if the search is about an artist
           - "playlist" if the search specifically requests a playlist
           - "radio" in case the search is a radio channel.
-          media_type is mandatory
+          media_type is mandatory. In case a request doesn't match any of these types,
+          for example when music from a specific genre is requested, then us "track" and provide
+          a list of matching songs for the "media_id" parameter
       artist:
         selector:
           text:
         name: Artist
         description: >
           "artist" is the artist which can be derived from the search request
-          In case the artist is unknown, use an empty string
+          In case the artist is unknown or there are multiple artists requested, use an empty string
         required: true
       album:
         selector:
@@ -52,33 +53,30 @@ script:
         name: Album
         description: >
           "album" is the album which can be derived from the search request
-          In case the album is unknown, use an empty string
+          In case the album is unknown or there are multiple albums requested, use an empty string
         required: true
       media_id:
         selector:
           text:
         name: Media ID
         description: >
-          media_id is the most specific from track, album, and artist.
-          If the search is about a track: Then media_id is the track name.
-          If the search is about an album: Then media_id is the album name.
+          media_id is the most specific from track, album, and artist. "track" and "artist" can be a single value or multiple values
+          If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator)
+          If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator)
           If the search is about an artist: Then media_id is the artist name.
           If the search is a specific playlist: Then media_id is the requested playlist.
           If the search is a radio channel: Then media_id is the requested channel.
         required: true
       area:
         selector:
-          select:
-            options:
-              - Woonkamer
-              - Keuken
-              - Pepijn
-              - Floris
-              - Werkkamer Martijn
+          area:
+            entity:
+              integration: music_assistant
         name: Area
         description: >
-          Only use this selector in case the area is specified in the request
-          In case it is unclear from where the request is issued, do not use this field
+          The area for which the music is requested
+          In case no area is provided, use the area the request comes from
+        required: true
     sequence:
       - alias: Play music using Music Assistant
         action: music_assistant.play_media
@@ -86,7 +84,7 @@ script:
           {{
             dict(
               dict(
-                    media_id=media_id,
+                    media_id=media_id.split(';') | map('trim') | list if ';' in media_id else media_id,
                     media_type=media_type,
                     artist=artist | default,
                     album=album | default,
@@ -95,18 +93,7 @@ script:
               )
           }}
         target:
-          area_id: >
-            {{
-              area_id(area)
-                | default(
-                    states.assist_satellite
-                      | sort(attribute='last_changed')
-                      | map(attribute='entity_id')
-                      | map('area_id')
-                      | list
-                      | last
-                    , true)
-            }}
+          area_id: "{{ area }}"
       # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
       - alias: Define variables used to send notification to the right display
         variables:
@@ -120,7 +107,7 @@ script:
           topic: >
             {{
               map_to_awtrix
-                | selectattr('area_name', 'eq', area)
+                | selectattr('area_name', 'eq', area_name(area))
                 | map(attribute='topic')
                 | join
                 | default('unknown', true)
@@ -144,6 +131,13 @@ script:
 
 intent_script:
   PlayMusic:
+    description: >
+      Play Music using Music Assistant, only use this intent_script in case the request is one of the following:
+        - Leuke Liedjes (van Pepijn en Floris)
+        - Studio Brussel
+        - Radio 2
+        - Papa is een pizza
+        - Baby Lasagna
     action:
       - alias: >
           Create variables used to play media, the media_id is an uri which can be found using
@@ -158,7 +152,7 @@ intent_script:
                 media_id: library://radio/8
                 media_type: radio
             leuke_liedjes:
-              name: Leuke liedjes {{ ['Pepijn', 'Floris'] | shuffle | join(' en ') }}
+              name: Leuke liedjes Pepijn en Floris
               data:
                 media_id: library://playlist/130
                 media_type: playlist
@@ -203,7 +197,7 @@ intent_script:
               entity_id: "{{ players }}"
       - alias: Play music using Music Assistant
         action: music_assistant.play_media
-        data: "{{ map_to_data[to_play].data }}"
+        data: "{{ map_to_data.get('to_play', {}).get('data', dict(media_id=to_play)) }}"
         target:
           area_id: "{{ area_id(area) }}"
       # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
