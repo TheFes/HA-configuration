@@ -1,3 +1,30 @@
+# This package uses the public Postcodeloterij REST API to get the information from each monthly draw and the extra draws in June and December
+# It consists of 2 parts
+# 1. Rest Command:
+#    The rest command uses the API to retreive the draw results. In the payload the postal code has to be provided, I've put it in a secret
+#    but you can also add it directly in the configuration. Make sure to provide it as "query=1234AB" where "1234AB" is your postal code
+#    so not the postal code only, "query=" has to be included (also if you secrets.yaml)
+#    By default it will get the results from the monthly draw of the previous month (so April if the current month is May)
+#    In case you want to specify another monht, you can provide it when you issue the rest command under data as "monht=YYYYM" (eg "month=202405")
+#    In case you want to get the results of an extra draw, ad "extra: true" to the action data. The month for the June draw is YYYY13 (eg 202413),
+#    for the December draw it's YYYY14 (eg 202414)
+# 2. Template Sensor
+#    The template sensor will be updated at 18:15 of the first 3 days of the month (in case a trigger was missed on the other days because the
+#    server was rebooting for example). You can also update it manually by issuing the "update_postcodeloterij_prizes" event in developer tools >
+#    events. 
+#    Make sure to update the "notify_action" variable on line 55 so notifications will be sent to the right device. The notify action is optmized
+#    for the companion app on an Android phone, you might want to adjuct the action data of the action in case you use an iPhone or other device
+#    A notification will only be sent if there are prizes won, and if the prizes for that particular month weren't already in the template sensor data
+#    so it won't be sent every time the sensor updates (on the first 3 days of the month, or after manually updating it using the event)
+#    The template sensor will automatically check for the extra draws from June and December in the month after, so in July and January the results
+#    of those extra draws will be included in the template sensor and notification.
+#
+# This configuration can be included directly in your configuration.yaml. If you already have the "rest_command" and/or "template" integration
+# configured there, make sure to not duplicate the integration keys, but paste it under the existing key. If you use a "template.yaml" file which
+# you include from your configuration, paste the template part there (do not include the "template" key and make sure the indentation matches the
+# already existing configuration in that file)
+# You can also include it as a package like I do, for more information see https://www.home-assistant.io/docs/configuration/packages/
+
 rest_command:
   postcodeloterij:
     url: https://www.postcodeloterij.nl/public/rest/drawresults/winnings/NPL/P_{{ 'E' if extra | default(false) | bool(false) else 'M' }}T_P{{ month | default((now().replace(day=1) - timedelta(days=1)).strftime("%Y%m")) }}/?resultSize=10
@@ -13,7 +40,7 @@ template:
       # the sensor will be automatically updated on the first 3 days of the month, at 18:00
       - alias: trigger at 18:00
         trigger: time
-        at: "18:00"
+        at: "18:15"
         # you can use the event below in developer tools > events to manually update the sensor
       - alias: trigger on manual event
         trigger: event
@@ -24,6 +51,8 @@ template:
         condition: template
         value_template: "{{ trigger.id == 'manual' or now().day in [1,2,3] }}"
     action:
+      - variables:
+          notify_action: notify.mobile_app_pixel_7_pro
       - alias: Create variables for the month to use in the rest commands and messages
         variables:
           month: >
@@ -96,7 +125,7 @@ template:
           }}
         then:
           - alias: "Send notification"
-            action: notify.mobile_app_pixel_7_pro
+            action:  "{{ notify_action }}"
             data:
               title: "🎁 Winnen doe je bij..."
               message: "{{ prize_text_full }}"
