@@ -1,162 +1,248 @@
-# This autamation uses ChatGPT to process the query in the sentence
-# For this I created a specific conversation agent which returns a json result
-# This conversation agent is based on this blog https://blog.jlpouffier.fr/chatgpt-powered-music-search-engine-on-a-local-voice-assistant/
-# So most credits go to JLo for all the work he did, and for writing that post
+# This package contains configuration to help play music using Music Assistant
+# It is written to work with the core Music Assistant integration
+# 1. Script for LLM:
+#    A script which guides an LLM to use the right data for Music Assistant
+#    Make sure to update the selector for the area to inlcude the areas which have a MA player
+# 2. Intent Script for custom PlayMusic sentence (custom_sentences/nl/PlayMusic.yaml):
+#    An intent script which belongs to the PlayMusic custom sentence
+#    Using this is optional, but I added it to prevent usage of the LLM as much as possible
+#    The PlayMusic custom intent is created to be used for frequenctly issued music requests
+# 3. Automation for double press on Voice PE button:
+#    An automation to use the middle button on the Voice PE to resume playback
+#    or go the next track on double click. Make sure to adjust the entities in the trigger
 
-# Based on that I added support for areas. You can add an area to the voice command (eg "Play the theme song of Baywatch in the master bedroom").
-# In case no area is provided in the command, it will use the area from the voice sattelite.
-# The area information has been added to the prompt used by ChatGPT
-# I also added support for playlists (only when the voice command specifically asks for a playlist) and radio stations.
-
-# This is the prompt I used, which is a mostly English, but also partly Dutch.
-
-# You are an AI process that transforms a music search query into a structured JSON.
-
-# Here is the structured JSON that I expect in response {"to_play": {"media_id":"name",  "media_type":"type", "artist":"name", "album":"name"}, "area": "area_name"}
-
-# "media_type" can be one of 5 different values: "track" if the search is about a specific track, "album" if the search is about an album, "artist" if the search is about an artist, "playlist" if the search specifically requests a playlist or "radio" in case the search is a radio channel.
-# media_type is mandatory
-# Frequently used radio channels are "Studio Brussel", "Willy", "NPO Radio 2", "Hallo Kids Radio", but other radio channels could be requested as well.
-
-# media_id is the most specific from track, album, and artist.
-# If the search is about a track: Then media_id is the track name.
-# If the search is about an album: Then media_id is the album name.
-# If the search is about an artist: Then media_id is the artist name.
-# If the search is a specific playlist: Then media_id is the requested playlist.
-# If the search is a radio channel: Then media_id is the requested channel.
-# media_id is mandatory.
-
-# If case it is needed, the fields "artist" and "album" can be used to further restrict the search.
-# For example, if the input is "Hells Bells by ACDC", then the output should be  {"media_id":"Hells Bells",  "media_type":"track", "artist":"AC/DC"}
-# "artist" and "album" are optional and never used in the case of a playlist search.
-
-# There can be 5 types of answers for the to_play dictionary:
-# Just an artist like that {"media_id": "artist name", "media_type":"artist"}.
-# An album by an artist like that {"media_id": "album name", "media_type":"album", "artist": "artist name"}.
-# A track by an artist like that {"media_id":"track name", "media_type":"track", "artist": "artist name"}.
-# Just a track if the artist is not known like that {"media_id":"track name", "media_type":"track"}.
-# Just a playlist if the request is a specific playlist {"media_id":"playlist name", "media_type":"playlist"}.
-
-# The area key is used to add the area_name of the area mentioned in the query. In case no area is provided in the search or the area cannot be matched to a area listed below, the value should be "unknown" In case multiple areas are privided, prove the names as list (for example ["Pepijn", "Floris"])
-
-# Area overview:
-# - name: Woonkamer
-#   description: Living Room also use for play area
-# - name: Keuken
-#   description: Kitchen also the dining area
-# - name: Pepijn
-#   description: bedroom of Pepijn
-# - name: Floris
-#   description: bedroom of Floris
-# - name: Werkkamer Marleen
-#   description: home work office of Marleen (mom)
-# - name: Werkkamer Martijn
-#   description: home work office of Martijn (dad)
-# - name: Slaapkamer
-#   description: master bedroom
-# - name: Begane grond
-#   description: entire ground floor (contains Woonkamer and Keuken)
-# - name: Eerste verdieping
-#   description: entire first floor, contains bedrooms of Floris and Pepijn
-# - name: Zolder
-#   description: entire attic, contains Werkkamer Martijn and Slaapkamer
-
-# You must reply with only the JSON model, nothing before nor after because your response will be processed by a search component of a media listening service.
-
-# Note that the input query can be in Dutch or English. For the "media_type" the untranslated English terms should be used, in case of a playlist search use the language used in the input.
-
-# Here are a few examples of input with the expected output:
-# "Hells Bells van ACDC in de slaapkamer van Pepijn" > {"to_play": {"media_id":"Hells Bells",  "media_type":"track", "artist":"AC/DC"}, "area": "Pepijn"}.
-# "The discography of Pink Floyd" >> {"to_play": {"media_id": "Pink Floyd", "media_type":"artist"}.
-# "The artist that composed the soundtrack of Inception in the parents bedroom" >> {"to_play": {"media_id": "Hans Zimmer", "media_type":"artist"}, "area": "Slaapkamer"}.
-# "The playlist Funny Songs in the bedrooms of Pepijn and Floris" >> {"to_play": {"media_id": "Funny Songs", "media_type":"playlist"}, "area": ["Pepijn", "Floris"]}.
-
-automation:
-  - id: 1e45354d-4f5a-4211-883f-857c1ec64bf9
-    alias: Play music based on voice command
-    triggers:
-      - alias: Trigger sentence to play music
-        trigger: conversation
-        command:
-          - (Speel|Luister naar) {to_play}
-          - (Ik wil|Wij willen) {to_play} horen
-          - "[Ik wil |Wij willen |Kun je | Wil je ]{to_play} afspelen"
-          - (Ik wil|Wij willen) naar {to_play} luisteren
-    actions:
-      - alias: Send search to OpenAI
-        action: conversation.process
-        data:
-          agent_id: conversation.chatgpt_music_assistant_helper
-          text: "{{ trigger.slots.to_play }}"
-        response_variable: response
-      - variables:
-          voice_area: "{{ area_name(trigger.device_id) }}"
-          value_json: "{{ response.response.speech.plain.speech }}"
-          area: >
-            {{ value_json.area if value_json.area != 'unknown' else voice_area }}
-          player: >
-            {% if area is list %}
-              {% set a_devices = area 
-                                  | map('area_devices')
-                                  | sum(start=[]) %}
-              {% set devices = label_devices('voice')
-                                  | select('in', a_devices)
-                                  | list %}
-            {% else %}
-              {% set devices = label_devices('voice')
-                                  | select('in', area_devices(area))
-                                  | list %}
-            {% endif %}
-            {{ devices
-                | map('device_entities')
-                | sum(start=[])
-                | select('in', integration_entities('music_assistant'))
-                | select('match', 'media_player')
-                |  list
+script:
+  play_music_assistant:
+    alias: Play using Music Assistant
+    description: >
+      This script is used to play music based on a voice request
+      Use the options as described in the description of each option.
+    mode: parallel
+    max_exceeded: silent
+    fields:
+      media_type:
+        selector:
+          select:
+            options:
+              - track
+              - album
+              - artist
+              - playlist
+              - radio
+        name: Media Type
+        description: >
+          "media_type" can be one of 5 different values:
+          - "track" if the search is about a specific track
+          - "album" if the search is about an album
+          - "artist" if the search is about an artist
+          - "playlist" if the search specifically requests a playlist
+          - "radio" in case the search is a radio channel.
+          media_type is mandatory
+      artist:
+        selector:
+          text:
+        name: Artist
+        description: >
+          "artist" is the artist which can be derived from the search request
+          In case the artist is unknown, use an empty string
+        required: true
+      album:
+        selector:
+          text:
+        name: Album
+        description: >
+          "album" is the album which can be derived from the search request
+          In case the album is unknown, use an empty string
+        required: true
+      media_id:
+        selector:
+          text:
+        name: Media ID
+        description: >
+          media_id is the most specific from track, album, and artist.
+          If the search is about a track: Then media_id is the track name.
+          If the search is about an album: Then media_id is the album name.
+          If the search is about an artist: Then media_id is the artist name.
+          If the search is a specific playlist: Then media_id is the requested playlist.
+          If the search is a radio channel: Then media_id is the requested channel.
+        required: true
+      area:
+        selector:
+          select:
+            options:
+              - Woonkamer
+              - Keuken
+              - Pepijn
+              - Floris
+              - Werkkamer Martijn
+        name: Area
+        description: >
+          Only use this selector in case the area is specified in the request
+          In case it is unclear from where the request is issued, do not use this field
+    sequence:
+      - alias: Play music using Music Assistant
+        action: music_assistant.play_media
+        data: >
+          {{
+            dict(
+              dict(
+                    media_id=media_id,
+                    media_type=media_type,
+                    artist=artist | default,
+                    album=album | default,
+                    radio_mode=radio_mode| default
+                  ).items() | selectattr('1')
+              )
+          }}
+        target:
+          area_id: >
+            {{
+              area_id(area)
+                | default(
+                    states.assist_satellite
+                      | sort(attribute='last_changed')
+                      | map(attribute='entity_id')
+                      | map('area_id')
+                      | list
+                      | last
+                    , true)
             }}
-      - alias: Set response for
-        set_conversation_response: >
-          {% if area and player and value_json.to_play.media_id != 'unknown' %}
-            Hier komt {{ value_json.to_play.media_id }}
-          {% elif  value_json.to_play.media_id == 'unknown' %}
-            Ik begrijp niet wat je wil afspelen, probeer het nog eens
-          {% elif area %}
-            Er is geen apparaat om de muziek op af te spelen. Probeer het nog eens.
-          {% else %}
-            Waar wil je dat afspelen? Probeer het nog eens en geef aan in welke ruimte.
-          {% endif %}
-      - alias: Show on Awtrix if area is Werkkamer Martijn
-        if: "{{ area == 'Werkkamer Martijn' and player and value_json.to_play != 'unknown' }}"
+      # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
+      - alias: Define variables used to send notification to the right display
+        variables:
+          map_to_awtrix:
+            - area_name: Werkkamer Martijn
+              topic: awtrix_martijn/notify
+            - area_name: Pepijn
+              topic: awtrix_pepijn/notify
+            - area_name: Floris
+              topic: awtrix_floris/notify
+          topic: >
+            {{
+              map_to_awtrix
+                | selectattr('area_name', 'eq', area)
+                | map(attribute='topic')
+                | join
+                | default('unknown', true)
+            }}
+      - alias: Show on Ulanzi display in case there is one in the room
+        if: "{{ topic != 'unknown'}}"
         then:
           - alias: "Send notification"
             action: mqtt.publish
             data:
               qos: 0
               retain: false
-              topic: awtrix_martijn/notify
+              topic: "{{ topic }}"
               payload: >
                 {%- set data = dict(
-                                  text = value_json.to_play.media_id,
+                                  text = media_id,
                                   icon = 'musicvisualisation',
                                   )
                 %}
                 {{ data | to_json }}
-      - alias: Play music using Music Assistant in case all required info is available
-        if: "{{ player | count > 0 and value_json.to_play.media_id != 'unknown' }}"
-        then:
-          - alias: "Play music"
-            action: music_assistant.play_media
-            target:
-              entity_id: "{{ player }}"
-            data: "{{ dict(value_json.to_play, **dict(radio_mode=value_json.to_play.media_type not in ['playlist', 'album', 'radio'])) }}"
-      - alias: Set right Shuffle mode
-        action: media_player.shuffle_set
-        data:
-          shuffle: "{{ value_json.to_play.media_type == 'playlist' }}"
-        target:
-          entity_id: "{{ player }}"
-    mode: single
 
+intent_script:
+  PlayMusic:
+    action:
+      - alias: >
+          Create variables used to play media, the media_id is an uri which can be found using
+          music_assistant.search in developer tools > actions
+          name and icon are optional and only used in the Awtrix notifications
+        variables:
+          map_to_data:
+            stubru:
+              name: Studio Brussel
+              icon: oldradioani
+              data:
+                media_id: library://radio/8
+                media_type: radio
+            leuke_liedjes:
+              name: Leuke liedjes {{ ['Pepijn', 'Floris'] | shuffle | join(' en ') }}
+              data:
+                media_id: library://playlist/130
+                media_type: playlist
+                radio_mode: true
+            radio_2:
+              icon: oldradioani
+              name: NPO Radio 2
+              data:
+                media_id: library://radio/1
+                media_type: radio
+            baby:
+              name: Baby Lasagna
+              icon: baby_ani
+              data:
+                media_id: spotify://artist/1ncWEkB4AQh1rxC8ObpBoH
+                media_type: artist
+            pizza:
+              name: M'n Papa is een Pizza
+              icon: pizza
+              data:
+                media_id: spotify://track/2YBb6mmNvCtjc5rLKrtS8k
+                media_type: track
+                radio_mode: true
+          players: >
+            {{
+              area_entities(area)
+                | select('in', integration_entities('music_assistant'))
+                | select('match', 'media_player')
+                | list
+            }}
+      - alias: Set shuffle in case media_type is playlist
+        if: >
+          {{
+            map_to_data[to_play].data.media_type == 'playlist'
+            and players | count > 0
+          }}
+        then:
+          - action: media_player.shuffle_set
+            data:
+              shuffle: "{{ map_to_data[to_play].data.media_type == 'playlist' }}"
+            target:
+              entity_id: "{{ players }}"
+      - alias: Play music using Music Assistant
+        action: music_assistant.play_media
+        data: "{{ map_to_data[to_play].data }}"
+        target:
+          area_id: "{{ area_id(area) }}"
+      # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
+      - alias: Define variables used to send notification to the right display
+        variables:
+          map_to_awtrix:
+            - area_name: Werkkamer Martijn
+              topic: awtrix_martijn/notify
+            - area_name: Pepijn
+              topic: awtrix_pepijn/notify
+            - area_name: Floris
+              topic: awtrix_floris/notify
+          topic: >
+            {{
+              map_to_awtrix
+                | selectattr('area_name', 'eq', area)
+                | map(attribute='topic')
+                | join
+                | default('unknown', true)
+            }}
+      - alias: Show on Ulanzi display in case there is one in the room
+        if: "{{ topic != 'unknown'}}"
+        then:
+          - alias: "Send notification"
+            action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: "{{ topic }}"
+              payload: >
+                {%- set data = dict(
+                                  text = map_to_data[to_play].name,
+                                  icon = map_to_data[to_play].icon
+                                                | default('musicvisualisation')
+                                  )
+                %}
+                {{ data | to_json }}
+
+automation:
   - alias: Voice - Resume or next track on double press
     id: 34df8747-e2b0-48af-befa-f981660aba0c
     mode: parallel

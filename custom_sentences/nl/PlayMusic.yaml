@@ -1,0 +1,40 @@
+language: nl
+intents:
+  PlayMusic:
+    data:
+      - sentences:
+          - (speel|luister naar) {to_play}
+          - "[wij willen ]{to_play} horen"
+          - "[wij willen |kun je | wil je ]{to_play} afspelen"
+          - "[wij willen ]naar {to_play} luisteren"
+        requires_context:
+          area:
+            slot: true
+        response: play_music
+      - sentences:
+          - Luister (<in> <area>;naar {to_play})
+          - Speel (<in> <area>;{to_play})
+          - "[wij willen ](<in> <area>;{to_play} horen)"
+          - "[wij willen |kun je | wil je ](<in> <area>;{to_play} afspelen)"
+          - "[wij willen ](<in> <area>;naar {to_play} luisteren)"
+        response: play_music_area
+
+lists:
+  to_play:
+    values:
+      - in: studio brussel
+        out: stubru
+      - in: leuke liedjes[[ van] (pepijn en floris|floris en pepijn)]
+        out: leuke_liedjes
+      - in: "[npo] radio (2|twee)"
+        out: radio_2
+      - in: "[mijn |m'n ]pap[p]a is een pizza"
+        out: pizza
+      - in: baby lasagn(e|a)
+        out: baby
+
+responses:
+  intents:
+    PlayMusic:
+      play_music: Hier komt {{ slots.to_play }}
+      play_music_area: Ik speel {{ slots.to_play }} in {{ slots.area }}
