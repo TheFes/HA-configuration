@@ -12,9 +12,9 @@
 
 script:
   play_music_assistant:
-    alias: Play using Music Assistant
-    description: >
-      This script is used to play music based on a voice request
+    alias: Voice - Play using Music Assistant
+    description: |
+      This script is used to play music based on a voice request.
       Use the paramters as described in the description of each parameter.
     mode: parallel
     max_exceeded: silent
@@ -29,17 +29,17 @@ script:
               - playlist
               - radio
         name: Media Type
-        description: >
-            This argument is mandatory and must always be provided
-            "media_type" can only be one of 5 different values:
-              - "track" if the search is about a specific track or a list of tracks.
-              - "album" if the search is about an album or a list of albums.
-              - "artist" if the search is about an artist.
-              - "playlist" if the search specifically requests a playlist.
-              - "radio" in case the search is a radio channel.
-            In case a request doesn't match any of these types, for example when music from a specific genre is requested, then us "track" and provide a list of matching songs for the "media_id" parameter.
-            This is a mandatory argument and must always be provided.
-          required: true
+        description: |
+          This argument is mandatory and must always be provided
+          "media_type" can only be one of 5 different values:
+            - "track" if the search is about a specific track or a list of tracks.
+            - "album" if the search is about an album or a list of albums.
+            - "artist" if the search is about an artist.
+            - "playlist" if the search specifically requests a playlist.
+            - "radio" in case the search is a radio channel.
+          In case a request doesn't match any of these types, for example when music from a specific genre is requested, then us "track" and provide a list of matching songs for the "media_id" parameter.
+          This is a mandatory argument and must always be provided.
+        required: true
       artist:
         selector:
           text:
@@ -58,17 +58,17 @@ script:
         selector:
           text:
         name: Media ID
-      description: |
-        This argument is mandatory and must always be provided
-        media_id is the most specific from track, album, and artist.
-        In case the "media_type" is "track" or "artist" the "media_id" can be a single value or multiple values.
-        - If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator). Each track name consist of the artist and song name, divided by a dash (example: "Artist - Song") If the artist is not known, it can be omitted.
-        - If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator).
-        - If the search is about an artist: Then media_id is the artist name.
-        - If the search is a specific playlist: Then media_id is the requested playlist.
-        - If the search is a radio channel: Then media_id is the requested channel.
-        This is a mandatory argument and must always be provided.
-      required: true
+        description: |
+          This argument is mandatory and must always be provided
+          media_id is the most specific from track, album, and artist.
+          In case the "media_type" is "track" or "artist" the "media_id" can be a single value or multiple values.
+          - If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator). Each track name consist of the artist and song name, divided by a dash (example: "Artist - Song") If the artist is not known, it can be omitted.
+          - If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator).
+          - If the search is about an artist: Then media_id is the artist name.
+          - If the search is a specific playlist: Then media_id is the requested playlist.
+          - If the search is a radio channel: Then media_id is the requested channel.
+          This is a mandatory argument and must always be provided.
+        required: true
       area:
         selector:
           area:
@@ -132,7 +132,7 @@ script:
 
 intent_script:
   PlayMusic:
-    description: >
+    description: |
       Play Music using Music Assistant, only use this intent_script in case the request is one of the following:
         - Leuke Liedjes (van Pepijn en Floris)
         - Studio Brussel
@@ -142,8 +142,8 @@ intent_script:
     action:
       - alias: >
           Create variables used to play media, the media_id is an uri which can be found using
-          music_assistant.search in developer tools > actions
-          name and icon are optional and only used in the Awtrix notifications
+          music_assistant.search in developer tools > actions.
+          Name and icon are optional and only used in the Awtrix notifications.
         variables:
           map_to_data:
             stubru:
