@@ -30,43 +30,45 @@ script:
               - radio
         name: Media Type
         description: >
-          "media_type" can only be one of 5 different values:
-          - "track" if the search is about a specific track or a list of tracks
-          - "album" if the search is about an album or a list of albums
-          - "artist" if the search is about an artist
-          - "playlist" if the search specifically requests a playlist
-          - "radio" in case the search is a radio channel.
-          media_type is mandatory. In case a request doesn't match any of these types,
-          for example when music from a specific genre is requested, then us "track" and provide
-          a list of matching songs for the "media_id" parameter
+            This argument is mandatory and must always be provided
+            "media_type" can only be one of 5 different values:
+              - "track" if the search is about a specific track or a list of tracks.
+              - "album" if the search is about an album or a list of albums.
+              - "artist" if the search is about an artist.
+              - "playlist" if the search specifically requests a playlist.
+              - "radio" in case the search is a radio channel.
+            In case a request doesn't match any of these types, for example when music from a specific genre is requested, then us "track" and provide a list of matching songs for the "media_id" parameter.
+            This is a mandatory argument and must always be provided.
+          required: true
       artist:
         selector:
           text:
         name: Artist
         description: >
-          "artist" is the artist which can be derived from the search request
-          In case the artist is unknown or there are multiple artists requested, use an empty string
+          "artist" is the artist which can be derived from the search request. In case the artist is unknown or there are multiple artists requested, use an empty string
         required: true
       album:
         selector:
           text:
         name: Album
         description: >
-          "album" is the album which can be derived from the search request
-          In case the album is unknown or there are multiple albums requested, use an empty string
+          "album" is the album which can be derived from the search request. In case the album is unknown or there are multiple albums requested, use an empty string
         required: true
       media_id:
         selector:
           text:
         name: Media ID
-        description: >
-          media_id is the most specific from track, album, and artist. "track" and "artist" can be a single value or multiple values
-          If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator)
-          If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator)
-          If the search is about an artist: Then media_id is the artist name.
-          If the search is a specific playlist: Then media_id is the requested playlist.
-          If the search is a radio channel: Then media_id is the requested channel.
-        required: true
+      description: |
+        This argument is mandatory and must always be provided
+        media_id is the most specific from track, album, and artist.
+        In case the "media_type" is "track" or "artist" the "media_id" can be a single value or multiple values.
+        - If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator). Each track name consist of the artist and song name, divided by a dash (example: "Artist - Song") If the artist is not known, it can be omitted.
+        - If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator).
+        - If the search is about an artist: Then media_id is the artist name.
+        - If the search is a specific playlist: Then media_id is the requested playlist.
+        - If the search is a radio channel: Then media_id is the requested channel.
+        This is a mandatory argument and must always be provided.
+      required: true
       area:
         selector:
           area:
@@ -74,8 +76,7 @@ script:
               integration: music_assistant
         name: Area
         description: >
-          The area for which the music is requested
-          In case no area is provided, use the area the request comes from
+          The area for which the music is requested. In case no area is provided, use the area the request comes from
         required: true
     sequence:
       - alias: Play music using Music Assistant
