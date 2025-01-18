@@ -10,25 +10,33 @@ automation:
       # - variables:
       #     list_entity: >
       #       {{ states.todo | selectattr('name', 'search', trigger.slots.query, ignorecase=True) | map(attribute='entity_id') | first | default(none) }}
-      - if: "{{ list_entity is not none }}"
-        then:
-          - alias: "Get items from list"
-            action: todo.get_items
-            target:
-              entity_id: todo.boodschappenlijst
-            data:
-              status: needs_action
-            response_variable: response
+      # - if: "{{ list_entity is not none }}"
+      #   then:
+      - alias: "Get items from list"
+        action: todo.get_items
+        target:
+          entity_id: todo.boodschappenlijst
+        data:
+          status: needs_action
+        response_variable: response
       - variables:
           list_items: >
-            {{ (response.values() | first)['items'] | map(attribute='summary') | join(', ') if list_entity is not none else '' }}
+            {{ (response.values() | first)['items'] | map(attribute='summary') | list if list_entity is not none else '' }}
       - alias: Set response
         set_conversation_response: >
           {% if list_items %}
-            Er staan {{ list_items | count }} dingen op de boodschappenlijst: {{ list_items }}
-          {% elif list_entity is none %}
-            Ik kan geen lijst met de naam {{ trigger.slots.query }} vinden.
+            Er staan {{ list_items | count }} dingen op de boodschappenlijst:   
+            {{ list_items | join('\n') }}
           {% else %}
-            {{ trigger.slots.query }} is leeg
+            De boodschappenlijst is leeg
           {% endif %}
+      # - alias: Set response
+      #   set_conversation_response: >
+      #     {% if list_items %}
+      #       Er staan {{ list_items | count }} dingen op de boodschappenlijst: {{ list_items | join('\n') }}
+      #     {% elif list_entity is none %}
+      #       Ik kan geen lijst met de naam {{ trigger.slots.query }} vinden.
+      #     {% else %}
+      #       {{ trigger.slots.query }} is leeg
+      #     {% endif %}
     mode: parallel
