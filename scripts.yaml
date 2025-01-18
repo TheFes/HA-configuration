@@ -4,8 +4,7 @@ fetch_weather_forecast_data:
     path: fetch_weather_forecast_by_llm.yaml
     input:
       weather_entity: weather.combined
-  description:
-    Gets the weather forecast for either a part of a day, or one or more
+  description: Gets the weather forecast for either a part of a day, or one or more
     full days. In case the weather for the weekend is requested, this means Saturday
     and Sunday
   icon: mdi:weather-lightning-rainy
@@ -15,38 +14,114 @@ fetch_calendar_events:
     path: fetch_calendar_entries_by_llm.yaml
     input:
       calendar_entities:
-        - calendar.thefes
-        - calendar.m_m
-        - calendar.kids
-  description:
-    Fetch calendar events from my calendar. In case the data for the weekend
+      - calendar.thefes
+      - calendar.m_m
+      - calendar.kids
+  description: Fetch calendar events from my calendar. In case the data for the weekend
     is requested, this means Saturday and Sunday
   icon: mdi:calendar
 martijn_starts_working:
   alias: Martijn Starts Working
   sequence:
-    - if:
-        - condition: numeric_state
-          entity_id: sensor.awtrix_martijn_illuminance
-          below: 50
-      then:
-        - action: light.turn_on
-          metadata: {}
-          data:
-            brightness_pct: 100
-            kelvin: 6500
-          target:
-            entity_id: light.werkkamer_martijn_plafond_template
-    - action: music_assistant.play_media
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.awtrix_martijn_illuminance
+      below: 50
+    then:
+    - action: light.turn_on
       metadata: {}
       data:
-        media_type: radio
-        media_id: Studio Brussel
+        brightness_pct: 100
+        kelvin: 6500
       target:
-        entity_id: media_player.martijn
-    - action: switch.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.bureau_martijn_template
+        entity_id: light.werkkamer_martijn_plafond_template
+  - action: music_assistant.play_media
+    metadata: {}
+    data:
+      media_type: radio
+      media_id: Studio Brussel
+    target:
+      entity_id: media_player.martijn
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bureau_martijn_template
   description: Actions to be performed when Martijn starts working in his office
+voice_script_for_music_assistant_requests:
+  use_blueprint:
+    path: music-assistant/llm_voice_script.yaml
+    input:
+      media_player_prompt: Only use in case the request specifically mentions a media
+        player to play the music on. This has to be a media player provided by the
+        Music Assistant integration
+      actions:
+      - alias: Define variables used to send notification to the right display
+        variables:
+          map_to_awtrix:
+          - area_name: Werkkamer Martijn
+            topic: awtrix_martijn/notify
+          - area_name: Pepijn
+            topic: awtrix_pepijn/notify
+          - area_name: Floris
+            topic: awtrix_floris/notify
+          topic: '{{ map_to_awtrix | selectattr(''area_name'', ''in'', area | default([],
+            true) | map(''area_name'') | list) | map(attribute=''topic'') | list }}'
+      - alias: Show on Ulanzi display in case there is one in the room
+        repeat:
+          for_each: '{{ topic }}'
+          sequence:
+          - alias: Send notification
+            action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: '{{ repeat.item }}'
+              payload: '{{ dict(text = media_description, icon = ''musicvisualisation'',)
+                | to_json }}'
+      conditions:
+      - condition: state
+        entity_id: input_boolean.test
+        state: 'on'
+  alias: Voice - Script for Music Assistant requests
+  description: 'This script is used to play music based on a voice request. The tool
+    takes the following arguments: media_type, artist, album, media_id, radio_mode,
+    area. media_id, media_type are always required and must always be supplied as
+    arguments to this tool. An area or Music Assistant media player can optionally
+    be provided in the voice request as well. Use the parameters as described in the
+    description of each parameter. Use this tool whenever the user requests to play
+    music.'
+  icon: mdi:account-music
+shopping_list_copy:
+  sequence:
+  - repeat:
+      sequence:
+      - action: todo.add_item
+        metadata: {}
+        data:
+          item: '{{ repeat.item }}'
+        target:
+          entity_id: todo.boodschappen
+      - delay: 0.5
+      for_each:
+      - 'Fiets zitje '
+      - Stanley mesjes Marleen werkkamer
+      - Voorjaar deur schilderen
+      - 'Zilvervis vallen '
+      - Zwemles Floris?
+      - Handcreme
+      - Haakje tuinkast
+      - kauwgom
+      - Zuivelspread
+      - slachte olijven
+      - limonade
+      - koekjes
+      - rauwkost
+      - Chipjes
+      - zilvervliesrijst
+      - eieren
+      - bananen
+      - Wortels
+      - kindertas
+  alias: Shopping list copy
+  description: ''

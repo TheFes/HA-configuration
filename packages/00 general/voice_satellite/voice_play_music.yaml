@@ -1,134 +1,16 @@
 # This package contains configuration to help play music using Music Assistant
 # It is written to work with the core Music Assistant integration
-# 1. Script for LLM:
-#    A script which guides an LLM to use the right data for Music Assistant
-# 2. Intent Script for custom PlayMusic sentence (custom_sentences/nl/PlayMusic.yaml):
+# 0. Script for LLM:
+#    A script which guides an LLM to use the right data for Music Assistant.
+#    This script is removed and replaced with the MA Blueprint
+#    https://github.com/music-assistant/voice-support#option-2
+# 1. Intent Script for custom PlayMusic sentence (custom_sentences/nl/PlayMusic.yaml):
 #    An intent script which belongs to the PlayMusic custom sentence
 #    Using this is optional, but I added it to prevent usage of the LLM as much as possible
 #    The PlayMusic custom intent is created to be used for frequenctly issued music requests
-# 3. Automation for double press on Voice PE button:
+# 2. Automation for double press on Voice PE button:
 #    An automation to use the middle button on the Voice PE to resume playback
 #    or go the next track on double click. Make sure to adjust the entities in the trigger
-
-script:
-  play_music_assistant:
-    alias: Voice - Play using Music Assistant
-    description: |
-      This script is used to play music based on a voice request.
-      Use the paramters as described in the description of each parameter.
-    mode: parallel
-    max_exceeded: silent
-    fields:
-      media_type:
-        selector:
-          select:
-            options:
-              - track
-              - album
-              - artist
-              - playlist
-              - radio
-        name: Media Type
-        description: |
-          This argument is mandatory and must always be provided
-          "media_type" can only be one of 5 different values:
-            - "track" if the search is about a specific track or a list of tracks.
-            - "album" if the search is about an album or a list of albums.
-            - "artist" if the search is about an artist.
-            - "playlist" if the search specifically requests a playlist.
-            - "radio" in case the search is a radio channel.
-          In case a request doesn't match any of these types, for example when music from a specific genre is requested, then us "track" and provide a list of matching songs for the "media_id" parameter.
-          This is a mandatory argument and must always be provided.
-        required: true
-      artist:
-        selector:
-          text:
-        name: Artist
-        description: >
-          "artist" is the artist which can be derived from the search request. In case the artist is unknown or there are multiple artists requested, use an empty string
-        required: true
-      album:
-        selector:
-          text:
-        name: Album
-        description: >
-          "album" is the album which can be derived from the search request. In case the album is unknown or there are multiple albums requested, use an empty string
-        required: true
-      media_id:
-        selector:
-          text:
-        name: Media ID
-        description: |
-          This argument is mandatory and must always be provided
-          media_id is the most specific from track, album, and artist.
-          In case the "media_type" is "track" or "artist" the "media_id" can be a single value or multiple values.
-          - If the search is about a track: Then media_id is the track name or a list of track names (use a semicolon as seperator). Each track name consist of the artist and song name, divided by a dash (example: "Artist - Song") If the artist is not known, it can be omitted.
-          - If the search is about an album: Then media_id is the album name or a list of album names (use a semicolon as seperator).
-          - If the search is about an artist: Then media_id is the artist name.
-          - If the search is a specific playlist: Then media_id is the requested playlist.
-          - If the search is a radio channel: Then media_id is the requested channel.
-          This is a mandatory argument and must always be provided.
-        required: true
-      area:
-        selector:
-          area:
-            entity:
-              integration: music_assistant
-        name: Area
-        description: >
-          The area for which the music is requested. In case no area is provided, use the area the request comes from
-        required: true
-    sequence:
-      - alias: Play music using Music Assistant
-        action: music_assistant.play_media
-        data: >
-          {{
-            dict(
-              dict(
-                    media_id=media_id.split(';') | map('trim') | list if ';' in media_id else media_id,
-                    media_type=media_type,
-                    artist=artist | default,
-                    album=album | default,
-                    radio_mode=radio_mode| default
-                  ).items() | selectattr('1')
-              )
-          }}
-        target:
-          area_id: "{{ area }}"
-      # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
-      - alias: Define variables used to send notification to the right display
-        variables:
-          map_to_awtrix:
-            - area_name: Werkkamer Martijn
-              topic: awtrix_martijn/notify
-            - area_name: Pepijn
-              topic: awtrix_pepijn/notify
-            - area_name: Floris
-              topic: awtrix_floris/notify
-          topic: >
-            {{
-              map_to_awtrix
-                | selectattr('area_name', 'eq', area_name(area))
-                | map(attribute='topic')
-                | join
-                | default('unknown', true)
-            }}
-      - alias: Show on Ulanzi display in case there is one in the room
-        if: "{{ topic != 'unknown'}}"
-        then:
-          - alias: "Send notification"
-            action: mqtt.publish
-            data:
-              qos: 0
-              retain: false
-              topic: "{{ topic }}"
-              payload: >
-                {%- set data = dict(
-                                  text = media_id,
-                                  icon = 'musicvisualisation',
-                                  )
-                %}
-                {{ data | to_json }}
 
 intent_script:
   PlayMusic:
@@ -179,7 +61,7 @@ intent_script:
                 radio_mode: true
           players: >
             {{
-              area_entities(area)
+              area_entities(area | default)
                 | select('in', integration_entities('music_assistant'))
                 | select('match', 'media_player')
                 | list
@@ -187,7 +69,7 @@ intent_script:
       - alias: Set shuffle in case media_type is playlist
         if: >
           {{
-            map_to_data[to_play].data.media_type == 'playlist'
+            map_to_data.get(to_play|default, {}).get('data', {}).get('media_type') == 'playlist'
             and players | count > 0
           }}
         then:
@@ -198,9 +80,9 @@ intent_script:
               entity_id: "{{ players }}"
       - alias: Play music using Music Assistant
         action: music_assistant.play_media
-        data: "{{ map_to_data.get('to_play', {}).get('data', dict(media_id=to_play)) }}"
+        data: "{{ map_to_data.get('to_play', {}).get('data', dict(media_id=to_play|default)) }}"
         target:
-          area_id: "{{ area_id(area) }}"
+          area_id: "{{ area_id(area|default) }}"
       # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
       - alias: Define variables used to send notification to the right display
         variables:
