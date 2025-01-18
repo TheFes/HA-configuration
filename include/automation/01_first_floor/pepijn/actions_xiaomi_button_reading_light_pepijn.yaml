@@ -12,7 +12,7 @@ action:
   - alias: "Which click type"
     choose:
       - alias: "Actions on short press"
-        conditions: "{{ trigger.to_state.state == 'single' }}"
+        conditions: "{{ event == 'single' }}"
         sequence:
           - alias: "Turn on reading light"
             action: light.toggle
@@ -20,7 +20,7 @@ action:
               entity_id:
                 - light.booglamp
       - alias: "Actions on long press"
-        conditions: "{{ trigger.to_state.state == 'hold' }}"
+        conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Activate script"
             action: script.turn_on
@@ -30,8 +30,8 @@ action:
               variables:
                 use_tts: true
       - alias: "Actions on double press"
-        conditions: "{{ trigger.to_state.state == 'double' }}"
+        conditions: "{{ event == 'double' }}"
         sequence: []
       - alias: "Actions on release"
-        conditions: "{{ trigger.to_state.state == 'release' }}"
+        conditions: "{{ event == 'release' }}"
         sequence: []
