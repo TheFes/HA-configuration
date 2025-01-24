@@ -133,7 +133,7 @@ fields:
     description: !input time_period_length_prompt
     selector:
       number:
-        min: 0
+        min: 1
         max: 48
     required: true
   start_date:
@@ -150,7 +150,29 @@ fields:
     required: true
 sequence:
   - variables:
-      version: 2.0
+      version: 2.1
+  - alias: Check if variables were set correctly
+    if: >
+      {{
+        not
+        (
+          start_date is defined 
+          and start_date | as_datetime('NA') != 'NA'
+          and start_time is defined
+          and (start_date ~ ' ' ~ start_time) | as_datetime('NA') != 'NA'
+          and time_period_type | default('NA') in ['hourly', 'daily']
+          and 1 <= time_period_lenght | default(0) <=48
+        )
+      }}
+    then:
+      - alias: Set variable for eror message
+        variables:
+          response:
+            error: Unable to provide forecast because not all parameters were set by the AI agent
+      - alias: Stop the script
+        stop: Not all variables were set for the forecast script
+        response_variable: response
+  - variables:
       weather_entity: !input weather_entity
       start: "{{ ((start_date ~ ' ' ~ start_time) | as_datetime | as_local).isoformat() }}"
       end: >
