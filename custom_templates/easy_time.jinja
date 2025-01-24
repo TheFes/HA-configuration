@@ -79,7 +79,7 @@
       45: 'quarter to {hour}',
       59: 'a minute to {hour}',
       'past_hour': '{minute} past {hour}',
-      'to_hour': '{minute} to {hour}', 
+      'to_hour': '{minute} to {hour}',
     },
     'time_of_day':{
       'midnight': 'midnight',
@@ -157,7 +157,7 @@
       'November',
       'December',
     ]
-  },  
+  },
   'nl':{
     '_language': 'Nederlands',
     'and': 'en',
@@ -203,6 +203,8 @@
       'today': 'vandaag',
       'tomorrow': 'morgen',
       'yesterday': 'gisteren',
+      'next': 'volgende',
+      'last': 'afgelopen',
     },
     'days':[
       "maandag",
@@ -235,10 +237,11 @@
       45: 'kwart voor {hour}',
       59: '1 voor {hour}',
       'past_hour': '{minute} over {hour}',
-      'to_hour': '{minute} voor {hour}', 
+      'to_hour': '{minute} voor {hour}',
       'to_half_hour': '{minute} voor half {hour}',
-      'past_half_hour': '{minute} over half {hour}', 
+      'past_half_hour': '{minute} over half {hour}',
       'half_hour': 'half {hour}',
+      'use_twelve': true,
     },
     'time_of_day':{
       'midnight': 'middernacht',
@@ -248,7 +251,7 @@
   'sv':{
     '_language': 'Svenska',
     'and': 'och',
-    'in': 'i',
+    'in': 'om',
     'ago': 'sedan',
     'now': 'nu',
     'lose': 'förlora',
@@ -290,6 +293,7 @@
       'today': 'idag',
       'tomorrow': 'imorgon',
       'yesterday': 'igår',
+      'next': 'nästa',
     },
     'days':[
       "måndag",
@@ -640,6 +644,8 @@
       'today': "aujourd'hui",
       'tomorrow': 'demain',
       'yesterday': 'hier',
+      'next': 'prochain',
+      'last': 'dernier',
     },
     'days':[
       "lundi",
@@ -744,7 +750,7 @@
       45: '{hour} menos quarto',
       59: '{hour} menos uno',
       'past_hour': '{hour} y {minute}',
-      'to_hour': '{hour} menos {minute}', 
+      'to_hour': '{hour} menos {minute}',
     },
     'time_of_day':{
       'midnight': 'medianoche',
@@ -1116,13 +1122,99 @@
       45: 'без четверти {hour}',
       59: 'без минуты {hour}',
       'past_hour': '{hour} и {minute} минут',
-      'to_hour': 'без {minute} минут {hour}', 
+      'to_hour': 'без {minute} минут {hour}',
     },
     'time_of_day':{
       'midnight': 'полночь',
       'noon': 'полдень',
     },
   },
+  'uk':{
+    '_language': 'Українська',
+    'and': 'і',
+    'in': 'в',
+    'ago': 'тому',
+    'now': 'зараз',
+    'lose': 'зменшення',
+    'gain': 'збільшення',
+    'time':{
+      'format': '24-hr',
+      'year': [
+      'р',
+      'рік',
+      'роки',
+      ],
+      'week': [
+      'тиж',
+      'тиждень',
+      'тижні',
+      ],
+      'day': [
+      'д',
+      'день',
+      'дні',
+      ],
+      'hour': [
+      'год',
+      'година',
+      'години',
+      ],
+      'minute': [
+      'хв',
+      'хвилина',
+      'хвилини',
+      ],
+      'second': [
+      'сек',
+      'секунда',
+      'секунди',
+      ],
+    },
+    'delta':{
+      'today': 'сьогодні',
+      'tomorrow': 'завтра',
+      'yesterday': 'вчора',
+      'next': 'наступний',
+      'last': 'останній',
+    },
+    'days':[
+      "Понеділок",
+      "Вівторок",
+      "Середа",
+      "Четвер",
+      "П'ятниця",
+      "Субота",
+      "Неділя",
+    ],
+    'months':[
+      'Січень',
+      'Лютий',
+      'Березень',
+      'Квітень',
+      'Травень',
+      'Червень',
+      'Липень',
+      'Серпень',
+      'Вересень',
+      'Жовтень',
+      'Листопад',
+      'Грудень',
+    ],
+      'time_of_hour':{
+      0: '{hour} годин',
+      1: '{hour} годин(а) одна хвилина',
+      15: 'чверть на {hour}',
+      30: 'пів на {hour}',
+      45: 'за чверть {hour}',
+      59: 'за хвилину {hour}',
+      'past_hour': '{hour} та {minute} хвилин',
+      'to_hour': 'за {minute} хвилин {hour}', 
+    },
+    'time_of_day':{
+      'midnight': 'опівночі',
+      'noon': 'опівдні',
+    },
+    },
   'zh-Hans':{
     '_language': '简体中文',
     'and': '',
@@ -1198,6 +1290,168 @@
       'midnight': '午夜',
       'noon': '正午',
     },
+  },
+  'ko':{
+    '_language':'Korean',
+    'and':'',
+    'in':'후',
+    'ago':'전',
+    'now':'지금',
+    'lose':'감소',
+    'gain':'증가',
+    'time':{
+      'format':'24-hr',
+      'year':[
+        '년',
+        '년',
+        '년',
+      ],
+      'week':[
+        '주',
+        '주',
+        '주',
+      ],
+      'day':[
+        '일',
+        '일',
+        '일',
+      ],
+      'hour':[
+        '시',
+        '시간',
+        '시간',
+      ],
+      'minute':[
+        '분',
+        '분',
+        '분',
+      ],
+      'second':[
+        '초',
+        '초',
+        '초',
+      ],
+    },
+    'delta':{
+      'today':'오늘',
+      'tomorrow':'내일',
+      'yesterday':'어제',
+      'next':'다음',
+      'last':'지난',
+    },
+    'days':[
+      '월요일',
+      '화요일',
+      '수요일',
+      '목요일',
+      '금요일',
+      '토요일',
+      '일요일',
+    ],
+    'months':[
+      '1월',
+      '2월',
+      '3월',
+      '4월',
+      '5월',
+      '6월',
+      '7월',
+      '8월',
+      '9월',
+      '10월',
+      '11월',
+      '12월',
+    ],
+    'time_of_day':{
+      'midnight':'자정',
+      'noon':'정오',
+    },
+  },
+  'cs': {
+    '_language': 'Čeština',
+    'and': 'a',
+    'in': 'za',
+    'ago': 'před %s',
+    'now': 'nyní',
+    'lose': 'ztratit',
+    'gain': 'získat',
+    'time': {
+      'format': '12-hodin',
+      'year': [
+        'rok',
+        'rok',
+        'roky'
+      ],
+      'week': [
+        'týd',
+        'týden',
+        'týdny'
+      ],
+      'day': [
+        'd',
+        'den',
+        'dny'
+      ],
+      'hour': [
+        'hod',
+        'hodina',
+        'hodiny'
+      ],
+      'minute': [
+        'min',
+        'minuta',
+        'minuty'
+      ],
+      'second': [
+        'sek',
+        'sekunda',
+        'sekundy'
+      ]
+    },
+    'delta': {
+      'today': 'dnes',
+      'tomorrow': 'zítra',
+      'yesterday': 'včera',
+      'next': 'příští',
+      'last': 'poslední'
+    },
+    'days': [
+      'Pondělí',
+      'Úterý',
+      'Středa',
+      'Čtvrtek',
+      'Pátek',
+      'Sobota',
+      'Neděle'
+    ],
+    'months': [
+      'Leden',
+      'Únor',
+      'Březen',
+      'Duben',
+      'Květen',
+      'Červen',
+      'Červenec',
+      'Srpen',
+      'Září',
+      'Říjen',
+      'Listopad',
+      'Prosinec'
+    ],
+    'time_of_hour': {
+      0: '{hour} hodin',
+      1: 'minuta po {hour}',
+      15: 'čtvrt na {hour}',
+      30: 'půl {hour}',
+      45: 'tři čtvrtě na {hour}',
+      59: 'minuta do {hour}',
+      'past_hour': '{minute} po {hour}',
+      'to_hour': '{minute} do {hour}'
+    },
+    'time_of_day': {
+      'midnight': 'půlnoc',
+      'noon': 'poledne'
+    }
   }
 } %}
 
@@ -1288,8 +1542,8 @@
 {%- macro _check_for_duration_sensor(input) %}
 {%- if input is string and input | regex_search(valid_entity_id_pattern) and input.startswith('sensor') and states[input] is not none and states[input].attributes.device_class is defined and states[input].attributes.unit_of_measurement is defined -%}
   {%- set obj = states[input] -%}
-  {%- set divisor = _duration_sensor.get(obj.attributes.unit_of_measurement) -%}
-  {{- (obj.state | float / divisor) | string | as_timedelta -}}
+  {%- set multiplier = _duration_sensor.get(obj.attributes.unit_of_measurement) -%}
+  {{- (obj.state | float * multiplier) | string | as_timedelta -}}
 {%- else %}
   {{- '' -}}
 {%- endif -%}
@@ -1396,7 +1650,7 @@
   {%- set index = values.index(values | first | default) %}
   {%- for item in values[index:] %}
     {%- set duration = _durations.get(item, 1) %}
-    {%- set period = _periods.get(item, 1) %}
+    {%- set period = _periods.get(item, 0) %}
     {%- set value = ((seconds // duration) % (period if period else duration)) | int %}
     {%- if value > 0 or raw %}
       {%- if ns.ret | length == 0 %}
@@ -1805,13 +2059,15 @@
 {%- endif %}
 {%- set _12 = not (hour % 12) %}
 {%- set _24 = not (hour % 24) %}
+{%- set use_twelve = translate('time_of_day', 'use_twelve', language=language, fallback=false) %}
 {%- set _12hr = translate('time','format') == '12-hr' %}
-{%- if _12 and _24 and _12hr %}
+{%- if _12 and _24 and _12hr and not use_twelve %}
   {{- translate('time_of_day', 'midnight', language=language) }}
-{%- elif _12 and _12hr %}
+{%- elif _12 and _12hr and not use_twelve %}
   {{- translate('time_of_day', 'noon', language=language) }}
 {%- else %}
-  {{- hour % 12 if _12hr else hour }}
+  {%- set ret = hour % 12 if _12hr else hour %}
+  {{- 12 if ret == 0 and use_twelve else ret }}
 {%- endif %}
 {%- endmacro %}
 
@@ -1833,7 +2089,7 @@
   {%- set hour_phrase = hour(this_hour, language=language) %}
   {%- set minute_phrase = _phrase('minute', 60 * this_minute, language, True, True) if this_minute % 5 else this_minute | string %}
 {%- endif %}
-{%- set this_config = translate('time_of_hour') %}
+{%- set this_config = translate('time_of_hour', language=language) %}
 {%- if (16 <= this_minute <= 29 and 'to_half_hour' in this_config) or (31 <= this_minute <= 44 and 'past_half_hour' in this_config) or (this_minute == 30 and 'half_hour' in this_config) %}
   {%- set hour_phrase = hour(this_hour + 1, language=language) %}
   {%- if 16 <= this_minute <= 29 %}
