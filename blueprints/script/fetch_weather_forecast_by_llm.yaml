@@ -161,7 +161,7 @@ sequence:
           and start_time is defined
           and (start_date ~ ' ' ~ start_time) | as_datetime('NA') != 'NA'
           and time_period_type | default('NA') in ['hourly', 'daily']
-          and 1 <= time_period_lenght | default(0) <=48
+          and 1 <= time_period_length | default(0) <=48
         )
       }}
     then:
