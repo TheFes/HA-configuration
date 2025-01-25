@@ -4,7 +4,7 @@ blueprint:
   domain: script
   author: TheFes
   homeassistant:
-    min_version: 2024.6.0
+    min_version: 2024.10.0
   input:
     weather_settings:
       name: Weather settings
@@ -150,36 +150,30 @@ fields:
     required: true
 sequence:
   - variables:
-      version: 2.1
+      version: 2.2
+      weather_entity: !input weather_entity
+      start_date: "{{ start_date | as_datetime(default='') }}"
+      start_time: "{{ start_time | default('00:00:00') | as_timedelta | default('00:00:00', true) }}"
+      start: "{{ (start_date | as_datetime + as_timedelta(start_time)) | as_local if start_date  else 'NA' }}"
+      end: >
+        {% if start != 'NA' %}
+          {% set start = as_datetime(start) %}
+          {% set add = time_period_length | default(1) | int(1) %}
+          {% set type = time_period_type | default if time_period_type | default in ['daily', 'hourly'] else 'daily' %}
+          {{ (start + timedelta(days = add if type == 'daily' else 0, hours = add if type == 'hourly' else 0)).isoformat() }}
+        {% endif %}
   - alias: Check if variables were set correctly
-    if: >
-      {{
-        not
-        (
-          start_date is defined 
-          and start_date | as_datetime('NA') != 'NA'
-          and start_time is defined
-          and (start_date ~ ' ' ~ start_time) | as_datetime('NA') != 'NA'
-          and time_period_type | default('NA') in ['hourly', 'daily']
-          and 1 <= time_period_length | default(0) <=48
-        )
-      }}
+    if:
+      - condition: template
+        value_template: "{{ start != 'NA' and end | as_datetime > now() }}"
     then:
       - alias: Set variable for eror message
         variables:
           response:
             error: Unable to provide forecast because not all parameters were set by the AI agent
       - alias: Stop the script
-        stop: Not all variables were set for the forecast script
+        stop: Unable to determine the date for the weather forecast, or the date is in the past
         response_variable: response
-  - variables:
-      weather_entity: !input weather_entity
-      start: "{{ ((start_date ~ ' ' ~ start_time) | as_datetime | as_local).isoformat() }}"
-      end: >
-        {% set start = as_datetime(start) %}
-        {% set add = time_period_length %}
-        {% set type = time_period_type %}
-        {{ (start + timedelta(days = add if type == 'daily' else 0, hours = add if type == 'hourly' else 0)).isoformat() }}
   - action: weather.get_forecasts
     data:
       type: "{{ time_period_type }}"
