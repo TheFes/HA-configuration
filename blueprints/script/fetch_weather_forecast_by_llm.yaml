@@ -104,11 +104,11 @@ blueprint:
             "This argument is mandatory and must always be provided no matter what!
 
             Provide the time on which the requested forecast starts. This time should
-            be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always 
-            provide a time. In case a full day is requested, use 00:00:00, in case 
+            be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
+            provide a time. In case a full day is requested, use 00:00:00, in case
             the current hour is requested, use the start of the hour.
 
-            Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts 
+            Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts
             at 12:00:00  and evening starts at 18:00:00"
 
 mode: parallel
@@ -150,7 +150,7 @@ fields:
     required: true
 sequence:
   - variables:
-      version: 2.2
+      version: 2.3
       weather_entity: !input weather_entity
       start_date: "{{ start_date | as_datetime(default='') }}"
       start_time: "{{ start_time | default('00:00:00') | as_timedelta | default('00:00:00', true) }}"
@@ -184,13 +184,13 @@ sequence:
       calc_average: !input calc_average
       selected_data:
         forecast: >
-            {% set ns = namespace(forecast=[]) %}
-            {% for item in weather_response[weather_entity].forecast %}
-              {% if start | as_datetime <= item.datetime | as_datetime < end | as_datetime %}
-                {% set ns.forecast = ns.forecast + [item] %}
-              {% endif %}
-            {% endfor %}
-            {{ ns.forecast }}
+          {% set ns = namespace(forecast=[]) %}
+          {% for item in weather_response[weather_entity].forecast %}
+            {% if start | as_datetime <= item.datetime | as_datetime | as_local < end | as_datetime %}
+              {% set ns.forecast = ns.forecast + [item] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.forecast }}
       averaged:
         averaged_weather_data_for_period: >
           {% set ns = namespace(combined={}) %}
