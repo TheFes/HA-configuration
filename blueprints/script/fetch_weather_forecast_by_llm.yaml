@@ -165,7 +165,7 @@ sequence:
   - alias: Check if variables were set correctly
     if:
       - condition: template
-        value_template: "{{ start != 'NA' and end | as_datetime > now() }}"
+        value_template: "{{ start == 'NA' or end | as_datetime < now() }}"
     then:
       - alias: Set variable for eror message
         variables:
