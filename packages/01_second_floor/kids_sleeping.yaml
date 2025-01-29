@@ -5,7 +5,7 @@ template:
         id: "on"
       - platform: template
         value_template: >
-          {% set correction  = states('input_number.correction_clock_pepijn') | int(0) %}
+          {% set correction = states('input_number.correction_clock_pepijn') | float(0) %}
           {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
@@ -20,7 +20,7 @@ template:
         id: "on"
       - platform: template
         value_template: >
-          {% set correction  = states('input_number.correction_clock_floris') | int(0) %}
+          {% set correction = states('input_number.correction_clock_floris') | float(0) %}
           {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
