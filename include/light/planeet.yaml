@@ -12,9 +12,6 @@ lights:
       - action: switch.turn_on
         target:
           entity_id: switch.planeet
-      - wait_template: "{{ states('sensor.planeet_power') | float > 0 }}"
-        timeout:
-          seconds: 10
       - if: "{{ now() - states.light.planeet.last_changed > timedelta(minutes=5) }}"
         then:
           - repeat:
