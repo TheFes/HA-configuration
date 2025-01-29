@@ -3,13 +3,12 @@ alias: "Xiaomi button Bed Pepijn"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - trigger: state
-    entity_id: event.knop_pepijn_bed_action
-    not_from:
-      - unavailable
-      - unknown
+  - trigger: event
+    event_type: awtrix_button_event
+    event_data:
+      area: slaapkamer_pepijn
     variables:
-      event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+      event: "{{ trigger.event.data.click }}"
 variables:
   pepijn: >
     {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}
@@ -101,9 +100,3 @@ action:
             action: light.turn_off
             target:
               entity_id: light.groep_pepijn
-      - alias: "Actions on double press"
-        conditions: "{{ event == 'double' }}"
-        sequence: []
-      - alias: "Actions on release"
-        conditions: "{{ event == 'release' }}"
-        sequence: []

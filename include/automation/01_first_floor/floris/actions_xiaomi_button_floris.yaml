@@ -8,6 +8,12 @@ trigger:
       - unknown
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+  - trigger: event
+    event_type: awtrix_button_event
+    event_data:
+      area: slaapkamer_floris
+    variables:
+      event: "{{ trigger.event.data.click }}"
 action:
   - alias: "Which click type"
     choose:
