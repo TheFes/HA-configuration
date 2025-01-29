@@ -14,47 +14,66 @@ automation:
         data:
           variables:
             area: "{{ area_name(trigger.device_id) }}"
-      - alias: Only use LLM to generate weather forecast if last text was created over an hour ago
-        if: >
-          {{
-            now() - state_attr('sensor.variables', 'variables').get('llm_weather', {}).timestamp
-                      | default(0)
-                      | as_datetime
-            > timedelta(hours=1)
-          }}
-        then:
-          - action: weather.get_forecasts
-            data:
-              type: daily
-            target:
-              entity_id: weather.combined
-            response_variable: response
-          - variables:
-              forecast_today: "{{ response['weather.combined'].forecast[0] }}"
-              current_temp: "{{ state_attr('weather.combined', 'temperature') ~ ' °C' }}"
-              current_state: "{{ state_translated('weather.combined') }}"
-          - action: conversation.process
-            data:
-              text: >
-                De huidige termeratuur is {{ current_temp }} en het is nu {{ current_state }}.
-                De voorspelling voor vandaag is {{ forecast_today }}.
-                Geef me een kort bericht wat begint met de huidige weersomstandigheden,
-                en dan een voorspelling voor de dag. Rond temperaturen af op hele graden.
-                Geef over de wind alleen aan hoe hard het waait, bijvoorbeeld "vandaag waait het vrij hard
-                of "vandaag is er bijna geen wind".
-                Je mag een grapje maken over de voorspelling van vandaag.
-              agent_id: conversation.chatgpt
-            response_variable: response_weather
-          - alias: Store reponse in variable sensor
-            event: set_variable
-            event_data:
-              key: llm_weather
-              value: "{{ response_weather.response.speech.plain.speech }}"
-              set_timestamp: true
-          - alias: Short delay to ensure variable is stored
-            delay: 0.5
+      - action: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.combined
+        response_variable: response
+      - variables:
+          forecast: >
+            {% set weather_condition = {
+              'clear': ['en helder', 'zonnige'],
+              'clear-night': ['en helder'],
+              'cloudy': ['en bewolkt', 'grijze'],
+              'exceptional': ['en extreem', 'extreme'],
+              'fog': ['met mist', 'mistige'],
+              'hail': ['met hagel', 'hagelachtige'],
+              'lightning': ['met onweer', 'onweerachtige'],
+              'lightning-rainy': ['met onweer en regen', 'onweer- en regenachtige'],
+              'partlycloudy': ['en gedeeltelijk bewolkt', 'gedeeltelijk bewolkte'],
+              'pouring': ['met stortregen', 'kletsnatte'],
+              'rainy': ['met regen', 'regenachtige'],
+              'snowy': ['met sneeuw', 'besneewude'],
+              'snowy-rainy': ['met sneeuw en regen', 'sneeuw- met regenachtige'],
+              'sunny': ['en zonnig' 'zonnige'],
+              'windy': ['met wind', 'winderige'],
+              'windy-variant': ['met wind en bewolking', 'winderige en bewolkte']
+            } %}
+            {% set forecast = response['weather.combined'].forecast[0] %}
+    
+            {% set wind = [
+              dict(speed=12, name='matige wind'),
+              dict(speed=29, name='vrij krachtige wind'),
+              dict(speed=29, name='krachtige wind'),
+              dict(speed=49, name='harde wind'),
+              dict(speed=62, name='stormachtige wind'),
+              dict(speed=75, name='storm'),
+              dict(speed=89, name='zware storm'),
+              dict(speed=103, name='zeer zware storm'),
+              dict(speed=117, name='orkaan')
+            ] %}
+    
+            De huidige weersomstandigheden zijn {{ state_attr('weather.combined', 'temperature') | round(0) }} 
+            graden {{ weather_condition[states('weather.combined')][0] }}.
+            Vandaag wordt het een {{ weather_condition[forecast.condition][1] }} dag met een temperatuur tussen 
+            de {{ forecast.templow | round(0) }} en {{ forecast.temperature | round(0) }} graden. 
+            {% if forecast.temperature | round(0) != forecast.apparent_temperature | round(0) %}Het voelt 
+            als {{ forecast.apparent_temperature | round(0) }} graden.{% endif %}
+            {% if forecast.precipitation_probability > 10 %}Er is {{ forecast.precipitation_probability | 
+            round(0) }}% kans op {{ forecast.precipitation | round(0) }} mm regen, neem voor de zekerheid 
+            maar een paraplu mee naar buiten.{% endif %}
+            {% if forecast.wind_speed >= 12 %}Er is vandaag {{ wind | selectattr('speed', '>=', forecast.wind_speed) 
+            | map(attribute='name') | list | first }}.{% endif %} {% if forecast.wind_speed >= 62 %}Dus als je 
+            niet weg hoeft, blijf maar beter binnen.{% elif forecast.wind_speed >= 29 %}Dus zorg dat je {% if 
+            forecast.precipitation_probability > 10 %}paraplu {% endif %}niet weg waait!{% endif %}
+            {% if forecast.uv_index > 3 and forecast.condition in ['clear', 'partlycloudy'] %}De zon schijnt 
+            lekker fel vandaag, zorg dus dat je je goed insmeert als je naar buiten gaat.{% endif %}
+          forecast_today: "{{ response['weather.combined'].forecast[0] }}"
+          current_temp: "{{ state_attr('weather.combined', 'temperature') ~ ' °C' }}"
+          current_state: "{{ state_translated('weather.combined') }}"
       - alias: Set response
         set_conversation_response: >
           Goedemorgen.
-          {{ state_attr('sensor.variables', 'variables')['llm_weather']['value'] }}
+          {{ forecast }}
     mode: single
