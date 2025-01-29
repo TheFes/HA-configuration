@@ -1,0 +1,224 @@
+blueprint:
+  name: Voice - Calendar entries - Full LLM script
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/3_voice_calendar_entries_full_llm.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    # Request the calendar entries by use of an LLM
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set one or more calendar entries for which you want to get the eventa
+
+    #### Optional
+
+    * Adjust the prompts for each field used in the script. The descriptions guide
+    the LLM to provide the correct input
+
+    #### Note:
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for weather forecasts.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+    #### Example for script description:
+
+    `Fetch calendar events from my calendar. In case the data for the weekend is requested,
+    this means Saturday and Sunday`
+
+    ### Usage
+
+    You can request for the calendar entries in any way yuou can think of, using any
+    language. Unless set otherwise in the LLM configuration, the response will be
+    in the same language as the command.
+
+    You can refer to a single day, multiple days (e.g. next weekend) a part of the
+    day (e.g. next morning) or one or more hours (e.g. from 5 to 9).
+
+    You can even ask for specific events, for example, will there be a doctor''s appointment
+    in the next 2 weeks.
+
+
+    #### Examples
+
+    ```
+
+    What''s on the calendar tomorrow?
+
+    Do I have something on the calendar this evening?
+
+    Am I busy tonight at 9?
+
+    Do I have a doctor''s appointment next week?
+
+    ```'
+  domain: script
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    calendar_entities:
+      name: Calendar entities
+      description: Select the calendar entities to fetch the entries from
+      selector:
+        entity:
+          multiple: true
+          filter:
+          - domain:
+            - calendar
+    prompt_settings:
+      name: Prompt settings for the LLM
+      icon: mdi:robot
+      description: You can use these settings to finetune the prompts for your specific
+        LLM (model). In most cases the defaults should be fine.
+      collapsed: true
+      input:
+        time_period_type_prompt:
+          name: Time period type prompt
+          description: The prompt which will be used to the LLM can provide the type
+            for the time period (days or hours)
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Use ''daily'' in case the request is for full days, examples: today, next
+            Thursday, coming weekend. Use ''hourly'' in case the request is for a
+            part of a day, examples: at 8 hours this evening, next morning, this evening,
+            from 3 to 5'
+        time_period_length_prompt:
+          name: Time period length prompt
+          description: The prompt which will be used to the LLM can provide the length
+            of the time period.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            The length of the time period. This will be the number of days in case
+            the ''time_period_type'' is ''daily''  and the number of hours in case
+            ''time_period_type'' is ''hourly''. Examples: 1 (day) if the request is
+            for the forecast of today, 2 (days) if the request is for the calendar
+            entries for this weekend, 6 (hours) if the request is for the calendar
+            entries for periods like night, morning, afternoon and evening'
+        date_prompt:
+          name: Date prompt
+          description: The prompt which will be used to the LLM can provide the start
+            date for the forecast period
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the date on which the requested period starts. This date should
+            be in the format YYYY-MM-DD. Always provide a date, so in case request
+            is the forecast for today, provide today''s date.
+
+            When the requested period is for the night, do not use today''s date but
+            always use the next day, unless the current time is still before 05:00:00'
+        time_prompt:
+          name: Time prompt
+          description: The prompt which will be used to the LLM can provide the start
+            time for the forecast period
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the time on which the requested period starts. This time should
+            be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
+            provide a time. In case a full day is requested, use 00:00:00, in case
+            the current hour is requested, use the start of the hour.
+
+            Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts
+            at 12:00:00  and evening starts at 18:00:00'
+mode: parallel
+max_exceeded: silent
+fields:
+  time_period_type:
+    name: Time Period Type
+    description: !input time_period_type_prompt
+    selector:
+      select:
+        options:
+        - daily
+        - hourly
+    required: true
+  time_period_length:
+    name: Time Period Length
+    description: !input time_period_length_prompt
+    selector:
+      number:
+        min: 1
+        max: 48
+    required: true
+  start_date:
+    name: Start Date
+    description: !input date_prompt
+    selector:
+      date:
+    required: true
+  start_time:
+    name: Start Time
+    description: !input time_prompt
+    selector:
+      time:
+    required: true
+sequence:
+- variables:
+    version: 20250129
+    start_date: '{{ start_date | as_datetime(default='''') }}'
+    start_time: '{{ start_time | default(''00:00:00'') | as_timedelta | default(''00:00:00'',
+      true) }}'
+    start: '{{ (start_date | as_datetime + as_timedelta(start_time)) | as_local if
+      start_date else ''NA'' }}'
+    end: '{% if start != ''NA'' %}
+
+      {% set start = as_datetime(start) %}
+
+      {% set add = time_period_length | default(1) | int(1) %}
+
+      {% set type = time_period_type | default if time_period_type | default in [''daily'',
+      ''hourly''] else ''daily'' %}
+
+      {{ (start + timedelta(days = add if type == ''daily'' else 0, hours = add if
+      type == ''hourly'' else 0)).isoformat() }}
+
+      {% endif %}'
+- alias: Check if variables were set correctly
+  if:
+  - condition: template
+    value_template: '{{ start == ''NA'' or end | as_datetime < now() }}'
+  then:
+  - alias: Set variable for eror message
+    variables:
+      response:
+        error: Unable to provide calendar events because not all parameters were set
+          by the AI agent
+  - alias: Stop the script
+    stop: Unable to determine the date for the calendar entries, or the date is in
+      the past
+    response_variable: response
+- action: calendar.get_events
+  target:
+    entity_id: !input calendar_entities
+  response_variable: response
+  data:
+    start_date_time: '{{start }}'
+    end_date_time: '{{end }}'
+- variables:
+    result:
+      events: "{{\n  response.values()\n    | map(attribute='events')\n    | sum(start=[])\n
+        \   | sort(attribute=start)\n}}"
+- stop: ''
+  response_variable: result

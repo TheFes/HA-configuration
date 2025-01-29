@@ -114,10 +114,185 @@
           entity_id: switch.luchtreiniger_slaapkamer_led_enable
         data: {}
   mode: single
-- id: '1737125075254'
-  alias: Music Assistant - Local LLM Enhanced Voice Support Blueprint
+- id: '1737282165653'
+  alias: Run actions on Awtrix button press
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.awtrix_martijn_button_left
+    - binary_sensor.awtrix_martijn_button_select
+    - binary_sensor.awtrix_martijn_button_right
+    - binary_sensor.awtrix_floris_button_left
+    - binary_sensor.awtrix_floris_button_select
+    - binary_sensor.awtrix_floris_button_right
+    - binary_sensor.awtrix_pepijn_button_left
+    - binary_sensor.awtrix_pepijn_button_select
+    - binary_sensor.awtrix_pepijn_button_right
+    from: 'off'
+    to: 'on'
+  conditions: []
+  actions:
+  - wait_for_trigger:
+    - trigger: template
+      value_template: '{{ is_state(trigger.entity_id, ''off'') }}'
+    timeout:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - variables:
+      time: '{{ 2 if wait.trigger is none else (wait.trigger.to_state.last_changed
+        - trigger.to_state.last_changed).total_seconds() }}'
+      click: '{{ ''single'' if time < 2 else ''hold'' }}'
+  - event: awtrix_button_event
+    event_data:
+      area: '{{ area_id(trigger.entity_id) }}'
+      button: '{{ trigger.entity_id.split(''_'')[-1] }}'
+      click: '{{ click }}'
+  mode: single
+- id: '1737361652862'
+  alias: EN - Music Assistant - Local LLM Enhanced Voice Support Blueprint
   description: ''
   use_blueprint:
-    path: music-assistant/mass_llm_enhanced_assist_blueprint_nlyaml.yaml
+    path: music-assistant/mass_llm_enhanced_assist_blueprint_en.yaml
     input:
+      expose_players: false
+      expose_areas: false
       llm_agent: conversation.openai_no_control
+- id: '1737388853880'
+  alias: Turn off Studio Code Server add-on
+  description: ''
+  triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: action_vscode_off
+  conditions: []
+  actions:
+  - action: hassio.addon_stop
+    metadata: {}
+    data:
+      addon: a0d7b954_vscode
+  mode: single
+- id: '1737403451714'
+  alias: Music Assistant - Local(only) Voice Support Blueprint
+  description: ''
+  use_blueprint:
+    path: music-assistant/mass_assist_blueprint_en.yaml
+    input:
+      default_player_entity_id_input: media_player.test_player
+      album_trigger:
+      - (play|listen to|bla bla) [the ](album|ep|record|compilation|single) {media_name}
+        [by [the ](artist|band|group) {artist}] [(in|on|using) [the ]{area_or_player_name}][
+        (with|using) {radio_mode}]
+      track_trigger:
+      - (play|listen to|bla bla) [the ](track|song) {media_name} [by [the ](artist|band|group)
+        {artist}] [(in|on|using) [the ]{area_or_player_name}][ (with|using) {radio_mode}]
+      artist_trigger:
+      - (play|listen to|bla bla) [the ](artist|band|group) {media_name} [(in|on|using)
+        [the ]{area_or_player_name}][ (with|using) {radio_mode}]
+      radio_trigger:
+      - (play|listen to|bla bla) [the ]((radio station)|(radio)|(station)) {media_name}
+        [(in|on|using) [the ]{area_or_player_name}]
+      playlist_trigger:
+      - (play|listen to|bla bla) [the ]playlist {media_name} [(in|on|using) [the ]{area_or_player_name}][
+        (with|using) {radio_mode}]
+      response_input: 'TEST: {{ trigger.slots.media_name }} playing on {{ mass_player_name
+        }}'
+- id: '1737968496160'
+  alias: Voice - Weather Forecast - Local Assist Blueprint
+  description: ''
+  use_blueprint:
+    path: TheFes/1_voice_weather_forecast_local.yaml
+    input:
+      weather_entity: weather.combined
+- id: '1737968516911'
+  alias: Voice - Weather Forecast - Local Assist Blueprint
+  description: ''
+  use_blueprint:
+    path: TheFes/1_voice_weather_forecast_local.yaml
+    input:
+      weather_entity: weather.combined
+      today:
+      - vandaag
+      tomorrow:
+      - morgen
+      day_after_tomorrow:
+      - overmorgen
+      monday:
+      - maandag
+      tuesday:
+      - dinsdag
+      wednesday:
+      - woensdag
+      thursday:
+      - donderdag
+      friday:
+      - vrijdag
+      saturday:
+      - zaterdag
+      sunday:
+      - zondag
+      night:
+      - vannacht
+      - morgennacht
+      - morgen nacht
+      morning:
+      - ochtend
+      - morgenvroeg
+      - morgen vroeg
+      afternoon:
+      - middag
+      - vanmiddag
+      - morgenmiddag
+      evening:
+      - morgenavond
+      - vanavond
+      - morgen avond
+      clear: en helder
+      clear-night: en helder
+      cloudy: en bewolkt
+      fog: en misting
+      hail: met hagel
+      lightning: met onweer
+      lightning-rainy: met onweer en regen
+      partlycloudy: en gedeeltelijk bewolkt
+      pouring: met stortregen
+      rainy: met regen
+      snowy: met sneeuw
+      snowy-rainy: met sneeuw en regen
+      sunny: en zonnig
+      windy: en winderig
+      windy-variant: met wind en woken
+      exceptional: met zeer uitzonderlijk weer
+      response_invalid_phrase: Ik kan geen weersvoorspelling ophalen voor {{ phrase
+        }}
+      response_no_data: Geen weersvoorspelling beschikbaar voor {{ phrase }}
+      response_forecast: Het wordt {{ temperature }} graden {{ condition_translated
+        }}. {% if temperature != apparent_temperature %}Het voelt als {{ apparent_temperature
+        }} graden.{% endif %} {% if precipitation_probability > rain_warning_threshold
+        %}Er is {{ precipitation_probability }}% kans op {{ precipitation }} milimeter
+        regen, dus neem een paraplu mee als je naar buiten gaat.{% endif %} {% if
+        uv_index > 3 and condition in ['clear', 'partlycloudy'] %}De zon schijnt fel
+        vandaag, dus doe zonnebrand op als je naar buiten gaat.{% endif %} {% if wind_speed
+        >= wind_threshold %} De wind wordt {{ wind_phrase }}.{% endif %} {% if wind_speed
+        >= wind_warning_threshold %}Dus als je niet per se naar buiten hoeft, blijf
+        dan vooral lekker binnen.{% elif wind_speed >= wind_joke_threshold %}Dus zorg
+        dat je {% if precipitation_probability > 10 %}paraplu {% else %}'t{% endif
+        %}niet weg waait!{% endif %}
+      wind_phrases:
+        windstil: 0
+        zwak: 1
+        matig: 12
+        vrij krachtig: 29
+        krachtig: 39
+        hard: 50
+        stormachtig: 62
+        een storm: 75
+        een zware storm: 89
+        een zeer zware storm: 103
+        een orkaan: 118
+      trigger:
+      - Wat voor weer wordt het [[deze|komende] {phrase}]
+      - Wat is de [weers]voorspelling [[voor] [deze|komende] {phrase}]
+

@@ -1,0 +1,281 @@
+blueprint:
+  name: Voice - Weather Forecasts - Full LLM script
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/weather/3_voice_weather_forecast_full_llm.yaml
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    # Request the weather forecast by use of an LLM
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set a weather entity to use for the forecasts
+
+    #### Optional
+
+    * Enabled calculate avarages. When disabled all relevant data entries are sent
+    to the LLM, when it's enabled only one summarized for the entire period
+    is sent. This can be usefull if your LLM just lists all items instead of description
+    over the entire period.
+    * Adjust the prompts for each field used in the script. The descriptions guide
+    the LLM to provide the correct input
+
+    #### Note:
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for weather forecasts.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+    #### Example for script description:
+
+    `Fetches the weather forecast for either a part of a day, or one or more full
+    days. In case the weather for the weekend is requested, this means Saturday and
+    Sunday`
+
+    ### Usage
+
+    You can request for the forecast in any way yuou can think of, using any language.
+    Unless set otherwise in the LLM configuration, the response will be in the same
+    language as the command.
+
+    You can refer to a single day, multiple days (e.g. next weekend) a part of the
+    day (e.g. next morning) or one or more hours (e.g. from 5 to 9).
+
+    You can even ask for specific weather conditions, for example, will it rain tomorrow.
+    Or should I take an umbrella if I go out this evening.
+
+
+    #### Examples
+
+    ```
+
+    Give me the weather forecast for this evening
+
+    Do I need to apply sunscreen if I go out tomorrow morning
+
+    Will it rain at 9 this evening
+
+    What''s the weather for this weekend
+
+    ```"
+  domain: script
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    weather_settings:
+      name: Weather settings
+      icon: mdi:weather-lightning-rainy
+      description: Here you need to select the weather entity you want to use
+      input:
+        weather_entity:
+          name: Weather entity
+          description: Select the weather entity to use for the forecast. Needs to
+            be a weather entity which provides an hourly and daily forecast
+          selector:
+            entity:
+              multiple: false
+              filter:
+              - domain:
+                - weather
+        calc_average:
+          name: Calculate averages
+          description: 'When this is enabled, the LLM will only receive the average
+            of the data for the selected period, instead of the data for each hour/day.
+            For text fields like the current condition, the most frequent value will
+            be sent.
+
+            When disabled all data for each hour or day will be sent.'
+          selector:
+            boolean: {}
+          default: false
+    prompt_settings:
+      name: Prompt settings for the LLM
+      icon: mdi:robot
+      description: You can use these settings to finetune the prompts for your specific
+        LLM (model). In most cases the defaults should be fine.
+      collapsed: true
+      input:
+        time_period_type_prompt:
+          name: Time period type prompt
+          description: The prompt which will be used to the LLM can provide the type
+            for the time period (days or hours)
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Use ''daily'' in case the request is for full days, examples: today, next
+            Thursday, coming weekend. Use ''hourly'' in case the request is for a
+            part of a day, examples: at 8 hours this evening, next morning, this evening,
+            from 3 to 5'
+        time_period_length_prompt:
+          name: Time period length prompt
+          description: The prompt which will be used to the LLM can provide the length
+            of the time period.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            The length of the time period. This will be the number of days in case
+            the ''time_period_type'' is ''daily''  and the number of hours in case
+            ''time_period_type'' is ''hourly''. Examples: 1 (day) if the request is
+            for the forecast of today, 2 (days) if the request is for the weather
+            this weekend, 6 (hours) if the request is for the weather periods like
+            night, morning, afternoon and evening'
+        date_prompt:
+          name: Date prompt
+          description: The prompt which will be used to the LLM can provide the start
+            date for the forecast period
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the date on which the requested forecast starts. This date should
+            be in the format YYYY-MM-DD. Always provide a date, so in case request
+            is the forecast for today, provide today''s date.
+
+            When the forecast is for the night, do not use today''s dat but always
+            use the next day, unless the current time is still before 05:00:00'
+        time_prompt:
+          name: Time prompt
+          description: The prompt which will be used to the LLM can provide the start
+            time for the forecast period
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the time on which the requested forecast starts. This time should
+            be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
+            provide a time. In case a full day is requested, use 00:00:00, in case
+            the current hour is requested, use the start of the hour.
+
+            Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts
+            at 12:00:00  and evening starts at 18:00:00'
+mode: parallel
+max_exceeded: silent
+description: 'Gets the weather forecast for either a part of a day, or one or more
+  full days. In case the weather for the weekend is requested, this means Saturday
+  and Sunday'
+fields:
+  time_period_type:
+    name: Time Period Type
+    description: !input time_period_type_prompt
+    selector:
+      select:
+        options:
+        - daily
+        - hourly
+    required: true
+  time_period_length:
+    name: Time Period Length
+    description: !input time_period_length_prompt
+    selector:
+      number:
+        min: 1
+        max: 48
+    required: true
+  start_date:
+    name: Start Date
+    description: !input date_prompt
+    selector:
+      date:
+    required: true
+  start_time:
+    name: Start Time
+    description: !input time_prompt
+    selector:
+      time:
+    required: true
+sequence:
+- variables:
+    version: 20250128
+    weather_entity: !input weather_entity
+    start_date: '{{ start_date | as_datetime(default='''') }}'
+    start_time: '{{ start_time | default(''00:00:00'') | as_timedelta | default(''00:00:00'',
+      true) }}'
+    start: '{{ (start_date | as_datetime + as_timedelta(start_time)) | as_local if
+      start_date else ''NA'' }}'
+    end: '{% if start != ''NA'' %}
+
+      {% set start = as_datetime(start) %}
+
+      {% set add = time_period_length | default(1) | int(1) %}
+
+      {% set type = time_period_type | default if time_period_type | default in [''daily'',
+      ''hourly''] else ''daily'' %}
+
+      {{ (start + timedelta(days = add if type == ''daily'' else 0, hours = add if
+      type == ''hourly'' else 0)).isoformat() }}
+
+      {% endif %}'
+- alias: Check if variables were set correctly
+  if:
+  - condition: template
+    value_template: '{{ start == ''NA'' or end | as_datetime < now() }}'
+  then:
+  - alias: Set variable for eror message
+    variables:
+      response:
+        error: Unable to provide forecast because not all parameters were set by the
+          AI agent
+  - alias: Stop the script
+    stop: Unable to determine the date for the weather forecast, or the date is in
+      the past
+    response_variable: response
+- action: weather.get_forecasts
+  data:
+    type: '{{ time_period_type }}'
+  target:
+    entity_id: !input weather_entity
+  response_variable: weather_response
+- variables:
+    calc_average: !input calc_average
+    selected_data:
+      forecast: '{% set ns = namespace(forecast=[]) %}
+
+        {% for item in weather_response[weather_entity].forecast %}
+
+        {% if start | as_datetime <= item.datetime | as_datetime | as_local < end
+        | as_datetime %}
+
+        {% set ns.forecast = ns.forecast + [item] %}
+
+        {% endif %}
+
+        {% endfor %} {{ ns.forecast }}'
+    averaged:
+      averaged_weather_data_for_period: '{% set ns = namespace(combined={}) %}
+
+        {% set weather_data = selected_data.forecast %}
+
+        {% set forecast_keys = (weather_data[0] | default({})).keys() | reject(''eq'',
+        ''datetime'') %}
+
+        {% for item in forecast_keys %}
+
+        {% set combine = weather_data | map(attribute=item) | list %}
+
+        {% set combine = combine | statistical_mode if combine[0] is string else combine
+        | average | round %}
+
+        {% set ns.combined = dict(ns.combined, **{item: combine}) %}
+
+        {% endfor %}
+
+        {{ dict(start_of_period=start, end_of_period=end, **ns.combined) }}'
+    response: '{{ averaged if calc_average else selected_data }}'
+- stop: ''
+  response_variable: response

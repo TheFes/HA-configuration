@@ -4,6 +4,17 @@ fetch_weather_forecast_data:
     path: fetch_weather_forecast_by_llm.yaml
     input:
       weather_entity: weather.combined
+      calc_average: false
+      time_prompt: 'This argument is mandatory and must always be provided no matter
+        what!
+
+        Provide the time on which the requested forecast starts. This time should
+        be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
+        provide a time. In case a full day is requested, use 00:00:00, in case the
+        current hour is requested, use the start of the hour
+
+        Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts at
+        12:00:00 and evening starts at 18:00:00'
   description: Gets the weather forecast for either a part of a day, or one or more
     full days. In case the weather for the weekend is requested, this means Saturday
     and Sunday
@@ -11,12 +22,12 @@ fetch_weather_forecast_data:
 fetch_calendar_events:
   alias: Fetch Calendar Events
   use_blueprint:
-    path: fetch_calendar_entries_by_llm.yaml
+    path: TheFes/3_voice_calendar_entries_full_llm.yaml
     input:
       calendar_entities:
-      - calendar.thefes
       - calendar.m_m
       - calendar.kids
+      - calendar.thefes
   description: Fetch calendar events from my calendar. In case the data for the weekend
     is requested, this means Saturday and Sunday
   icon: mdi:calendar
@@ -92,36 +103,60 @@ voice_script_for_music_assistant_requests:
     description of each parameter. Use this tool whenever the user requests to play
     music.'
   icon: mdi:account-music
-shopping_list_copy:
+current_device_state:
   sequence:
-  - repeat:
-      sequence:
-      - action: todo.add_item
-        metadata: {}
-        data:
-          item: '{{ repeat.item }}'
-        target:
-          entity_id: todo.boodschappen
-      - delay: 0.5
-      for_each:
-      - 'Fiets zitje '
-      - Stanley mesjes Marleen werkkamer
-      - Voorjaar deur schilderen
-      - 'Zilvervis vallen '
-      - Zwemles Floris?
-      - Handcreme
-      - Haakje tuinkast
-      - kauwgom
-      - Zuivelspread
-      - slachte olijven
-      - limonade
-      - koekjes
-      - rauwkost
-      - Chipjes
-      - zilvervliesrijst
-      - eieren
-      - bananen
-      - Wortels
-      - kindertas
-  alias: Shopping list copy
-  description: ''
+  - variables:
+      mapping:
+        dishwasher:
+          currently_active: '{{ iif(states(''binary_sensor.dishwasher_active'') |
+            bool(false), ''Yes'', ''No'') }}'
+          current_program: '{%- set prog = states(''input_select.dishwasher_program'')
+            %} {%- set prog_extra = states(''input_select.dishwasher_program_extra'')
+            %} {%- set running = states(''binary_sensor.dishwasher_active'') | bool
+            %} {{ [prog, prog_extra] | select() | join('' '') if running else ''Inactive''
+            }}
+
+            '
+          ready_at: '{{ as_datetime(states(''sensor.dishwasher_end_time'')).replace(second=0,
+            microsecond=0) if is_state(''binary_sensor.dishwasher_active'', ''on'')
+            else ''Inactive'' }}
+
+            '
+          minutes_left: '{{ [(as_datetime(states(''sensor.dishwasher_end_time''))
+            - now()).total_seconds() // 60, 0] | max }}
+
+            '
+        washing_machine:
+          currently_active: '{{ iif(states(''sensor.wasmachine'') | bool(false),''Yes'',
+            ''No'') }}'
+          current_program: '{%- set prog = states(''sensor.wasmachine_current_course'')
+            %} {%- set error = ''Error'' if is_state(''binary_sensor.wasmachine_error_state'',
+            ''on'') %} {%- set running = states(''sensor.wasmachine'') | bool %} {{
+            error or prog if running else ''Inactive'' }}
+
+            '
+          ready_at: '{{ now().replace(second=0, microsecond=0) + as_timedelta(states(''sensor.wasmachine_remain_time''))
+            if  is_state(''sensor.wasmachine'', ''on'') else ''Inactive'' }}
+
+            '
+          minutes_left: '{{ (as_timedelta(states(''sensor.wasmachine_remain_time'')).total_seconds()
+            // 60) | int }}
+
+            '
+      response: '{{ mapping[device] }}'
+  - stop: ''
+    response_variable: response
+  fields:
+    device:
+      selector:
+        select:
+          options:
+          - dishwasher
+          - washing_machine
+      name: Device
+      description: Select from which device the details on the current state are requested.
+      required: true
+  alias: Current device state
+  description: Script to request the current state of a device in the house. The information
+    is only available for the devices in the "device" option. Convert the time in
+    minutes to hours and minutes in case it is more than 60 minutes.

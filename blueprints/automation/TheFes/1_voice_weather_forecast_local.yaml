@@ -1,0 +1,669 @@
+blueprint:
+  domain: automation
+  name: Voice - Weather Forecast - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/weather/1_voice_weather_forecast_local.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/weather/1_voice_weather_forecast_local.md)
+
+    # Request the weather forecast fully locally
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set a weather entity to use for the forecasts
+
+    #### Optional
+
+    * Add triggers or change the existing ones
+
+    * Change or translate the settings for the phrases which will be taken from the
+    trigger
+
+    * Change or translate the settings for the response given by Assist
+
+    #### These translations are already available:
+
+    * [Dutch](https://github.com/TheFes/ha-blueprints/blob/main/documentation/weather/translations/1_voice_weather_forecast_nl.md)
+
+
+    ### Usage
+
+    All sentences need to match the format defined in the trigger sentences. By default
+    the following sentences are configured:
+
+    - what(''s| is) [this|next] ({phrase}['']s|the [current]|this) weather [forecast]
+
+    - what(''s| is) the weather [forecast] [for] [this|next] ({phrase}|day)
+
+    - what(''ll| will) the weather [forecast] be [like] [[for] [[the] coming|this]
+    ({pharse}|day)]
+
+    #### Trigger sentence syntax
+
+    All parts between square brackets are optional, the sentence will be recognized
+    with and without those parts. A pipe `|` means `or`. All parts betwee round brackets
+    are mandatory, but also here the pipe means `or`.
+
+    The {phrase} part refers to the moment you want the weather forecast for. This
+    can be `today`, `tomorrow`, `day after tomorrow` for a day related to the current
+    day. It can also be a weekday, like `Monday` or `Thursday`. In that case the next
+    weekday will be used. You can also use `night`, `morning`, `afternoon` or `evening`.
+
+    #### Examples without phrase (will return the current day)
+
+    ```
+
+    * What''s the weather
+
+    * What will the weather be like
+
+    ```
+
+    #### Examples with a phrase (will return the requested moment)
+
+    ```
+
+    * What''s the weather tomorrow
+
+    * What is the weather forecast for next Thursday
+
+    * What will the weather be like this evening
+
+    ```'
+  input:
+    weather_entity:
+      name: Weather Entity
+      selector:
+        entity:
+          filter:
+          - domain:
+            - weather
+          multiple: false
+    trigger_settings:
+      name: Trigger settings
+      icon: mdi:chat
+      description: Settings for the trigger, you can adjust them, or translate them
+        to your own language
+      input:
+        trigger:
+          name: Trigger for weather forecast
+          description: The trigger for this automation. The {phrase} part will be
+            used for the period (e.g "tomorrow")
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - what('s| is) [this|next] ({phrase}[']s|the|this) weather [forecast]
+          - what('s| is) the weather [forecast] [for] [this|next] ({phrase}|day)
+          - what('ll| will) the weather [forecast] be [like] [[for] [[the] coming|this]
+            ({pharse}|day)]
+    daily_forecast_settings:
+      name: Settings for the daily forecast.
+      icon: mdi:chat
+      description: Here all the settings for the daily forecast are done
+      collapsed: true
+      input:
+        today:
+          name: Today
+          description: Phrases to request today's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - today
+        tomorrow:
+          name: Tomorrow
+          description: Phrases to request tomorrow's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - tomorrow
+        day_after_tomorrow:
+          name: Day after tomorrow
+          description: Phrases to request the day after tomorrow's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - day after tomorrow
+        monday:
+          name: Monday
+          description: Phrases to request next monday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - monday
+        tuesday:
+          name: Tuesday
+          description: Phrases to request next Tuesday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - tuesday
+        wednesday:
+          name: Wednesday
+          description: Phrases to request next Wednesday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - wednesday
+        thursday:
+          name: Thursday
+          description: Phrases to request next Thursday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - thursday
+        friday:
+          name: Friday
+          description: Phrases to request next Friday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - friday
+        saturday:
+          name: Saturday
+          description: Phrases to request next Saturday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - saturday
+        sunday:
+          name: Sunday
+          description: Phrases to request next Sunday's forecast
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - sunday
+    day_part_forecast_settings:
+      name: Settings for the forecast of a part of the day.
+      icon: mdi:chat
+      description: Here all the settings for the daily forecast are done
+      collapsed: true
+      input:
+        night:
+          name: Night
+          description: Phrases to request the forecast for the night
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - night
+        morning:
+          name: Morning
+          description: Phrases to request the forecast for the morning
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - morning
+        afternoon:
+          name: Afternoon
+          description: Phrases to request the forecast for the afternoon
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - afternoon
+        evening:
+          name: Evening
+          description: Phrases to request the forecast for the evening
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - evening
+    response_settings:
+      name: Settings for the reponses
+      icon: mdi:chat
+      description: Change or translate the response
+      collapsed: true
+      input:
+        clear:
+          name: Clear
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and clear
+        clear-night:
+          name: Clear Night
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and clear
+        cloudy:
+          name: Cloudy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and cloudy
+        fog:
+          name: Fog
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and fog
+        hail:
+          name: Hail
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with hail
+        lightning:
+          name: Lightning
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with lightning
+        lightning-rainy:
+          name: Lightning
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with lightning and rain
+        partlycloudy:
+          name: Partly Cloudy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and partly cloudy
+        pouring:
+          name: Pouring
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with pouring rain
+        rainy:
+          name: Rainy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and rainy
+        snowy:
+          name: Snowy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and snowy
+        snowy-rainy:
+          name: Snowy Rainy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with snow and rain
+        sunny:
+          name: Sunny
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and sunny
+        windy:
+          name: Windy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: and windy
+        windy-variant:
+          name: Windy Cloudy
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with winds and clouds
+        exceptional:
+          name: Exceptional
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: with exceptional weather conditions
+        rain_warning_threshold:
+          name: Rain warning threshold
+          description: A warning to bring an umbrella will be given if the precipitation
+            probability is above this percentage
+          selector:
+            number:
+              min: 0.0
+              max: 100.0
+              unit_of_measurement: '%'
+              step: 1.0
+              mode: slider
+          default: 10
+        wind_phrases:
+          name: 'Phrases to be used to describe the wind speed. Needs to be a yaml
+            mapping. Second value is the lower threshold for the description in the
+            same unit as wind speed of your forecast is in. Default values are using
+            km/h. The lowest value Descriptions are taken from: https://en.wikipedia.org/wiki/Beaufort_scale'
+          selector:
+            object: {}
+          default:
+            calm: 0
+            a light air: 1
+            a light breeze: 6
+            a gentrle breeze: 12
+            a moderate breeze: 20
+            a fresh breeze: 29
+            a strong breeze: 39
+            a moderate gale: 50
+            a gale: 62
+            a strong gale: 75
+            a storm: 89
+            a violent storm: 103
+            a hurricane: 118
+        wind_threshold:
+          name: Wind threshold
+          description: Information regarding wind will be reported if it is above
+            this threshold.
+          selector:
+            number:
+              min: 0.0
+              max: 200.0
+              step: 1.0
+              mode: slider
+          default: 12
+        wind_joke_threshold:
+          name: Wind joke threshold
+          description: A small joke regarding the wind will be reported if it is above
+            this threshold.
+          selector:
+            number:
+              min: 0.0
+              max: 200.0
+              step: 1.0
+              mode: slider
+          default: 29
+        wind_warning_threshold:
+          name: Wind warning threshold
+          description: A warning regarding the wind will be reported if it is above
+            this threshold.
+          selector:
+            number:
+              min: 0.0
+              max: 200.0
+              step: 1.0
+              mode: slider
+          default: 62
+        value_round:
+          name: Value round
+          description: If and how to round values, one setting is used for all values
+          selector:
+            number:
+              min: 0.0
+              max: 3.0
+              step: 1.0
+              mode: slider
+          default: 0
+        response_invalid_phrase:
+          name: Response when the requested prhase could not be recognized
+          description: The response which will be given by Assist.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: Unable to get forecasts for {{ phrase }}
+        response_no_data:
+          name: Response when there is a no data for the requested period
+          description: The response which will be given by Assist.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: No forecast data available for the requested period
+        response_forecast:
+          name: Response when there is a forecast found
+          description: The response which will be given by Assist.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: It will be {{ temperature }} degrees {{ condition_translated }}.
+            {% if temperature != apparent_temperature %}It feels like {{ apparent_temperature
+            }} degrees.{% endif %} {% if precipitation_probability > rain_warning_threshold
+            %}There is {{ precipitation_probability }}% chance for {{ precipitation
+            }} milimeter rain, so bring an umbrella if you go outside.{% endif %}
+            {% if uv_index > 3 and condition in ['clear', 'partlycloudy'] %}The sun
+            will be shining brightly today, so be sure to apply sunscreen when going
+            outside.{% endif %} {% if wind_speed >= wind_threshold %}The wind will
+            be {{ wind_phrase }}.{% endif %} {% if wind_speed >= wind_warning_threshold
+            %}So in case you don't have to go out, better stay inside.{% elif wind_speed
+            >= wind_joke_threshold %}So make sure {% if precipitation_probability
+            > 10 %}r umbrella does't{% else %}'t{% endif %} blow away!{% endif %}
+triggers:
+- trigger: conversation
+  command: !input trigger
+variables:
+  version: 20250127
+  daily_mapping:
+  - phrases: !input today
+    delta: 0
+  - phrases: !input tomorrow
+    delta: 1
+  - phrases: !input day_after_tomorrow
+    delta: 2
+  - phrases: !input monday
+    delta: '{{ 0 - now().weekday() + (7 if 0 <= now().weekday() else 0) }}'
+  - phrases: !input tuesday
+    delta: '{{ 1 - now().weekday() + (7 if 1 <= now().weekday() else 0) }}'
+  - phrases: !input wednesday
+    delta: '{{ 2 - now().weekday() + (7 if 2 <= now().weekday() else 0) }}'
+  - phrases: !input thursday
+    delta: '{{ 3 - now().weekday() + (7 if 3 <= now().weekday() else 0) }}'
+  - phrases: !input friday
+    delta: '{{ 4 - now().weekday() + (7 if 4 <= now().weekday() else 0) }}'
+  - phrases: !input saturday
+    delta: '{{ 5 - now().weekday() + (7 if 5 <= now().weekday() else 0) }}'
+  - phrases: !input sunday
+    delta: '{{ 6 - now().weekday() + (7 if 6 <= now().weekday() else 0) }}'
+  day_part_mapping:
+  - phrases: !input night
+    start: 00:00:00
+    end: 06:00:00
+  - phrases: !input morning
+    start: 06:00:00
+    end: '12:00:00'
+  - phrases: !input afternoon
+    start: '12:00:00'
+    end: '18:00:00'
+  - phrases: !input evening
+    start: '18:00:00'
+    end: '23:59:59'
+  phrase: '{{ trigger.get(''slots'', {}).phrase | lower if trigger.get(''slots'',
+    {}).get(''phrase'') else none }}'
+  daily_phrases: '{{ daily_mapping | map(attribute=''phrases'') | sum(start=[]) }}'
+  day_part_phrases: '{{ day_part_mapping | map(attribute=''phrases'') | sum(start=[])
+    }}'
+  daily: '{{ phrase is none or daily_phrases | select(''contains'', phrase) | list
+    | count > 0 }}'
+  part_day: '{{ false if phrase is none else day_part_phrases | select(''contains'',
+    phrase) | list | count > 0 }}'
+  weather_entity: !input weather_entity
+  translations:
+    clear: !input clear
+    clear-night: !input clear-night
+    cloudy: !input cloudy
+    fog: !input fog
+    hail: !input hail
+    lightning: !input lightning
+    lighting-rainy: !input lightning-rainy
+    partlycloudy: !input partlycloudy
+    pouring: !input pouring
+    rainy: !input rainy
+    snowy: !input snowy
+    snowy-rainy: !input snowy-rainy
+    sunny: !input sunny
+    windy: !input windy
+    windy-variant: !input windy-variant
+    exceptional: !input exceptional
+  wind_phrases: !input wind_phrases
+actions:
+- choose:
+  - conditions: '{{ daily }}'
+    sequence:
+    - alias: Get the forecast data
+      action: weather.get_forecasts
+      target:
+        entity_id: !input weather_entity
+      data:
+        type: daily
+      response_variable: weather
+      continue_on_error: true
+    - alias: Define variables to determine which part to use
+      variables:
+        delta: '{{ daily_mapping | selectattr(''phrases'', ''contains'', phrase) |
+          map(attribute=''delta'') | list | first | default(0) }}'
+        start: '{{ today_at() + timedelta(days=delta) }}'
+        end: '{{ start | as_datetime + timedelta(days=1) }}'
+        day_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast = weather[weather_entity].forecast
+          if weather is defined else [] %} {% for item in forecast %}\n  {% if start
+          | as_datetime <= item.datetime | as_datetime < end | as_datetime %}\n    {%
+          set ns.forecast = ns.forecast + [item] %}\n  {% endif %}\n{% endfor %} {{
+          ns.forecast | first | default({}) }}\n"
+    - if:
+      - condition: template
+        value_template: '{{ iif(day_forecast) }}'
+      then:
+      - alias: Create variables for response
+        variables:
+          value_round: !input value_round
+          condition: '{{ day_forecast.get(''condition'') }}'
+          cloud_coverage: '{{ day_forecast.get(''cloud_coverage'', 0) | round(value_round)
+            }}'
+          temperature: '{{ day_forecast.get(''temperature'', 0) | round(value_round)
+            }}'
+          dew_point: '{{ day_forecast.get(''dew_point'', 0) | round(value_round) }}'
+          pressure: '{{ day_forecast.get(''pressure'', 0) | round(value_round) }}'
+          humidity: '{{ day_forecast.get(''humidity'', 0) | round(value_round) }}'
+          templow: '{{ day_forecast.get(''temp_low'', 0) | round(value_round) }}'
+          wind_gust_speed: '{{ day_forecast.get(''wind_gust_speed'', 0) | round(value_round)
+            }}'
+          apparent_temperature: '{{ day_forecast.get(''apparent_temperatue'', temperature)
+            | round(value_round) }}'
+          uv_index: '{{ day_forecast.get(''uv_index'', 0) | round(value_round) }}'
+          precipitation: '{{ day_forecast.get(''precipitation'', 0) | round(value_round)
+            }}'
+          precipitation_probability: '{{ day_forecast.get(''precipitation_probability'',
+            0) | round(value_round) }}'
+          wind_speed: '{{ day_forecast.get(''wind_speed'', 0) | round(value_round)
+            }}'
+          condition_translated: '{{ translations.get(condition) }}'
+          rain_warning_threshold: !input rain_warning_threshold
+          wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', wind_speed)
+            | map(attribute=''0'') | list | last | default }}'
+          wind_threshold: !input wind_threshold
+          wind_joke_threshold: !input wind_joke_threshold
+          wind_warning_threshold: !input wind_warning_threshold
+          response_forecast: !input response_forecast
+      - alias: Send back the response
+        set_conversation_response: !input response_forecast
+  - conditions: '{{ part_day }}'
+    sequence:
+    - alias: Get the forecast data
+      action: weather.get_forecasts
+      target:
+        entity_id: !input weather_entity
+      data:
+        type: hourly
+      response_variable: weather
+      continue_on_error: true
+    - alias: Define variables to determine which part to use
+      variables:
+        tomorrow: !input tomorrow
+        next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
+        delta: '{{ 1 if next_day else 0}}'
+        start_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
+          | map(attribute=''start'') | list | first }}'
+        end_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
+          | map(attribute=''end'') | list | first }}'
+        start: '{{ today_at() + timedelta(days=delta) + as_timedelta(start_time) }}'
+        end: '{{ today_at() + timedelta(days=delta) + as_timedelta(end_time) }}'
+        day_part_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast
+          = weather[weather_entity].forecast if weather is defined else [] %} {% for
+          item in forecast %}\n  {% if start | as_datetime <= item.datetime | as_datetime
+          < end | as_datetime %}\n    {% set ns.forecast = ns.forecast + [item] %}\n
+          \ {% endif %}\n{% endfor %} {{ ns.forecast | default([]) }}\n"
+    - if:
+      - condition: template
+        value_template: '{{ iif(day_part_forecast) }}'
+      then:
+      - alias: Create variables for response
+        variables:
+          value_round: !input value_round
+          condition: '{{ day_part_forecast | map(attribute=''condition'') | list |
+            statistical_mode }}'
+          cloud_coverage: '{{ day_part_forecast | map(attribute=''cloud_coverage'')
+            | list | average | default(0) | round(value_round) }}'
+          temperature: '{{ day_part_forecast | map(attribute=''temperature'') | list
+            | max | default(0) | round(value_round) }}'
+          dew_point: '{{ day_part_forecast | map(attribute=''temperature'') | list
+            | max | default(0) | round(value_round) }}'
+          pressure: '{{ day_part_forecast | map(attribute=''temperature'') | list
+            | max | default(0) | round(value_round) }}'
+          humidity: '{{ day_part_forecast | map(attribute=''temperature'') | list
+            | max | default(0) | round(value_round) }}'
+          apparent_temperature: '{{ day_part_forecast | map(attribute=''temperature'')
+            | list | max | default(temperature) | round(value_round) }}'
+          uv_index: '{{ day_part_forecast | map(attribute=''uv_index'') | list | max
+            | default(0) | round(value_round) }}'
+          precipitation: '{{ day_part_forecast | map(attribute=''precipitation'')
+            | list | sum | default(0) | round(value_round) }}'
+          precipitation_probability: '{{ day_part_forecast | map(attribute=''precipitation_probability'')
+            | list | max | default(0) | round(value_round) }}'
+          wind_speed: '{{ day_part_forecast | map(attribute=''wind_speed'') | list
+            | max | default(0) | round(value_round) }}'
+          condition_translated: '{{ translations.get(condition) }}'
+          rain_warning_threshold: !input rain_warning_threshold
+          wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', wind_speed)
+            | map(attribute=''0'') | list | last | default }}'
+          wind_threshold: !input wind_threshold
+          wind_joke_threshold: !input wind_joke_threshold
+          wind_warning_threshold: !input wind_warning_threshold
+          response_forecast: !input response_forecast
+      - alias: Send back the response
+        set_conversation_response: !input response_forecast
+      else:
+      - alias: Send back the response
+        set_conversation_response: !input response_no_data
+  default:
+  - alias: Send back the response
+    set_conversation_response: !input response_invalid_phrase
+mode: single
