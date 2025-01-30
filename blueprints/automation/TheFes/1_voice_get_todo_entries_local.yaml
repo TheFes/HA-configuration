@@ -1,0 +1,155 @@
+blueprint:
+  domain: automation
+  name: Voice - Get ToDo Entries - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/todo/1_voice_get_todo_entries_local.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/1_voice_get_todo_entries_local.md)
+
+    # Request calendar entries fully local
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set a todo entity to be used as default entity. This entity can be set by name
+    in the trigger to avoid the need to add "list" after the name. By default the
+    trigger is configered for this to be the shopping list. If you want to use another
+    list you need to change the description in the trigger sentence.
+
+    #### Optional
+
+    * Add triggers or change the existing ones
+
+    * Change or translate the settings for the response given by Assist
+
+    #### These translations are already available:
+
+    * [Dutch](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/translations/1_voice_get_todo_entries_nl.md)
+
+
+    ### Usage
+
+    All sentences need to match the format defined in the trigger sentences. By default
+    the following sentence is configured:
+
+    - (what''s|what is) on the (shopping list|list named {list_name}|{list name} list)
+
+    #### Trigger sentence syntax
+
+    All parts between square brackets are optional, the sentence will be recognized
+    with and without those parts. A pipe `|` means `or`. All parts betwee round brackets
+    are mandatory, but also here the pipe means `or`.
+
+    The {list_name} part refers to the moment you want the todo entries for. This
+    needs to match to the actual name of the entity, aliases are not supported.
+
+    #### Examples
+
+    ```
+
+    * What''s on the shopping list
+
+    * What is on the list named Blueprints to create
+
+    * What is on the Blueprints to create list
+
+    ```'
+  input:
+    default_entity:
+      name: Default todo list
+      selector:
+        entity:
+          filter:
+          - domain:
+            - todo
+          multiple: false
+    trigger_settings:
+      name: Trigger settings
+      icon: mdi:chat
+      description: Settings for the trigger, you can adjust them, or translate them
+        to your own language
+      input:
+        trigger:
+          name: Trigger for weather calendar entries
+          description: The trigger for this automation. The {list_name} part will
+            be used for the name of the todo list.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (what's|what is) on the (shopping list|list named {list_name}|{list_name}
+            list)
+    response_settings:
+      name: Settings for the reponses
+      icon: mdi:chat
+      description: Change or translate the response
+      collapsed: true
+      input:
+        no_items_response:
+          name: No items on selected list
+          description: Response by Assist in case there are no items
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{list_name} is empty'
+        invalid_list_response:
+          name: Invalid list name
+          description: Response in case the named list could not be found
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: No list with the name {list_name} found.
+        list_items_response:
+          name: Response in case there are items on the named list.
+          description: The response for full day events
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: 'The list contains {item_count} items: {list_items}.'
+triggers:
+- trigger: conversation
+  command: !input trigger
+variables:
+  version: 20250130
+  default_entity: !input default_entity
+  request_name: '{{ trigger.slots.get(''list_name'', ''use_default'') }}'
+  list_entity_request: '{{ states.todo | selectattr(''name'', ''search'', request_name,
+    ignorecase=True) | map(attribute=''entity_id'') | first | default(none) }}
+
+    '
+  valid_request: '{{ list_entity_request is not none or request_name == ''use_default''
+    }}'
+  list_entity: '{{ list_entity_request or default_entity }}'
+  list_name: '{{ state_attr(list_entity, ''friendly_name'') }}'
+actions:
+- if: '{{ valid_request }}'
+  then:
+  - alias: Get items from list
+    action: todo.get_items
+    target:
+      entity_id: '{{ list_entity }}'
+    data:
+      status: needs_action
+    response_variable: response
+- variables:
+    list_items: '{{ response[list_entity][''items''] | map(attribute=''summary'')
+      | list if valid_request else [] }}
+
+      '
+    no_items_response: !input no_items_response
+    list_items_response: !input list_items_response
+    invalid_list_response: !input invalid_list_response
+- alias: Set response
+  set_conversation_response: "{% if not valid_request %}\n  {% set list_name = trigger.slots.list_name
+    %}\n  {{ invalid_list_response.format(list_name=list_name) }}\n{% elif list_items
+    | count > 0 %}\n  {% set item_count = list_items | count %}\n  {% set list_items
+    = '\\n - ' ~ list_items | join('\\n - ') %}\n  {{ list_items_response.format(item_count=item_count,
+    list_items=list_items) }}\n{% else %}\n  {{ no_items_response.format(list_name=list_name)
+    }}\n{% endif %}\n"
+mode: parallel

@@ -1,20 +1,9 @@
 fetch_weather_forecast_data:
   alias: Fetch Weather Forecast Data
   use_blueprint:
-    path: fetch_weather_forecast_by_llm.yaml
+    path: TheFes/3_voice_weather_forecast_full_llm.yaml
     input:
       weather_entity: weather.combined
-      calc_average: false
-      time_prompt: 'This argument is mandatory and must always be provided no matter
-        what!
-
-        Provide the time on which the requested forecast starts. This time should
-        be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
-        provide a time. In case a full day is requested, use 00:00:00, in case the
-        current hour is requested, use the start of the hour
-
-        Night starts at 00:00:00, morning starts at 06:00:00, afternoon starts at
-        12:00:00 and evening starts at 18:00:00'
   description: Gets the weather forecast for either a part of a day, or one or more
     full days. In case the weather for the weekend is requested, this means Saturday
     and Sunday

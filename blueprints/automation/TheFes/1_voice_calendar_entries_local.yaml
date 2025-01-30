@@ -1,0 +1,440 @@
+blueprint:
+  domain: automation
+  name: Voice - Calendar Entries - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/1_voice_calendar_entries_local.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/1_voice_calendar_entries_local.md)
+
+    # Request calendar entries fully local
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set one ore more calendar entries to be used
+
+    #### Optional
+
+    * Add triggers or change the existing ones
+
+    * Change or translate the settings for the phrases which will be taken from the
+    trigger
+
+    * Change or translate the settings for the response given by Assist
+
+    #### These translations are already available:
+
+    * [Dutch](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/translations/1_voice_calendar_entries_nl.md)
+
+
+    ### Usage
+
+    All sentences need to match the format defined in the trigger sentences. By default
+    the following sentences are configured:
+
+    - (what''s|what is) on the (calendar|agenda) [[for] {phrase}]
+
+    - (what''s|what is) on {phrase}[''s|s] (calendar|agenda)
+
+    #### Trigger sentence syntax
+
+    All parts between square brackets are optional, the sentence will be recognized
+    with and without those parts. A pipe `|` means `or`. All parts betwee round brackets
+    are mandatory, but also here the pipe means `or`.
+
+    The {phrase} part refers to the moment you want the calendar entries for. This
+    can be `today`, `tomorrow`, `day after tomorrow` for a day related to the current
+    day. It can also be a weekday, like `Monday` or `Thursday`. In that case the next
+    weekday will be used. You can also use `night`, `morning`, `afternoon` or `evening`.
+
+    #### Examples without phrase (will return the current day)
+
+    ```
+
+    * What''s on the agenda
+
+    * What is on the calendar
+
+    ```
+
+    #### Examples with a phrase (will return the requested moment)
+
+    ```
+
+    * What''s on tomorrow''s calendar
+
+    * What is on the calendar for Thursday
+
+    ```'
+  input:
+    calendar_entity:
+      name: Calendar entities
+      selector:
+        entity:
+          filter:
+          - domain:
+            - calendar
+          multiple: true
+    trigger_settings:
+      name: Trigger settings
+      icon: mdi:chat
+      description: Settings for the trigger, you can adjust them, or translate them
+        to your own language
+      input:
+        trigger:
+          name: Trigger for weather calendar entries
+          description: The trigger for this automation. The {phrase} part will be
+            used for the period (e.g "tomorrow")
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (what's|what is) on the (calendar|agenda) [[for] {phrase}]
+          - (what's|what is) on {phrase}['s|s] (calendar|agenda)
+    daily_calendar_settings:
+      name: Settings for full day entries
+      icon: mdi:calendar
+      description: Here all the settings for the daily calendar entries are done
+      collapsed: true
+      input:
+        today:
+          name: Today
+          description: Phrases to request today's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - today
+        tomorrow:
+          name: Tomorrow
+          description: Phrases to request tomorrow's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - tomorrow
+        day_after_tomorrow:
+          name: Day after tomorrow
+          description: Phrases to request the day after tomorrow's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - day after tomorrow
+        monday:
+          name: Monday
+          description: Phrases to request next monday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - monday
+        tuesday:
+          name: Tuesday
+          description: Phrases to request next Tuesday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - tuesday
+        wednesday:
+          name: Wednesday
+          description: Phrases to request next Wednesday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - wednesday
+        thursday:
+          name: Thursday
+          description: Phrases to request next Thursday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - thursday
+        friday:
+          name: Friday
+          description: Phrases to request next Friday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - friday
+        saturday:
+          name: Saturday
+          description: Phrases to request next Saturday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - saturday
+        sunday:
+          name: Sunday
+          description: Phrases to request next Sunday's calendar entries
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - sunday
+    day_part_calender_settings:
+      name: Settings for the calendar entries for part of a day
+      icon: mdi:calendar
+      description: Here all the settings for the daily calendar entries are done
+      collapsed: true
+      input:
+        night:
+          name: Night
+          description: Phrases to request the calendar entries for the night
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - night
+        morning:
+          name: Morning
+          description: Phrases to request the calendar entries for the morning
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - morning
+        afternoon:
+          name: Afternoon
+          description: Phrases to request the calendar entries for the afternoon
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - afternoon
+        evening:
+          name: Evening
+          description: Phrases to request the calendar entries for the evening
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - evening
+    response_settings:
+      name: Settings for the reponses
+      icon: mdi:chat
+      description: Change or translate the response
+      collapsed: true
+      input:
+        response_translations:
+          name: Phrases used in the response for the weekdays and months
+          selector:
+            object: {}
+          default: {}
+        date_format:
+          name: Date format
+          description: Format for the date, check https://strftime.org for options
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '%A %-d %B'
+        time_format:
+          name: Time format
+          description: Format for the time, check https://strftime.org for options
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '%H:%M'
+        event_singular:
+          name: Singular event
+          description: Phrase used to refer to 1 event
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: event
+        event_plural:
+          name: Multiple events
+          description: Phrase used to refer to multiple events
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: events
+        no_events:
+          name: No events for selected period
+          description: Response by Assist in case there are no events
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: There are no events for this period
+        event_count:
+          name: Day introduction
+          description: The response for each day will start with a message count
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: On {date} you have {event_count} {events}.
+        day_event:
+          name: Full day
+          description: The response for full day events
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: The entire day you have {event_list}.
+        part_day_event:
+          name: Full day
+          description: The response for events which are only part of the day
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: From {start} to {end} you have {event_summary}.
+triggers:
+- trigger: conversation
+  command: !input trigger
+variables:
+  version: 20250129
+  daily_mapping:
+  - phrases: !input today
+    delta: 0
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input tomorrow
+    delta: 1
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input day_after_tomorrow
+    delta: 2
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input monday
+    delta: '{{ 0 - now().weekday() + (7 if 0 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input tuesday
+    delta: '{{ 1 - now().weekday() + (7 if 1 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input wednesday
+    delta: '{{ 2 - now().weekday() + (7 if 2 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input thursday
+    delta: '{{ 3 - now().weekday() + (7 if 3 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input friday
+    delta: '{{ 4 - now().weekday() + (7 if 4 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input saturday
+    delta: '{{ 5 - now().weekday() + (7 if 5 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
+  - phrases: !input sunday
+    delta: '{{ 6 - now().weekday() + (7 if 6 <= now().weekday() else 0) }}'
+  day_part_mapping:
+  - phrases: !input night
+    start: 00:00:00
+    end: 06:00:00
+  - phrases: !input morning
+    start: 06:00:00
+    end: '12:00:00'
+  - phrases: !input afternoon
+    start: '12:00:00'
+    end: '18:00:00'
+  - phrases: !input evening
+    start: '18:00:00'
+    end: '23:59:59'
+  phrase: '{{ trigger.get(''slots'', {}).phrase | lower if trigger.get(''slots'',
+    {}).get(''phrase'') else none }}'
+  daily_phrases: '{{ daily_mapping | map(attribute=''phrases'') | sum(start=[]) }}'
+  day_part_phrases: '{{ day_part_mapping | map(attribute=''phrases'') | sum(start=[])
+    }}'
+  daily: '{{ phrase is none or daily_phrases | select(''contains'', phrase) | list
+    | count > 0 }}'
+  part_day: '{{ false if phrase is none else day_part_phrases | select(''contains'',
+    phrase) | list | count > 0 }}'
+  calendar_entity: !input calendar_entity
+  translations: !input response_translations
+actions:
+- alias: Define variables to determine which part to use
+  variables:
+    tomorrow: !input tomorrow
+    next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
+    delta: '{{ 1 if next_day and part_day else daily_mapping | selectattr(''phrases'',
+      ''contains'', phrase) | map(attribute=''delta'') | list | first | default(0)
+      }}'
+    start_time: '{{ (daily_mapping + day_part_mapping) | selectattr(''phrases'', ''contains'',
+      phrase) | map(attribute=''start'') | list | first }}'
+    end_time: '{{ (daily_mapping + day_part_mapping) | selectattr(''phrases'', ''contains'',
+      phrase) | map(attribute=''end'') | list | first }}'
+    start: '{{ today_at() + timedelta(days=delta) + as_timedelta(start_time) }}'
+    end: '{{ today_at() + timedelta(days=delta) + as_timedelta(end_time) }}'
+- alias: Get the forecast data
+  action: calendar.get_events
+  data:
+    start_date_time: '{{ start }}'
+    end_date_time: '{{ end }}'
+  target:
+    entity_id: !input calendar_entity
+  response_variable: calendar
+  continue_on_error: true
+- variables:
+    events: '{{ merge_response(calendar) | sort(attribute=''start'') | list }}'
+- if:
+  - condition: template
+    value_template: '{{ iif(events) }}'
+  then:
+  - alias: Create variables for response
+    variables:
+      date_format: !input date_format
+      time_format: !input time_format
+      event_count: !input event_count
+      day_event: !input day_event
+      part_day_event: !input part_day_event
+      event_singular: !input event_singular
+      event_plural: !input event_plural
+      dates: "{%- set ns = namespace(dates=[]) %} {%- for start in events | map(attribute='start')
+        %}\n  {%- set d = as_datetime(start).date() | string %}\n  {%- if d not in
+        ns.dates %}\n    {%- set ns.dates = ns.dates + [d] %}\n  {%- endif %}\n{%-
+        endfor %} {{ ns.dates }}\n"
+  - variables:
+      response_events: "{%- for d in dates %}\n  {%- set day_events = events | selectattr('start',
+        'contains', d) | list %}\n  {%- set full_day = day_events | selectattr('start',
+        'eq', d) | list %}\n  {%- set formatted = namespace(date=as_datetime(d).strftime(date_format))
+        %}\n  {%- if translations %}\n    {%- for k, v in translations.items() %}\n
+        \     {%- set formatted.date = formatted.date | replace(k, v) %}\n    {%-
+        endfor %}\n  {%- endif %}\n  {{ event_count.format(date=formatted.date, event_count=day_events|count,
+        events=event_singular if day_events|count==1 else event_plural) }}\n  {%-
+        set text = namespace(message='') %}\n    {%- for e in full_day %}\n      {%
+        set text.message = text.message + ((' and ' if loop.last and not loop.first)
+        ~ e.summary ~ (', ' if not loop.last) ) %}\n    {%- endfor %}\n    {% if full_day
+        %}{{ day_event.format(event_list=text.message) }}{% endif %}\n    {%- for
+        e in day_events | reject('in', full_day) %}\n      {{ part_day_event.format(start=as_datetime(e.start).strftime(time_format),
+        end=as_datetime(e.end).strftime(time_format), event_summary=e.summary) }}\n
+        \   {%- endfor %}\n{%- endfor %}\n"
+  - alias: Send back the response
+    set_conversation_response: '{{ response_events }}'
+  else:
+  - alias: Send back the response
+    set_conversation_response: !input no_events
+mode: single

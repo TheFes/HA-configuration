@@ -295,4 +295,91 @@
       trigger:
       - Wat voor weer wordt het [[deze|komende] {phrase}]
       - Wat is de [weers]voorspelling [[voor] [deze|komende] {phrase}]
-
+- id: '1738179908517'
+  alias: Voice - Calendar Entries - Local Assist Blueprint
+  description: ''
+  use_blueprint:
+    path: TheFes/1_voice_calendar_entries_local.yaml
+    input:
+      calendar_entity:
+      - calendar.kids
+      - calendar.thefes
+      - calendar.m_m
+      today:
+      - vandaag
+      tomorrow:
+      - morgen
+      day_after_tomorrow:
+      - overmorgen
+      monday:
+      - maandag
+      tuesday:
+      - dinsdag
+      wednesday:
+      - woensdag
+      thursday:
+      - donderdag
+      friday:
+      - vrijdag
+      saturday:
+      - zaterdag
+      sunday:
+      - zondag
+      night:
+      - vannacht
+      - morgennacht
+      - morgen nacht
+      morning:
+      - ochtend
+      - morgenvroeg
+      - morgen vroeg
+      afternoon:
+      - middag
+      - vanmiddag
+      - morgenmiddag
+      evening:
+      - morgenavond
+      - vanavond
+      - morgen avond
+      response_translations:
+        Monday: maandag
+        Tuesday: dinsdag
+        Wednesday: woensdag
+        Thursday: donderdag
+        Friday: vrijdag
+        Saturday: zaterdag
+        Sunday: zondag
+        January: januari
+        February: februari
+        March: maart
+        April: april
+        May: mei
+        June: juni
+        July: juli
+        August: augustus
+        September: september
+        October: oktober
+        November: november
+        December: december
+      event_singular: afspraak
+      event_plural: afspraken
+      no_events: Er zijn geen afspraken voor deze periode
+      event_count: Op {date} heb je {event_count} {events}.
+      day_event: Voor de hele dag staat er {event_list}.
+      part_day_event: Van {start} tot {end} heb je {event_summary}.
+      trigger:
+      - wat staat er [voor|op] {phrase} op de (agenda|kalender|planning)
+      - staat er [voor|op] {phrase} iets op de (agenda|kalender|planning)
+- id: '1738230371255'
+  alias: Voice - Get ToDo Entries - Local Assist Blueprint
+  description: ''
+  use_blueprint:
+    path: TheFes/1_voice_get_todo_entries_local.yaml
+    input:
+      default_entity: todo.boodschappenlijst
+      trigger:
+      - "wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) 
+        {list_name}|{list_name}[ ]lijst)"
+      no_items_response: '{list_name} is leeg.'
+      list_items_response: 'Er staan {item_count} dingen op: {list_items}'
+      invalid_list_response: Ik kan geen lijst met de naam {list_name} vinden.
