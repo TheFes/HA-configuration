@@ -149,3 +149,10 @@ current_device_state:
   description: Script to request the current state of a device in the house. The information
     is only available for the devices in the "device" option. Convert the time in
     minutes to hours and minutes in case it is more than 60 minutes.
+voice_get_todo_entries_full_llm_script:
+  alias: Voice - Get ToDo entries - Full LLM script
+  use_blueprint:
+    path: TheFes/3_voice_get_todo_entries_full_llm.yaml
+  description: Fetch todo items from my todo lists. Note that the shopping list is
+    also considered a todo list. Ignore items marked as completed, unless the uses
+    specifically requests them.

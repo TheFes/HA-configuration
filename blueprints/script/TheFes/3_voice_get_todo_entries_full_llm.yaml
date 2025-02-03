@@ -1,0 +1,100 @@
+blueprint:
+  name: Voice - Get ToDo entries - Full LLM script
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/todo/3_voice_get_todo_entries_full_llm.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    # Request the todo entries by use of an LLM
+
+    ### Blueprint setup
+
+    #### Optional
+
+    * Adjust the prompts for each field used in the script. The descriptions guide
+    the LLM to provide the correct input
+
+    #### Note:
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for weather forecasts.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+    #### Example for script description:
+
+    `Fetch todo items from my todo lists. Note that the shopping list is also considered
+    a todo list. Ignore items marked as completed, unless the uses specifically requests
+    them.`
+
+    ### Usage
+
+    You can request for the todo items in any way you can think of, using any language.
+    Unless set otherwise in the LLM configuration, the response will be in the same
+    language as the command.
+
+    #### Examples
+
+    ```
+
+    What''s on the shopping list?
+
+    Are there carrots on the shopping list?
+
+    Which todo items are planned for today? (only in case the todo items have due
+    dates)
+
+    ```'
+  domain: script
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    prompt_settings:
+      name: Prompt settings for the LLM
+      icon: mdi:robot
+      description: You can use these settings to finetune the prompts for your specific
+        LLM (model). In most cases the defaults should be fine.
+      collapsed: true
+      input:
+        todo_entities_prompt:
+          name: Todo Entity
+          description: The prompt which will be used to the LLM can select the right
+            todo entities
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Based on the request by the user, select one or more todo entities from
+            which the items on the list should be fetched. Make sure to use the entity_id
+            of the todo list, not the name.
+
+            Ignore items which are marked as completed, unless the user specifically
+            requests completed items.'
+mode: parallel
+max_exceeded: silent
+fields:
+  todo_entities:
+    selector:
+      entity:
+        filter:
+          domain: todo
+        multiple: true
+    name: ToDo entities
+    description: !input todo_entities_prompt
+sequence:
+- variables:
+    version: 20250203
+    todo: '{% set by_entity = states.todo | selectattr(''entity_id'', ''in'', todo_entities)
+      | map(attribute=''entity_id'') | list %} {% set by_name = states.todo | selectattr(''name'',
+      ''in'', todo_entities) | map(attribute=''entity_id'') | list %} {{ by_entity
+      + by_name }}
+
+      '
+- action: todo.get_items
+  target:
+    entity_id: '{{ todo }}'
+  response_variable: response
+- stop: ''
+  response_variable: response
