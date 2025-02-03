@@ -39,7 +39,8 @@ automation:
                         2 om mama te bellen, 
                         3 om oma van Balloe te bellen 
                         en 4 om oma van de Poes te bellen.
-                        Draai 5 om een muziekje af te spelen.
+                        Draai 8 om de alarmdiensten te bellen. 
+                        Gebruik dit alleen als er echteen noodgeval is.
                         Draai 9 om te stoppen.
                       timeout: 30
                       choices:
@@ -91,76 +92,25 @@ automation:
                                 to_call: grandma_cat
                                 number_calling: "{{ number_calling }}"
                           post_action: noop
-                        "5":
-                          id: music
-                          message: >
-                            Gezellig! Een muziekje!
-                            Draai 1 voor Frozen,
-                            2 voor Frozen 2,
-                            3 voor Bollo de Beer
-                            en 4 voor Bobo.
-                            Draai 9 om terug te gaan naar het hoofdmenu.
+                        "8":
+                          id: alarm
+                          message: 112 wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: alarm
+                                number_calling: "{{ number_calling }}"
                           post_action: noop
-                          choices:
-                            "1":
-                              id: frozen
-                              message: Frozen komt er aan! De verbinding wordt verbroken
-                              action:
-                                domain: script
-                                service: turn_on
-                                entity_id: script.play_music
-                                service_data:
-                                  variables:
-                                    to_play: frozen
-                              post_action: hangup
-                            "2":
-                              id: frozen_2
-                              message: Frozen 2 komt er aan! De verbinding wordt verbroken
-                              action:
-                                domain: script
-                                service: turn_on
-                                entity_id: script.play_music
-                                service_data:
-                                  variables:
-                                    to_play: frozen_2
-                              post_action: hangup
-                            "3":
-                              id: bollo
-                              message: Bollo de beer komt er aan! De verbinding wordt verbroken
-                              action:
-                                domain: script
-                                service: turn_on
-                                entity_id: script.play_music
-                                service_data:
-                                  variables:
-                                    to_play: bollo
-                              post_action: hangup
-                            "4":
-                              id: bobo
-                              message: Bobo komt er aan! De verbinding wordt verbroken
-                              action:
-                                domain: script
-                                service: turn_on
-                                entity_id: script.play_music
-                                service_data:
-                                  variables:
-                                    to_play: bobo
-                              post_action: hangup
-                            "9":
-                              id: bye
-                              message: Oke, geen muziekje dus
-                              post_action: return
-                            default:
-                              id: wrong_code
-                              message: Verkeerde code, probeer het opnieuw
-                              post_action: return
                         "9":
                           id: bye
                           message: Tot horens
                           post_action: hangup
                         default:
                           id: wrong_code
-                          message: Verkeerde code, probeer het opnieuw
+                          message: Dit nummer doet niets, probeer het opnieuw
                           post_action: return
                         timeout:
                           id: timeout
@@ -179,6 +129,7 @@ script:
         mom: !secret sip_mom
         grandma_dog: !secret sip_grandma_dog
         grandma_cat: !secret sip_grandma_cat
+        alarm: sip:+31112@192.168.2.100
       internal_phonebook:
         dad: "sip:**622@192.168.2.100"
       wifi_connection:
