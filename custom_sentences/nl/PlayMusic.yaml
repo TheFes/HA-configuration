@@ -18,11 +18,20 @@ intents:
           - "[wij willen |kun je | wil je ](<in> <area>;{to_play} afspelen)"
           - "[wij willen ](<in> <area>;naar {to_play} luisteren)"
         response: play_music_area
+      - sentences:
+          - Luister (op <name>;naar {to_play})
+          - Speel (op <name>;{to_play})
+          - "[wij willen ](op <name>;{to_play} horen)"
+          - "[wij willen |kun je | wil je ](op <name>;{to_play} afspelen)"
+          - "[wij willen ](op <name>;naar {to_play} luisteren)"
+        requires_context:
+          domain: media_player
+        response: play_music_entity
 
 lists:
   to_play:
     values:
-      - in: studio brussel
+      - in: "[[de ][radio[ ]]zender] studio brussel"
         out: stubru
       - in: leuke liedjes[[ van] (pepijn en floris|floris en pepijn)]
         out: leuke_liedjes
@@ -36,5 +45,6 @@ lists:
 responses:
   intents:
     PlayMusic:
-      play_music: Hier komt {{ slots.to_play }}
-      play_music_area: Ik speel {{ slots.to_play }} in {{ slots.area }}
+      play_music: Hier komt {{ slots.to_play | title }}
+      play_music_area: Ik speel {{ slots.to_play | title }} in {{ slots.area }}
+      play_music_entity: Ik speel {{ slots.to_play | title }} op {{ slots.name | title }}

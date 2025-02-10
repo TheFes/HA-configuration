@@ -32,7 +32,7 @@ intent_script:
               name: Studio Brussel
               icon: oldradioani
               data:
-                media_id: library://radio/8
+                media_id: Studio Brussel
                 media_type: radio
             leuke_liedjes:
               name: Leuke liedjes Pepijn en Floris
@@ -59,13 +59,21 @@ intent_script:
                 media_id: spotify://track/2YBb6mmNvCtjc5rLKrtS8k
                 media_type: track
                 radio_mode: true
-          players: >
+          players_area: >
             {{
               area_entities(area | default)
                 | select('in', integration_entities('music_assistant'))
                 | select('match', 'media_player')
                 | list
             }}
+          players_entity: >
+            {{
+              integration_entities('music_assistant')
+                | select('match', 'media_player')
+                | select('is_state_attr', 'friendly_name', name)
+                | list
+            }}
+          players: "{{ players_area + players_entity }}"
       - alias: Set shuffle in case media_type is playlist
         if: >
           {{
@@ -80,9 +88,9 @@ intent_script:
               entity_id: "{{ players }}"
       - alias: Play music using Music Assistant
         action: music_assistant.play_media
-        data: "{{ map_to_data.get('to_play', {}).get('data', dict(media_id=to_play|default)) }}"
+        data: "{{ map_to_data.get(to_play, {}).get('data', dict(media_id=to_play|default)) }}"
         target:
-          area_id: "{{ area_id(area|default) }}"
+          entity_id: "{{ players }}"
       # this part is only relevant in case you use Ulanzi TC100 displays running Awtrix 3
       - alias: Define variables used to send notification to the right display
         variables:
