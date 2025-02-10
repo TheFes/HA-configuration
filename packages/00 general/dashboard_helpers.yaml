@@ -712,8 +712,8 @@ template:
                                     'Eerste date': 'mdi:heart-multiple',
                                     'Sinterklaas': 'mdi:gift-open'
                                   } %}
-            {%- set icons = ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] %}
-            {{ fixed_icons[name] | default(icons | random, true) }}
+            {%- set random_icon = ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] | random %}
+            {{ fixed_icons[name] if name in fixed_icons else random_icon }}
 
       - unique_id: sensor_anniversary_marleen
         name: >
