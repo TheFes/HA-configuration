@@ -114,42 +114,6 @@
           entity_id: switch.luchtreiniger_slaapkamer_led_enable
         data: {}
   mode: single
-- id: '1737282165653'
-  alias: Run actions on Awtrix button press
-  description: ''
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.awtrix_martijn_button_left
-    - binary_sensor.awtrix_martijn_button_select
-    - binary_sensor.awtrix_martijn_button_right
-    - binary_sensor.awtrix_floris_button_left
-    - binary_sensor.awtrix_floris_button_select
-    - binary_sensor.awtrix_floris_button_right
-    - binary_sensor.awtrix_pepijn_button_left
-    - binary_sensor.awtrix_pepijn_button_select
-    - binary_sensor.awtrix_pepijn_button_right
-    from: 'off'
-    to: 'on'
-  conditions: []
-  actions:
-  - wait_for_trigger:
-    - trigger: template
-      value_template: '{{ is_state(trigger.entity_id, ''off'') }}'
-    timeout:
-      hours: 0
-      minutes: 0
-      seconds: 2
-  - variables:
-      time: '{{ 2 if wait.trigger is none else (wait.trigger.to_state.last_changed
-        - trigger.to_state.last_changed).total_seconds() }}'
-      click: '{{ ''single'' if time < 2 else ''hold'' }}'
-  - event: awtrix_button_event
-    event_data:
-      area: '{{ area_id(trigger.entity_id) }}'
-      button: '{{ trigger.entity_id.split(''_'')[-1] }}'
-      click: '{{ click }}'
-  mode: single
 - id: '1737361652862'
   alias: EN - Music Assistant - Local LLM Enhanced Voice Support Blueprint
   description: ''
@@ -378,8 +342,8 @@
     input:
       default_entity: todo.boodschappenlijst
       trigger:
-      - "wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) 
-        {list_name}|{list_name}[ ]lijst)"
+      - wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) {list_name}|{list_name}[
+        ]lijst)
       no_items_response: '{list_name} is leeg.'
       list_items_response: 'Er staan {item_count} dingen op: {list_items}'
       invalid_list_response: Ik kan geen lijst met de naam {list_name} vinden.
