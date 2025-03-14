@@ -1,24 +1,25 @@
-id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7f
-alias: "Google Homes off when TV turns on"
+id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7d
+alias: "Assist Satellites off when TV turns on"
 mode: single
 max_exceeded: silent
 trigger:
   - platform: state
-    entity_id: media_player.shield
+    entity_id: media_player.nvidia_shield
     from: "off"
 action:
   - variables:
       playing: >
         {{
           [
-            'media_player.woonkamer'
+            'media_player.woonkamer',
+            'media_player.keuken'
           ]
             | select('is_state', 'playing')
             | list
         }}
   - if: "{{ playing | count > 0 }}"
     then:
-      - alias: "Turn of Google Home speakers"
+      - alias: "Turn of Voice Satellites"
         action: media_player.turn_off
         target:
           entity_id: "{{ playing }}"

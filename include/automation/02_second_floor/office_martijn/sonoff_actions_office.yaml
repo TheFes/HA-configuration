@@ -29,17 +29,21 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - if: "{{ is_state(light, 'on') }}"
+          - if: 
+              - condition: template
+                value_template: "{{ not is_state('sensor.house_mode', 'Slapen') }}"
             then:
-              - alias: "Turn off light"
-                action: light.turn_off
+              - alias: "Toggle light"
+                action: light.toggle
                 target:
                   entity_id: "{{ light }}"
             else:
-              - alias: "Turn on light"
-                action: light.turn_on
+              - alias: "Toggle light low brightness"
+                action: light.toggle
                 target:
                   entity_id: "{{ light }}"
+                data:
+                  brightness_pct: 20
       - conditions:
           - alias: "Double?"
             condition: template

@@ -49,14 +49,9 @@ action:
             {% set n = now() + timedelta(hours=correction) %}
             {% set awake_time = today_at(states('input_datetime.floris_time_awake')) %}
             {% set awake_time = awake_time + timedelta(days=1) if n > awake_time else awake_time %}
-            {% set read_time = awake_time - timedelta(minutes=states('input_number.leestijd_floris') | int) %}
-            {% set qh = ((read_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
-            {% set progress = [100 - int((100/24 * qh)), 0] | max if n < read_time or n > today_at('19:00') else 100 %}
-            {% if read_time < n < awake_time %}
-              {% set icon = 'book' %}
-            {% else %}
-              {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
-            {% endif %}
+            {% set qh = ((awake_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
+            {% set progress = [100 - int((100/24 * qh)), 0] | max if n < awake_time or n > today_at('19:00') else 100 %}
+            {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
             {{
               dict(
                     icon = icon,
