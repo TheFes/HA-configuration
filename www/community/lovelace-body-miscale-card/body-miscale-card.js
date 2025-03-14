@@ -1,4 +1,4 @@
-/*! *****************************************************************************
+/******************************************************************************
 Copyright (c) Microsoft Corporation.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -12,1464 +12,4477 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
-var e=function(t,i){return e=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(e,t){e.__proto__=t}||function(e,t){for(var i in t)Object.prototype.hasOwnProperty.call(t,i)&&(e[i]=t[i])},e(t,i)};function t(t,i){if("function"!=typeof i&&null!==i)throw new TypeError("Class extends value "+String(i)+" is not a constructor or null");function a(){this.constructor=t}e(t,i),t.prototype=null===i?Object.create(i):(a.prototype=i.prototype,new a)}var i=function(){return i=Object.assign||function(e){for(var t,i=1,a=arguments.length;i<a;i++)for(var o in t=arguments[i])Object.prototype.hasOwnProperty.call(t,o)&&(e[o]=t[o]);return e},i.apply(this,arguments)};function a(e,t,i,a){var o,n=arguments.length,r=n<3?t:null===a?a=Object.getOwnPropertyDescriptor(t,i):a;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)r=Reflect.decorate(e,t,i,a);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(r=(n<3?o(r):n>3?o(t,i,r):o(t,i))||r);return n>3&&r&&Object.defineProperty(t,i,r),r}function o(e){var t="function"==typeof Symbol&&Symbol.iterator,i=t&&e[t],a=0;if(i)return i.call(e);if(e&&"number"==typeof e.length)return{next:function(){return e&&a>=e.length&&(e=void 0),{value:e&&e[a++],done:!e}}};throw new TypeError(t?"Object is not iterable.":"Symbol.iterator is not defined.")}
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const n=window.ShadowRoot&&(void 0===window.ShadyCSS||window.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,r=Symbol(),l=new Map;class d{constructor(e,t){if(this._$cssResult$=!0,t!==r)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e}get styleSheet(){let e=l.get(this.cssText);return n&&void 0===e&&(l.set(this.cssText,e=new CSSStyleSheet),e.replaceSync(this.cssText)),e}toString(){return this.cssText}}const s=(e,...t)=>{const i=1===e.length?e[0]:t.reduce(((t,i,a)=>t+(e=>{if(!0===e._$cssResult$)return e.cssText;if("number"==typeof e)return e;throw Error("Value passed to 'css' function must be a 'css' function result: "+e+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(i)+e[a+1]),e[0]);return new d(i,r)},c=(e,t)=>{n?e.adoptedStyleSheets=t.map((e=>e instanceof CSSStyleSheet?e:e.styleSheet)):t.forEach((t=>{const i=document.createElement("style"),a=window.litNonce;void 0!==a&&i.setAttribute("nonce",a),i.textContent=t.cssText,e.appendChild(i)}))},m=n?e=>e:e=>e instanceof CSSStyleSheet?(e=>{let t="";for(const i of e.cssRules)t+=i.cssText;return(e=>new d("string"==typeof e?e:e+"",r))(t)})(e):e
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */;var h;const p=window.trustedTypes,u=p?p.emptyScript:"",f=window.reactiveElementPolyfillSupport,_={toAttribute(e,t){switch(t){case Boolean:e=e?u:null;break;case Object:case Array:e=null==e?e:JSON.stringify(e)}return e},fromAttribute(e,t){let i=e;switch(t){case Boolean:i=null!==e;break;case Number:i=null===e?null:Number(e);break;case Object:case Array:try{i=JSON.parse(e)}catch(e){i=null}}return i}},g=(e,t)=>t!==e&&(t==t||e==e),b={attribute:!0,type:String,converter:_,reflect:!1,hasChanged:g};class v extends HTMLElement{constructor(){super(),this._$Et=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Ei=null,this.o()}static addInitializer(e){var t;null!==(t=this.l)&&void 0!==t||(this.l=[]),this.l.push(e)}static get observedAttributes(){this.finalize();const e=[];return this.elementProperties.forEach(((t,i)=>{const a=this._$Eh(i,t);void 0!==a&&(this._$Eu.set(a,i),e.push(a))})),e}static createProperty(e,t=b){if(t.state&&(t.attribute=!1),this.finalize(),this.elementProperties.set(e,t),!t.noAccessor&&!this.prototype.hasOwnProperty(e)){const i="symbol"==typeof e?Symbol():"__"+e,a=this.getPropertyDescriptor(e,i,t);void 0!==a&&Object.defineProperty(this.prototype,e,a)}}static getPropertyDescriptor(e,t,i){return{get(){return this[t]},set(a){const o=this[e];this[t]=a,this.requestUpdate(e,o,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)||b}static finalize(){if(this.hasOwnProperty("finalized"))return!1;this.finalized=!0;const e=Object.getPrototypeOf(this);if(e.finalize(),this.elementProperties=new Map(e.elementProperties),this._$Eu=new Map,this.hasOwnProperty("properties")){const e=this.properties,t=[...Object.getOwnPropertyNames(e),...Object.getOwnPropertySymbols(e)];for(const i of t)this.createProperty(i,e[i])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(e){const t=[];if(Array.isArray(e)){const i=new Set(e.flat(1/0).reverse());for(const e of i)t.unshift(m(e))}else void 0!==e&&t.push(m(e));return t}static _$Eh(e,t){const i=t.attribute;return!1===i?void 0:"string"==typeof i?i:"string"==typeof e?e.toLowerCase():void 0}o(){var e;this._$Ep=new Promise((e=>this.enableUpdating=e)),this._$AL=new Map,this._$Em(),this.requestUpdate(),null===(e=this.constructor.l)||void 0===e||e.forEach((e=>e(this)))}addController(e){var t,i;(null!==(t=this._$Eg)&&void 0!==t?t:this._$Eg=[]).push(e),void 0!==this.renderRoot&&this.isConnected&&(null===(i=e.hostConnected)||void 0===i||i.call(e))}removeController(e){var t;null===(t=this._$Eg)||void 0===t||t.splice(this._$Eg.indexOf(e)>>>0,1)}_$Em(){this.constructor.elementProperties.forEach(((e,t)=>{this.hasOwnProperty(t)&&(this._$Et.set(t,this[t]),delete this[t])}))}createRenderRoot(){var e;const t=null!==(e=this.shadowRoot)&&void 0!==e?e:this.attachShadow(this.constructor.shadowRootOptions);return c(t,this.constructor.elementStyles),t}connectedCallback(){var e;void 0===this.renderRoot&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),null===(e=this._$Eg)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostConnected)||void 0===t?void 0:t.call(e)}))}enableUpdating(e){}disconnectedCallback(){var e;null===(e=this._$Eg)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostDisconnected)||void 0===t?void 0:t.call(e)}))}attributeChangedCallback(e,t,i){this._$AK(e,i)}_$ES(e,t,i=b){var a,o;const n=this.constructor._$Eh(e,i);if(void 0!==n&&!0===i.reflect){const r=(null!==(o=null===(a=i.converter)||void 0===a?void 0:a.toAttribute)&&void 0!==o?o:_.toAttribute)(t,i.type);this._$Ei=e,null==r?this.removeAttribute(n):this.setAttribute(n,r),this._$Ei=null}}_$AK(e,t){var i,a,o;const n=this.constructor,r=n._$Eu.get(e);if(void 0!==r&&this._$Ei!==r){const e=n.getPropertyOptions(r),l=e.converter,d=null!==(o=null!==(a=null===(i=l)||void 0===i?void 0:i.fromAttribute)&&void 0!==a?a:"function"==typeof l?l:null)&&void 0!==o?o:_.fromAttribute;this._$Ei=r,this[r]=d(t,e.type),this._$Ei=null}}requestUpdate(e,t,i){let a=!0;void 0!==e&&(((i=i||this.constructor.getPropertyOptions(e)).hasChanged||g)(this[e],t)?(this._$AL.has(e)||this._$AL.set(e,t),!0===i.reflect&&this._$Ei!==e&&(void 0===this._$EC&&(this._$EC=new Map),this._$EC.set(e,i))):a=!1),!this.isUpdatePending&&a&&(this._$Ep=this._$E_())}async _$E_(){this.isUpdatePending=!0;try{await this._$Ep}catch(e){Promise.reject(e)}const e=this.scheduleUpdate();return null!=e&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var e;if(!this.isUpdatePending)return;this.hasUpdated,this._$Et&&(this._$Et.forEach(((e,t)=>this[t]=e)),this._$Et=void 0);let t=!1;const i=this._$AL;try{t=this.shouldUpdate(i),t?(this.willUpdate(i),null===(e=this._$Eg)||void 0===e||e.forEach((e=>{var t;return null===(t=e.hostUpdate)||void 0===t?void 0:t.call(e)})),this.update(i)):this._$EU()}catch(e){throw t=!1,this._$EU(),e}t&&this._$AE(i)}willUpdate(e){}_$AE(e){var t;null===(t=this._$Eg)||void 0===t||t.forEach((e=>{var t;return null===(t=e.hostUpdated)||void 0===t?void 0:t.call(e)})),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$EU(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$Ep}shouldUpdate(e){return!0}update(e){void 0!==this._$EC&&(this._$EC.forEach(((e,t)=>this._$ES(t,this[t],e))),this._$EC=void 0),this._$EU()}updated(e){}firstUpdated(e){}}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-var y;v.finalized=!0,v.elementProperties=new Map,v.elementStyles=[],v.shadowRootOptions={mode:"open"},null==f||f({ReactiveElement:v}),(null!==(h=globalThis.reactiveElementVersions)&&void 0!==h?h:globalThis.reactiveElementVersions=[]).push("1.3.1");const x=globalThis.trustedTypes,w=x?x.createPolicy("lit-html",{createHTML:e=>e}):void 0,E=`lit$${(Math.random()+"").slice(9)}$`,I="?"+E,A=`<${I}>`,k=document,T=(e="")=>k.createComment(e),C=e=>null===e||"object"!=typeof e&&"function"!=typeof e,O=Array.isArray,S=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,R=/-->/g,z=/>/g,M=/>|[ 	\n\r](?:([^\s"'>=/]+)([ 	\n\r]*=[ 	\n\r]*(?:[^ 	\n\r"'`<>=]|("|')|))|$)/g,L=/'/g,$=/"/g,F=/^(?:script|style|textarea|title)$/i,N=(e=>(t,...i)=>({_$litType$:e,strings:t,values:i}))(1),P=Symbol.for("lit-noChange"),D=Symbol.for("lit-nothing"),B=new WeakMap,H=k.createTreeWalker(k,129,null,!1),V=(e,t)=>{const i=e.length-1,a=[];let o,n=2===t?"<svg>":"",r=S;for(let t=0;t<i;t++){const i=e[t];let l,d,s=-1,c=0;for(;c<i.length&&(r.lastIndex=c,d=r.exec(i),null!==d);)c=r.lastIndex,r===S?"!--"===d[1]?r=R:void 0!==d[1]?r=z:void 0!==d[2]?(F.test(d[2])&&(o=RegExp("</"+d[2],"g")),r=M):void 0!==d[3]&&(r=M):r===M?">"===d[0]?(r=null!=o?o:S,s=-1):void 0===d[1]?s=-2:(s=r.lastIndex-d[2].length,l=d[1],r=void 0===d[3]?M:'"'===d[3]?$:L):r===$||r===L?r=M:r===R||r===z?r=S:(r=M,o=void 0);const m=r===M&&e[t+1].startsWith("/>")?" ":"";n+=r===S?i+A:s>=0?(a.push(l),i.slice(0,s)+"$lit$"+i.slice(s)+E+m):i+E+(-2===s?(a.push(void 0),t):m)}const l=n+(e[i]||"<?>")+(2===t?"</svg>":"");if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return[void 0!==w?w.createHTML(l):l,a]};class U{constructor({strings:e,_$litType$:t},i){let a;this.parts=[];let o=0,n=0;const r=e.length-1,l=this.parts,[d,s]=V(e,t);if(this.el=U.createElement(d,i),H.currentNode=this.el.content,2===t){const e=this.el.content,t=e.firstChild;t.remove(),e.append(...t.childNodes)}for(;null!==(a=H.nextNode())&&l.length<r;){if(1===a.nodeType){if(a.hasAttributes()){const e=[];for(const t of a.getAttributeNames())if(t.endsWith("$lit$")||t.startsWith(E)){const i=s[n++];if(e.push(t),void 0!==i){const e=a.getAttribute(i.toLowerCase()+"$lit$").split(E),t=/([.?@])?(.*)/.exec(i);l.push({type:1,index:o,name:t[2],strings:e,ctor:"."===t[1]?q:"?"===t[1]?Y:"@"===t[1]?Z:K})}else l.push({type:6,index:o})}for(const t of e)a.removeAttribute(t)}if(F.test(a.tagName)){const e=a.textContent.split(E),t=e.length-1;if(t>0){a.textContent=x?x.emptyScript:"";for(let i=0;i<t;i++)a.append(e[i],T()),H.nextNode(),l.push({type:2,index:++o});a.append(e[t],T())}}}else if(8===a.nodeType)if(a.data===I)l.push({type:2,index:o});else{let e=-1;for(;-1!==(e=a.data.indexOf(E,e+1));)l.push({type:7,index:o}),e+=E.length-1}o++}}static createElement(e,t){const i=k.createElement("template");return i.innerHTML=e,i}}function j(e,t,i=e,a){var o,n,r,l;if(t===P)return t;let d=void 0!==a?null===(o=i._$Cl)||void 0===o?void 0:o[a]:i._$Cu;const s=C(t)?void 0:t._$litDirective$;return(null==d?void 0:d.constructor)!==s&&(null===(n=null==d?void 0:d._$AO)||void 0===n||n.call(d,!1),void 0===s?d=void 0:(d=new s(e),d._$AT(e,i,a)),void 0!==a?(null!==(r=(l=i)._$Cl)&&void 0!==r?r:l._$Cl=[])[a]=d:i._$Cu=d),void 0!==d&&(t=j(e,d._$AS(e,t.values),d,a)),t}class G{constructor(e,t){this.v=[],this._$AN=void 0,this._$AD=e,this._$AM=t}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}p(e){var t;const{el:{content:i},parts:a}=this._$AD,o=(null!==(t=null==e?void 0:e.creationScope)&&void 0!==t?t:k).importNode(i,!0);H.currentNode=o;let n=H.nextNode(),r=0,l=0,d=a[0];for(;void 0!==d;){if(r===d.index){let t;2===d.type?t=new W(n,n.nextSibling,this,e):1===d.type?t=new d.ctor(n,d.name,d.strings,this,e):6===d.type&&(t=new Q(n,this,e)),this.v.push(t),d=a[++l]}r!==(null==d?void 0:d.index)&&(n=H.nextNode(),r++)}return o}m(e){let t=0;for(const i of this.v)void 0!==i&&(void 0!==i.strings?(i._$AI(e,i,t),t+=i.strings.length-2):i._$AI(e[t])),t++}}class W{constructor(e,t,i,a){var o;this.type=2,this._$AH=D,this._$AN=void 0,this._$AA=e,this._$AB=t,this._$AM=i,this.options=a,this._$Cg=null===(o=null==a?void 0:a.isConnected)||void 0===o||o}get _$AU(){var e,t;return null!==(t=null===(e=this._$AM)||void 0===e?void 0:e._$AU)&&void 0!==t?t:this._$Cg}get parentNode(){let e=this._$AA.parentNode;const t=this._$AM;return void 0!==t&&11===e.nodeType&&(e=t.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,t=this){e=j(this,e,t),C(e)?e===D||null==e||""===e?(this._$AH!==D&&this._$AR(),this._$AH=D):e!==this._$AH&&e!==P&&this.$(e):void 0!==e._$litType$?this.T(e):void 0!==e.nodeType?this.k(e):(e=>{var t;return O(e)||"function"==typeof(null===(t=e)||void 0===t?void 0:t[Symbol.iterator])})(e)?this.S(e):this.$(e)}M(e,t=this._$AB){return this._$AA.parentNode.insertBefore(e,t)}k(e){this._$AH!==e&&(this._$AR(),this._$AH=this.M(e))}$(e){this._$AH!==D&&C(this._$AH)?this._$AA.nextSibling.data=e:this.k(k.createTextNode(e)),this._$AH=e}T(e){var t;const{values:i,_$litType$:a}=e,o="number"==typeof a?this._$AC(e):(void 0===a.el&&(a.el=U.createElement(a.h,this.options)),a);if((null===(t=this._$AH)||void 0===t?void 0:t._$AD)===o)this._$AH.m(i);else{const e=new G(o,this),t=e.p(this.options);e.m(i),this.k(t),this._$AH=e}}_$AC(e){let t=B.get(e.strings);return void 0===t&&B.set(e.strings,t=new U(e)),t}S(e){O(this._$AH)||(this._$AH=[],this._$AR());const t=this._$AH;let i,a=0;for(const o of e)a===t.length?t.push(i=new W(this.M(T()),this.M(T()),this,this.options)):i=t[a],i._$AI(o),a++;a<t.length&&(this._$AR(i&&i._$AB.nextSibling,a),t.length=a)}_$AR(e=this._$AA.nextSibling,t){var i;for(null===(i=this._$AP)||void 0===i||i.call(this,!1,!0,t);e&&e!==this._$AB;){const t=e.nextSibling;e.remove(),e=t}}setConnected(e){var t;void 0===this._$AM&&(this._$Cg=e,null===(t=this._$AP)||void 0===t||t.call(this,e))}}class K{constructor(e,t,i,a,o){this.type=1,this._$AH=D,this._$AN=void 0,this.element=e,this.name=t,this._$AM=a,this.options=o,i.length>2||""!==i[0]||""!==i[1]?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=D}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(e,t=this,i,a){const o=this.strings;let n=!1;if(void 0===o)e=j(this,e,t,0),n=!C(e)||e!==this._$AH&&e!==P,n&&(this._$AH=e);else{const a=e;let r,l;for(e=o[0],r=0;r<o.length-1;r++)l=j(this,a[i+r],t,r),l===P&&(l=this._$AH[r]),n||(n=!C(l)||l!==this._$AH[r]),l===D?e=D:e!==D&&(e+=(null!=l?l:"")+o[r+1]),this._$AH[r]=l}n&&!a&&this.C(e)}C(e){e===D?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,null!=e?e:"")}}class q extends K{constructor(){super(...arguments),this.type=3}C(e){this.element[this.name]=e===D?void 0:e}}const X=x?x.emptyScript:"";class Y extends K{constructor(){super(...arguments),this.type=4}C(e){e&&e!==D?this.element.setAttribute(this.name,X):this.element.removeAttribute(this.name)}}class Z extends K{constructor(e,t,i,a,o){super(e,t,i,a,o),this.type=5}_$AI(e,t=this){var i;if((e=null!==(i=j(this,e,t,0))&&void 0!==i?i:D)===P)return;const a=this._$AH,o=e===D&&a!==D||e.capture!==a.capture||e.once!==a.once||e.passive!==a.passive,n=e!==D&&(a===D||o);o&&this.element.removeEventListener(this.name,this,a),n&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){var t,i;"function"==typeof this._$AH?this._$AH.call(null!==(i=null===(t=this.options)||void 0===t?void 0:t.host)&&void 0!==i?i:this.element,e):this._$AH.handleEvent(e)}}class Q{constructor(e,t,i){this.element=e,this.type=6,this._$AN=void 0,this._$AM=t,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(e){j(this,e)}}const J=window.litHtmlPolyfillSupport;
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-var ee,te;null==J||J(U,W),(null!==(y=globalThis.litHtmlVersions)&&void 0!==y?y:globalThis.litHtmlVersions=[]).push("2.2.2");class ie extends v{constructor(){super(...arguments),this.renderOptions={host:this},this._$Dt=void 0}createRenderRoot(){var e,t;const i=super.createRenderRoot();return null!==(e=(t=this.renderOptions).renderBefore)&&void 0!==e||(t.renderBefore=i.firstChild),i}update(e){const t=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Dt=((e,t,i)=>{var a,o;const n=null!==(a=null==i?void 0:i.renderBefore)&&void 0!==a?a:t;let r=n._$litPart$;if(void 0===r){const e=null!==(o=null==i?void 0:i.renderBefore)&&void 0!==o?o:null;n._$litPart$=r=new W(t.insertBefore(T(),e),e,void 0,null!=i?i:{})}return r._$AI(e),r})(t,this.renderRoot,this.renderOptions)}connectedCallback(){var e;super.connectedCallback(),null===(e=this._$Dt)||void 0===e||e.setConnected(!0)}disconnectedCallback(){var e;super.disconnectedCallback(),null===(e=this._$Dt)||void 0===e||e.setConnected(!1)}render(){return P}}ie.finalized=!0,ie._$litElement$=!0,null===(ee=globalThis.litElementHydrateSupport)||void 0===ee||ee.call(globalThis,{LitElement:ie});const ae=globalThis.litElementPolyfillSupport;null==ae||ae({LitElement:ie}),(null!==(te=globalThis.litElementVersions)&&void 0!==te?te:globalThis.litElementVersions=[]).push("3.2.0");
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const oe=e=>t=>"function"==typeof t?((e,t)=>(window.customElements.define(e,t),t))(e,t):((e,t)=>{const{kind:i,elements:a}=t;return{kind:i,elements:a,finisher(t){window.customElements.define(e,t)}}})(e,t)
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */,ne=(e,t)=>"method"===t.kind&&t.descriptor&&!("value"in t.descriptor)?{...t,finisher(i){i.createProperty(t.key,e)}}:{kind:"field",key:Symbol(),placement:"own",descriptor:{},originalKey:t.key,initializer(){"function"==typeof t.initializer&&(this[t.key]=t.initializer.call(this))},finisher(i){i.createProperty(t.key,e)}};function re(e){return(t,i)=>void 0!==i?((e,t,i)=>{t.constructor.createProperty(i,e)})(e,t,i):ne(e,t)
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */}function le(e){return re({...e,state:!0})}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const de=({finisher:e,descriptor:t})=>(i,a)=>{var o;if(void 0===a){const a=null!==(o=i.originalKey)&&void 0!==o?o:i.key,n=null!=t?{kind:"method",placement:"prototype",key:a,descriptor:t(i.key)}:{...i,key:a};return null!=e&&(n.finisher=function(t){e(t,a)}),n}{const o=i.constructor;void 0!==t&&Object.defineProperty(i,a,t(a)),null==e||e(o,a)}}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */;function se(e){return de({finisher:(t,i)=>{Object.assign(t.prototype[i],e)}})}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */function ce(e,t){return de({descriptor:i=>{const a={get(){var t,i;return null!==(i=null===(t=this.renderRoot)||void 0===t?void 0:t.querySelector(e))&&void 0!==i?i:null},enumerable:!0,configurable:!0};if(t){const t="symbol"==typeof i?Symbol():"__"+i;a.get=function(){var i,a;return void 0===this[t]&&(this[t]=null!==(a=null===(i=this.renderRoot)||void 0===i?void 0:i.querySelector(e))&&void 0!==a?a:null),this[t]}}return a}})}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */function me(e){return de({descriptor:t=>({async get(){var t;return await this.updateComplete,null===(t=this.renderRoot)||void 0===t?void 0:t.querySelector(e)},enumerable:!0,configurable:!0})})}
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */var he;const pe=null!=(null===(he=window.HTMLSlotElement)||void 0===he?void 0:he.prototype.assignedElements)?(e,t)=>e.assignedElements(t):(e,t)=>e.assignedNodes(t).filter((e=>e.nodeType===Node.ELEMENT_NODE));
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-function ue(e,t,i){let a,o=e;return"object"==typeof e?(o=e.slot,a=e):a={flatten:t},i?function(e){const{slot:t,selector:i}=null!=e?e:{};return de({descriptor:a=>({get(){var a;const o="slot"+(t?`[name=${t}]`:":not([name])"),n=null===(a=this.renderRoot)||void 0===a?void 0:a.querySelector(o),r=null!=n?pe(n,e):[];return i?r.filter((e=>e.matches(i))):r},enumerable:!0,configurable:!0})})}({slot:o,flatten:t,selector:i}):de({descriptor:e=>({get(){var e,t;const i="slot"+(o?`[name=${o}]`:":not([name])"),n=null===(e=this.renderRoot)||void 0===e?void 0:e.querySelector(i);return null!==(t=null==n?void 0:n.assignedNodes(a))&&void 0!==t?t:[]},enumerable:!0,configurable:!0})})}var fe,_e;!function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none"}(fe||(fe={})),function(e){e.language="language",e.system="system",e.am_pm="12",e.twenty_four="24"}(_e||(_e={}));var ge=function(e,t,i,a){a=a||{},i=null==i?{}:i;var o=new Event(t,{bubbles:void 0===a.bubbles||a.bubbles,cancelable:Boolean(a.cancelable),composed:void 0===a.composed||a.composed});return o.detail=i,e.dispatchEvent(o),o};var be={version:"Verze",name:"Karta BodyMiScale",description:"Karta bodymiscale ukazuje údaje ohledně váhy a tělesných proporcí",not_available:"BodyMiScale není dostupná",toggle_power:"Více podrobností jako například BMI kCal zobrazit / skrýt"},ve={ok:"MĚŘENÍ: OK",unknown:"STAV: neznámý",problem:"Problém",none:"Žádný",weight_unavailable:"Váha není dostupná",impedance_unavailable:"Impedance není dostupná",weight_unavailable_and_impedance_unavailable:"Váha není dostupná, Impedance není dostupná",weight_low:"nízká váha",impedance_low:"nízká impedance",weight_low_and_impedance_low:"nízká váha, nízká impedance",weight_high:"vysoká váha",impedance_high:"vysoká impedance",weight_high_and_impedance_high:"vysoká váha, vysoká impedance",weight_high_and_impedance_low:"vysoká váha, nízká impedance",weight_low_and_impedance_high:"nízká váha, vysoká impedance"},ye={"weight: ":"Váha: ","impedance: ":"Impedance: ","height: ":"Výška: ","age: ":"Věk: ","gender: ":"Pohlaví: "},xe={male:"muž",female:"žena",unavailable:"nedostupná"},we={bmi:"BMI",bmi_label:"BMI popis",visceral_fat:"Viscerální tuk",body_fat:"Tělesný tuk",protein:"Protein",water:"Voda",muscle_mass:"Svalová hmota",bone_mass:"Kostní hmota",weight:"Váha",ideal:"Ideální",basal_metabolism:"Základní metabolismus",body_type:"Tělesný typ",metabolic_age:"Metabolický věk"},Ee={skinny:"štíhlý",balanced_skinny:"štíhlý-vyvážený",skinny_muscular:"štíhlý-svalnatý",balanced:"vyvážený",balanced_muscular:"vyvážený-svalnatý",lack_exercise:"nedostatek cvičení",thick_set:"pevné",obese:"obézní",overweight:"nadváha",underweight:"podváha",normal_or_healthy_weight:"normální či zdravá váha",slight_overweight:"lehká nadváha",moderate_obesity:"menší obezita",severe_obesity:"vážná obezita",massive_obesity:"velká obezita",unavailable:"nedostupná"},Ie={" years":" let"},Ae={missing_entity:"Prosím definujte entitu.",missing_entity_bodymiscale:"Prosím definujte entitu bodymiscale."},ke={entity:"Prosím definujte účet váhy (povinné) !",image:"Obrázek pozadí (volitelné)",model:"AKTIVUJTE pokud má váha na sobě 4 čtyři šedé kruhy o průměru 5 centimetrů",model1:"( = model 181B) !",model_aria_label_on:"Impedance zapnutá",model_aria_label_off:"Impedance vypnutá",unit:"Převést kilogramy na libry",unit_aria_label_on:"Zapnout konverzi",unit_aria_label_off:"Vypnout konverzi",show_name:"Zobrazovat jméno účtu jako titulek ?",show_name_aria_label_on:"Zapnout zobrazování jména",show_name_aria_label_off:"Vypnout zobrazování jména",show_states:"Zobrazit stav ?",show_states_aria_label_on:"Zapnout zobrazování stavu",show_states_aria_label_off:"Vypnout zobrazování stavu",show_attributes:"Show hlavní osobní data (vpravo nahoře) ?",show_attributes_aria_label_on:"Zapnout zobrazování atributů",show_attributes_aria_label_off:"Vypnout zobrazování atributů",always_show_details:"Vždy zobrazovat detaily",always_show_details_aria_label_on:"Zapnout výchozí zobrazení podrobností",always_show_details_aria_label_off:"Vypnout výchozí zobrazení podrobností",show_toolbar:"Zobrazit pokročilá nastavení ?",show_toolbar_aria_label_on:"Zapnout zobrazení pokročilých nastavení",show_toolbar_aria_label_off:"Vypnout zobrazení pokročilých nastavení",show_body:"Nabízet další detaily měření",show_body1:"(spodní polovina - zobrazí se po klepnutí na ikonu šipky dolů) ?",show_body_aria_label_on:"Zapnout zobrazování tělesného skóre",show_body_aria_label_off:"Vypnout zobrazování tělesného skóre",show_buttons:"Povolit změnu účtu ?",show_buttons_aria_label_on:"Zapnout zobrazování tlačítek",show_buttons_aria_label_off:"Vypnout zobrazování tlačítek",code_information:"ZMĚNY SE PROJEVÍ TEPRVE PO TÉ CO BUDOU ULOŽENY.",header_options:"1. Možnosti záhlaví karty",body_options:"2. Více možností karty",warning:"POZOR:",code_only_note:"Další možnosti jsou dostupné pouze v editor kódu."},Te={common:be,states:ve,attributes:ye,attributes_value:xe,body:we,body_value:Ee,unit:Ie,error:Ae,editor:ke},Ce={version:"Version",name:"BodyMiScale Karte",description:"Die BodyMiScale Karte zeigt Ihren gewichtsmäßigen Körperstatus an.",not_available:"BodyMiScale ist momenatan nicht verfügbar",toggle_power:"Weitere Details wie BMI kCal anzeigen / ausblenden"},Oe={ok:"MESSUNG: OK",unknown:"STATUS: unbekannt",problem:"Problem",none:"keine",weight_unavailable:"Gewichtsmessung nicht verfügbar",impedance_unavailable:"Bioelektrische Impedanzmessung (Körperzusammensetzung) nicht verfügbar",weight_unavailable_and_impedance_unavailable:"Gewichts- und bioelektrische Impedanzmessung (Körperzusammensetzung) nicht verfügbar."},Se={"weight: ":"Gewicht: ","impedance: ":"Zusammensetzung: ","height: ":"Körpergröße: ","age: ":"Alter: ","gender: ":"Geschlecht: "},Re={male:"männl.",female:"weibl.",unavailable:"Nicht verfügbar"},ze={bmi:"BMI",bmi_label:"BMI Klassifikation",visceral_fat:"Bauchfett",body_fat:"Körperfett",protein:"Protein",water:"Wasser",muscle_mass:"Muskelmasse",bone_mass:"Knochenmasse",weight:"Gewicht",ideal:"Idealgewicht",basal_metabolism:"Grundumsatz",body_type:"Körperbau",metabolic_age:"stoffwechselbedingtes Körperalter"},Me={skinny:"schlank",balanced_skinny:"ausgeglichen schlank",skinny_muscular:"muskulös schlank",balanced:"ausgewogen",balanced_muscular:"ausgewogen muskulös",lack_exercise:"Bewegungsmangel",thick_set:"stämmig",obese:"fettleibig",overweight:"Übergewicht",underweight:"Untergewicht",normal_or_healthy_weight:"Normal - gesundes Gewicht",slight_overweight:"leichtes Übergewicht",moderate_obesity:"moderate Fettleibigkeit",severe_obesity:"schwere Fettleibigkeit",massive_obesity:"massive Fettleibigkeit",unavailable:"Nicht verfügbar"},Le={" years":" Jahre"},$e={missing_entity:"Bitte definieren Sie eine Entität in der Konfiguration.",missing_entity_bodymiscale:'Bitte definieren Sie "bodymiscale" als Entität in der Konfiguration.'},Fe={entity:"Bitte ein Konto auf der Waage wählen (erforderlich)!",image:"Hintergrundbild (optional)",model:"AKTIVIEREN, wenn auf der Waage 4 graue Kreise mit 5 cm Ø sind",model1:"( = Modell 181B)!",model_aria_label_on:"Umschalten von Modell Impedanzmessung ein",model_aria_label_off:"Modell Impedanzmessung ausschalten",unit:"kg in lbs umrechnen",unit_aria_label_on:"Konvertierung einschalten",unit_aria_label_off:"Umwandlung deaktivieren",show_name:"Namen des Konto als Titel anzeigen?",show_name_aria_label_on:"Namensanzeige einschalten",show_name_aria_label_off:"Namesanzeige ausschalten",show_states:"Status anzeigen (Symbole links oben)?",show_states_aria_label_on:"Statusanzeige einschalten",show_states_aria_label_off:"Statusanzeige ausschalten",show_attributes:"Persönliche Stammdaten anzeigen (rechts oben)?",show_attributes_aria_label_on:"Basis Daten einblenden (rechts oben) einschalten",show_attributes_aria_label_off:"Basis Daten einblenden (rechts oben) ausschalten",always_show_details:"Details immer anzeigen",always_show_details_aria_label_on:"Schalten Sie die standardmäßige Detailansicht ein",always_show_details_aria_label_off:"Schaltet die standardmäßige Detailansicht aus",show_toolbar:"Fortgeschrittene Optionen anzeigen ?",show_toolbar_aria_label_on:"Symbolleiste anzeigen einschalten",show_toolbar_aria_label_off:"Symbolleiste anzeigen ausschalten",show_body:"Weitere Messergebnisse anbieten",show_body1:"(untere Hälfte - per Chevron-Symbol einblenden)?",show_body_aria_label_on:"Körperwertanzeige einschalten",show_body_aria_label_off:"Körperwertanzeige ausschalten",show_buttons:"Kontowechsel erlauben?",show_buttons_aria_label_on:"Schaltfläche anzeigen einschalten",show_buttons_aria_label_off:"Schaltfläche anzeigen ausschalten",code_information:"ÄNDERUNGEN WERDEN ERST NACH DEM SPEICHERN SICHTBAR.",header_options:"1. Kartenkopf Optionen",body_options:"2. mehr Kartenoptionen",warning:"ACHTUNG:",code_only_note:"Weitere Optionen sind nur im Code Editor verfügbar."},Ne={common:Ce,states:Oe,attributes:Se,attributes_value:Re,body:ze,body_value:Me,unit:Le,error:$e,editor:Fe},Pe={version:"Version",name:"BodyMiScale Card",description:"The bodymiscale card shows you your weight wise / related body status.",not_available:"BodyMiScale is not available",toggle_power:"More details like BMI kCal show / hide"},De={ok:"MEASUREMENT: OK",unknown:"STATE: unknown",problem:"Problem",none:"None",weight_unavailable:"Weight unavailable",impedance_unavailable:"Impedance unavailable",weight_unavailable_and_impedance_unavailable:"Weight unavailable, impedance unavailable",weight_low:"Weight low",impedance_low:"Impedance low",weight_low_and_impedance_low:"Weight low, impedance low",weight_high:"Weight high",impedance_high:"Impedance high",weight_high_and_impedance_high:"Weight high, impedance high",weight_high_and_impedance_low:"Weight high, impedance low",weight_low_and_impedance_high:"Weight low, impedance high"},Be={"weight: ":"Weight: ","impedance: ":"Impedance: ","height: ":"Height: ","age: ":"Age: ","gender: ":"Gender: "},He={male:"male",female:"female",unavailable:"unavailable"},Ve={bmi:"BMI",bmi_label:"BMI label",visceral_fat:"Visceral fat",body_fat:"Body fat",protein:"Protein",water:"Water",muscle_mass:"Muscle mass",bone_mass:"Bone mass",weight:"Weight",ideal:"Ideal",basal_metabolism:"Basal metabolism",body_type:"Body type",metabolic_age:"Metabolic age"},Ue={skinny:"Skinny",balanced_skinny:"Balanced-skinny",skinny_muscular:"Skinny-muscular",balanced:"Balanced",balanced_muscular:"Balanced-muscular",lack_exercise:"Lack-exercise",thick_set:"Thick-set",obese:"Obese",overweight:"Overweight",underweight:"Underweight",normal_or_healthy_weight:"Normal or Healthy Weight",slight_overweight:"Slight overweight",moderate_obesity:"Moderate obesity",severe_obesity:"Severe obesity",massive_obesity:"Massive obesity",unavailable:"unavailable"},je={" years":" years"},Ge={missing_entity:"Please define an entity.",missing_entity_bodymiscale:"Please define a bodymiscale entity."},We={entity:"Please select an account on the scale (required)!",image:"Background image (optional)",model:"ACTIVATE if the scale has 4 grey circles of 5 cm Ø on top",model1:"( = model 181B)!",model_aria_label_on:"Toggle model impedance on",model_aria_label_off:"Toggle model impedance off",unit:"Convert kg to lbs",unit_aria_label_on:"Toggle the conversion on",unit_aria_label_off:"Toggle the conversion off",theme:"Configure the theme you use.",theme_aria_label_on:"Toggle theme light on",theme_aria_label_off:"Toggle theme dark off",show_name:"Show the name of the account as title?",show_name_aria_label_on:"Toggle display name on",show_name_aria_label_off:"Toggle display name off",show_states:"Show State?",show_states_aria_label_on:"Toggle display state on",show_states_aria_label_off:"Toggle display state off",show_attributes:"Show personal master data (top right)?",show_attributes_aria_label_on:"Toggle display attributes on",show_attributes_aria_label_off:"Toggle display attributes off",always_show_details:"Always show details",always_show_details_aria_label_on:"Toggle default detail view on",always_show_details_aria_label_off:"Toggle default detail view off",show_toolbar:"Show advanced options?",show_toolbar_aria_label_on:"Toggle display advanced options on",show_toolbar_aria_label_off:"Toggle display advanced options off",show_body:"Offer further measurement details",show_body1:"(lower half - icon chevron down will show those)?",show_body_aria_label_on:"Toggle display body score on",show_body_aria_label_off:"Toggle display body score off",show_buttons:"Allow account switch?",show_buttons_aria_label_on:"Toggle display buttons on",show_buttons_aria_label_off:"Toggle display buttons off",code_information:"CHANGES WILL ONLY APPEAR AFTER THEY HAVE BEEN SAVED.",header_options:"1. Card header options",body_options:"2. More card options",warning:"ATTENTION:",code_only_note:"Additional options are only available in the code editor."},Ke={common:Pe,states:De,attributes:Be,attributes_value:He,body:Ve,body_value:Ue,unit:je,error:Ge,editor:We},qe={version:"Versión",name:"Tarjeta BodyMiScale",description:"La tarjeta bodymiscale muestra el estado de tu cuerpo en relación a tu peso.",not_available:"BodyMiScale no está disponible",toggle_power:"Mostrar / ocultar más detalles como IMC,kCal"},Xe={ok:"MEDICIÓN: OK",unknown:"ESTADO: desconocido",problem:"Problema",none:"Ninguno",weight_unavailable:"Peso no disponible",impedance_unavailable:"Impedancia no disponible",weight_unavailable_and_impedance_unavailable:"Peso no disponible, impedancia no disponible",weight_low:"Peso bajo",impedance_low:"Impedancia baja",weight_low_and_impedance_low:"Peso bajo, impedancia baja",weight_high:"Peso alto",impedance_high:"Impedancia alta",weight_high_and_impedance_high:"Peso alto, impedancia alta",weight_high_and_impedance_low:"Peso alto, impedancia baja",weight_low_and_impedance_high:"Peso bajo, impedancia alta"},Ye={"weight: ":"Peso: ","impedance: ":"Impedancia: ","height: ":"Altura: ","age: ":"Edad: ","gender: ":"Sexo: "},Ze={male:"masculino",female:"femenino",unavailable:"no disponible"},Qe={bmi:"IMC",bmi_label:"Etiqueta IMC",visceral_fat:"Grasa visceral",body_fat:"Grasa corporal",protein:"Proteína",water:"Agua",muscle_mass:"Masa muscular",bone_mass:"Masa ósea",weight:"Peso",ideal:"Ideal",basal_metabolism:"Metabolismo basal",body_type:"Tipo de cuerpo",metabolic_age:"Edad metabólica"},Je={skinny:"Flaco",balanced_skinny:"Flaco equilibrado",skinny_muscular:"Flaco musculoso",balanced:"Equilibrado",balanced_muscular:"Musculuso equilibrado",lack_exercise:"Falto de ejercicio",thick_set:"Rechoncho",obese:"Obeso",overweight:"Sobrepeso",underweight:"Por debajo del peso normal",normal_or_healthy_weight:"Normal",slight_overweight:"Ligero sobrepeso",moderate_obesity:"Obesidad moderada",severe_obesity:"Obesidad severa",massive_obesity:"Obesidad masiva",unavailable:"no disponible"},et={" years":" años"},tt={missing_entity:"Por favor, defina una entidad.",missing_entity_bodymiscale:"Por favor, defina una entidad bodymiscale."},it={entity:"Por favor, escoja una cuenta de la bácula (necesario)!",image:"Imagen de fondo (opcional)",model:"ACTIVAR si la báscula tiene 4 círculos grises de 5 cm Ø en la parte superior",model1:"( = modelo 181B)!",model_aria_label_on:"Mostrar modelo con impedancia",model_aria_label_off:"Ocultar modelo con impedancia",unit:"Convertir kg a lbs",unit_aria_label_on:"Activar conversión",unit_aria_label_off:"Desactivar conversión",show_name:"¿Mostrar el nombre de la cuenta como título?",show_name_aria_label_on:"Mostrar nombre como título",show_name_aria_label_off:"Ocultar nombre como título",show_states:"¿Mostrar estado de la báscula?",show_states_aria_label_on:"Mostrar estado de la báscula",show_states_aria_label_off:"Ocultar estado de la báscula",show_attributes:"¿Mostrar datos de perfil personal (esquina superior derecha)?",show_attributes_aria_label_on:"Mostrar atributos",show_attributes_aria_label_off:"Ocultar atributos",always_show_details:"Mostrar siempre los detalles",always_show_details_aria_label_on:"Mostrar la vista de detalles predeterminada",always_show_details_aria_label_off:"Ocultar la vista de detalles predeterminada",show_toolbar:"¿Mostrar opciones avanzadas?",show_toolbar_aria_label_on:"Mostrar opciones avanzadas",show_toolbar_aria_label_off:"Ocultar opciones avanzadas",show_body:"Mostrar más detalles de la medición",show_body1:"¿(parte inferior - pulsar en la fecha para mostrar)?",show_body_aria_label_on:"Mostrar puntuación corporal",show_body_aria_label_off:"Ocultar puntuación corporal",show_buttons:"¿Permitir cambio de cuenta?",show_buttons_aria_label_on:"Mostrar botones de cuenta",show_buttons_aria_label_off:"Ocultar botones de cuenta",code_information:"LOS CAMBIOS SÓLO APARECERÁN DESPUÉS DE QUE HAYAN SIDO GUARDADOS.",header_options:"1. Opciones de cabecera de tarjeta",body_options:"2. Más opciones de tarjeta",warning:"ATENCIÓN:",code_only_note:"Opciones adicionales sólo están disponibles en el editor de código."},at={common:qe,states:Xe,attributes:Ye,attributes_value:Ze,body:Qe,body_value:Je,unit:et,error:tt,editor:it},ot={version:"Version",name:"Carte BodyMiScale",description:"La carte bodymiscale corporelle vous indique votre poids et votre état corporel.",not_available:"BodyMiScale n'est pas disponible",toggle_power:"Plus de détails comme IMC kCal afficher / cacher"},nt={ok:"MESURE: OK",unknown:"ÉTAT: inconnu",problem:"Problème",none:"Aucun",weight_unavailable:"Poids indisponible",impedance_unavailable:"Impédance indisponible",weight_unavailable_and_impedance_unavailable:"Poids indisponible, impédance indisponible",weight_low:"Poids faible",impedance_low:"Impédance faible",weight_low_and_impedance_low:"Poids faible, impédance faible",weight_high:"Poids élevé",impedance_high:"Impédance élevé",weight_high_and_impedance_high:"Poids élevé, impédance élevé",weight_high_and_impedance_low:"Poids élevé, impédance faible",weight_low_and_impedance_high:"Poids faible, impédance élevé"},rt={"weight: ":"Poids: ","impedance: ":"Impédance: ","height: ":"Taille: ","age: ":"Age: ","gender: ":"Genre: "},lt={male:"homme",female:"femme",unavailable:"indisponible"},dt={bmi:"IMC",bmi_label:"Étiquette IMC",visceral_fat:"Graisse viscérale",body_fat:"Graisse corporelle",protein:"Protéine",water:"Eau",muscle_mass:"Masse musculaire",bone_mass:"Masse osseuse",weight:"Poids",ideal:"Poids idéal",basal_metabolism:"Métabolisme de base",body_type:"Corpulence",metabolic_age:"Age corporel"},st={skinny:"Maigre",balanced_skinny:"Équilibré maigre",skinny_muscular:"Maigre musclé",balanced:"Équilibré",balanced_muscular:"Musclé équilibré",lack_exercise:"Manque d'exercice",thick_set:"Trapu",obese:"Obèse",overweight:"Surpoids",underweight:"Insuffisance pondérale",normal_or_healthy_weight:"Normal - poids de santé",slight_overweight:"Léger surpoids",moderate_obesity:"Obésité modérée",severe_obesity:"Obésité sévère",massive_obesity:"Obésité massive",unavailable:"indisponible"},ct={" years":" ans"},mt={missing_entity:"Veuillez définir une entité.",missing_entity_bodymiscale:"Veuillez définir une entité Bodymiscale."},ht={entity:"Veuillez choisir un compte de la balance (obligatoire) !",image:"Image de fond (facultatif)",model:"ACTIVER si la balance à 4 cercles gris de 5 cm Ø en haut",model1:"( = modèle 181B) !",model_aria_label_on:"Activer la balance à 4 cercles gris de 5 cm Ø en haut",model_aria_label_off:"Désactiver la balance à 4 cercles gris de 5 cm Ø en haut",unit:"Convertir les kg en lbs",unit_aria_label_on:"Activer la conversion",unit_aria_label_off:"Désactiver la conversion",theme:"Configurer le thème que vous utilisez.",theme_aria_label_on:"Activer thème clair",theme_aria_label_off:"Désactiver thème sombre",show_name:"Afficher le nom du compte comme titre ?",show_name_aria_label_on:"Activer affichage du nom",show_name_aria_label_off:"Désactiver affichage du nom",show_states:"Afficher l'état ?",show_states_aria_label_on:"Activer l'affichage de l'état",show_states_aria_label_off:"Désactiver l'affichage de l'état",show_attributes:"Afficher les données personnelles de base (en haut à droite) ?",show_attributes_aria_label_on:"Activer l'affichage des données personnelles de base",show_attributes_aria_label_off:"Désactiver l'affichage des données personnelles de base",always_show_details:"Toujours afficher les détails",always_show_details_aria_label_on:"Activer l'affichage des détails par défaut",always_show_details_aria_label_off:"Désactiver l'affichage des détails par défaut",show_toolbar:"Afficher les options avancées ?",show_toolbar_aria_label_on:"Activer l'affichage des options avancées",show_toolbar_aria_label_off:"Désactiver l'affichage des options avancées",show_body:"Offrir d'autres détails de mesure",show_body1:"(partie inférieure - affichage via l'icone chevron bas) ?",show_body_aria_label_on:"Activer l'affichage des autres détails de mesure",show_body_aria_label_off:"Désactiver l'affichage des autres détails de mesure",show_buttons:"Autoriser le changement de compte ?",show_buttons_aria_label_on:"Activer le changement de compte",show_buttons_aria_label_off:"Désactiver le changement de compte",code_information:"LES MODIFICATIONS N'APPARAÎTRONT QU'APRÈS AVOIR ÉTÉ SAUVEGARDÉES",header_options:"1. Options d'en-tête de la carte",body_options:"2. Plus d'options de la cartes",warning:"ATTENTION:",code_only_note:"Les options supplémentaires ne sont disponibles que dans l'éditeur de code."},pt={common:ot,states:nt,attributes:rt,attributes_value:lt,body:dt,body_value:st,unit:ct,error:mt,editor:ht},ut={version:"Verzió",name:"BodyMiScale Kártya",description:"A BodyMiScale kártya megmutatja az ön súlyhoz viszonyított testi állapotát.",not_available:"A BodyMiScale nem elérhető",toggle_power:"További részletek, például a BMI, kCal megjelenítése / elrejtése"},ft={ok:"MÉRÉS: RENDBEN",unknown:"ÁLLAPOT: ismeretlen",problem:"Probléma",none:"Nincs",weight_unavailable:"Súly nem elérhető",impedance_unavailable:"Impedancia nem elérhető",weight_unavailable_and_impedance_unavailable:"Súly nem elérhető, impedancia nem elérhető",weight_low:"Alacsony súly",impedance_low:"Alacsony impedancia",weight_low_and_impedance_low:"Alacsony súly, alacsony impedancia",weight_high:"Magas súly",impedance_high:"Magas impedancia",weight_high_and_impedance_high:"Magas súly, magas impedancia",weight_high_and_impedance_low:"Magas súly, alacsony impedancia",weight_low_and_impedance_high:"Alacsony súly, magas impedancia"},_t={"weight: ":"Súly: ","impedance: ":"Impedancia: ","height: ":"Magasság: ","age: ":"Kor: ","gender: ":"Nem: "},gt={male:"férfi",female:"nő",unavailable:"nem elérhető"},bt={bmi:"BMI",bmi_label:"BMI címke",visceral_fat:"Zsigeri zsír",body_fat:"Testzsír",protein:"Fehérje",water:"Víz",muscle_mass:"Izomtömeg",bone_mass:"Csonttömeg",weight:"Súly",ideal:"Ideális",basal_metabolism:"Alapanyagcsere",body_type:"Testtípus",metabolic_age:"Anyagcsere kor"},vt={skinny:"Sovány",balanced_skinny:"Kiegyensúlyozott-sovány",skinny_muscular:"Sovány-izmos",balanced:"Kiegyensúlyozott",balanced_muscular:"Kiegyensúlyozott-izmos",lack_exercise:"Mozgáshiányos",thick_set:"Közepesen molett",obese:"Kórosan elhízott",overweight:"Túlsúlyos",underweight:"Súlyhiányos",normal_or_healthy_weight:"Normál vagy egészséges testsúly",slight_overweight:"Enyhe túlsúly",moderate_obesity:"Közepes elhízottság",severe_obesity:"Súlyos elhízottság",massive_obesity:"Masszív elhízottság",unavailable:"nem elérhető"},yt={" years":" év"},xt={missing_entity:"Kérjük, definiáljon egy entitást.",missing_entity_bodymiscale:"Kérjük, definiáljon egy BodyMiScale entitást."},wt={entity:"Kérjük, válasszon egy fiókot a mérlegen (kötelező)!",image:"Háttérkép (opcionális)",model:"AKTIVÁLÁS, ha a mérlegen 4 szürke kör van felül, 5 cm átmérővel",model1:"( = modell 181B)!",model_aria_label_on:"Impedancia modell bekapcsolása",model_aria_label_off:"Impedancia modell kikapcsolása",unit:"Kg átszámítása fonttá",unit_aria_label_on:"Átszámítás bekapcsolása",unit_aria_label_off:"Átszámítás kikapcsolása",theme:"Állítsa be a használt témát.",theme_aria_label_on:"Világos téma bekapcsolása",theme_aria_label_off:"Sötét téma kikapcsolása",show_name:"Mutassa a fiók nevét címként?",show_name_aria_label_on:"Név megjelenítésének bekapcsolása",show_name_aria_label_off:"Név megjelenítésének kikapcsolása",show_states:"Állapot mutatása?",show_states_aria_label_on:"Állapot megjelenítésének bekapcsolása",show_states_aria_label_off:"Állapot megjelenítésének kikapcsolása",show_attributes:"Személyes adatok mutatása (jobb felső sarokban)?",show_attributes_aria_label_on:"Személyes adatok megjelenítésének bekapcsolása",show_attributes_aria_label_off:"Személyes adatok megjelenítésének kikapcsolása",always_show_details:"Mindig mutassa a részleteket",always_show_details_aria_label_on:"Alapértelmezett részletes nézet bekapcsolása",always_show_details_aria_label_off:"Alapértelmezett részletes nézet kikapcsolása",show_toolbar:"Mutassa a haladó beállításokat?",show_toolbar_aria_label_on:"Haladó beállítások megjelenítésének bekapcsolása",show_toolbar_aria_label_off:"Haladó beállítások megjelenítésének kikapcsolása",show_body:"Kínáljon további mérési részleteket",show_body1:"(alsó rész - a lefelé mutató nyíl ikonra kattintva megjeleníthető)?",show_body_aria_label_on:"Test pontszám megjelenítésének bekapcsolása",show_body_aria_label_off:"Test pontszám megjelenítésének kikapcsolása",show_buttons:"Fiókváltás engedélyezése?",show_buttons_aria_label_on:"Gombok megjelenítésének bekapcsolása",show_buttons_aria_label_off:"Gombok megjelenítésének kikapcsolása",code_information:"A VÁLTOZÁSOK CSAK MENTÉS UTÁN FOGNAK MEGJELENNI.",header_options:"1. Kártya fejléc beállítások",body_options:"2. További kártya beállítások",warning:"FIGYELEM:",code_only_note:"További beállítások csak a kód szerkesztőben érhetők el."},Et={common:ut,states:ft,attributes:_t,attributes_value:gt,body:bt,body_value:vt,unit:yt,error:xt,editor:wt},It={version:"Versione",name:"BodyMiScale Card",description:"La card bodymiscale ti mostra il tuo peso/stato corporeo relativo.",not_available:"BodyMiScale non è disponibile",toggle_power:"Più dettagli come BMI kCal mostra / nascondi"},At={ok:"MISURAZIONE: OK",unknown:"STATO: sconosciuto",problem:"Problema",none:"Nessuno",weight_unavailable:"Peso non disponibile",impedance_unavailable:"Impedenza non disponibile",weight_unavailable_and_impedance_unavailable:"Peso non disponibile, impedenza non disponibile",weight_low:"Peso basso",impedance_low:"Impedenza bassa",weight_low_and_impedance_low:"Peso basso, impedenza bassa",weight_high:"Peso alto",impedance_high:"Impedenza alta",weight_high_and_impedance_high:"Peso alto, impedenza alta",weight_high_and_impedance_low:"Peso alto, impedenza bassa",weight_low_and_impedance_high:"Peso basso, impedenza alta"},kt={"weight: ":"Peso: ","impedance: ":"Impedenza: ","height: ":"Altezza: ","age: ":"Età: ","gender: ":"Sesso: "},Tt={male:"uomo",female:"donna",unavailable:"non disponibile"},Ct={bmi:"BMI",bmi_label:"BMI Categoria",visceral_fat:"Grasso viscerale",body_fat:"Grasso corporeo",protein:"Proteine",water:"Acqua",muscle_mass:"Massa muscolare",bone_mass:"Massa ossea",weight:"Peso",ideal:"Ideale",basal_metabolism:"Metabolismo base",body_type:"Tipo di corpo",metabolic_age:"Età metabolica"},Ot={skinny:"Magro",balanced_skinny:"Bilanciato-magro",skinny_muscular:"Magro-muscoloso",balanced:"Bilanciato",balanced_muscular:"Bilanciato-muscoloso",lack_exercise:"Manca-esercizio",thick_set:"Spesso-impostato",obese:"Obeso",overweight:"Sovrappeso",underweight:"Sottopeso",normal_or_healthy_weight:"Normale o Peso Sano",slight_overweight:"Leggermente in sovrappeso",moderate_obesity:"Obesità Moderata",severe_obesity:"Obesità Grave",massive_obesity:"Obesità Massiccia",unavailable:"non disponibile"},St={" years":" anni"},Rt={missing_entity:"Perfavore definisci un'entità.",missing_entity_bodymiscale:"Perfavore definisci un'entità di tipo bodymiscale."},zt={entity:"Perfavore seleziona un account sulla bilancia (richiesto) !",image:"Immagine di sfondo (opzionale)",model:"ATTIVA solo se la bilancia ha i 4 cerchi grigi di 5 cm Ø sulla parte superiore",model1:"( = modello 181B) !",model_aria_label_on:"Attiva l'impedenza",model_aria_label_off:"Disattiva l'impedenza",unit:"Converti da kg a lbs",unit_aria_label_on:"Attiva la conversione",unit_aria_label_off:"Disattiva la conversione",show_name:"Mostrare il nome dell'account come titolo  ?",show_name_aria_label_on:"Attiva la visione del nome",show_name_aria_label_off:"Disattiva la visione del nome",show_states:"Mostrare lo Stato ?",show_states_aria_label_on:"Attiva la visione dello stato",show_states_aria_label_off:"Disattiva la visione dello stato",show_attributes:"Mostrare i dati anagrafici personali (in alto a destra) ?",show_attributes_aria_label_on:"Attiva la visione degli attributi",show_attributes_aria_label_off:"Disattiva la visione degli attributi",always_show_details:"Mostra sempre i dettagli",always_show_details_aria_label_on:"Attiva la visualizzazione dettagliata predefinita",always_show_details_aria_label_off:"Disattiva la visualizzazione dettagliata predefinita",show_toolbar:"Mostrare opzioni avanzate ?",show_toolbar_aria_label_on:"Attiva opzioni avanzate",show_toolbar_aria_label_off:"Disattiva opzioni avanzate",show_body:"Offrire ulteriori dettagli di misurazione",show_body1:"(metà inferiore - l'icona con la spunta ve li mostrerà) ?",show_body_aria_label_on:"Attiva la visione del punteggio del corpo",show_body_aria_label_off:"Disattiva la visione del punteggio del corpo",show_buttons:"Consenti il cambio di account ?",show_buttons_aria_label_on:"Attiva la visione dei pulsanti",show_buttons_aria_label_off:"Disattiva la visione dei pulsanti",code_information:"I CAMBIAMENTI APPARIRANNO SOLO DOPO AVER SALVATO LA CONFIGURAZIONE.",header_options:"1. Opzioni di intestazione della card",body_options:"2. Ulteriori opzioni della card",warning:"ATTENZIONE:",code_only_note:"Le opzioni aggiuntive sono disponibili solo nella modalità editor di codice."},Mt={common:It,states:At,attributes:kt,attributes_value:Tt,body:Ct,body_value:Ot,unit:St,error:Rt,editor:zt},Lt={version:"Versie",name:"BodyMiScale Card",description:"De bodymiscale kaart toont u uw gewicht / gerelateerde lichaamsstatus.",not_available:"Bodymiscale is niet beschikbaar",toggle_power:"Meer details zoals BMI kCal tonen / verbergen"},$t={ok:"METING: OK",unknown:"STATUS: onbekend",problem:"Probleem",none:"Geen",weight_unavailable:"Gewicht niet beschikbar",impedance_unavailable:"Impedantie niet beschikbaar",weight_unavailable_and_impedance_unavailable:"Gewicht niet beschikbaar, impedantie niet beschikbaar",weight_low:"Gewicht laag",impedance_low:"Impedantie laag",weight_low_and_impedance_low:"Gewicht laag, impedantie laag",weight_high:"Gewicht hoog",impedance_high:"Impedantie hoog",weight_high_and_impedance_high:"Gewicht hoog, impedantie hoog",weight_high_and_impedance_low:"Gewicht hoog, impedantie laag",weight_low_and_impedance_high:"Gewicht laag, impedantie hoog"},Ft={"weight: ":"Gewicht: ","impedance: ":"Impedantie: ","height: ":"Lengte: ","age: ":"Leeftijd: ","gender: ":"Geslacht: "},Nt={male:"man",female:"vrouw",unavailable:"niet beschikbaar"},Pt={bmi:"BMI",bmi_label:"BMI label",visceral_fat:"Visceraal vet",body_fat:"Lichaamsvet",protein:"Proteine",water:"Water",muscle_mass:"Spiermassa",bone_mass:"Botgewicht",weight:"Gewicht",ideal:"Ideaal",basal_metabolism:"Basaal metabolisme",body_type:"Lichaamstype",metabolic_age:"Metabolistische leeftijd"},Dt={skinny:"Mager",balanced_skinny:"Gebalanceerd-mager",skinny_muscular:"Mager-gespierd",balanced:"Gebalanceerd",balanced_muscular:"Gebalanceerd-gespierd",lack_exercise:"Weinig-beweging",thick_set:"Dik",obese:"Obesitas",overweight:"Overgewicht",underweight:"Ondergewicht",normal_or_healthy_weight:"Normaal of gezond gewicht",slight_overweight:"Licht overgewicht",moderate_obesity:"Gemiddeld overgewicht",severe_obesity:"Ruim overgewicht",massive_obesity:"Enorm overgewicht",unavailable:"niet beschikbaar"},Bt={" years":" jaren"},Ht={missing_entity:"Geef een entiteit in.",missing_entity_bodymiscale:"Geef een bodymiscale entiteit in."},Vt={entity:"Kies een account op de schaal (verplicht) !",image:"Achtergrondafbeelding (facultatief)",model:"ACTIVEREN indien de weegschaal 4 grijze cirkels van 5 cm Ø",model1:"aan de bovenkant heeft ( = model 181B) !",model_aria_label_on:"Model impedantiemeting inschakelen",model_aria_label_off:"Model impedantiemeting uitschakelen",unit:"Converteer kg naar lbs",unit_aria_label_on:"Activeer conversie",unit_aria_label_off:"Conversie deactiveren",show_name:"Toon de naam van de rekening als titel ?",show_name_aria_label_on:"Zet naam aan",show_name_aria_label_off:"Zet naam uit",show_states:"Geef status weer ?",show_states_aria_label_on:"Zet status aan",show_states_aria_label_off:"Zet status uit",show_attributes:"Persoonlijke stamgegevens weergeven (rechtsboven) ?",show_attributes_aria_label_on:"Zet attributen aan",show_attributes_aria_label_off:"Zet attributen uit",always_show_details:"Toon altijd details",always_show_details_aria_label_on:"Zet standaard detailweergave aan",always_show_details_aria_label_off:"Zet standaard detailweergave uit",show_toolbar:"Toon geavanceerde opties ?",show_toolbar_aria_label_on:"Zet knoppenbalk aan",show_toolbar_aria_label_off:"Zet knoppenbalk uit",show_body:"Bieden verdere meting details",show_body1:"(onderste helft - pictogram chevron naar beneden zal tonen die) ?",show_body_aria_label_on:"Zet lichaamsscore aan",show_body_aria_label_off:"Zet lichaamsscore uit",show_buttons:"Accountwissel toestaan ?",show_buttons_aria_label_on:"Zet knoppen aan",show_buttons_aria_label_off:"Zet knoppen uit",code_information:"WIJZIGINGEN VERSCHIJNEN PAS NADAT ZE ZIJN OPGESLAGEN.",header_options:"1. Kaart koptekst opties",body_options:"2. Meer boordopties",warning:"LET OP:",code_only_note:"Extra opties zijn alleen beschikbaar in de code editor."},Ut={common:Lt,states:$t,attributes:Ft,attributes_value:Nt,body:Pt,body_value:Dt,unit:Bt,error:Ht,editor:Vt},jt={version:"Wersja",name:"Karta BodyMiScale",description:"Karta BodyMiScale pokazuje Twoją wagę oraz parametry ciała.",not_available:"BodyMiScale jest niedostępna",toggle_power:"Więcej szczegółów jak BMI kCal - pokaż / ukryj"},Gt={ok:"POMIAR: OK",unknown:"STATUS: nieznany",problem:"Problem",none:"Brak",weight_unavailable:"Waga niedostępna",impedance_unavailable:"Impedancja niedostępna",weight_unavailable_and_impedance_unavailable:"Waga i impedancja niedostępne",weight_low:"Niska waga",impedance_low:"Niska impedancja",weight_low_and_impedance_low:"Waga i impedancja niskie",weight_high:"Waga wysoka",impedance_high:"Impedancja wysoka",weight_high_and_impedance_high:"Waga i impedancja wysoka",weight_high_and_impedance_low:"Waga wysoka a impedancja niska",weight_low_and_impedance_high:"Waga nizska a impedancja wysoka"},Wt={"weight: ":"Waga: ","impedance: ":"Impedancja: ","height: ":"Wzrost: ","age: ":"Wiek: ","gender: ":"Płeć: "},Kt={male:"męska",female:"żeńska",unavailable:"niedstępna"},qt={bmi:"BMI",bmi_label:"BMI label",visceral_fat:"Tłuszcz brzuszny",body_fat:"Tłuszcz Ciała",protein:"Białko",water:"Woda",muscle_mass:"Masa mięśniowa",bone_mass:"Masa kostna",weight:"Waga",ideal:"Idealna",basal_metabolism:"Metabolizm podstawowy",body_type:"Typ sylwetki",metabolic_age:"Wiek metaboliczny"},Xt={skinny:"Chudy",balanced_skinny:"Umiarkowanie chudy",skinny_muscular:"Chudy muskularny",balanced:"Zrównoważony",balanced_muscular:"Zrównoważony muskularny",lack_exercise:"Mało aktywny",thick_set:"Gruby",obese:"Otyły",overweight:"Nadwaga",underweight:"Niedowaga",normal_or_healthy_weight:"Normalna lub zdrowa waga",slight_overweight:"Lekka nadwaga",moderate_obesity:"Lekka otyłość",severe_obesity:"Średnia otyłość",massive_obesity:"Poważna otyłość",unavailable:"niedostępny"},Yt={" years":" lat"},Zt={missing_entity:"Proszę zdefiniuj encje.",missing_entity_bodymiscale:"Proszę zdefiniuj encję bodymiscale."},Qt={entity:"Proszę wybierz konto na wadze (wymagane)!",image:"Obraz tła (opcjonalne)",model:"ACTIVATE if the scale has 4 grey circles of 5 cm Ø on top",model1:"( = model 181B)!",model_aria_label_on:"Włącz opcję impedancji",model_aria_label_off:"Wyłącz opcję impedancji",unit:"Zamień kg na lbs",unit_aria_label_on:"Włącz opcję konwersji",unit_aria_label_off:"Włącz opcję konwersji",theme:"Wybierz rodza motywu.",theme_aria_label_on:"Włącz jasny motyw",theme_aria_label_off:"Włącz ciemny motyw",show_name:"Użyć imienia jako tytułu karty?",show_name_aria_label_on:"Włącz opcję imienia jako tytułu",show_name_aria_label_off:"Wyłącz opcję imienia jako tytułu",show_states:"Wyświetlić stan?",show_states_aria_label_on:"Włącz wyświetlanie stanu",show_states_aria_label_off:"Wyłącz wyświetlanie stanu",show_attributes:"Show personal master data (gora po prawej)?",show_attributes_aria_label_on:"Toggle display attributes on",show_attributes_aria_label_off:"Toggle display attributes off",always_show_details:"Zawsze pokazuj szczegóły",always_show_details_aria_label_on:"Włącz domyślny widok szczegółów",always_show_details_aria_label_off:"Wyłącz domyślny widok szczegółów",show_toolbar:"Pokazać zaawansowane opcje?",show_toolbar_aria_label_on:"Włącz zaawansowane opcje",show_toolbar_aria_label_off:"Wyłącz zaawansowane opcje",show_body:"Offer further measurement details",show_body1:"(lower half - icon chevron down will show those)?",show_body_aria_label_on:"Toggle display body score on",show_body_aria_label_off:"Toggle display body score off",show_buttons:"Allow account switch?",show_buttons_aria_label_on:"Toggle display buttons on",show_buttons_aria_label_off:"Toggle display buttons off",code_information:"ZMIANY BĘDĄ WIDOCZNE PO ZAPISANIU.",header_options:"1. Opcje nagłówka",body_options:"2. Więcej opcji karty",warning:"UWAGA:",code_only_note:"Dodatkowe opcje dostępne są tylko poprzez edycje kodu."},Jt={common:jt,states:Gt,attributes:Wt,attributes_value:Kt,body:qt,body_value:Xt,unit:Yt,error:Zt,editor:Qt},ei={version:"Versão",name:"BodyMiScale Card",description:"O cartão bodymiscale mostra-lhe o estado do seu corpo em relação ao peso.",not_available:"Bodymiscale não está disponível",toggle_power:"Mostrando/escondendo mais detalhes tal como o kCal,IMC"},ti={ok:"MEDIÇÃO: OK",unknown:"ESTATUTO: desconhecido",problem:"Problema",none:"Nenhum",weight_unavailable:"Peso indisponível",impedance_unavailable:"Impedância indisponível",weight_unavailable_and_impedance_unavailable:"Peso indisponível, impedância indisponível",weight_low:"Peso baixo",impedance_low:"Impedância baixa",weight_low_and_impedance_low:"Peso baixo, impedância baixa",weight_high:"Peso alto",impedance_high:"Impedância alta",weight_high_and_impedance_high:"Peso alto, impedância alta",weight_high_and_impedance_low:"Peso alto, impedância baixa",weight_low_and_impedance_high:"Peso baixo, impedância alta"},ii={"weight: ":"Peso: ","impedance: ":"Impedância: ","height: ":"Altura: ","age: ":"Idade: ","gender: ":"Gênero: "},ai={male:"masculino",female:"femenino",unavailable:"indisponível"},oi={bmi:"IMC",bmi_label:"Etiqueta IMC",visceral_fat:"Gordura visceral",body_fat:"Gordura corporal",protein:"Proteína",water:"Água",muscle_mass:"Massa muscular",bone_mass:"Massa óssea",weight:"Peso",ideal:"Ideal",basal_metabolism:"Metabolismo basal",body_type:"Tipo de corpo",metabolic_age:"Idade metabólica"},ni={skinny:"Magro",balanced_skinny:"Magro equilibrado",skinny_muscular:"Magro musculoso",balanced:"Equilibrado",balanced_muscular:"Musculoso equilibrado",lack_exercise:"Falta de exercício",thick_set:"Estatura sólida",obese:"Obeso",overweight:"Acima do peso normal",underweight:"Abaixo do peso normal",normal_or_healthy_weight:"Normal",slight_overweight:"Ligeiramente acima do peso",moderate_obesity:"Obesidade moderada",severe_obesity:"Obesidade severa",massive_obesity:"Obesidade maciça",unavailable:"indisponível"},ri={" years":" Anos"},li={missing_entity:"Por favor, defina uma entidade.",missing_entity_bodymiscale:"Por favor, defina uma entidade bodymiscale."},di={entity:"Por favor, escolha a entidade da balança com o nome da pessoa (obrigatório) !",image:"Imagem de fundo (opcional)",model:"ATIVAR se a balança tiver 4 círculos cinzentos de 5 cm Ø no topo",model1:"( = modelo 181B) !",model_aria_label_on:"Mostrar o modelo com impedância",model_aria_label_off:"Esconder o modelo com impedância",unit:"Converter kg em libras",unit_aria_label_on:"Ativar a conversão kg para lbs",unit_aria_label_off:"Desativar a conversão kg para lbs",show_name:"Mostrar o nome da conta como título ?",show_name_aria_label_on:"Mostrar o nome como título",show_name_aria_label_off:"Esconder o nome como título",show_states:"Mostrar Estado da balança ?",show_states_aria_label_on:"Mostrar o estado da balança",show_states_aria_label_off:"Esconder o estado da balança",show_attributes:"Mostrar os dados do perfil pessoal (canto superior direito) ?",show_attributes_aria_label_on:"Mostrar atributos",show_attributes_aria_label_off:"Esconder atributos",always_show_details:"Mostrar sempre detalhes",always_show_details_aria_label_on:"Alternar a vista de detalhe por defeito em",always_show_details_aria_label_off:"Alternar a vista de detalhe por defeito",show_toolbar:"Mostrar opções avançadas ?",show_toolbar_aria_label_on:"Mostrar a barra de ferramentas",show_toolbar_aria_label_off:"Esconder a barra de ferramentas",show_body:"Mostrar mais detalhes da medição",show_body1:"(parte inferior - clicar na seta para mostrar) ?",show_body_aria_label_on:"Mostrar mais detalhes no corpo",show_body_aria_label_off:"Esconder mais detalhes no corpo",show_buttons:"Permitir a troca de conta ?",show_buttons_aria_label_on:"Mostrar botões das contas",show_buttons_aria_label_off:"Esconder botões das contas",code_information:"AS MUDANÇAS SÓ APARECERÃO DEPOIS DE TEREM SIDO SALVAS.",header_options:"1. Opções do cabeçalho do cartão",body_options:"2. Mais opções do corpo do cartão",warning:"CUIDADO:",code_only_note:"Opções adicionais estão disponíveis apenas no editor de código."},si={common:ei,states:ti,attributes:ii,attributes_value:ai,body:oi,body_value:ni,unit:ri,error:li,editor:di},ci={version:"Versão",name:"BodyMiScale Card",description:"O cartão bodymiscale mostra-lhe o estado do seu corpo em relação ao peso.",not_available:"Bodymiscale não é avaialável",toggle_power:"Mais detalhes como o kCal show / hide da BMI"},mi={ok:"MEDIÇÃO: OK",unknown:"ESTATUTO: desconhecido",problem:"Problema",none:"Nenhum",weight_unavailable:"Peso indisponível",impedance_unavailable:"Impedance indisponível",weight_unavailable_and_impedance_unavailable:"Peso indisponível, impedance indisponível",weight_low:"Peso baixo",impedance_low:"Impedância baixa",weight_low_and_impedance_low:"Peso baixo, impedância baixa",weight_high:"Peso alto",impedance_high:"Impedância alta",weight_high_and_impedance_high:"Peso alto, impedância alta",weight_high_and_impedance_low:"Peso alto, impedância baixa",weight_low_and_impedance_high:"Peso baixo, impedância alta"},hi={"weight: ":"Peso: ","impedance: ":"Impedance: ","height: ":"Cintura: ","age: ":"Idade: ","gender: ":"Gênero: "},pi={male:"macho",female:"fêmea",unavailable:"indisponível"},ui={bmi:"IMC",bmi_label:"Etiqueta IMC",visceral_fat:"Gordura visceral",body_fat:"Gordura corporal",protein:"Proteína",water:"Água",muscle_mass:"Massa muscular",bone_mass:"Massa óssea",weight:"Peso",ideal:"Ideal",basal_metabolism:"Metabolismo basal",body_type:"Tipo de corpo",metabolic_age:"Idade metabólica"},fi={skinny:"Magro",balanced_skinny:"Magro equilibrado",skinny_muscular:"Magro musculoso",balanced:"Equilibrado",balanced_muscular:"Musculoso equilibrado",lack_exercise:"Falta de exercício",thick_set:"Grosso-conjunto",obese:"Obeso",overweight:"Sobrepeso",underweight:"Underweight",normal_or_healthy_weight:"Normal",slight_overweight:"Ligeiro acima do peso",moderate_obesity:"Obesidade moderada",severe_obesity:"Obesidade severa",massive_obesity:"Obesidade maciça",unavailable:"indisponível"},_i={" years":" Anos"},gi={missing_entity:"Por favor, defina uma entidade.",missing_entity_bodymiscale:"Por favor, defina uma entidade bodymiscale."},bi={entity:"Por favor, escolha uma conta na escala (obrigatório) !",image:"Imagem de fundo (opcional)",model:"ATIVAR se a escala tiver 4 círculos cinzentos de 5 cm Ø no topo",model1:"( = modelo 181B) !",model_aria_label_on:"Alternar o modelo impedância em",model_aria_label_off:"Alternar o modelo impedância desligado",unit:"Converter kg em libras",unit_aria_label_on:"Ativar a conversão",unit_aria_label_off:"Desativar a conversão",show_name:"Mostrar o nome da conta como título ?",show_name_aria_label_on:"Alternar o nome da exibição",show_name_aria_label_off:"Alternar o nome da exibição",show_states:"Mostrar Estado ?",show_states_aria_label_on:"Alternar estado de exibição ligado",show_states_aria_label_off:"Alternar estado de exibição fora",show_attributes:"Mostrar dados mestres pessoais (canto superior direito) ?",show_attributes_aria_label_on:"Alternar atributos de exibição em",show_attributes_aria_label_off:"Alternar atributos de exibição fora",always_show_details:"Mostrar sempre detalhes",always_show_details_aria_label_on:"Alternar a visualização de detalhes padrão em",always_show_details_aria_label_off:"Alternar a visualização de detalhes padrão fora",show_toolbar:"Mostrar opções avançadas ?",show_toolbar_aria_label_on:"Alternar a barra de ferramentas do display em",show_toolbar_aria_label_off:"Alternar barra de ferramentas de exibição fora",show_body:"Oferecer mais detalhes de medição",show_body1:"(parte inferior - ícone chevron down mostrará aqueles) ?",show_body_aria_label_on:"Alternar a pontuação do corpo do display em",show_body_aria_label_off:"Alternar a pontuação do corpo do display fora",show_buttons:"Permitir a troca de conta ?",show_buttons_aria_label_on:"Alternar botões de exibição",show_buttons_aria_label_off:"Alternar botões de exibição desligados",code_information:"AS MUDANÇAS SÓ APARECERÃO DEPOIS DE TEREM SIDO SALVAS.",header_options:"1. Opções do cabeçalho do cartão",body_options:"2. Mais opções de placas",warning:"CUIDADO:",code_only_note:"Opções adicionais estão disponíveis apenas no editor de código."},vi={common:ci,states:mi,attributes:hi,attributes_value:pi,body:ui,body_value:fi,unit:_i,error:gi,editor:bi},yi={version:"Versiune",name:"BodyMiScale Card",description:"Cardul bodymiscale îți arată starea ta în funcție de greutate/corespunzătoare corpului.",not_available:"BodyMiScale nu este disponibil",toggle_power:"Mai multe detalii precum BMI kCal arată/ascunde"},xi={ok:"MĂSURARE: OK",unknown:"Stare: unknown",problem:"Problemă",none:"Nimic",weight_unavailable:"Greutate indisponibilă",impedance_unavailable:"Impedanță indisponibilă",weight_unavailable_and_impedance_unavailable:"Greutate indisponibilă, impedanță indisponibilă",weight_low:"Greutate redusă",impedance_low:"Impedanță scăzută",weight_low_and_impedance_low:"Greutate redusă, impedanță scăzută",weight_high:"Greutate mare",impedance_high:"Impedanță mare",weight_high_and_impedance_high:"Greutate mare, impedanță mare",weight_high_and_impedance_low:"Greutate mare, impedanță scăzută",weight_low_and_impedance_high:"Greutate redusă, impedanță ridicată"},wi={"weight: ":"Greutate: ","impedance: ":"Impedanță: ","height: ":"Înălţime: ","age: ":"Vârstă: ","gender: ":"Gen: "},Ei={male:"masculin",female:"feminin",unavailable:"indisponibil"},Ii={bmi:"IMC",bmi_label:"Eticheta IMC",visceral_fat:"Grasime viscerala",body_fat:"Grăsime corporală",protein:"Proteină",water:"Apă",muscle_mass:"Masă musculară",bone_mass:"Masă osoasă",weight:"Greutate",ideal:"Ideal",basal_metabolism:"Metabolismul bazal",body_type:"Tipul corpului",metabolic_age:"Vârsta metabolică"},Ai={skinny:"Slab",balanced_skinny:"Slab-echilibrat",skinny_muscular:"Slab-muscular",balanced:"Echilibrat",balanced_muscular:"Balanced-muscular",lack_exercise:"Lipsa-exercițiu",thick_set:"Îndesat",obese:"Obez",overweight:"Supraponderal",underweight:"Subponderal",normal_or_healthy_weight:"Greutate normală sau sănătoasă",slight_overweight:"Ușor supraponderal",moderate_obesity:"Obezitate moderată",severe_obesity:"Obezitate severă",massive_obesity:"Obezitate masivă",unavailable:"indisponibil"},ki={" years":" ani"},Ti={missing_entity:"Vă rugăm să definiți o entitate.",missing_entity_bodymiscale:"Definiți o entitate bodymiscale."},Ci={entity:"Vă rugăm să selectați un cont de cântar (obligatoriu)!",image:"Imagine de fundal (opțional)",model:"ACTIVAȚI dacă cântarul are deasupra 4 cercuri gri de 5 cm Ø",model1:"( = model 181B)!",model_aria_label_on:"Comutați impedanța modelului",model_aria_label_off:"Dezactivați impedanța modelului",unit:"Convertiți kg în lbs",unit_aria_label_on:"Activați conversia",unit_aria_label_off:"Dezactivați conversia",theme:"Configurați tema pe care o utilizați.",theme_aria_label_on:"Activează lumina temei",theme_aria_label_off:"Dezactivați tema întunecată",show_name:"Afișați numele contului ca titlu?",show_name_aria_label_on:"Activează numele afișat",show_name_aria_label_off:"Dezactivați numele afișat",show_states:"Arată starea?",show_states_aria_label_on:"Comutați starea afișajului",show_states_aria_label_off:"Dezactivați starea afișajului",show_attributes:"Afișați datele de bază personale (dreapta sus)?",show_attributes_aria_label_on:"Activați/dezactivați atributele de afișare",show_attributes_aria_label_off:"Dezactivați atributele de afișare",always_show_details:"Afișați întotdeauna detalii",always_show_details_aria_label_on:"Activați vizualizarea implicită a detaliilor",always_show_details_aria_label_off:"Dezactivați vizualizarea implicită a detaliilor",show_toolbar:"Arată opțiuni avansate?",show_toolbar_aria_label_on:"Comutați afișarea opțiunilor avansate",show_toolbar_aria_label_off:"Dezactivați afișarea opțiunilor avansate",show_body:"Oferiți detalii suplimentare de măsurare",show_body1:"(Jumătatea inferioară - pictograma chevron în jos le va arăta)?",show_body_aria_label_on:"Comutați afișarea scorului corporal",show_body_aria_label_off:"Dezactivați scorul pentru corpul afișat",show_buttons:"Permiteți schimbarea contului?",show_buttons_aria_label_on:"Activați butoanele afișajului",show_buttons_aria_label_off:"Dezactivați butoanele de afișare",code_information:"MODIFICĂRILE VOR APĂRE NUMAI DUPĂ CE AU FOST SALVATE.",header_options:"1. Opțiuni pentru antetul cardului",body_options:"2. Mai multe opțiuni de card",warning:"ATENŢIE:",code_only_note:"Opțiuni suplimentare sunt disponibile numai în editorul de cod."},Oi={common:yi,states:xi,attributes:wi,attributes_value:Ei,body:Ii,body_value:Ai,unit:ki,error:Ti,editor:Ci},Si={version:"Версия",name:"Карточка BodyMiScale",description:"Карточка BodyMiScale отображает показатели тела, рассчитанные на основе результатов измерения веса и биоимпеданса.",not_available:"Компонент BodyMiScale не доступен",toggle_power:"Показать/скрыть дополнительные сведения о BMI"},Ri={ok:"Измерение: OK",unknown:"Состояние: неизвестно",problem:"Проблема",none:"Нет",weight_unavailable:"Вес недоступен",impedance_unavailable:"Биоимпеданс недоступен",weight_unavailable_and_impedance_unavailable:"Вес и биоимпеданс недоступны",weight_low:"Низкий вес",impedance_low:"Низкий биоимпеданс",weight_low_and_impedance_low:"Низкие вес и биоимпеданс",weight_high:"Высокий вес",impedance_high:"Высокий биоимпеданс",weight_high_and_impedance_high:"Высокие вес и биоимпеданс",weight_high_and_impedance_low:"Высокий вес, низкий биоимпеданс",weight_low_and_impedance_high:"Низкий вес, высокий биоимпеданс"},zi={"weight: ":"Вес: ","impedance: ":"Импеданс: ","height: ":"Рост: ","age: ":"Возраст: ","gender: ":"Пол: "},Mi={male:"мужской",female:"женский",unavailable:"недоступен"},Li={bmi:"Индекс BMI",bmi_label:"Интерпретация BMI",visceral_fat:"Висцеральный жир",body_fat:"Жировая ткань",protein:"Белки",water:"Вода",muscle_mass:"Мышечная масса",bone_mass:"Костная масса",weight:"Вес",ideal:"Идеальный вес",basal_metabolism:"Базальный метаболизм",body_type:"Тип тела",metabolic_age:"Метаболический возраст"},$i={skinny:"Тощий",balanced_skinny:"Худощавый",skinny_muscular:"Подтянуто-мускулистый",balanced:"Оптимальный",balanced_muscular:"Мускулистый",lack_exercise:"Недостаток упражнений",thick_set:"Коренастый",obese:"Ожирение",overweight:"Лишний вес",underweight:"Недостаточный вес",normal_or_healthy_weight:"Нормальный вес",slight_overweight:"Избыточный вес",moderate_obesity:"Ожирение 1й степени",severe_obesity:"Ожирение 2й степени",massive_obesity:"Ожирение 3й степени",unavailable:"недоступен"},Fi={" years":" года(лет)"},Ni={missing_entity:"Определите сущность.",missing_entity_bodymiscale:"Определите сущность BodyMiScale."},Pi={entity:"Сущность BodyMiScale (обязательно)",image:"Фоновое изображение (опционально)",model:"Измерение биоимпеданса",model1:"(модель весов 181B)",model_aria_label_on:"Измерять биоимпеданс",model_aria_label_off:"Не измерять биоимпеданс",unit:"Преобразование кг в фунты",unit_aria_label_on:"Преобразовать кг в фунты",unit_aria_label_off:"Не преобразовывать кг в фунты",show_name:"Отображение имени пользователя",show_name_aria_label_on:"Отображать имя пользователя",show_name_aria_label_off:"Не отображать имя пользователя",show_states:"Отображение состояния",show_states_aria_label_on:"Отображать состояние",show_states_aria_label_off:"Не отображать состояние",show_attributes:"Отображение персональных данных",show_attributes_aria_label_on:"Отображать персональные данные",show_attributes_aria_label_off:"Не отображать персональные данные",always_show_details:"Всегда показывать детали",always_show_details_aria_label_on:"Постоянное отображение деталей",always_show_details_aria_label_off:"Не отображайте данные на постоянной основе",show_toolbar:"Отображение панели дополнительных параметров",show_toolbar_aria_label_on:"Отображать панель дополнительных параметров",show_toolbar_aria_label_off:"Не отображать панель дополнительных параметров",show_body:"Отображение дополнительных параметров",show_body1:"(по нажатию кнопки со стрелкой вниз)",show_body_aria_label_on:"Отображать дополнительные параметры",show_body_aria_label_off:"Не отображать дополнительные параметры",show_buttons:"Переключение аккаунтов",show_buttons_aria_label_on:"Отображать кнопки",show_buttons_aria_label_off:"Не отображать кнопки",code_information:"Изменения будет применены только после их сохранения.",header_options:"1. Настройки заголовка карточки",body_options:"2. Дополнительные настройки карточки",warning:"ВНИМАНИЕ:",code_only_note:"Дополнительные настройки отображаются только в редакторе кода."},Di={common:Si,states:Ri,attributes:zi,attributes_value:Mi,body:Li,body_value:$i,unit:Fi,error:Ni,editor:Pi},Bi={version:"Version",name:"BodyMiScale Card",description:"The bodymiscale card shows you your weight wise / related body status.",not_available:"BodyMiScale is not available",toggle_power:"More details like BMI kCal show / hide"},Hi={ok:"MEASUREMENT: OK",unknown:"STATE: unknown",problem:"Problem",none:"None",weight_unavailable:"Weight unavailable",impedance_unavailable:"Impedance unavailable",weight_unavailable_and_impedance_unavailable:"Weight unavailable, impedance unavailable",weight_low:"Weight low",impedance_low:"Impedance low",weight_low_and_impedance_low:"Weight low, impedance low",weight_high:"Weight high",impedance_high:"Impedance high",weight_high_and_impedance_high:"Weight high, impedance high",weight_high_and_impedance_low:"Weight high, impedance low",weight_low_and_impedance_high:"Weight low, impedance high"},Vi={"weight: ":"Weight: ","impedance: ":"Impedance: ","height: ":"Height: ","age: ":"Age: ","gender: ":"Gender: "},Ui={male:"male",female:"female",unavailable:"unavailable"},ji={bmi:"BMI",bmi_label:"BMI label",visceral_fat:"Mỡ nội tạng",body_fat:"Mỡ cơ thể",protein:"Chất đạm",water:"Nước",muscle_mass:"Khối lượng cơ",bone_mass:"Khối lượng xương",weight:"Cân nặng",ideal:"Lý tưởng",basal_metabolism:"Trao đổi chất cơ bản",body_type:"Kiểu cơ thể",metabolic_age:"Tuổi chuyển hóa"},Gi={skinny:"Gầy",balanced_skinny:"Cân đối - gầy",skinny_muscular:"Gầy - cơ bắp",balanced:"Cân bằng",balanced_muscular:"Cơ bắp cân bằng",lack_exercise:"Thiếu tập thể dục",thick_set:"Thick-set",obese:"Béo phì",overweight:"Thừa cân",underweight:"Thiếu cân",normal_or_healthy_weight:"Cân nặng bình thường hoặc khỏe mạnh",slight_overweight:"Hơi thừa cân",moderate_obesity:"Béo phì vừa phải",severe_obesity:"Béo phì nghiêm trọng",massive_obesity:"Massive obesity",unavailable:"Không có sẵn"},Wi={" years":" years"},Ki={missing_entity:"Please define an entity.",missing_entity_bodymiscale:"Please define a bodymiscale entity."},qi={entity:"Please select an account on the scale (required)!",image:"Background image (optional)",model:"ACTIVATE if the scale has 4 grey circles of 5 cm Ø on top",model1:"( = model 181B)!",model_aria_label_on:"Toggle model impedance on",model_aria_label_off:"Toggle model impedance off",unit:"Convert kg to lbs",unit_aria_label_on:"Toggle the conversion on",unit_aria_label_off:"Toggle the conversion off",theme:"Configure the theme you use.",theme_aria_label_on:"Toggle theme light on",theme_aria_label_off:"Toggle theme dark off",show_name:"Show the name of the account as title?",show_name_aria_label_on:"Toggle display name on",show_name_aria_label_off:"Toggle display name off",show_states:"Show State?",show_states_aria_label_on:"Toggle display state on",show_states_aria_label_off:"Toggle display state off",show_attributes:"Show personal master data (top right)?",show_attributes_aria_label_on:"Toggle display attributes on",show_attributes_aria_label_off:"Toggle display attributes off",always_show_details:"Always show details",always_show_details_aria_label_on:"Toggle default detail view on",always_show_details_aria_label_off:"Toggle default detail view off",show_toolbar:"Show advanced options?",show_toolbar_aria_label_on:"Toggle display advanced options on",show_toolbar_aria_label_off:"Toggle display advanced options off",show_body:"Offer further measurement details",show_body1:"(lower half - icon chevron down will show those)?",show_body_aria_label_on:"Toggle display body score on",show_body_aria_label_off:"Toggle display body score off",show_buttons:"Allow account switch?",show_buttons_aria_label_on:"Toggle display buttons on",show_buttons_aria_label_off:"Toggle display buttons off",code_information:"CHANGES WILL ONLY APPEAR AFTER THEY HAVE BEEN SAVED.",header_options:"1. Card header options",body_options:"2. More card options",warning:"ATTENTION:",code_only_note:"Additional options are only available in the code editor."},Xi={common:Bi,states:Hi,attributes:Vi,attributes_value:Ui,body:ji,body_value:Gi,unit:Wi,error:Ki,editor:qi},Yi={version:"版本",name:"米家体脂称卡片",description:"米家体脂称卡片会显示你的体重以及相关身体状态",not_available:"BodyMiScale 不可用",toggle_power:"显示/隐藏更多详情,例如: BMI, kCal"},Zi={ok:"测量: OK",unknown:"状态: 未知",problem:"故障",none:"无",weight_unavailable:"体重不可用",impedance_unavailable:"阻抗不可用",weight_unavailable_and_impedance_unavailable:"体重不可用, 阻抗不可用",weight_low:"体重过轻",impedance_low:"阻抗低",weight_low_and_impedance_low:"体重过轻, 阻抗低",weight_high:"体重过重",impedance_high:"阻抗高",weight_high_and_impedance_high:"体重过重, 阻抗高",weight_high_and_impedance_low:"体重过重, 阻抗低",weight_low_and_impedance_high:"体重过轻, 阻抗高"},Qi={"weight: ":"重量: ","impedance: ":"阻抗: ","height: ":"身高: ","age: ":"年龄: ","gender: ":"性别: "},Ji={male:"男",female:"女",unavailable:"不可用"},ea={bmi:"BMI",bmi_label:"BMI 标签",visceral_fat:"内脏脂肪",body_fat:"体脂",protein:"蛋白质",water:"水分",muscle_mass:"肌肉量",bone_mass:"骨量",weight:"体重",ideal:"理想体重",basal_metabolism:"基本代谢",body_type:"身体类型",metabolic_age:"代谢年龄"},ta={skinny:"偏瘦",balanced_skinny:"健美型",skinny_muscular:"偏瘦肌肉",balanced:"标准型",balanced_muscular:"标准肌肉",lack_exercise:"缺乏运动",thick_set:"结实型偏胖",obese:"偏胖型",overweight:"肥胖型",underweight:"过轻",normal_or_healthy_weight:"正常或健康",slight_overweight:"轻微超重",moderate_obesity:"中度肥胖",severe_obesity:"过度肥胖",massive_obesity:"严重肥胖",unavailable:"不可用"},ia={" years":" 岁"},aa={missing_entity:"Please define an entity.",missing_entity_bodymiscale:"Please define a bodymiscale entity."},oa={entity:"Please select an account on the scale (required) !",image:"Background image (optional)",model:"ACTIVATE if the scale has 4 grey circles of 5 cm Ø on top",model1:"( = model 181B) !",model_aria_label_on:"Toggle model impedance on",model_aria_label_off:"Toggle model impedance off",unit:"Convert kg to lbs",unit_aria_label_on:"Toggle the conversion on",unit_aria_label_off:"Toggle the conversion off",show_name:"Show the name of the account as title ?",show_name_aria_label_on:"Toggle display name on",show_name_aria_label_off:"Toggle display name off",show_states:"Show State ?",show_states_aria_label_on:"Toggle display state on",show_states_aria_label_off:"Toggle display state off",show_attributes:"Show personal master data (top right) ?",show_attributes_aria_label_on:"Toggle display attributes on",show_attributes_aria_label_off:"Toggle display attributes off",always_show_details:"Always show details",always_show_details_aria_label_on:"Toggle default detail view on",always_show_details_aria_label_off:"Toggle default detail view off",show_toolbar:"Show advanced options ?",show_toolbar_aria_label_on:"Toggle display advanced options on",show_toolbar_aria_label_off:"Toggle display advanced options off",show_body:"Offer further measurement details",show_body1:"(lower half - icon chevron down will show those) ?",show_body_aria_label_on:"Toggle display body score on",show_body_aria_label_off:"Toggle display body score off",show_buttons:"Allow account switch ?",show_buttons_aria_label_on:"Toggle display buttons on",show_buttons_aria_label_off:"Toggle display buttons off",code_information:"CHANGES WILL ONLY APPEAR AFTER THEY HAVE BEEN SAVED.",header_options:"1. Card header options",body_options:"2. More card options",warning:"ATTENTION:",code_only_note:"Additional options are only available in the code editor."},na={common:Yi,states:Zi,attributes:Qi,attributes_value:Ji,body:ea,body_value:ta,unit:ia,error:aa,editor:oa},ra={version:"版本",name:"米家體脂計卡片",description:"米家體脂計卡片會顯示你的體重以及相關身體狀態",not_available:"BodyMiScale 不可用",toggle_power:"顯示/隱藏更多詳情,例如: BMI, kCal"},la={ok:"測量: OK",unknown:"狀態: 未知",problem:"故障",none:"無",weight_unavailable:"體重不可用",impedance_unavailable:"阻抗不可用",weight_unavailable_and_impedance_unavailable:"體重不可用, 阻抗不可用",weight_low:"體重過輕",impedance_low:"阻抗低",weight_low_and_impedance_low:"體重過輕, 阻抗低",weight_high:"體重過重",impedance_high:"阻抗高",weight_high_and_impedance_high:"體重過重, 阻抗高",weight_high_and_impedance_low:"體重過重, 阻抗低",weight_low_and_impedance_high:"體重過輕, 阻抗高"},da={"weight: ":"重量: ","impedance: ":"阻抗: ","height: ":"身高: ","age: ":"年齡: ","gender: ":"性別: "},sa={male:"男",female:"女",unavailable:"不可用"},ca={bmi:"BMI",bmi_label:"BMI 標籤",visceral_fat:"內臟脂肪",body_fat:"體脂",protein:"蛋白質",water:"水分",muscle_mass:"肌肉量",bone_mass:"骨量",weight:"體重",ideal:"理想體重",basal_metabolism:"基本代謝",body_type:"身體類型",metabolic_age:"代謝年齡"},ma={skinny:"偏瘦",balanced_skinny:"健美型",skinny_muscular:"偏瘦肌肉",balanced:"標準型",balanced_muscular:"標準肌肉",lack_exercise:"缺乏運動",thick_set:"結實型偏胖",obese:"偏胖型",overweight:"肥胖型",underweight:"過輕",normal_or_healthy_weight:"正常或健康",slight_overweight:"輕微超重",moderate_obesity:"中度肥胖",severe_obesity:"過度肥胖",massive_obesity:"嚴重肥胖",unavailable:"不可用"},ha={" years":" 歲"},pa={missing_entity:"Please define an entity.",missing_entity_bodymiscale:"Please define a bodymiscale entity."},ua={entity:"Please select an account on the scale (required) !",image:"Background image (optional)",model:"ACTIVATE if the scale has 4 grey circles of 5 cm Ø on top",model1:"( = model 181B) !",model_aria_label_on:"Toggle model impedance on",model_aria_label_off:"Toggle model impedance off",unit:"Convert kg to lbs",unit_aria_label_on:"Toggle the conversion on",unit_aria_label_off:"Toggle the conversion off",show_name:"Show the name of the account as title ?",show_name_aria_label_on:"Toggle display name on",show_name_aria_label_off:"Toggle display name off",show_states:"Show State ?",show_states_aria_label_on:"Toggle display state on",show_states_aria_label_off:"Toggle display state off",show_attributes:"Show personal master data (top right) ?",show_attributes_aria_label_on:"Toggle display attributes on",show_attributes_aria_label_off:"Toggle display attributes off",always_show_details:"Always show details",always_show_details_aria_label_on:"Toggle default detail view on",always_show_details_aria_label_off:"Toggle default detail view off",show_toolbar:"Show advanced options ?",show_toolbar_aria_label_on:"Toggle display advanced options on",show_toolbar_aria_label_off:"Toggle display advanced options off",show_body:"Offer further measurement details",show_body1:"(lower half - icon chevron down will show those) ?",show_body_aria_label_on:"Toggle display body score on",show_body_aria_label_off:"Toggle display body score off",show_buttons:"Allow account switch ?",show_buttons_aria_label_on:"Toggle display buttons on",show_buttons_aria_label_off:"Toggle display buttons off",code_information:"CHANGES WILL ONLY APPEAR AFTER THEY HAVE BEEN SAVED.",header_options:"1. Card header options",body_options:"2. More card options",warning:"ATTENTION:",code_only_note:"Additional options are only available in the code editor."},fa={common:ra,states:la,attributes:da,attributes_value:sa,body:ca,body_value:ma,unit:ha,error:pa,editor:ua};const _a={cs:Object.freeze({__proto__:null,common:be,states:ve,attributes:ye,attributes_value:xe,body:we,body_value:Ee,unit:Ie,error:Ae,editor:ke,default:Te}),de:Object.freeze({__proto__:null,common:Ce,states:Oe,attributes:Se,attributes_value:Re,body:ze,body_value:Me,unit:Le,error:$e,editor:Fe,default:Ne}),en:Object.freeze({__proto__:null,common:Pe,states:De,attributes:Be,attributes_value:He,body:Ve,body_value:Ue,unit:je,error:Ge,editor:We,default:Ke}),es:Object.freeze({__proto__:null,common:qe,states:Xe,attributes:Ye,attributes_value:Ze,body:Qe,body_value:Je,unit:et,error:tt,editor:it,default:at}),fr:Object.freeze({__proto__:null,common:ot,states:nt,attributes:rt,attributes_value:lt,body:dt,body_value:st,unit:ct,error:mt,editor:ht,default:pt}),hu:Object.freeze({__proto__:null,common:ut,states:ft,attributes:_t,attributes_value:gt,body:bt,body_value:vt,unit:yt,error:xt,editor:wt,default:Et}),it:Object.freeze({__proto__:null,common:It,states:At,attributes:kt,attributes_value:Tt,body:Ct,body_value:Ot,unit:St,error:Rt,editor:zt,default:Mt}),nl:Object.freeze({__proto__:null,common:Lt,states:$t,attributes:Ft,attributes_value:Nt,body:Pt,body_value:Dt,unit:Bt,error:Ht,editor:Vt,default:Ut}),pl:Object.freeze({__proto__:null,common:jt,states:Gt,attributes:Wt,attributes_value:Kt,body:qt,body_value:Xt,unit:Yt,error:Zt,editor:Qt,default:Jt}),pt:Object.freeze({__proto__:null,common:ei,states:ti,attributes:ii,attributes_value:ai,body:oi,body_value:ni,unit:ri,error:li,editor:di,default:si}),pt_BR:Object.freeze({__proto__:null,common:ci,states:mi,attributes:hi,attributes_value:pi,body:ui,body_value:fi,unit:_i,error:gi,editor:bi,default:vi}),ro:Object.freeze({__proto__:null,common:yi,states:xi,attributes:wi,attributes_value:Ei,body:Ii,body_value:Ai,unit:ki,error:Ti,editor:Ci,default:Oi}),ru:Object.freeze({__proto__:null,common:Si,states:Ri,attributes:zi,attributes_value:Mi,body:Li,body_value:$i,unit:Fi,error:Ni,editor:Pi,default:Di}),vi:Object.freeze({__proto__:null,common:Bi,states:Hi,attributes:Vi,attributes_value:Ui,body:ji,body_value:Gi,unit:Wi,error:Ki,editor:qi,default:Xi}),zh_Hans:Object.freeze({__proto__:null,common:Yi,states:Zi,attributes:Qi,attributes_value:Ji,body:ea,body_value:ta,unit:ia,error:aa,editor:oa,default:na}),zh_Hant:Object.freeze({__proto__:null,common:ra,states:la,attributes:da,attributes_value:sa,body:ca,body_value:ma,unit:ha,error:pa,editor:ua,default:fa})};function ga(e,t="",i=""){const a=e.split(".")[0],o=e.split(".")[1],n=(localStorage.getItem("selectedLanguage")||navigator.language.split("-")[0]||"en").replace(/['"]+/g,"").replace("-","_");let r;try{r=_a[n][a][o]}catch(e){r=_a.en[a][o]}return void 0===r&&(r=_a.en[a][o]),""!==t&&""!==i&&(r=r.replace(t,i)),r}
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */var ba=function(){function e(e){void 0===e&&(e={}),this.adapter=e}return Object.defineProperty(e,"cssClasses",{get:function(){return{}},enumerable:!1,configurable:!0}),Object.defineProperty(e,"strings",{get:function(){return{}},enumerable:!1,configurable:!0}),Object.defineProperty(e,"numbers",{get:function(){return{}},enumerable:!1,configurable:!0}),Object.defineProperty(e,"defaultAdapter",{get:function(){return{}},enumerable:!1,configurable:!0}),e.prototype.init=function(){},e.prototype.destroy=function(){},e}(),va={ROOT:"mdc-form-field"},ya={LABEL_SELECTOR:".mdc-form-field > label"},xa=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.click=function(){o.handleClick()},o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return va},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return ya},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{activateInputRipple:function(){},deactivateInputRipple:function(){},deregisterInteractionHandler:function(){},registerInteractionHandler:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){this.adapter.registerInteractionHandler("click",this.click)},a.prototype.destroy=function(){this.adapter.deregisterInteractionHandler("click",this.click)},a.prototype.handleClick=function(){var e=this;this.adapter.activateInputRipple(),requestAnimationFrame((function(){e.adapter.deactivateInputRipple()}))},a}(ba);
-/**
- * @license
- * Copyright 2017 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-const wa=e=>e.nodeType===Node.ELEMENT_NODE;function Ea(e){return{addClass:t=>{e.classList.add(t)},removeClass:t=>{e.classList.remove(t)},hasClass:t=>e.classList.contains(t)}}const Ia=()=>{},Aa={get passive(){return!1}};document.addEventListener("x",Ia,Aa),document.removeEventListener("x",Ia);const ka=(e=window.document)=>{let t=e.activeElement;const i=[];if(!t)return i;for(;t&&(i.push(t),t.shadowRoot);)t=t.shadowRoot.activeElement;return i},Ta=e=>{const t=ka();if(!t.length)return!1;const i=t[t.length-1],a=new Event("check-if-focused",{bubbles:!0,composed:!0});let o=[];const n=e=>{o=e.composedPath()};return document.body.addEventListener("check-if-focused",n),i.dispatchEvent(a),document.body.removeEventListener("check-if-focused",n),-1!==o.indexOf(e)};
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class Ca extends ie{click(){if(this.mdcRoot)return this.mdcRoot.focus(),void this.mdcRoot.click();super.click()}createFoundation(){void 0!==this.mdcFoundation&&this.mdcFoundation.destroy(),this.mdcFoundationClass&&(this.mdcFoundation=new this.mdcFoundationClass(this.createAdapter()),this.mdcFoundation.init())}firstUpdated(){this.createFoundation()}}
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */var Oa,Sa;const Ra=null!==(Sa=null===(Oa=window.ShadyDOM)||void 0===Oa?void 0:Oa.inUse)&&void 0!==Sa&&Sa;class za extends Ca{constructor(){super(...arguments),this.disabled=!1,this.containingForm=null,this.formDataListener=e=>{this.disabled||this.setFormData(e.formData)}}findFormElement(){if(!this.shadowRoot||Ra)return null;const e=this.getRootNode().querySelectorAll("form");for(const t of Array.from(e))if(t.contains(this))return t;return null}connectedCallback(){var e;super.connectedCallback(),this.containingForm=this.findFormElement(),null===(e=this.containingForm)||void 0===e||e.addEventListener("formdata",this.formDataListener)}disconnectedCallback(){var e;super.disconnectedCallback(),null===(e=this.containingForm)||void 0===e||e.removeEventListener("formdata",this.formDataListener),this.containingForm=null}click(){this.formElement&&!this.disabled&&(this.formElement.focus(),this.formElement.click())}firstUpdated(){super.firstUpdated(),this.shadowRoot&&this.mdcRoot.addEventListener("change",(e=>{this.dispatchEvent(new Event("change",e))}))}}za.shadowRootOptions={mode:"open",delegatesFocus:!0},a([re({type:Boolean})],za.prototype,"disabled",void 0);
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-const Ma=e=>(t,i)=>{if(t.constructor._observers){if(!t.constructor.hasOwnProperty("_observers")){const e=t.constructor._observers;t.constructor._observers=new Map,e.forEach(((e,i)=>t.constructor._observers.set(i,e)))}}else{t.constructor._observers=new Map;const e=t.updated;t.updated=function(t){e.call(this,t),t.forEach(((e,t)=>{const i=this.constructor._observers.get(t);void 0!==i&&i.call(this,this[t],e)}))}}t.constructor._observers.set(i,e)}
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */,La=1,$a=3,Fa=4,Na=e=>(...t)=>({_$litDirective$:e,values:t});class Pa{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,t,i){this._$Ct=e,this._$AM=t,this._$Ci=i}_$AS(e,t){return this.update(e,t)}update(e,t){return this.render(...t)}}
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const Da=Na(class extends Pa{constructor(e){var t;if(super(e),e.type!==La||"class"!==e.name||(null===(t=e.strings)||void 0===t?void 0:t.length)>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(e){return" "+Object.keys(e).filter((t=>e[t])).join(" ")+" "}update(e,[t]){var i,a;if(void 0===this.et){this.et=new Set,void 0!==e.strings&&(this.st=new Set(e.strings.join(" ").split(/\s/).filter((e=>""!==e))));for(const e in t)t[e]&&!(null===(i=this.st)||void 0===i?void 0:i.has(e))&&this.et.add(e);return this.render(t)}const o=e.element.classList;this.et.forEach((e=>{e in t||(o.remove(e),this.et.delete(e))}));for(const e in t){const i=!!t[e];i===this.et.has(e)||(null===(a=this.st)||void 0===a?void 0:a.has(e))||(i?(o.add(e),this.et.add(e)):(o.remove(e),this.et.delete(e)))}return P}});
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */class Ba extends Ca{constructor(){super(...arguments),this.alignEnd=!1,this.spaceBetween=!1,this.nowrap=!1,this.label="",this.mdcFoundationClass=xa}createAdapter(){return{registerInteractionHandler:(e,t)=>{this.labelEl.addEventListener(e,t)},deregisterInteractionHandler:(e,t)=>{this.labelEl.removeEventListener(e,t)},activateInputRipple:async()=>{const e=this.input;if(e instanceof za){const t=await e.ripple;t&&t.startPress()}},deactivateInputRipple:async()=>{const e=this.input;if(e instanceof za){const t=await e.ripple;t&&t.endPress()}}}}get input(){var e,t;return null!==(t=null===(e=this.slottedInputs)||void 0===e?void 0:e[0])&&void 0!==t?t:null}render(){const e={"mdc-form-field--align-end":this.alignEnd,"mdc-form-field--space-between":this.spaceBetween,"mdc-form-field--nowrap":this.nowrap};return N`
-      <div class="mdc-form-field ${Da(e)}">
-        <slot></slot>
-        <label class="mdc-label"
-               @click="${this._labelClick}">${this.label}</label>
-      </div>`}click(){this._labelClick()}_labelClick(){const e=this.input;e&&(e.focus(),e.click())}}a([re({type:Boolean})],Ba.prototype,"alignEnd",void 0),a([re({type:Boolean})],Ba.prototype,"spaceBetween",void 0),a([re({type:Boolean})],Ba.prototype,"nowrap",void 0),a([re({type:String}),Ma((async function(e){var t;null===(t=this.input)||void 0===t||t.setAttribute("aria-label",e)}))],Ba.prototype,"label",void 0),a([ce(".mdc-form-field")],Ba.prototype,"mdcRoot",void 0),a([ue("",!0,"*")],Ba.prototype,"slottedInputs",void 0),a([ce("label")],Ba.prototype,"labelEl",void 0);
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const Ha=s`.mdc-form-field{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-body2-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-body2-font-size, 0.875rem);line-height:1.25rem;line-height:var(--mdc-typography-body2-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-body2-font-weight, 400);letter-spacing:0.0178571429em;letter-spacing:var(--mdc-typography-body2-letter-spacing, 0.0178571429em);text-decoration:inherit;text-decoration:var(--mdc-typography-body2-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-body2-text-transform, inherit);color:rgba(0, 0, 0, 0.87);color:var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87));display:inline-flex;align-items:center;vertical-align:middle}.mdc-form-field>label{margin-left:0;margin-right:auto;padding-left:4px;padding-right:0;order:0}[dir=rtl] .mdc-form-field>label,.mdc-form-field>label[dir=rtl]{margin-left:auto;margin-right:0}[dir=rtl] .mdc-form-field>label,.mdc-form-field>label[dir=rtl]{padding-left:0;padding-right:4px}.mdc-form-field--nowrap>label{text-overflow:ellipsis;overflow:hidden;white-space:nowrap}.mdc-form-field--align-end>label{margin-left:auto;margin-right:0;padding-left:0;padding-right:4px;order:-1}[dir=rtl] .mdc-form-field--align-end>label,.mdc-form-field--align-end>label[dir=rtl]{margin-left:0;margin-right:auto}[dir=rtl] .mdc-form-field--align-end>label,.mdc-form-field--align-end>label[dir=rtl]{padding-left:4px;padding-right:0}.mdc-form-field--space-between{justify-content:space-between}.mdc-form-field--space-between>label{margin:0}[dir=rtl] .mdc-form-field--space-between>label,.mdc-form-field--space-between>label[dir=rtl]{margin:0}:host{display:inline-flex}.mdc-form-field{width:100%}::slotted(*){-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-body2-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-body2-font-size, 0.875rem);line-height:1.25rem;line-height:var(--mdc-typography-body2-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-body2-font-weight, 400);letter-spacing:0.0178571429em;letter-spacing:var(--mdc-typography-body2-letter-spacing, 0.0178571429em);text-decoration:inherit;text-decoration:var(--mdc-typography-body2-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-body2-text-transform, inherit);color:rgba(0, 0, 0, 0.87);color:var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87))}::slotted(mwc-switch){margin-right:10px}[dir=rtl] ::slotted(mwc-switch),::slotted(mwc-switch[dir=rtl]){margin-left:10px}`,Va={"mwc-formfield":class extends Ba{static get styles(){return Ha}}};
-/**
- * @license
- * Copyright 2020 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var Ua={UNKNOWN:"Unknown",BACKSPACE:"Backspace",ENTER:"Enter",SPACEBAR:"Spacebar",PAGE_UP:"PageUp",PAGE_DOWN:"PageDown",END:"End",HOME:"Home",ARROW_LEFT:"ArrowLeft",ARROW_UP:"ArrowUp",ARROW_RIGHT:"ArrowRight",ARROW_DOWN:"ArrowDown",DELETE:"Delete",ESCAPE:"Escape",TAB:"Tab"},ja=new Set;ja.add(Ua.BACKSPACE),ja.add(Ua.ENTER),ja.add(Ua.SPACEBAR),ja.add(Ua.PAGE_UP),ja.add(Ua.PAGE_DOWN),ja.add(Ua.END),ja.add(Ua.HOME),ja.add(Ua.ARROW_LEFT),ja.add(Ua.ARROW_UP),ja.add(Ua.ARROW_RIGHT),ja.add(Ua.ARROW_DOWN),ja.add(Ua.DELETE),ja.add(Ua.ESCAPE),ja.add(Ua.TAB);var Ga=8,Wa=13,Ka=32,qa=33,Xa=34,Ya=35,Za=36,Qa=37,Ja=38,eo=39,to=40,io=46,ao=27,oo=9,no=new Map;no.set(Ga,Ua.BACKSPACE),no.set(Wa,Ua.ENTER),no.set(Ka,Ua.SPACEBAR),no.set(qa,Ua.PAGE_UP),no.set(Xa,Ua.PAGE_DOWN),no.set(Ya,Ua.END),no.set(Za,Ua.HOME),no.set(Qa,Ua.ARROW_LEFT),no.set(Ja,Ua.ARROW_UP),no.set(eo,Ua.ARROW_RIGHT),no.set(to,Ua.ARROW_DOWN),no.set(io,Ua.DELETE),no.set(ao,Ua.ESCAPE),no.set(oo,Ua.TAB);var ro,lo,so=new Set;function co(e){var t=e.key;if(ja.has(t))return t;var i=no.get(e.keyCode);return i||Ua.UNKNOWN}
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */so.add(Ua.PAGE_UP),so.add(Ua.PAGE_DOWN),so.add(Ua.END),so.add(Ua.HOME),so.add(Ua.ARROW_LEFT),so.add(Ua.ARROW_UP),so.add(Ua.ARROW_RIGHT),so.add(Ua.ARROW_DOWN);var mo="mdc-list-item--activated",ho="mdc-list-item",po="mdc-list-item--disabled",uo="mdc-list-item--selected",fo="mdc-list-item__text",_o="mdc-list-item__primary-text",go="mdc-list";(ro={})[""+mo]="mdc-list-item--activated",ro[""+ho]="mdc-list-item",ro[""+po]="mdc-list-item--disabled",ro[""+uo]="mdc-list-item--selected",ro[""+_o]="mdc-list-item__primary-text",ro[""+go]="mdc-list";var bo=((lo={})[""+mo]="mdc-deprecated-list-item--activated",lo[""+ho]="mdc-deprecated-list-item",lo[""+po]="mdc-deprecated-list-item--disabled",lo[""+uo]="mdc-deprecated-list-item--selected",lo[""+fo]="mdc-deprecated-list-item__text",lo[""+_o]="mdc-deprecated-list-item__primary-text",lo[""+go]="mdc-deprecated-list",lo),vo={ACTION_EVENT:"MDCList:action",ARIA_CHECKED:"aria-checked",ARIA_CHECKED_CHECKBOX_SELECTOR:'[role="checkbox"][aria-checked="true"]',ARIA_CHECKED_RADIO_SELECTOR:'[role="radio"][aria-checked="true"]',ARIA_CURRENT:"aria-current",ARIA_DISABLED:"aria-disabled",ARIA_ORIENTATION:"aria-orientation",ARIA_ORIENTATION_HORIZONTAL:"horizontal",ARIA_ROLE_CHECKBOX_SELECTOR:'[role="checkbox"]',ARIA_SELECTED:"aria-selected",ARIA_INTERACTIVE_ROLES_SELECTOR:'[role="listbox"], [role="menu"]',ARIA_MULTI_SELECTABLE_SELECTOR:'[aria-multiselectable="true"]',CHECKBOX_RADIO_SELECTOR:'input[type="checkbox"], input[type="radio"]',CHECKBOX_SELECTOR:'input[type="checkbox"]',CHILD_ELEMENTS_TO_TOGGLE_TABINDEX:"\n    ."+ho+" button:not(:disabled),\n    ."+ho+" a,\n    ."+bo[ho]+" button:not(:disabled),\n    ."+bo[ho]+" a\n  ",DEPRECATED_SELECTOR:".mdc-deprecated-list",FOCUSABLE_CHILD_ELEMENTS:"\n    ."+ho+" button:not(:disabled),\n    ."+ho+" a,\n    ."+ho+' input[type="radio"]:not(:disabled),\n    .'+ho+' input[type="checkbox"]:not(:disabled),\n    .'+bo[ho]+" button:not(:disabled),\n    ."+bo[ho]+" a,\n    ."+bo[ho]+' input[type="radio"]:not(:disabled),\n    .'+bo[ho]+' input[type="checkbox"]:not(:disabled)\n  ',RADIO_SELECTOR:'input[type="radio"]',SELECTED_ITEM_SELECTOR:'[aria-selected="true"], [aria-current="true"]'},yo={UNSET_INDEX:-1,TYPEAHEAD_BUFFER_CLEAR_TIMEOUT_MS:300},xo=["input","button","textarea","select"],wo=function(e){var t=e.target;if(t){var i=(""+t.tagName).toLowerCase();-1===xo.indexOf(i)&&e.preventDefault()}};function Eo(e,t){for(var i=new Map,a=0;a<e;a++){var o=t(a).trim();if(o){var n=o[0].toLowerCase();i.has(n)||i.set(n,[]),i.get(n).push({text:o.toLowerCase(),index:a})}}return i.forEach((function(e){e.sort((function(e,t){return e.index-t.index}))})),i}function Io(e,t){var i,a=e.nextChar,o=e.focusItemAtIndex,n=e.sortedIndexByFirstChar,r=e.focusedItemIndex,l=e.skipFocus,d=e.isItemAtIndexDisabled;return clearTimeout(t.bufferClearTimeout),t.bufferClearTimeout=setTimeout((function(){!function(e){e.typeaheadBuffer=""}(t)}),yo.TYPEAHEAD_BUFFER_CLEAR_TIMEOUT_MS),t.typeaheadBuffer=t.typeaheadBuffer+a,i=1===t.typeaheadBuffer.length?function(e,t,i,a){var o=a.typeaheadBuffer[0],n=e.get(o);if(!n)return-1;if(o===a.currentFirstChar&&n[a.sortedIndexCursor].index===t){a.sortedIndexCursor=(a.sortedIndexCursor+1)%n.length;var r=n[a.sortedIndexCursor].index;if(!i(r))return r}a.currentFirstChar=o;var l,d=-1;for(l=0;l<n.length;l++)if(!i(n[l].index)){d=l;break}for(;l<n.length;l++)if(n[l].index>t&&!i(n[l].index)){d=l;break}if(-1!==d)return a.sortedIndexCursor=d,n[a.sortedIndexCursor].index;return-1}(n,r,d,t):function(e,t,i){var a=i.typeaheadBuffer[0],o=e.get(a);if(!o)return-1;var n=o[i.sortedIndexCursor];if(0===n.text.lastIndexOf(i.typeaheadBuffer,0)&&!t(n.index))return n.index;var r=(i.sortedIndexCursor+1)%o.length,l=-1;for(;r!==i.sortedIndexCursor;){var d=o[r],s=0===d.text.lastIndexOf(i.typeaheadBuffer,0),c=!t(d.index);if(s&&c){l=r;break}r=(r+1)%o.length}if(-1!==l)return i.sortedIndexCursor=l,o[i.sortedIndexCursor].index;return-1}(n,d,t),-1===i||l||o(i),i}function Ao(e){return e.typeaheadBuffer.length>0}
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var ko={LABEL_FLOAT_ABOVE:"mdc-floating-label--float-above",LABEL_REQUIRED:"mdc-floating-label--required",LABEL_SHAKE:"mdc-floating-label--shake",ROOT:"mdc-floating-label"},To=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.shakeAnimationEndHandler=function(){o.handleShakeAnimationEnd()},o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return ko},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},getWidth:function(){return 0},registerInteractionHandler:function(){},deregisterInteractionHandler:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){this.adapter.registerInteractionHandler("animationend",this.shakeAnimationEndHandler)},a.prototype.destroy=function(){this.adapter.deregisterInteractionHandler("animationend",this.shakeAnimationEndHandler)},a.prototype.getWidth=function(){return this.adapter.getWidth()},a.prototype.shake=function(e){var t=a.cssClasses.LABEL_SHAKE;e?this.adapter.addClass(t):this.adapter.removeClass(t)},a.prototype.float=function(e){var t=a.cssClasses,i=t.LABEL_FLOAT_ABOVE,o=t.LABEL_SHAKE;e?this.adapter.addClass(i):(this.adapter.removeClass(i),this.adapter.removeClass(o))},a.prototype.setRequired=function(e){var t=a.cssClasses.LABEL_REQUIRED;e?this.adapter.addClass(t):this.adapter.removeClass(t)},a.prototype.handleShakeAnimationEnd=function(){var e=a.cssClasses.LABEL_SHAKE;this.adapter.removeClass(e)},a}(ba);
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */const Co=Na(class extends Pa{constructor(e){switch(super(e),this.foundation=null,this.previousPart=null,e.type){case La:case $a:break;default:throw new Error("FloatingLabel directive only support attribute and property parts")}}update(e,[t]){if(e!==this.previousPart){this.foundation&&this.foundation.destroy(),this.previousPart=e;const t=e.element;t.classList.add("mdc-floating-label");const i=(e=>({addClass:t=>e.classList.add(t),removeClass:t=>e.classList.remove(t),getWidth:()=>e.scrollWidth,registerInteractionHandler:(t,i)=>{e.addEventListener(t,i)},deregisterInteractionHandler:(t,i)=>{e.removeEventListener(t,i)}}))(t);this.foundation=new To(i),this.foundation.init()}return this.render(t)}render(e){return this.foundation}});
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */var Oo={LINE_RIPPLE_ACTIVE:"mdc-line-ripple--active",LINE_RIPPLE_DEACTIVATING:"mdc-line-ripple--deactivating"},So=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.transitionEndHandler=function(e){o.handleTransitionEnd(e)},o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return Oo},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},hasClass:function(){return!1},setStyle:function(){},registerEventHandler:function(){},deregisterEventHandler:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){this.adapter.registerEventHandler("transitionend",this.transitionEndHandler)},a.prototype.destroy=function(){this.adapter.deregisterEventHandler("transitionend",this.transitionEndHandler)},a.prototype.activate=function(){this.adapter.removeClass(Oo.LINE_RIPPLE_DEACTIVATING),this.adapter.addClass(Oo.LINE_RIPPLE_ACTIVE)},a.prototype.setRippleCenter=function(e){this.adapter.setStyle("transform-origin",e+"px center")},a.prototype.deactivate=function(){this.adapter.addClass(Oo.LINE_RIPPLE_DEACTIVATING)},a.prototype.handleTransitionEnd=function(e){var t=this.adapter.hasClass(Oo.LINE_RIPPLE_DEACTIVATING);"opacity"===e.propertyName&&t&&(this.adapter.removeClass(Oo.LINE_RIPPLE_ACTIVE),this.adapter.removeClass(Oo.LINE_RIPPLE_DEACTIVATING))},a}(ba);
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */const Ro=Na(class extends Pa{constructor(e){switch(super(e),this.previousPart=null,this.foundation=null,e.type){case La:case $a:return;default:throw new Error("LineRipple only support attribute and property parts.")}}update(e,t){if(this.previousPart!==e){this.foundation&&this.foundation.destroy(),this.previousPart=e;const t=e.element;t.classList.add("mdc-line-ripple");const i=(e=>({addClass:t=>e.classList.add(t),removeClass:t=>e.classList.remove(t),hasClass:t=>e.classList.contains(t),setStyle:(t,i)=>e.style.setProperty(t,i),registerEventHandler:(t,i)=>{e.addEventListener(t,i)},deregisterEventHandler:(t,i)=>{e.removeEventListener(t,i)}}))(t);this.foundation=new So(i),this.foundation.init()}return this.render()}render(){return this.foundation}});
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */var zo,Mo,Lo={ANCHOR:"mdc-menu-surface--anchor",ANIMATING_CLOSED:"mdc-menu-surface--animating-closed",ANIMATING_OPEN:"mdc-menu-surface--animating-open",FIXED:"mdc-menu-surface--fixed",IS_OPEN_BELOW:"mdc-menu-surface--is-open-below",OPEN:"mdc-menu-surface--open",ROOT:"mdc-menu-surface"},$o={CLOSED_EVENT:"MDCMenuSurface:closed",CLOSING_EVENT:"MDCMenuSurface:closing",OPENED_EVENT:"MDCMenuSurface:opened",FOCUSABLE_ELEMENTS:["button:not(:disabled)",'[href]:not([aria-disabled="true"])',"input:not(:disabled)","select:not(:disabled)","textarea:not(:disabled)",'[tabindex]:not([tabindex="-1"]):not([aria-disabled="true"])'].join(", ")},Fo={TRANSITION_OPEN_DURATION:120,TRANSITION_CLOSE_DURATION:75,MARGIN_TO_EDGE:32,ANCHOR_TO_MENU_SURFACE_WIDTH_RATIO:.67,TOUCH_EVENT_WAIT_MS:30};!function(e){e[e.BOTTOM=1]="BOTTOM",e[e.CENTER=2]="CENTER",e[e.RIGHT=4]="RIGHT",e[e.FLIP_RTL=8]="FLIP_RTL"}(zo||(zo={})),function(e){e[e.TOP_LEFT=0]="TOP_LEFT",e[e.TOP_RIGHT=4]="TOP_RIGHT",e[e.BOTTOM_LEFT=1]="BOTTOM_LEFT",e[e.BOTTOM_RIGHT=5]="BOTTOM_RIGHT",e[e.TOP_START=8]="TOP_START",e[e.TOP_END=12]="TOP_END",e[e.BOTTOM_START=9]="BOTTOM_START",e[e.BOTTOM_END=13]="BOTTOM_END"}(Mo||(Mo={}));
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var No={ACTIVATED:"mdc-select--activated",DISABLED:"mdc-select--disabled",FOCUSED:"mdc-select--focused",INVALID:"mdc-select--invalid",MENU_INVALID:"mdc-select__menu--invalid",OUTLINED:"mdc-select--outlined",REQUIRED:"mdc-select--required",ROOT:"mdc-select",WITH_LEADING_ICON:"mdc-select--with-leading-icon"},Po={ARIA_CONTROLS:"aria-controls",ARIA_DESCRIBEDBY:"aria-describedby",ARIA_SELECTED_ATTR:"aria-selected",CHANGE_EVENT:"MDCSelect:change",HIDDEN_INPUT_SELECTOR:'input[type="hidden"]',LABEL_SELECTOR:".mdc-floating-label",LEADING_ICON_SELECTOR:".mdc-select__icon",LINE_RIPPLE_SELECTOR:".mdc-line-ripple",MENU_SELECTOR:".mdc-select__menu",OUTLINE_SELECTOR:".mdc-notched-outline",SELECTED_TEXT_SELECTOR:".mdc-select__selected-text",SELECT_ANCHOR_SELECTOR:".mdc-select__anchor",VALUE_ATTR:"data-value"},Do={LABEL_SCALE:.75,UNSET_INDEX:-1,CLICK_DEBOUNCE_TIMEOUT_MS:330},Bo=function(e){function a(t,o){void 0===o&&(o={});var n=e.call(this,i(i({},a.defaultAdapter),t))||this;return n.disabled=!1,n.isMenuOpen=!1,n.useDefaultValidation=!0,n.customValidity=!0,n.lastSelectedIndex=Do.UNSET_INDEX,n.clickDebounceTimeout=0,n.recentlyClicked=!1,n.leadingIcon=o.leadingIcon,n.helperText=o.helperText,n}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return No},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return Do},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return Po},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},hasClass:function(){return!1},activateBottomLine:function(){},deactivateBottomLine:function(){},getSelectedIndex:function(){return-1},setSelectedIndex:function(){},hasLabel:function(){return!1},floatLabel:function(){},getLabelWidth:function(){return 0},setLabelRequired:function(){},hasOutline:function(){return!1},notchOutline:function(){},closeOutline:function(){},setRippleCenter:function(){},notifyChange:function(){},setSelectedText:function(){},isSelectAnchorFocused:function(){return!1},getSelectAnchorAttr:function(){return""},setSelectAnchorAttr:function(){},removeSelectAnchorAttr:function(){},addMenuClass:function(){},removeMenuClass:function(){},openMenu:function(){},closeMenu:function(){},getAnchorElement:function(){return null},setMenuAnchorElement:function(){},setMenuAnchorCorner:function(){},setMenuWrapFocus:function(){},focusMenuItemAtIndex:function(){},getMenuItemCount:function(){return 0},getMenuItemValues:function(){return[]},getMenuItemTextAtIndex:function(){return""},isTypeaheadInProgress:function(){return!1},typeaheadMatchItem:function(){return-1}}},enumerable:!1,configurable:!0}),a.prototype.getSelectedIndex=function(){return this.adapter.getSelectedIndex()},a.prototype.setSelectedIndex=function(e,t,i){void 0===t&&(t=!1),void 0===i&&(i=!1),e>=this.adapter.getMenuItemCount()||(e===Do.UNSET_INDEX?this.adapter.setSelectedText(""):this.adapter.setSelectedText(this.adapter.getMenuItemTextAtIndex(e).trim()),this.adapter.setSelectedIndex(e),t&&this.adapter.closeMenu(),i||this.lastSelectedIndex===e||this.handleChange(),this.lastSelectedIndex=e)},a.prototype.setValue=function(e,t){void 0===t&&(t=!1);var i=this.adapter.getMenuItemValues().indexOf(e);this.setSelectedIndex(i,!1,t)},a.prototype.getValue=function(){var e=this.adapter.getSelectedIndex(),t=this.adapter.getMenuItemValues();return e!==Do.UNSET_INDEX?t[e]:""},a.prototype.getDisabled=function(){return this.disabled},a.prototype.setDisabled=function(e){this.disabled=e,this.disabled?(this.adapter.addClass(No.DISABLED),this.adapter.closeMenu()):this.adapter.removeClass(No.DISABLED),this.leadingIcon&&this.leadingIcon.setDisabled(this.disabled),this.disabled?this.adapter.removeSelectAnchorAttr("tabindex"):this.adapter.setSelectAnchorAttr("tabindex","0"),this.adapter.setSelectAnchorAttr("aria-disabled",this.disabled.toString())},a.prototype.openMenu=function(){this.adapter.addClass(No.ACTIVATED),this.adapter.openMenu(),this.isMenuOpen=!0,this.adapter.setSelectAnchorAttr("aria-expanded","true")},a.prototype.setHelperTextContent=function(e){this.helperText&&this.helperText.setContent(e)},a.prototype.layout=function(){if(this.adapter.hasLabel()){var e=this.getValue().length>0,t=this.adapter.hasClass(No.FOCUSED),i=e||t,a=this.adapter.hasClass(No.REQUIRED);this.notchOutline(i),this.adapter.floatLabel(i),this.adapter.setLabelRequired(a)}},a.prototype.layoutOptions=function(){var e=this.adapter.getMenuItemValues().indexOf(this.getValue());this.setSelectedIndex(e,!1,!0)},a.prototype.handleMenuOpened=function(){if(0!==this.adapter.getMenuItemValues().length){var e=this.getSelectedIndex(),t=e>=0?e:0;this.adapter.focusMenuItemAtIndex(t)}},a.prototype.handleMenuClosing=function(){this.adapter.setSelectAnchorAttr("aria-expanded","false")},a.prototype.handleMenuClosed=function(){this.adapter.removeClass(No.ACTIVATED),this.isMenuOpen=!1,this.adapter.isSelectAnchorFocused()||this.blur()},a.prototype.handleChange=function(){this.layout(),this.adapter.notifyChange(this.getValue()),this.adapter.hasClass(No.REQUIRED)&&this.useDefaultValidation&&this.setValid(this.isValid())},a.prototype.handleMenuItemAction=function(e){this.setSelectedIndex(e,!0)},a.prototype.handleFocus=function(){this.adapter.addClass(No.FOCUSED),this.layout(),this.adapter.activateBottomLine()},a.prototype.handleBlur=function(){this.isMenuOpen||this.blur()},a.prototype.handleClick=function(e){this.disabled||this.recentlyClicked||(this.setClickDebounceTimeout(),this.isMenuOpen?this.adapter.closeMenu():(this.adapter.setRippleCenter(e),this.openMenu()))},a.prototype.handleKeydown=function(e){if(!this.isMenuOpen&&this.adapter.hasClass(No.FOCUSED)){var t=co(e)===Ua.ENTER,i=co(e)===Ua.SPACEBAR,a=co(e)===Ua.ARROW_UP,o=co(e)===Ua.ARROW_DOWN;if(!(e.ctrlKey||e.metaKey)&&(!i&&e.key&&1===e.key.length||i&&this.adapter.isTypeaheadInProgress())){var n=i?" ":e.key,r=this.adapter.typeaheadMatchItem(n,this.getSelectedIndex());return r>=0&&this.setSelectedIndex(r),void e.preventDefault()}(t||i||a||o)&&(a&&this.getSelectedIndex()>0?this.setSelectedIndex(this.getSelectedIndex()-1):o&&this.getSelectedIndex()<this.adapter.getMenuItemCount()-1&&this.setSelectedIndex(this.getSelectedIndex()+1),this.openMenu(),e.preventDefault())}},a.prototype.notchOutline=function(e){if(this.adapter.hasOutline()){var t=this.adapter.hasClass(No.FOCUSED);if(e){var i=Do.LABEL_SCALE,a=this.adapter.getLabelWidth()*i;this.adapter.notchOutline(a)}else t||this.adapter.closeOutline()}},a.prototype.setLeadingIconAriaLabel=function(e){this.leadingIcon&&this.leadingIcon.setAriaLabel(e)},a.prototype.setLeadingIconContent=function(e){this.leadingIcon&&this.leadingIcon.setContent(e)},a.prototype.getUseDefaultValidation=function(){return this.useDefaultValidation},a.prototype.setUseDefaultValidation=function(e){this.useDefaultValidation=e},a.prototype.setValid=function(e){this.useDefaultValidation||(this.customValidity=e),this.adapter.setSelectAnchorAttr("aria-invalid",(!e).toString()),e?(this.adapter.removeClass(No.INVALID),this.adapter.removeMenuClass(No.MENU_INVALID)):(this.adapter.addClass(No.INVALID),this.adapter.addMenuClass(No.MENU_INVALID)),this.syncHelperTextValidity(e)},a.prototype.isValid=function(){return this.useDefaultValidation&&this.adapter.hasClass(No.REQUIRED)&&!this.adapter.hasClass(No.DISABLED)?this.getSelectedIndex()!==Do.UNSET_INDEX&&(0!==this.getSelectedIndex()||Boolean(this.getValue())):this.customValidity},a.prototype.setRequired=function(e){e?this.adapter.addClass(No.REQUIRED):this.adapter.removeClass(No.REQUIRED),this.adapter.setSelectAnchorAttr("aria-required",e.toString()),this.adapter.setLabelRequired(e)},a.prototype.getRequired=function(){return"true"===this.adapter.getSelectAnchorAttr("aria-required")},a.prototype.init=function(){var e=this.adapter.getAnchorElement();e&&(this.adapter.setMenuAnchorElement(e),this.adapter.setMenuAnchorCorner(Mo.BOTTOM_START)),this.adapter.setMenuWrapFocus(!1),this.setDisabled(this.adapter.hasClass(No.DISABLED)),this.syncHelperTextValidity(!this.adapter.hasClass(No.INVALID)),this.layout(),this.layoutOptions()},a.prototype.blur=function(){this.adapter.removeClass(No.FOCUSED),this.layout(),this.adapter.deactivateBottomLine(),this.adapter.hasClass(No.REQUIRED)&&this.useDefaultValidation&&this.setValid(this.isValid())},a.prototype.syncHelperTextValidity=function(e){if(this.helperText){this.helperText.setValidity(e);var t=this.helperText.isVisible(),i=this.helperText.getId();t&&i?this.adapter.setSelectAnchorAttr(Po.ARIA_DESCRIBEDBY,i):this.adapter.removeSelectAnchorAttr(Po.ARIA_DESCRIBEDBY)}},a.prototype.setClickDebounceTimeout=function(){var e=this;clearTimeout(this.clickDebounceTimeout),this.clickDebounceTimeout=setTimeout((function(){e.recentlyClicked=!1}),Do.CLICK_DEBOUNCE_TIMEOUT_MS),this.recentlyClicked=!0},a}(ba);
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const Ho=e=>null!=e?e:D
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */,Vo=(e={})=>{const t={};for(const i in e)t[i]=e[i];return Object.assign({badInput:!1,customError:!1,patternMismatch:!1,rangeOverflow:!1,rangeUnderflow:!1,stepMismatch:!1,tooLong:!1,tooShort:!1,typeMismatch:!1,valid:!0,valueMissing:!1},t)};class Uo extends za{constructor(){super(...arguments),this.mdcFoundationClass=Bo,this.disabled=!1,this.outlined=!1,this.label="",this.outlineOpen=!1,this.outlineWidth=0,this.value="",this.name="",this.selectedText="",this.icon="",this.menuOpen=!1,this.helper="",this.validateOnInitialRender=!1,this.validationMessage="",this.required=!1,this.naturalMenuWidth=!1,this.isUiValid=!0,this.fixedMenuPosition=!1,this.typeaheadState={bufferClearTimeout:0,currentFirstChar:"",sortedIndexCursor:0,typeaheadBuffer:""},this.sortedIndexByFirstChar=new Map,this.menuElement_=null,this.listeners=[],this.onBodyClickBound=()=>{},this._menuUpdateComplete=null,this.valueSetDirectly=!1,this.validityTransform=null,this._validity=Vo()}get items(){return this.menuElement_||(this.menuElement_=this.menuElement),this.menuElement_?this.menuElement_.items:[]}get selected(){const e=this.menuElement;return e?e.selected:null}get index(){const e=this.menuElement;return e?e.index:-1}get shouldRenderHelperText(){return!!this.helper||!!this.validationMessage}get validity(){return this._checkValidity(this.value),this._validity}render(){const e={"mdc-select--disabled":this.disabled,"mdc-select--no-label":!this.label,"mdc-select--filled":!this.outlined,"mdc-select--outlined":this.outlined,"mdc-select--with-leading-icon":!!this.icon,"mdc-select--required":this.required,"mdc-select--invalid":!this.isUiValid},t={"mdc-select__menu--invalid":!this.isUiValid},i=this.label?"label":void 0,a=this.shouldRenderHelperText?"helper-text":void 0;return N`
-      <div
-          class="mdc-select ${Da(e)}">
-        <input
-            class="formElement"
-            name="${this.name}"
-            .value="${this.value}"
-            hidden
-            ?disabled="${this.disabled}"
-            ?required=${this.required}>
-        <!-- @ts-ignore -->
-        <div class="mdc-select__anchor"
-            aria-autocomplete="none"
-            role="combobox"
-            aria-expanded=${this.menuOpen}
-            aria-invalid=${!this.isUiValid}
-            aria-haspopup="listbox"
-            aria-labelledby=${Ho(i)}
-            aria-required=${this.required}
-            aria-describedby=${Ho(a)}
-            @click=${this.onClick}
-            @focus=${this.onFocus}
-            @blur=${this.onBlur}
-            @keydown=${this.onKeydown}>
-          ${this.renderRipple()}
-          ${this.outlined?this.renderOutline():this.renderLabel()}
-          ${this.renderLeadingIcon()}
-          <span class="mdc-select__selected-text-container">
-            <span class="mdc-select__selected-text">${this.selectedText}</span>
-          </span>
-          <span class="mdc-select__dropdown-icon">
-            <svg
-                class="mdc-select__dropdown-icon-graphic"
-                viewBox="7 10 10 5"
-                focusable="false">
-              <polygon
-                  class="mdc-select__dropdown-icon-inactive"
-                  stroke="none"
-                  fill-rule="evenodd"
-                  points="7 10 12 15 17 10">
-              </polygon>
-              <polygon
-                  class="mdc-select__dropdown-icon-active"
-                  stroke="none"
-                  fill-rule="evenodd"
-                  points="7 15 12 10 17 15">
-              </polygon>
-            </svg>
-          </span>
-          ${this.renderLineRipple()}
-        </div>
-        <mwc-menu
-            innerRole="listbox"
-            wrapFocus
-            class="mdc-select__menu mdc-menu mdc-menu-surface ${Da(t)}"
-            activatable
-            .fullwidth=${!this.fixedMenuPosition&&!this.naturalMenuWidth}
-            .open=${this.menuOpen}
-            .anchor=${this.anchorElement}
-            .fixed=${this.fixedMenuPosition}
-            @selected=${this.onSelected}
-            @opened=${this.onOpened}
-            @closed=${this.onClosed}
-            @items-updated=${this.onItemsUpdated}
-            @keydown=${this.handleTypeahead}>
-          <slot></slot>
-        </mwc-menu>
-      </div>
-      ${this.renderHelperText()}`}renderRipple(){return this.outlined?D:N`
-      <span class="mdc-select__ripple"></span>
-    `}renderOutline(){return this.outlined?N`
-      <mwc-notched-outline
-          .width=${this.outlineWidth}
-          .open=${this.outlineOpen}
-          class="mdc-notched-outline">
-        ${this.renderLabel()}
-      </mwc-notched-outline>`:D}renderLabel(){return this.label?N`
-      <span
-          .floatingLabelFoundation=${Co(this.label)}
-          id="label">${this.label}</span>
-    `:D}renderLeadingIcon(){return this.icon?N`<mwc-icon class="mdc-select__icon"><div>${this.icon}</div></mwc-icon>`:D}renderLineRipple(){return this.outlined?D:N`
-      <span .lineRippleFoundation=${Ro()}></span>
-    `}renderHelperText(){if(!this.shouldRenderHelperText)return D;const e=this.validationMessage&&!this.isUiValid;return N`
-        <p
-          class="mdc-select-helper-text ${Da({"mdc-select-helper-text--validation-msg":e})}"
-          id="helper-text">${e?this.validationMessage:this.helper}</p>`}createAdapter(){return Object.assign(Object.assign({},Ea(this.mdcRoot)),{activateBottomLine:()=>{this.lineRippleElement&&this.lineRippleElement.lineRippleFoundation.activate()},deactivateBottomLine:()=>{this.lineRippleElement&&this.lineRippleElement.lineRippleFoundation.deactivate()},hasLabel:()=>!!this.label,floatLabel:e=>{this.labelElement&&this.labelElement.floatingLabelFoundation.float(e)},getLabelWidth:()=>this.labelElement?this.labelElement.floatingLabelFoundation.getWidth():0,setLabelRequired:e=>{this.labelElement&&this.labelElement.floatingLabelFoundation.setRequired(e)},hasOutline:()=>this.outlined,notchOutline:e=>{this.outlineElement&&!this.outlineOpen&&(this.outlineWidth=e,this.outlineOpen=!0)},closeOutline:()=>{this.outlineElement&&(this.outlineOpen=!1)},setRippleCenter:e=>{if(this.lineRippleElement){this.lineRippleElement.lineRippleFoundation.setRippleCenter(e)}},notifyChange:async e=>{if(!this.valueSetDirectly&&e===this.value)return;this.valueSetDirectly=!1,this.value=e,await this.updateComplete;const t=new Event("change",{bubbles:!0});this.dispatchEvent(t)},setSelectedText:e=>this.selectedText=e,isSelectAnchorFocused:()=>{const e=this.anchorElement;if(!e)return!1;return e.getRootNode().activeElement===e},getSelectAnchorAttr:e=>{const t=this.anchorElement;return t?t.getAttribute(e):null},setSelectAnchorAttr:(e,t)=>{const i=this.anchorElement;i&&i.setAttribute(e,t)},removeSelectAnchorAttr:e=>{const t=this.anchorElement;t&&t.removeAttribute(e)},openMenu:()=>{this.menuOpen=!0},closeMenu:()=>{this.menuOpen=!1},addMenuClass:()=>{},removeMenuClass:()=>{},getAnchorElement:()=>this.anchorElement,setMenuAnchorElement:()=>{},setMenuAnchorCorner:()=>{const e=this.menuElement;e&&(e.corner="BOTTOM_START")},setMenuWrapFocus:e=>{const t=this.menuElement;t&&(t.wrapFocus=e)},focusMenuItemAtIndex:e=>{const t=this.menuElement;if(!t)return;const i=t.items[e];i&&i.focus()},getMenuItemCount:()=>{const e=this.menuElement;return e?e.items.length:0},getMenuItemValues:()=>{const e=this.menuElement;if(!e)return[];return e.items.map((e=>e.value))},getMenuItemTextAtIndex:e=>{const t=this.menuElement;if(!t)return"";const i=t.items[e];return i?i.text:""},getSelectedIndex:()=>this.index,setSelectedIndex:()=>{},isTypeaheadInProgress:()=>Ao(this.typeaheadState),typeaheadMatchItem:(e,t)=>{if(!this.menuElement)return-1;const i={focusItemAtIndex:e=>{this.menuElement.focusItemAtIndex(e)},focusedItemIndex:t||this.menuElement.getFocusedItemIndex(),nextChar:e,sortedIndexByFirstChar:this.sortedIndexByFirstChar,skipFocus:!1,isItemAtIndexDisabled:e=>this.items[e].disabled},a=Io(i,this.typeaheadState);return-1!==a&&this.select(a),a}})}checkValidity(){const e=this._checkValidity(this.value);if(!e){const e=new Event("invalid",{bubbles:!1,cancelable:!0});this.dispatchEvent(e)}return e}reportValidity(){const e=this.checkValidity();return this.isUiValid=e,e}_checkValidity(e){const t=this.formElement.validity;let i=Vo(t);if(this.validityTransform){const t=this.validityTransform(e,i);i=Object.assign(Object.assign({},i),t)}return this._validity=i,this._validity.valid}setCustomValidity(e){this.validationMessage=e,this.formElement.setCustomValidity(e)}async getUpdateComplete(){await this._menuUpdateComplete;return await super.getUpdateComplete()}async firstUpdated(){const e=this.menuElement;if(e&&(this._menuUpdateComplete=e.updateComplete,await this._menuUpdateComplete),super.firstUpdated(),this.mdcFoundation.isValid=()=>!0,this.mdcFoundation.setValid=()=>{},this.mdcFoundation.setDisabled(this.disabled),this.validateOnInitialRender&&this.reportValidity(),!this.selected){!this.items.length&&this.slotElement&&this.slotElement.assignedNodes({flatten:!0}).length&&(await new Promise((e=>requestAnimationFrame(e))),await this.layout());const e=this.items.length&&""===this.items[0].value;if(!this.value&&e)return void this.select(0);this.selectByValue(this.value)}this.sortedIndexByFirstChar=Eo(this.items.length,(e=>this.items[e].text))}onItemsUpdated(){this.sortedIndexByFirstChar=Eo(this.items.length,(e=>this.items[e].text))}select(e){const t=this.menuElement;t&&t.select(e)}selectByValue(e){let t=-1;for(let i=0;i<this.items.length;i++){if(this.items[i].value===e){t=i;break}}this.valueSetDirectly=!0,this.select(t),this.mdcFoundation.handleChange()}disconnectedCallback(){super.disconnectedCallback();for(const e of this.listeners)e.target.removeEventListener(e.name,e.cb)}focus(){const e=new CustomEvent("focus"),t=this.anchorElement;t&&(t.dispatchEvent(e),t.focus())}blur(){const e=new CustomEvent("blur"),t=this.anchorElement;t&&(t.dispatchEvent(e),t.blur())}onFocus(){this.mdcFoundation&&this.mdcFoundation.handleFocus()}onBlur(){this.mdcFoundation&&this.mdcFoundation.handleBlur();const e=this.menuElement;e&&!e.open&&this.reportValidity()}onClick(e){if(this.mdcFoundation){this.focus();const t=e.target.getBoundingClientRect();let i=0;i="touches"in e?e.touches[0].clientX:e.clientX;const a=i-t.left;this.mdcFoundation.handleClick(a)}}onKeydown(e){const t=co(e)===Ua.ARROW_UP,i=co(e)===Ua.ARROW_DOWN;if(i||t){const a=t&&this.index>0,o=i&&this.index<this.items.length-1;return a?this.select(this.index-1):o&&this.select(this.index+1),e.preventDefault(),void this.mdcFoundation.openMenu()}this.mdcFoundation.handleKeydown(e)}handleTypeahead(e){if(!this.menuElement)return;const t=this.menuElement.getFocusedItemIndex(),i=wa(e.target)?e.target:null;!function(e,t){var i=e.event,a=e.isTargetListItem,o=e.focusedItemIndex,n=e.focusItemAtIndex,r=e.sortedIndexByFirstChar,l=e.isItemAtIndexDisabled,d="ArrowLeft"===co(i),s="ArrowUp"===co(i),c="ArrowRight"===co(i),m="ArrowDown"===co(i),h="Home"===co(i),p="End"===co(i),u="Enter"===co(i),f="Spacebar"===co(i);i.ctrlKey||i.metaKey||d||s||c||m||h||p||u||(f||1!==i.key.length?f&&(a&&wo(i),a&&Ao(t)&&Io({focusItemAtIndex:n,focusedItemIndex:o,nextChar:" ",sortedIndexByFirstChar:r,skipFocus:!1,isItemAtIndexDisabled:l},t)):(wo(i),Io({focusItemAtIndex:n,focusedItemIndex:o,nextChar:i.key.toLowerCase(),sortedIndexByFirstChar:r,skipFocus:!1,isItemAtIndexDisabled:l},t)))}({event:e,focusItemAtIndex:e=>{this.menuElement.focusItemAtIndex(e)},focusedItemIndex:t,isTargetListItem:!!i&&i.hasAttribute("mwc-list-item"),sortedIndexByFirstChar:this.sortedIndexByFirstChar,isItemAtIndexDisabled:e=>this.items[e].disabled},this.typeaheadState)}async onSelected(e){this.mdcFoundation||await this.updateComplete,this.mdcFoundation.handleMenuItemAction(e.detail.index);const t=this.items[e.detail.index];t&&(this.value=t.value)}onOpened(){this.mdcFoundation&&(this.menuOpen=!0,this.mdcFoundation.handleMenuOpened())}onClosed(){this.mdcFoundation&&(this.menuOpen=!1,this.mdcFoundation.handleMenuClosed())}setFormData(e){this.name&&null!==this.selected&&e.append(this.name,this.value)}async layout(e=!0){this.mdcFoundation&&this.mdcFoundation.layout(),await this.updateComplete;const t=this.menuElement;t&&t.layout(e);const i=this.labelElement;if(!i)return void(this.outlineOpen=!1);const a=!!this.label&&!!this.value;if(i.floatingLabelFoundation.float(a),!this.outlined)return;this.outlineOpen=a,await this.updateComplete;const o=i.floatingLabelFoundation.getWidth();this.outlineOpen&&(this.outlineWidth=o)}async layoutOptions(){this.mdcFoundation&&this.mdcFoundation.layoutOptions()}}a([ce(".mdc-select")],Uo.prototype,"mdcRoot",void 0),a([ce(".formElement")],Uo.prototype,"formElement",void 0),a([ce("slot")],Uo.prototype,"slotElement",void 0),a([ce("select")],Uo.prototype,"nativeSelectElement",void 0),a([ce("input")],Uo.prototype,"nativeInputElement",void 0),a([ce(".mdc-line-ripple")],Uo.prototype,"lineRippleElement",void 0),a([ce(".mdc-floating-label")],Uo.prototype,"labelElement",void 0),a([ce("mwc-notched-outline")],Uo.prototype,"outlineElement",void 0),a([ce(".mdc-menu")],Uo.prototype,"menuElement",void 0),a([ce(".mdc-select__anchor")],Uo.prototype,"anchorElement",void 0),a([re({type:Boolean,attribute:"disabled",reflect:!0}),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setDisabled(e)}))],Uo.prototype,"disabled",void 0),a([re({type:Boolean}),Ma((function(e,t){void 0!==t&&this.outlined!==t&&this.layout(!1)}))],Uo.prototype,"outlined",void 0),a([re({type:String}),Ma((function(e,t){void 0!==t&&this.label!==t&&this.layout(!1)}))],Uo.prototype,"label",void 0),a([le()],Uo.prototype,"outlineOpen",void 0),a([le()],Uo.prototype,"outlineWidth",void 0),a([re({type:String}),Ma((function(e){if(this.mdcFoundation){const t=null===this.selected&&!!e,i=this.selected&&this.selected.value!==e;(t||i)&&this.selectByValue(e),this.reportValidity()}}))],Uo.prototype,"value",void 0),a([re()],Uo.prototype,"name",void 0),a([le()],Uo.prototype,"selectedText",void 0),a([re({type:String})],Uo.prototype,"icon",void 0),a([le()],Uo.prototype,"menuOpen",void 0),a([re({type:String})],Uo.prototype,"helper",void 0),a([re({type:Boolean})],Uo.prototype,"validateOnInitialRender",void 0),a([re({type:String})],Uo.prototype,"validationMessage",void 0),a([re({type:Boolean})],Uo.prototype,"required",void 0),a([re({type:Boolean})],Uo.prototype,"naturalMenuWidth",void 0),a([le()],Uo.prototype,"isUiValid",void 0),a([re({type:Boolean})],Uo.prototype,"fixedMenuPosition",void 0),a([se({capture:!0})],Uo.prototype,"handleTypeahead",null);
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-const jo=(e,t)=>e-t,Go=["input","button","textarea","select"];function Wo(e){return e instanceof Set}const Ko=e=>{const t=e===yo.UNSET_INDEX?new Set:e;return Wo(t)?new Set(t):new Set([t])};class qo extends ba{constructor(e){super(Object.assign(Object.assign({},qo.defaultAdapter),e)),this.isMulti_=!1,this.wrapFocus_=!1,this.isVertical_=!0,this.selectedIndex_=yo.UNSET_INDEX,this.focusedItemIndex_=yo.UNSET_INDEX,this.useActivatedClass_=!1,this.ariaCurrentAttrValue_=null}static get strings(){return vo}static get numbers(){return yo}static get defaultAdapter(){return{focusItemAtIndex:()=>{},getFocusedElementIndex:()=>0,getListItemCount:()=>0,isFocusInsideList:()=>!1,isRootFocused:()=>!1,notifyAction:()=>{},notifySelected:()=>{},getSelectedStateForElementIndex:()=>!1,setDisabledStateForElementIndex:()=>{},getDisabledStateForElementIndex:()=>!1,setSelectedStateForElementIndex:()=>{},setActivatedStateForElementIndex:()=>{},setTabIndexForElementIndex:()=>{},setAttributeForElementIndex:()=>{},getAttributeForElementIndex:()=>null}}setWrapFocus(e){this.wrapFocus_=e}setMulti(e){this.isMulti_=e;const t=this.selectedIndex_;if(e){if(!Wo(t)){const e=t===yo.UNSET_INDEX;this.selectedIndex_=e?new Set:new Set([t])}}else if(Wo(t))if(t.size){const e=Array.from(t).sort(jo);this.selectedIndex_=e[0]}else this.selectedIndex_=yo.UNSET_INDEX}setVerticalOrientation(e){this.isVertical_=e}setUseActivatedClass(e){this.useActivatedClass_=e}getSelectedIndex(){return this.selectedIndex_}setSelectedIndex(e){this.isIndexValid_(e)&&(this.isMulti_?this.setMultiSelectionAtIndex_(Ko(e)):this.setSingleSelectionAtIndex_(e))}handleFocusIn(e,t){t>=0&&this.adapter.setTabIndexForElementIndex(t,0)}handleFocusOut(e,t){t>=0&&this.adapter.setTabIndexForElementIndex(t,-1),setTimeout((()=>{this.adapter.isFocusInsideList()||this.setTabindexToFirstSelectedItem_()}),0)}handleKeydown(e,t,i){const a="ArrowLeft"===co(e),o="ArrowUp"===co(e),n="ArrowRight"===co(e),r="ArrowDown"===co(e),l="Home"===co(e),d="End"===co(e),s="Enter"===co(e),c="Spacebar"===co(e);if(this.adapter.isRootFocused())return void(o||d?(e.preventDefault(),this.focusLastElement()):(r||l)&&(e.preventDefault(),this.focusFirstElement()));let m,h=this.adapter.getFocusedElementIndex();if(!(-1===h&&(h=i,h<0))){if(this.isVertical_&&r||!this.isVertical_&&n)this.preventDefaultEvent(e),m=this.focusNextElement(h);else if(this.isVertical_&&o||!this.isVertical_&&a)this.preventDefaultEvent(e),m=this.focusPrevElement(h);else if(l)this.preventDefaultEvent(e),m=this.focusFirstElement();else if(d)this.preventDefaultEvent(e),m=this.focusLastElement();else if((s||c)&&t){const t=e.target;if(t&&"A"===t.tagName&&s)return;this.preventDefaultEvent(e),this.setSelectedIndexOnAction_(h,!0)}this.focusedItemIndex_=h,void 0!==m&&(this.setTabindexAtIndex_(m),this.focusedItemIndex_=m)}}handleSingleSelection(e,t,i){e!==yo.UNSET_INDEX&&(this.setSelectedIndexOnAction_(e,t,i),this.setTabindexAtIndex_(e),this.focusedItemIndex_=e)}focusNextElement(e){let t=e+1;if(t>=this.adapter.getListItemCount()){if(!this.wrapFocus_)return e;t=0}return this.adapter.focusItemAtIndex(t),t}focusPrevElement(e){let t=e-1;if(t<0){if(!this.wrapFocus_)return e;t=this.adapter.getListItemCount()-1}return this.adapter.focusItemAtIndex(t),t}focusFirstElement(){return this.adapter.focusItemAtIndex(0),0}focusLastElement(){const e=this.adapter.getListItemCount()-1;return this.adapter.focusItemAtIndex(e),e}setEnabled(e,t){this.isIndexValid_(e)&&this.adapter.setDisabledStateForElementIndex(e,!t)}preventDefaultEvent(e){const t=`${e.target.tagName}`.toLowerCase();-1===Go.indexOf(t)&&e.preventDefault()}setSingleSelectionAtIndex_(e,t=!0){this.selectedIndex_!==e&&(this.selectedIndex_!==yo.UNSET_INDEX&&(this.adapter.setSelectedStateForElementIndex(this.selectedIndex_,!1),this.useActivatedClass_&&this.adapter.setActivatedStateForElementIndex(this.selectedIndex_,!1)),t&&this.adapter.setSelectedStateForElementIndex(e,!0),this.useActivatedClass_&&this.adapter.setActivatedStateForElementIndex(e,!0),this.setAriaForSingleSelectionAtIndex_(e),this.selectedIndex_=e,this.adapter.notifySelected(e))}setMultiSelectionAtIndex_(e,t=!0){const i=((e,t)=>{const i=Array.from(e),a=Array.from(t),o={added:[],removed:[]},n=i.sort(jo),r=a.sort(jo);let l=0,d=0;for(;l<n.length||d<r.length;){const e=n[l],t=r[d];e!==t?void 0!==e&&(void 0===t||e<t)?(o.removed.push(e),l++):void 0!==t&&(void 0===e||t<e)&&(o.added.push(t),d++):(l++,d++)}return o})(Ko(this.selectedIndex_),e);if(i.removed.length||i.added.length){for(const e of i.removed)t&&this.adapter.setSelectedStateForElementIndex(e,!1),this.useActivatedClass_&&this.adapter.setActivatedStateForElementIndex(e,!1);for(const e of i.added)t&&this.adapter.setSelectedStateForElementIndex(e,!0),this.useActivatedClass_&&this.adapter.setActivatedStateForElementIndex(e,!0);this.selectedIndex_=e,this.adapter.notifySelected(e,i)}}setAriaForSingleSelectionAtIndex_(e){this.selectedIndex_===yo.UNSET_INDEX&&(this.ariaCurrentAttrValue_=this.adapter.getAttributeForElementIndex(e,vo.ARIA_CURRENT));const t=null!==this.ariaCurrentAttrValue_,i=t?vo.ARIA_CURRENT:vo.ARIA_SELECTED;this.selectedIndex_!==yo.UNSET_INDEX&&this.adapter.setAttributeForElementIndex(this.selectedIndex_,i,"false");const a=t?this.ariaCurrentAttrValue_:"true";this.adapter.setAttributeForElementIndex(e,i,a)}setTabindexAtIndex_(e){this.focusedItemIndex_===yo.UNSET_INDEX&&0!==e?this.adapter.setTabIndexForElementIndex(0,-1):this.focusedItemIndex_>=0&&this.focusedItemIndex_!==e&&this.adapter.setTabIndexForElementIndex(this.focusedItemIndex_,-1),this.adapter.setTabIndexForElementIndex(e,0)}setTabindexToFirstSelectedItem_(){let e=0;"number"==typeof this.selectedIndex_&&this.selectedIndex_!==yo.UNSET_INDEX?e=this.selectedIndex_:Wo(this.selectedIndex_)&&this.selectedIndex_.size>0&&(e=Math.min(...this.selectedIndex_)),this.setTabindexAtIndex_(e)}isIndexValid_(e){if(e instanceof Set){if(!this.isMulti_)throw new Error("MDCListFoundation: Array of index is only supported for checkbox based list");if(0===e.size)return!0;{let t=!1;for(const i of e)if(t=this.isIndexInRange_(i),t)break;return t}}if("number"==typeof e){if(this.isMulti_)throw new Error("MDCListFoundation: Expected array of index for checkbox based list but got number: "+e);return e===yo.UNSET_INDEX||this.isIndexInRange_(e)}return!1}isIndexInRange_(e){const t=this.adapter.getListItemCount();return e>=0&&e<t}setSelectedIndexOnAction_(e,t,i){if(this.adapter.getDisabledStateForElementIndex(e))return;let a=e;if(this.isMulti_&&(a=new Set([e])),this.isIndexValid_(a)){if(this.isMulti_)this.toggleMultiAtIndex(e,i,t);else if(t||i)this.setSingleSelectionAtIndex_(e,t);else{this.selectedIndex_===e&&this.setSingleSelectionAtIndex_(yo.UNSET_INDEX)}t&&this.adapter.notifyAction(e)}}toggleMultiAtIndex(e,t,i=!0){let a=!1;a=void 0===t?!this.adapter.getSelectedStateForElementIndex(e):t;const o=Ko(this.selectedIndex_);a?o.add(e):o.delete(e),this.setMultiSelectionAtIndex_(o,i)}}
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */const Xo=e=>e.hasAttribute("mwc-list-item");function Yo(){const e=this.itemsReadyResolver;this.itemsReady=new Promise((e=>this.itemsReadyResolver=e)),e()}class Zo extends Ca{constructor(){super(),this.mdcAdapter=null,this.mdcFoundationClass=qo,this.activatable=!1,this.multi=!1,this.wrapFocus=!1,this.itemRoles=null,this.innerRole=null,this.innerAriaLabel=null,this.rootTabbable=!1,this.previousTabindex=null,this.noninteractive=!1,this.itemsReadyResolver=()=>{},this.itemsReady=Promise.resolve([]),this.items_=[];const e=function(e,t=50){let i;return function(a=!0){clearTimeout(i),i=setTimeout((()=>{e(a)}),t)}}(this.layout.bind(this));this.debouncedLayout=(t=!0)=>{Yo.call(this),e(t)}}async getUpdateComplete(){const e=await super.getUpdateComplete();return await this.itemsReady,e}get items(){return this.items_}updateItems(){var e;const t=null!==(e=this.assignedElements)&&void 0!==e?e:[],i=[];for(const e of t)Xo(e)&&(i.push(e),e._managingList=this),e.hasAttribute("divider")&&!e.hasAttribute("role")&&e.setAttribute("role","separator");this.items_=i;const a=new Set;if(this.items_.forEach(((e,t)=>{this.itemRoles?e.setAttribute("role",this.itemRoles):e.removeAttribute("role"),e.selected&&a.add(t)})),this.multi)this.select(a);else{const e=a.size?a.entries().next().value[1]:-1;this.select(e)}const o=new Event("items-updated",{bubbles:!0,composed:!0});this.dispatchEvent(o)}get selected(){const e=this.index;if(!Wo(e))return-1===e?null:this.items[e];const t=[];for(const i of e)t.push(this.items[i]);return t}get index(){return this.mdcFoundation?this.mdcFoundation.getSelectedIndex():-1}render(){const e=null===this.innerRole?void 0:this.innerRole,t=null===this.innerAriaLabel?void 0:this.innerAriaLabel,i=this.rootTabbable?"0":"-1";return N`
-      <!-- @ts-ignore -->
-      <ul
-          tabindex=${i}
-          role="${Ho(e)}"
-          aria-label="${Ho(t)}"
-          class="mdc-deprecated-list"
-          @keydown=${this.onKeydown}
-          @focusin=${this.onFocusIn}
-          @focusout=${this.onFocusOut}
-          @request-selected=${this.onRequestSelected}
-          @list-item-rendered=${this.onListItemConnected}>
-        <slot></slot>
-        ${this.renderPlaceholder()}
-      </ul>
-    `}renderPlaceholder(){var e;const t=null!==(e=this.assignedElements)&&void 0!==e?e:[];return void 0!==this.emptyMessage&&0===t.length?N`
-        <mwc-list-item noninteractive>${this.emptyMessage}</mwc-list-item>
-      `:null}firstUpdated(){super.firstUpdated(),this.items.length||(this.mdcFoundation.setMulti(this.multi),this.layout())}onFocusIn(e){if(this.mdcFoundation&&this.mdcRoot){const t=this.getIndexOfTarget(e);this.mdcFoundation.handleFocusIn(e,t)}}onFocusOut(e){if(this.mdcFoundation&&this.mdcRoot){const t=this.getIndexOfTarget(e);this.mdcFoundation.handleFocusOut(e,t)}}onKeydown(e){if(this.mdcFoundation&&this.mdcRoot){const t=this.getIndexOfTarget(e),i=e.target,a=Xo(i);this.mdcFoundation.handleKeydown(e,a,t)}}onRequestSelected(e){if(this.mdcFoundation){let t=this.getIndexOfTarget(e);if(-1===t&&(this.layout(),t=this.getIndexOfTarget(e),-1===t))return;if(this.items[t].disabled)return;const i=e.detail.selected,a=e.detail.source;this.mdcFoundation.handleSingleSelection(t,"interaction"===a,i),e.stopPropagation()}}getIndexOfTarget(e){const t=this.items,i=e.composedPath();for(const e of i){let i=-1;if(wa(e)&&Xo(e)&&(i=t.indexOf(e)),-1!==i)return i}return-1}createAdapter(){return this.mdcAdapter={getListItemCount:()=>this.mdcRoot?this.items.length:0,getFocusedElementIndex:this.getFocusedItemIndex,getAttributeForElementIndex:(e,t)=>{if(!this.mdcRoot)return"";const i=this.items[e];return i?i.getAttribute(t):""},setAttributeForElementIndex:(e,t,i)=>{if(!this.mdcRoot)return;const a=this.items[e];a&&a.setAttribute(t,i)},focusItemAtIndex:e=>{const t=this.items[e];t&&t.focus()},setTabIndexForElementIndex:(e,t)=>{const i=this.items[e];i&&(i.tabindex=t)},notifyAction:e=>{const t={bubbles:!0,composed:!0};t.detail={index:e};const i=new CustomEvent("action",t);this.dispatchEvent(i)},notifySelected:(e,t)=>{const i={bubbles:!0,composed:!0};i.detail={index:e,diff:t};const a=new CustomEvent("selected",i);this.dispatchEvent(a)},isFocusInsideList:()=>Ta(this),isRootFocused:()=>{const e=this.mdcRoot;return e.getRootNode().activeElement===e},setDisabledStateForElementIndex:(e,t)=>{const i=this.items[e];i&&(i.disabled=t)},getDisabledStateForElementIndex:e=>{const t=this.items[e];return!!t&&t.disabled},setSelectedStateForElementIndex:(e,t)=>{const i=this.items[e];i&&(i.selected=t)},getSelectedStateForElementIndex:e=>{const t=this.items[e];return!!t&&t.selected},setActivatedStateForElementIndex:(e,t)=>{const i=this.items[e];i&&(i.activated=t)}},this.mdcAdapter}selectUi(e,t=!1){const i=this.items[e];i&&(i.selected=!0,i.activated=t)}deselectUi(e){const t=this.items[e];t&&(t.selected=!1,t.activated=!1)}select(e){this.mdcFoundation&&this.mdcFoundation.setSelectedIndex(e)}toggle(e,t){this.multi&&this.mdcFoundation.toggleMultiAtIndex(e,t)}onListItemConnected(e){const t=e.target;this.layout(-1===this.items.indexOf(t))}layout(e=!0){e&&this.updateItems();const t=this.items[0];for(const e of this.items)e.tabindex=-1;t&&(this.noninteractive?this.previousTabindex||(this.previousTabindex=t):t.tabindex=0),this.itemsReadyResolver()}getFocusedItemIndex(){if(!this.mdcRoot)return-1;if(!this.items.length)return-1;const e=ka();if(!e.length)return-1;for(let t=e.length-1;t>=0;t--){const i=e[t];if(Xo(i))return this.items.indexOf(i)}return-1}focusItemAtIndex(e){for(const e of this.items)if(0===e.tabindex){e.tabindex=-1;break}this.items[e].tabindex=0,this.items[e].focus()}focus(){const e=this.mdcRoot;e&&e.focus()}blur(){const e=this.mdcRoot;e&&e.blur()}}a([re({type:String})],Zo.prototype,"emptyMessage",void 0),a([ce(".mdc-deprecated-list")],Zo.prototype,"mdcRoot",void 0),a([ue("",!0,"*")],Zo.prototype,"assignedElements",void 0),a([ue("",!0,'[tabindex="0"]')],Zo.prototype,"tabbableElements",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setUseActivatedClass(e)}))],Zo.prototype,"activatable",void 0),a([re({type:Boolean}),Ma((function(e,t){this.mdcFoundation&&this.mdcFoundation.setMulti(e),void 0!==t&&this.layout()}))],Zo.prototype,"multi",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setWrapFocus(e)}))],Zo.prototype,"wrapFocus",void 0),a([re({type:String}),Ma((function(e,t){void 0!==t&&this.updateItems()}))],Zo.prototype,"itemRoles",void 0),a([re({type:String})],Zo.prototype,"innerRole",void 0),a([re({type:String})],Zo.prototype,"innerAriaLabel",void 0),a([re({type:Boolean})],Zo.prototype,"rootTabbable",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e){var t,i;if(e){const e=null!==(i=null===(t=this.tabbableElements)||void 0===t?void 0:t[0])&&void 0!==i?i:null;this.previousTabindex=e,e&&e.setAttribute("tabindex","-1")}else!e&&this.previousTabindex&&(this.previousTabindex.setAttribute("tabindex","0"),this.previousTabindex=null)}))],Zo.prototype,"noninteractive",void 0);
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class Qo{constructor(e){this.startPress=t=>{e().then((e=>{e&&e.startPress(t)}))},this.endPress=()=>{e().then((e=>{e&&e.endPress()}))},this.startFocus=()=>{e().then((e=>{e&&e.startFocus()}))},this.endFocus=()=>{e().then((e=>{e&&e.endFocus()}))},this.startHover=()=>{e().then((e=>{e&&e.startHover()}))},this.endHover=()=>{e().then((e=>{e&&e.endHover()}))}}}
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */class Jo extends ie{constructor(){super(...arguments),this.value="",this.group=null,this.tabindex=-1,this.disabled=!1,this.twoline=!1,this.activated=!1,this.graphic=null,this.multipleGraphics=!1,this.hasMeta=!1,this.noninteractive=!1,this.selected=!1,this.shouldRenderRipple=!1,this._managingList=null,this.boundOnClick=this.onClick.bind(this),this._firstChanged=!0,this._skipPropRequest=!1,this.rippleHandlers=new Qo((()=>(this.shouldRenderRipple=!0,this.ripple))),this.listeners=[{target:this,eventNames:["click"],cb:()=>{this.onClick()}},{target:this,eventNames:["mouseenter"],cb:this.rippleHandlers.startHover},{target:this,eventNames:["mouseleave"],cb:this.rippleHandlers.endHover},{target:this,eventNames:["focus"],cb:this.rippleHandlers.startFocus},{target:this,eventNames:["blur"],cb:this.rippleHandlers.endFocus},{target:this,eventNames:["mousedown","touchstart"],cb:e=>{const t=e.type;this.onDown("mousedown"===t?"mouseup":"touchend",e)}}]}get text(){const e=this.textContent;return e?e.trim():""}render(){const e=this.renderText(),t=this.graphic?this.renderGraphic():N``,i=this.hasMeta?this.renderMeta():N``;return N`
-      ${this.renderRipple()}
-      ${t}
-      ${e}
-      ${i}`}renderRipple(){return this.shouldRenderRipple?N`
-      <mwc-ripple
-        .activated=${this.activated}>
-      </mwc-ripple>`:this.activated?N`<div class="fake-activated-ripple"></div>`:""}renderGraphic(){const e={multi:this.multipleGraphics};return N`
-      <span class="mdc-deprecated-list-item__graphic material-icons ${Da(e)}">
-        <slot name="graphic"></slot>
-      </span>`}renderMeta(){return N`
-      <span class="mdc-deprecated-list-item__meta material-icons">
-        <slot name="meta"></slot>
-      </span>`}renderText(){const e=this.twoline?this.renderTwoline():this.renderSingleLine();return N`
-      <span class="mdc-deprecated-list-item__text">
-        ${e}
-      </span>`}renderSingleLine(){return N`<slot></slot>`}renderTwoline(){return N`
-      <span class="mdc-deprecated-list-item__primary-text">
-        <slot></slot>
-      </span>
-      <span class="mdc-deprecated-list-item__secondary-text">
-        <slot name="secondary"></slot>
-      </span>
-    `}onClick(){this.fireRequestSelected(!this.selected,"interaction")}onDown(e,t){const i=()=>{window.removeEventListener(e,i),this.rippleHandlers.endPress()};window.addEventListener(e,i),this.rippleHandlers.startPress(t)}fireRequestSelected(e,t){if(this.noninteractive)return;const i=new CustomEvent("request-selected",{bubbles:!0,composed:!0,detail:{source:t,selected:e}});this.dispatchEvent(i)}connectedCallback(){super.connectedCallback(),this.noninteractive||this.setAttribute("mwc-list-item","");for(const e of this.listeners)for(const t of e.eventNames)e.target.addEventListener(t,e.cb,{passive:!0})}disconnectedCallback(){super.disconnectedCallback();for(const e of this.listeners)for(const t of e.eventNames)e.target.removeEventListener(t,e.cb);this._managingList&&(this._managingList.debouncedLayout?this._managingList.debouncedLayout(!0):this._managingList.layout(!0))}firstUpdated(){const e=new Event("list-item-rendered",{bubbles:!0,composed:!0});this.dispatchEvent(e)}}a([ce("slot")],Jo.prototype,"slotElement",void 0),a([me("mwc-ripple")],Jo.prototype,"ripple",void 0),a([re({type:String})],Jo.prototype,"value",void 0),a([re({type:String,reflect:!0})],Jo.prototype,"group",void 0),a([re({type:Number,reflect:!0})],Jo.prototype,"tabindex",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e){e?this.setAttribute("aria-disabled","true"):this.setAttribute("aria-disabled","false")}))],Jo.prototype,"disabled",void 0),a([re({type:Boolean,reflect:!0})],Jo.prototype,"twoline",void 0),a([re({type:Boolean,reflect:!0})],Jo.prototype,"activated",void 0),a([re({type:String,reflect:!0})],Jo.prototype,"graphic",void 0),a([re({type:Boolean})],Jo.prototype,"multipleGraphics",void 0),a([re({type:Boolean})],Jo.prototype,"hasMeta",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e){e?(this.removeAttribute("aria-checked"),this.removeAttribute("mwc-list-item"),this.selected=!1,this.activated=!1,this.tabIndex=-1):this.setAttribute("mwc-list-item","")}))],Jo.prototype,"noninteractive",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e){const t=this.getAttribute("role"),i="gridcell"===t||"option"===t||"row"===t||"tab"===t;i&&e?this.setAttribute("aria-selected","true"):i&&this.setAttribute("aria-selected","false"),this._firstChanged?this._firstChanged=!1:this._skipPropRequest||this.fireRequestSelected(e,"property")}))],Jo.prototype,"selected",void 0),a([le()],Jo.prototype,"shouldRenderRipple",void 0),a([le()],Jo.prototype,"_managingList",void 0);
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var en,tn={MENU_SELECTED_LIST_ITEM:"mdc-menu-item--selected",MENU_SELECTION_GROUP:"mdc-menu__selection-group",ROOT:"mdc-menu"},an={ARIA_CHECKED_ATTR:"aria-checked",ARIA_DISABLED_ATTR:"aria-disabled",CHECKBOX_SELECTOR:'input[type="checkbox"]',LIST_SELECTOR:".mdc-list,.mdc-deprecated-list",SELECTED_EVENT:"MDCMenu:selected",SKIP_RESTORE_FOCUS:"data-menu-item-skip-restore-focus"},on={FOCUS_ROOT_INDEX:-1};!function(e){e[e.NONE=0]="NONE",e[e.LIST_ROOT=1]="LIST_ROOT",e[e.FIRST_ITEM=2]="FIRST_ITEM",e[e.LAST_ITEM=3]="LAST_ITEM"}(en||(en={}));
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var nn=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.isSurfaceOpen=!1,o.isQuickOpen=!1,o.isHoistedElement=!1,o.isFixedPosition=!1,o.isHorizontallyCenteredOnViewport=!1,o.maxHeight=0,o.openBottomBias=0,o.openAnimationEndTimerId=0,o.closeAnimationEndTimerId=0,o.animationRequestId=0,o.anchorCorner=Mo.TOP_START,o.originCorner=Mo.TOP_START,o.anchorMargin={top:0,right:0,bottom:0,left:0},o.position={x:0,y:0},o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return Lo},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return $o},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return Fo},enumerable:!1,configurable:!0}),Object.defineProperty(a,"Corner",{get:function(){return Mo},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},hasClass:function(){return!1},hasAnchor:function(){return!1},isElementInContainer:function(){return!1},isFocused:function(){return!1},isRtl:function(){return!1},getInnerDimensions:function(){return{height:0,width:0}},getAnchorDimensions:function(){return null},getWindowDimensions:function(){return{height:0,width:0}},getBodyDimensions:function(){return{height:0,width:0}},getWindowScroll:function(){return{x:0,y:0}},setPosition:function(){},setMaxHeight:function(){},setTransformOrigin:function(){},saveFocus:function(){},restoreFocus:function(){},notifyClose:function(){},notifyOpen:function(){},notifyClosing:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){var e=a.cssClasses,t=e.ROOT,i=e.OPEN;if(!this.adapter.hasClass(t))throw new Error(t+" class required in root element.");this.adapter.hasClass(i)&&(this.isSurfaceOpen=!0)},a.prototype.destroy=function(){clearTimeout(this.openAnimationEndTimerId),clearTimeout(this.closeAnimationEndTimerId),cancelAnimationFrame(this.animationRequestId)},a.prototype.setAnchorCorner=function(e){this.anchorCorner=e},a.prototype.flipCornerHorizontally=function(){this.originCorner=this.originCorner^zo.RIGHT},a.prototype.setAnchorMargin=function(e){this.anchorMargin.top=e.top||0,this.anchorMargin.right=e.right||0,this.anchorMargin.bottom=e.bottom||0,this.anchorMargin.left=e.left||0},a.prototype.setIsHoisted=function(e){this.isHoistedElement=e},a.prototype.setFixedPosition=function(e){this.isFixedPosition=e},a.prototype.isFixed=function(){return this.isFixedPosition},a.prototype.setAbsolutePosition=function(e,t){this.position.x=this.isFinite(e)?e:0,this.position.y=this.isFinite(t)?t:0},a.prototype.setIsHorizontallyCenteredOnViewport=function(e){this.isHorizontallyCenteredOnViewport=e},a.prototype.setQuickOpen=function(e){this.isQuickOpen=e},a.prototype.setMaxHeight=function(e){this.maxHeight=e},a.prototype.setOpenBottomBias=function(e){this.openBottomBias=e},a.prototype.isOpen=function(){return this.isSurfaceOpen},a.prototype.open=function(){var e=this;this.isSurfaceOpen||(this.adapter.saveFocus(),this.isQuickOpen?(this.isSurfaceOpen=!0,this.adapter.addClass(a.cssClasses.OPEN),this.dimensions=this.adapter.getInnerDimensions(),this.autoposition(),this.adapter.notifyOpen()):(this.adapter.addClass(a.cssClasses.ANIMATING_OPEN),this.animationRequestId=requestAnimationFrame((function(){e.dimensions=e.adapter.getInnerDimensions(),e.autoposition(),e.adapter.addClass(a.cssClasses.OPEN),e.openAnimationEndTimerId=setTimeout((function(){e.openAnimationEndTimerId=0,e.adapter.removeClass(a.cssClasses.ANIMATING_OPEN),e.adapter.notifyOpen()}),Fo.TRANSITION_OPEN_DURATION)})),this.isSurfaceOpen=!0))},a.prototype.close=function(e){var t=this;if(void 0===e&&(e=!1),this.isSurfaceOpen){if(this.adapter.notifyClosing(),this.isQuickOpen)return this.isSurfaceOpen=!1,e||this.maybeRestoreFocus(),this.adapter.removeClass(a.cssClasses.OPEN),this.adapter.removeClass(a.cssClasses.IS_OPEN_BELOW),void this.adapter.notifyClose();this.adapter.addClass(a.cssClasses.ANIMATING_CLOSED),requestAnimationFrame((function(){t.adapter.removeClass(a.cssClasses.OPEN),t.adapter.removeClass(a.cssClasses.IS_OPEN_BELOW),t.closeAnimationEndTimerId=setTimeout((function(){t.closeAnimationEndTimerId=0,t.adapter.removeClass(a.cssClasses.ANIMATING_CLOSED),t.adapter.notifyClose()}),Fo.TRANSITION_CLOSE_DURATION)})),this.isSurfaceOpen=!1,e||this.maybeRestoreFocus()}},a.prototype.handleBodyClick=function(e){var t=e.target;this.adapter.isElementInContainer(t)||this.close()},a.prototype.handleKeydown=function(e){var t=e.keyCode;("Escape"===e.key||27===t)&&this.close()},a.prototype.autoposition=function(){var e;this.measurements=this.getAutoLayoutmeasurements();var t=this.getoriginCorner(),i=this.getMenuSurfaceMaxHeight(t),o=this.hasBit(t,zo.BOTTOM)?"bottom":"top",n=this.hasBit(t,zo.RIGHT)?"right":"left",r=this.getHorizontalOriginOffset(t),l=this.getVerticalOriginOffset(t),d=this.measurements,s=d.anchorSize,c=d.surfaceSize,m=((e={})[n]=r,e[o]=l,e);s.width/c.width>Fo.ANCHOR_TO_MENU_SURFACE_WIDTH_RATIO&&(n="center"),(this.isHoistedElement||this.isFixedPosition)&&this.adjustPositionForHoistedElement(m),this.adapter.setTransformOrigin(n+" "+o),this.adapter.setPosition(m),this.adapter.setMaxHeight(i?i+"px":""),this.hasBit(t,zo.BOTTOM)||this.adapter.addClass(a.cssClasses.IS_OPEN_BELOW)},a.prototype.getAutoLayoutmeasurements=function(){var e=this.adapter.getAnchorDimensions(),t=this.adapter.getBodyDimensions(),i=this.adapter.getWindowDimensions(),a=this.adapter.getWindowScroll();return e||(e={top:this.position.y,right:this.position.x,bottom:this.position.y,left:this.position.x,width:0,height:0}),{anchorSize:e,bodySize:t,surfaceSize:this.dimensions,viewportDistance:{top:e.top,right:i.width-e.right,bottom:i.height-e.bottom,left:e.left},viewportSize:i,windowScroll:a}},a.prototype.getoriginCorner=function(){var e,t,i=this.originCorner,o=this.measurements,n=o.viewportDistance,r=o.anchorSize,l=o.surfaceSize,d=a.numbers.MARGIN_TO_EDGE;this.hasBit(this.anchorCorner,zo.BOTTOM)?(e=n.top-d+this.anchorMargin.bottom,t=n.bottom-d-this.anchorMargin.bottom):(e=n.top-d+this.anchorMargin.top,t=n.bottom-d+r.height-this.anchorMargin.top),!(t-l.height>0)&&e>t+this.openBottomBias&&(i=this.setBit(i,zo.BOTTOM));var s,c,m=this.adapter.isRtl(),h=this.hasBit(this.anchorCorner,zo.FLIP_RTL),p=this.hasBit(this.anchorCorner,zo.RIGHT)||this.hasBit(i,zo.RIGHT),u=!1;(u=m&&h?!p:p)?(s=n.left+r.width+this.anchorMargin.right,c=n.right-this.anchorMargin.right):(s=n.left+this.anchorMargin.left,c=n.right+r.width-this.anchorMargin.left);var f=s-l.width>0,_=c-l.width>0,g=this.hasBit(i,zo.FLIP_RTL)&&this.hasBit(i,zo.RIGHT);return _&&g&&m||!f&&g?i=this.unsetBit(i,zo.RIGHT):(f&&u&&m||f&&!u&&p||!_&&s>=c)&&(i=this.setBit(i,zo.RIGHT)),i},a.prototype.getMenuSurfaceMaxHeight=function(e){if(this.maxHeight>0)return this.maxHeight;var t=this.measurements.viewportDistance,i=0,o=this.hasBit(e,zo.BOTTOM),n=this.hasBit(this.anchorCorner,zo.BOTTOM),r=a.numbers.MARGIN_TO_EDGE;return o?(i=t.top+this.anchorMargin.top-r,n||(i+=this.measurements.anchorSize.height)):(i=t.bottom-this.anchorMargin.bottom+this.measurements.anchorSize.height-r,n&&(i-=this.measurements.anchorSize.height)),i},a.prototype.getHorizontalOriginOffset=function(e){var t=this.measurements.anchorSize,i=this.hasBit(e,zo.RIGHT),a=this.hasBit(this.anchorCorner,zo.RIGHT);if(i){var o=a?t.width-this.anchorMargin.left:this.anchorMargin.right;return this.isHoistedElement||this.isFixedPosition?o-(this.measurements.viewportSize.width-this.measurements.bodySize.width):o}return a?t.width-this.anchorMargin.right:this.anchorMargin.left},a.prototype.getVerticalOriginOffset=function(e){var t=this.measurements.anchorSize,i=this.hasBit(e,zo.BOTTOM),a=this.hasBit(this.anchorCorner,zo.BOTTOM);return i?a?t.height-this.anchorMargin.top:-this.anchorMargin.bottom:a?t.height+this.anchorMargin.bottom:this.anchorMargin.top},a.prototype.adjustPositionForHoistedElement=function(e){var t,i,a=this.measurements,n=a.windowScroll,r=a.viewportDistance,l=a.surfaceSize,d=a.viewportSize,s=Object.keys(e);try{for(var c=o(s),m=c.next();!m.done;m=c.next()){var h=m.value,p=e[h]||0;!this.isHorizontallyCenteredOnViewport||"left"!==h&&"right"!==h?(p+=r[h],this.isFixedPosition||("top"===h?p+=n.y:"bottom"===h?p-=n.y:"left"===h?p+=n.x:p-=n.x),e[h]=p):e[h]=(d.width-l.width)/2}}catch(e){t={error:e}}finally{try{m&&!m.done&&(i=c.return)&&i.call(c)}finally{if(t)throw t.error}}},a.prototype.maybeRestoreFocus=function(){var e=this,t=this.adapter.isFocused(),i=document.activeElement&&this.adapter.isElementInContainer(document.activeElement);(t||i)&&setTimeout((function(){e.adapter.restoreFocus()}),Fo.TOUCH_EVENT_WAIT_MS)},a.prototype.hasBit=function(e,t){return Boolean(e&t)},a.prototype.setBit=function(e,t){return e|t},a.prototype.unsetBit=function(e,t){return e^t},a.prototype.isFinite=function(e){return"number"==typeof e&&isFinite(e)},a}(ba),rn=nn,ln=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.closeAnimationEndTimerId=0,o.defaultFocusState=en.LIST_ROOT,o.selectedIndex=-1,o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return tn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return an},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return on},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClassToElementAtIndex:function(){},removeClassFromElementAtIndex:function(){},addAttributeToElementAtIndex:function(){},removeAttributeFromElementAtIndex:function(){},getAttributeFromElementAtIndex:function(){return null},elementContainsClass:function(){return!1},closeSurface:function(){},getElementIndex:function(){return-1},notifySelected:function(){},getMenuItemCount:function(){return 0},focusItemAtIndex:function(){},focusListRoot:function(){},getSelectedSiblingOfItemAtIndex:function(){return-1},isSelectableItemAtIndex:function(){return!1}}},enumerable:!1,configurable:!0}),a.prototype.destroy=function(){this.closeAnimationEndTimerId&&clearTimeout(this.closeAnimationEndTimerId),this.adapter.closeSurface()},a.prototype.handleKeydown=function(e){var t=e.key,i=e.keyCode;("Tab"===t||9===i)&&this.adapter.closeSurface(!0)},a.prototype.handleItemAction=function(e){var t=this,i=this.adapter.getElementIndex(e);if(!(i<0)){this.adapter.notifySelected({index:i});var a="true"===this.adapter.getAttributeFromElementAtIndex(i,an.SKIP_RESTORE_FOCUS);this.adapter.closeSurface(a),this.closeAnimationEndTimerId=setTimeout((function(){var i=t.adapter.getElementIndex(e);i>=0&&t.adapter.isSelectableItemAtIndex(i)&&t.setSelectedIndex(i)}),nn.numbers.TRANSITION_CLOSE_DURATION)}},a.prototype.handleMenuSurfaceOpened=function(){switch(this.defaultFocusState){case en.FIRST_ITEM:this.adapter.focusItemAtIndex(0);break;case en.LAST_ITEM:this.adapter.focusItemAtIndex(this.adapter.getMenuItemCount()-1);break;case en.NONE:break;default:this.adapter.focusListRoot()}},a.prototype.setDefaultFocusState=function(e){this.defaultFocusState=e},a.prototype.getSelectedIndex=function(){return this.selectedIndex},a.prototype.setSelectedIndex=function(e){if(this.validatedIndex(e),!this.adapter.isSelectableItemAtIndex(e))throw new Error("MDCMenuFoundation: No selection group at specified index.");var t=this.adapter.getSelectedSiblingOfItemAtIndex(e);t>=0&&(this.adapter.removeAttributeFromElementAtIndex(t,an.ARIA_CHECKED_ATTR),this.adapter.removeClassFromElementAtIndex(t,tn.MENU_SELECTED_LIST_ITEM)),this.adapter.addClassToElementAtIndex(e,tn.MENU_SELECTED_LIST_ITEM),this.adapter.addAttributeToElementAtIndex(e,an.ARIA_CHECKED_ATTR,"true"),this.selectedIndex=e},a.prototype.setEnabled=function(e,t){this.validatedIndex(e),t?(this.adapter.removeClassFromElementAtIndex(e,po),this.adapter.addAttributeToElementAtIndex(e,an.ARIA_DISABLED_ATTR,"false")):(this.adapter.addClassToElementAtIndex(e,po),this.adapter.addAttributeToElementAtIndex(e,an.ARIA_DISABLED_ATTR,"true"))},a.prototype.validatedIndex=function(e){var t=this.adapter.getMenuItemCount();if(!(e>=0&&e<t))throw new Error("MDCMenuFoundation: No list item at specified index.")},a}(ba);
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class dn extends Ca{constructor(){super(...arguments),this.mdcFoundationClass=ln,this.listElement_=null,this.anchor=null,this.open=!1,this.quick=!1,this.wrapFocus=!1,this.innerRole="menu",this.innerAriaLabel=null,this.corner="TOP_START",this.x=null,this.y=null,this.absolute=!1,this.multi=!1,this.activatable=!1,this.fixed=!1,this.forceGroupSelection=!1,this.fullwidth=!1,this.menuCorner="START",this.stayOpenOnBodyClick=!1,this.defaultFocus="LIST_ROOT",this._listUpdateComplete=null}get listElement(){return this.listElement_||(this.listElement_=this.renderRoot.querySelector("mwc-list")),this.listElement_}get items(){const e=this.listElement;return e?e.items:[]}get index(){const e=this.listElement;return e?e.index:-1}get selected(){const e=this.listElement;return e?e.selected:null}render(){const e="menu"===this.innerRole?"menuitem":"option";return N`
-      <mwc-menu-surface
-          ?hidden=${!this.open}
-          .anchor=${this.anchor}
-          .open=${this.open}
-          .quick=${this.quick}
-          .corner=${this.corner}
-          .x=${this.x}
-          .y=${this.y}
-          .absolute=${this.absolute}
-          .fixed=${this.fixed}
-          .fullwidth=${this.fullwidth}
-          .menuCorner=${this.menuCorner}
-          ?stayOpenOnBodyClick=${this.stayOpenOnBodyClick}
-          class="mdc-menu mdc-menu-surface"
-          @closed=${this.onClosed}
-          @opened=${this.onOpened}
-          @keydown=${this.onKeydown}>
-        <mwc-list
-          rootTabbable
-          .innerAriaLabel=${this.innerAriaLabel}
-          .innerRole=${this.innerRole}
-          .multi=${this.multi}
-          class="mdc-deprecated-list"
-          .itemRoles=${e}
-          .wrapFocus=${this.wrapFocus}
-          .activatable=${this.activatable}
-          @action=${this.onAction}>
-        <slot></slot>
-      </mwc-list>
-    </mwc-menu-surface>`}createAdapter(){return{addClassToElementAtIndex:(e,t)=>{const i=this.listElement;if(!i)return;const a=i.items[e];a&&("mdc-menu-item--selected"===t?this.forceGroupSelection&&!a.selected&&i.toggle(e,!0):a.classList.add(t))},removeClassFromElementAtIndex:(e,t)=>{const i=this.listElement;if(!i)return;const a=i.items[e];a&&("mdc-menu-item--selected"===t?a.selected&&i.toggle(e,!1):a.classList.remove(t))},addAttributeToElementAtIndex:(e,t,i)=>{const a=this.listElement;if(!a)return;const o=a.items[e];o&&o.setAttribute(t,i)},removeAttributeFromElementAtIndex:(e,t)=>{const i=this.listElement;if(!i)return;const a=i.items[e];a&&a.removeAttribute(t)},getAttributeFromElementAtIndex:(e,t)=>{const i=this.listElement;if(!i)return null;const a=i.items[e];return a?a.getAttribute(t):null},elementContainsClass:(e,t)=>e.classList.contains(t),closeSurface:()=>{this.open=!1},getElementIndex:e=>{const t=this.listElement;return t?t.items.indexOf(e):-1},notifySelected:()=>{},getMenuItemCount:()=>{const e=this.listElement;return e?e.items.length:0},focusItemAtIndex:e=>{const t=this.listElement;if(!t)return;const i=t.items[e];i&&i.focus()},focusListRoot:()=>{this.listElement&&this.listElement.focus()},getSelectedSiblingOfItemAtIndex:e=>{const t=this.listElement;if(!t)return-1;const i=t.items[e];if(!i||!i.group)return-1;for(let a=0;a<t.items.length;a++){if(a===e)continue;const o=t.items[a];if(o.selected&&o.group===i.group)return a}return-1},isSelectableItemAtIndex:e=>{const t=this.listElement;if(!t)return!1;const i=t.items[e];return!!i&&i.hasAttribute("group")}}}onKeydown(e){this.mdcFoundation&&this.mdcFoundation.handleKeydown(e)}onAction(e){const t=this.listElement;if(this.mdcFoundation&&t){const i=e.detail.index,a=t.items[i];a&&this.mdcFoundation.handleItemAction(a)}}onOpened(){this.open=!0,this.mdcFoundation&&this.mdcFoundation.handleMenuSurfaceOpened()}onClosed(){this.open=!1}async getUpdateComplete(){await this._listUpdateComplete;return await super.getUpdateComplete()}async firstUpdated(){super.firstUpdated();const e=this.listElement;e&&(this._listUpdateComplete=e.updateComplete,await this._listUpdateComplete)}select(e){const t=this.listElement;t&&t.select(e)}close(){this.open=!1}show(){this.open=!0}getFocusedItemIndex(){const e=this.listElement;return e?e.getFocusedItemIndex():-1}focusItemAtIndex(e){const t=this.listElement;t&&t.focusItemAtIndex(e)}layout(e=!0){const t=this.listElement;t&&t.layout(e)}}a([ce(".mdc-menu")],dn.prototype,"mdcRoot",void 0),a([ce("slot")],dn.prototype,"slotElement",void 0),a([re({type:Object})],dn.prototype,"anchor",void 0),a([re({type:Boolean,reflect:!0})],dn.prototype,"open",void 0),a([re({type:Boolean})],dn.prototype,"quick",void 0),a([re({type:Boolean})],dn.prototype,"wrapFocus",void 0),a([re({type:String})],dn.prototype,"innerRole",void 0),a([re({type:String})],dn.prototype,"innerAriaLabel",void 0),a([re({type:String})],dn.prototype,"corner",void 0),a([re({type:Number})],dn.prototype,"x",void 0),a([re({type:Number})],dn.prototype,"y",void 0),a([re({type:Boolean})],dn.prototype,"absolute",void 0),a([re({type:Boolean})],dn.prototype,"multi",void 0),a([re({type:Boolean})],dn.prototype,"activatable",void 0),a([re({type:Boolean})],dn.prototype,"fixed",void 0),a([re({type:Boolean})],dn.prototype,"forceGroupSelection",void 0),a([re({type:Boolean})],dn.prototype,"fullwidth",void 0),a([re({type:String})],dn.prototype,"menuCorner",void 0),a([re({type:Boolean})],dn.prototype,"stayOpenOnBodyClick",void 0),a([re({type:String}),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setDefaultFocusState(en[e])}))],dn.prototype,"defaultFocus",void 0);
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const sn=Na(class extends Pa{constructor(e){var t;if(super(e),e.type!==La||"style"!==e.name||(null===(t=e.strings)||void 0===t?void 0:t.length)>2)throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.")}render(e){return Object.keys(e).reduce(((t,i)=>{const a=e[i];return null==a?t:t+`${i=i.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g,"-$&").toLowerCase()}:${a};`}),"")}update(e,[t]){const{style:i}=e.element;if(void 0===this.ct){this.ct=new Set;for(const e in t)this.ct.add(e);return this.render(t)}this.ct.forEach((e=>{null==t[e]&&(this.ct.delete(e),e.includes("-")?i.removeProperty(e):i[e]="")}));for(const e in t){const a=t[e];null!=a&&(this.ct.add(e),e.includes("-")?i.setProperty(e,a):i[e]=a)}return P}}),cn={TOP_LEFT:Mo.TOP_LEFT,TOP_RIGHT:Mo.TOP_RIGHT,BOTTOM_LEFT:Mo.BOTTOM_LEFT,BOTTOM_RIGHT:Mo.BOTTOM_RIGHT,TOP_START:Mo.TOP_START,TOP_END:Mo.TOP_END,BOTTOM_START:Mo.BOTTOM_START,BOTTOM_END:Mo.BOTTOM_END};
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */class mn extends Ca{constructor(){super(...arguments),this.mdcFoundationClass=rn,this.absolute=!1,this.fullwidth=!1,this.fixed=!1,this.x=null,this.y=null,this.quick=!1,this.open=!1,this.stayOpenOnBodyClick=!1,this.bitwiseCorner=Mo.TOP_START,this.previousMenuCorner=null,this.menuCorner="START",this.corner="TOP_START",this.styleTop="",this.styleLeft="",this.styleRight="",this.styleBottom="",this.styleMaxHeight="",this.styleTransformOrigin="",this.anchor=null,this.previouslyFocused=null,this.previousAnchor=null,this.onBodyClickBound=()=>{}}render(){const e={"mdc-menu-surface--fixed":this.fixed,"mdc-menu-surface--fullwidth":this.fullwidth},t={top:this.styleTop,left:this.styleLeft,right:this.styleRight,bottom:this.styleBottom,"max-height":this.styleMaxHeight,"transform-origin":this.styleTransformOrigin};return N`
-      <div
-          class="mdc-menu-surface ${Da(e)}"
-          style="${sn(t)}"
-          @keydown=${this.onKeydown}
-          @opened=${this.registerBodyClick}
-          @closed=${this.deregisterBodyClick}>
-        <slot></slot>
-      </div>`}createAdapter(){return Object.assign(Object.assign({},Ea(this.mdcRoot)),{hasAnchor:()=>!!this.anchor,notifyClose:()=>{const e=new CustomEvent("closed",{bubbles:!0,composed:!0});this.open=!1,this.mdcRoot.dispatchEvent(e)},notifyClosing:()=>{const e=new CustomEvent("closing",{bubbles:!0,composed:!0});this.mdcRoot.dispatchEvent(e)},notifyOpen:()=>{const e=new CustomEvent("opened",{bubbles:!0,composed:!0});this.open=!0,this.mdcRoot.dispatchEvent(e)},isElementInContainer:()=>!1,isRtl:()=>!!this.mdcRoot&&"rtl"===getComputedStyle(this.mdcRoot).direction,setTransformOrigin:e=>{this.mdcRoot&&(this.styleTransformOrigin=e)},isFocused:()=>Ta(this),saveFocus:()=>{const e=ka(),t=e.length;t||(this.previouslyFocused=null),this.previouslyFocused=e[t-1]},restoreFocus:()=>{this.previouslyFocused&&"focus"in this.previouslyFocused&&this.previouslyFocused.focus()},getInnerDimensions:()=>{const e=this.mdcRoot;return e?{width:e.offsetWidth,height:e.offsetHeight}:{width:0,height:0}},getAnchorDimensions:()=>{const e=this.anchor;return e?e.getBoundingClientRect():null},getBodyDimensions:()=>({width:document.body.clientWidth,height:document.body.clientHeight}),getWindowDimensions:()=>({width:window.innerWidth,height:window.innerHeight}),getWindowScroll:()=>({x:window.pageXOffset,y:window.pageYOffset}),setPosition:e=>{this.mdcRoot&&(this.styleLeft="left"in e?`${e.left}px`:"",this.styleRight="right"in e?`${e.right}px`:"",this.styleTop="top"in e?`${e.top}px`:"",this.styleBottom="bottom"in e?`${e.bottom}px`:"")},setMaxHeight:async e=>{this.mdcRoot&&(this.styleMaxHeight=e,await this.updateComplete,this.styleMaxHeight=`var(--mdc-menu-max-height, ${e})`)}})}onKeydown(e){this.mdcFoundation&&this.mdcFoundation.handleKeydown(e)}onBodyClick(e){if(this.stayOpenOnBodyClick)return;-1===e.composedPath().indexOf(this)&&this.close()}registerBodyClick(){this.onBodyClickBound=this.onBodyClick.bind(this),document.body.addEventListener("click",this.onBodyClickBound,{passive:!0,capture:!0})}deregisterBodyClick(){document.body.removeEventListener("click",this.onBodyClickBound,{capture:!0})}close(){this.open=!1}show(){this.open=!0}}a([ce(".mdc-menu-surface")],mn.prototype,"mdcRoot",void 0),a([ce("slot")],mn.prototype,"slotElement",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation&&!this.fixed&&this.mdcFoundation.setIsHoisted(e)}))],mn.prototype,"absolute",void 0),a([re({type:Boolean})],mn.prototype,"fullwidth",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation&&!this.absolute&&this.mdcFoundation.setFixedPosition(e)}))],mn.prototype,"fixed",void 0),a([re({type:Number}),Ma((function(e){this.mdcFoundation&&null!==this.y&&null!==e&&(this.mdcFoundation.setAbsolutePosition(e,this.y),this.mdcFoundation.setAnchorMargin({left:e,top:this.y,right:-e,bottom:this.y}))}))],mn.prototype,"x",void 0),a([re({type:Number}),Ma((function(e){this.mdcFoundation&&null!==this.x&&null!==e&&(this.mdcFoundation.setAbsolutePosition(this.x,e),this.mdcFoundation.setAnchorMargin({left:this.x,top:e,right:-this.x,bottom:e}))}))],mn.prototype,"y",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setQuickOpen(e)}))],mn.prototype,"quick",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e,t){this.mdcFoundation&&(e?this.mdcFoundation.open():void 0!==t&&this.mdcFoundation.close())}))],mn.prototype,"open",void 0),a([re({type:Boolean})],mn.prototype,"stayOpenOnBodyClick",void 0),a([le(),Ma((function(e){this.mdcFoundation&&this.mdcFoundation.setAnchorCorner(e)}))],mn.prototype,"bitwiseCorner",void 0),a([re({type:String}),Ma((function(e){if(this.mdcFoundation){const t="START"===e||"END"===e,i=null===this.previousMenuCorner,a=!i&&e!==this.previousMenuCorner;t&&(a||i&&"END"===e)&&(this.bitwiseCorner=this.bitwiseCorner^zo.RIGHT,this.mdcFoundation.flipCornerHorizontally(),this.previousMenuCorner=e)}}))],mn.prototype,"menuCorner",void 0),a([re({type:String}),Ma((function(e){if(this.mdcFoundation&&e){let t=cn[e];"END"===this.menuCorner&&(t^=zo.RIGHT),this.bitwiseCorner=t}}))],mn.prototype,"corner",void 0),a([le()],mn.prototype,"styleTop",void 0),a([le()],mn.prototype,"styleLeft",void 0),a([le()],mn.prototype,"styleRight",void 0),a([le()],mn.prototype,"styleBottom",void 0),a([le()],mn.prototype,"styleMaxHeight",void 0),a([le()],mn.prototype,"styleTransformOrigin",void 0);
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var hn={BG_FOCUSED:"mdc-ripple-upgraded--background-focused",FG_ACTIVATION:"mdc-ripple-upgraded--foreground-activation",FG_DEACTIVATION:"mdc-ripple-upgraded--foreground-deactivation",ROOT:"mdc-ripple-upgraded",UNBOUNDED:"mdc-ripple-upgraded--unbounded"},pn={VAR_FG_SCALE:"--mdc-ripple-fg-scale",VAR_FG_SIZE:"--mdc-ripple-fg-size",VAR_FG_TRANSLATE_END:"--mdc-ripple-fg-translate-end",VAR_FG_TRANSLATE_START:"--mdc-ripple-fg-translate-start",VAR_LEFT:"--mdc-ripple-left",VAR_TOP:"--mdc-ripple-top"},un={DEACTIVATION_TIMEOUT_MS:225,FG_DEACTIVATION_MS:150,INITIAL_ORIGIN_SCALE:.6,PADDING:10,TAP_DELAY_MS:300};
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var fn=["touchstart","pointerdown","mousedown","keydown"],_n=["touchend","pointerup","mouseup","contextmenu"],gn=[],bn=function(e){function a(t){var o=e.call(this,i(i({},a.defaultAdapter),t))||this;return o.activationAnimationHasEnded=!1,o.activationTimer=0,o.fgDeactivationRemovalTimer=0,o.fgScale="0",o.frame={width:0,height:0},o.initialSize=0,o.layoutFrame=0,o.maxRadius=0,o.unboundedCoords={left:0,top:0},o.activationState=o.defaultActivationState(),o.activationTimerCallback=function(){o.activationAnimationHasEnded=!0,o.runDeactivationUXLogicIfReady()},o.activateHandler=function(e){o.activateImpl(e)},o.deactivateHandler=function(){o.deactivateImpl()},o.focusHandler=function(){o.handleFocus()},o.blurHandler=function(){o.handleBlur()},o.resizeHandler=function(){o.layout()},o}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return hn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return pn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return un},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},browserSupportsCssVars:function(){return!0},computeBoundingRect:function(){return{top:0,right:0,bottom:0,left:0,width:0,height:0}},containsEventTarget:function(){return!0},deregisterDocumentInteractionHandler:function(){},deregisterInteractionHandler:function(){},deregisterResizeHandler:function(){},getWindowPageOffset:function(){return{x:0,y:0}},isSurfaceActive:function(){return!0},isSurfaceDisabled:function(){return!0},isUnbounded:function(){return!0},registerDocumentInteractionHandler:function(){},registerInteractionHandler:function(){},registerResizeHandler:function(){},removeClass:function(){},updateCssVariable:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){var e=this,t=this.supportsPressRipple();if(this.registerRootHandlers(t),t){var i=a.cssClasses,o=i.ROOT,n=i.UNBOUNDED;requestAnimationFrame((function(){e.adapter.addClass(o),e.adapter.isUnbounded()&&(e.adapter.addClass(n),e.layoutInternal())}))}},a.prototype.destroy=function(){var e=this;if(this.supportsPressRipple()){this.activationTimer&&(clearTimeout(this.activationTimer),this.activationTimer=0,this.adapter.removeClass(a.cssClasses.FG_ACTIVATION)),this.fgDeactivationRemovalTimer&&(clearTimeout(this.fgDeactivationRemovalTimer),this.fgDeactivationRemovalTimer=0,this.adapter.removeClass(a.cssClasses.FG_DEACTIVATION));var t=a.cssClasses,i=t.ROOT,o=t.UNBOUNDED;requestAnimationFrame((function(){e.adapter.removeClass(i),e.adapter.removeClass(o),e.removeCssVars()}))}this.deregisterRootHandlers(),this.deregisterDeactivationHandlers()},a.prototype.activate=function(e){this.activateImpl(e)},a.prototype.deactivate=function(){this.deactivateImpl()},a.prototype.layout=function(){var e=this;this.layoutFrame&&cancelAnimationFrame(this.layoutFrame),this.layoutFrame=requestAnimationFrame((function(){e.layoutInternal(),e.layoutFrame=0}))},a.prototype.setUnbounded=function(e){var t=a.cssClasses.UNBOUNDED;e?this.adapter.addClass(t):this.adapter.removeClass(t)},a.prototype.handleFocus=function(){var e=this;requestAnimationFrame((function(){return e.adapter.addClass(a.cssClasses.BG_FOCUSED)}))},a.prototype.handleBlur=function(){var e=this;requestAnimationFrame((function(){return e.adapter.removeClass(a.cssClasses.BG_FOCUSED)}))},a.prototype.supportsPressRipple=function(){return this.adapter.browserSupportsCssVars()},a.prototype.defaultActivationState=function(){return{activationEvent:void 0,hasDeactivationUXRun:!1,isActivated:!1,isProgrammatic:!1,wasActivatedByPointer:!1,wasElementMadeActive:!1}},a.prototype.registerRootHandlers=function(e){var t,i;if(e){try{for(var a=o(fn),n=a.next();!n.done;n=a.next()){var r=n.value;this.adapter.registerInteractionHandler(r,this.activateHandler)}}catch(e){t={error:e}}finally{try{n&&!n.done&&(i=a.return)&&i.call(a)}finally{if(t)throw t.error}}this.adapter.isUnbounded()&&this.adapter.registerResizeHandler(this.resizeHandler)}this.adapter.registerInteractionHandler("focus",this.focusHandler),this.adapter.registerInteractionHandler("blur",this.blurHandler)},a.prototype.registerDeactivationHandlers=function(e){var t,i;if("keydown"===e.type)this.adapter.registerInteractionHandler("keyup",this.deactivateHandler);else try{for(var a=o(_n),n=a.next();!n.done;n=a.next()){var r=n.value;this.adapter.registerDocumentInteractionHandler(r,this.deactivateHandler)}}catch(e){t={error:e}}finally{try{n&&!n.done&&(i=a.return)&&i.call(a)}finally{if(t)throw t.error}}},a.prototype.deregisterRootHandlers=function(){var e,t;try{for(var i=o(fn),a=i.next();!a.done;a=i.next()){var n=a.value;this.adapter.deregisterInteractionHandler(n,this.activateHandler)}}catch(t){e={error:t}}finally{try{a&&!a.done&&(t=i.return)&&t.call(i)}finally{if(e)throw e.error}}this.adapter.deregisterInteractionHandler("focus",this.focusHandler),this.adapter.deregisterInteractionHandler("blur",this.blurHandler),this.adapter.isUnbounded()&&this.adapter.deregisterResizeHandler(this.resizeHandler)},a.prototype.deregisterDeactivationHandlers=function(){var e,t;this.adapter.deregisterInteractionHandler("keyup",this.deactivateHandler);try{for(var i=o(_n),a=i.next();!a.done;a=i.next()){var n=a.value;this.adapter.deregisterDocumentInteractionHandler(n,this.deactivateHandler)}}catch(t){e={error:t}}finally{try{a&&!a.done&&(t=i.return)&&t.call(i)}finally{if(e)throw e.error}}},a.prototype.removeCssVars=function(){var e=this,t=a.strings;Object.keys(t).forEach((function(i){0===i.indexOf("VAR_")&&e.adapter.updateCssVariable(t[i],null)}))},a.prototype.activateImpl=function(e){var t=this;if(!this.adapter.isSurfaceDisabled()){var i=this.activationState;if(!i.isActivated){var a=this.previousActivationEvent;if(!(a&&void 0!==e&&a.type!==e.type))i.isActivated=!0,i.isProgrammatic=void 0===e,i.activationEvent=e,i.wasActivatedByPointer=!i.isProgrammatic&&(void 0!==e&&("mousedown"===e.type||"touchstart"===e.type||"pointerdown"===e.type)),void 0!==e&&gn.length>0&&gn.some((function(e){return t.adapter.containsEventTarget(e)}))?this.resetActivationState():(void 0!==e&&(gn.push(e.target),this.registerDeactivationHandlers(e)),i.wasElementMadeActive=this.checkElementMadeActive(e),i.wasElementMadeActive&&this.animateActivation(),requestAnimationFrame((function(){gn=[],i.wasElementMadeActive||void 0===e||" "!==e.key&&32!==e.keyCode||(i.wasElementMadeActive=t.checkElementMadeActive(e),i.wasElementMadeActive&&t.animateActivation()),i.wasElementMadeActive||(t.activationState=t.defaultActivationState())})))}}},a.prototype.checkElementMadeActive=function(e){return void 0===e||"keydown"!==e.type||this.adapter.isSurfaceActive()},a.prototype.animateActivation=function(){var e=this,t=a.strings,i=t.VAR_FG_TRANSLATE_START,o=t.VAR_FG_TRANSLATE_END,n=a.cssClasses,r=n.FG_DEACTIVATION,l=n.FG_ACTIVATION,d=a.numbers.DEACTIVATION_TIMEOUT_MS;this.layoutInternal();var s="",c="";if(!this.adapter.isUnbounded()){var m=this.getFgTranslationCoordinates(),h=m.startPoint,p=m.endPoint;s=h.x+"px, "+h.y+"px",c=p.x+"px, "+p.y+"px"}this.adapter.updateCssVariable(i,s),this.adapter.updateCssVariable(o,c),clearTimeout(this.activationTimer),clearTimeout(this.fgDeactivationRemovalTimer),this.rmBoundedActivationClasses(),this.adapter.removeClass(r),this.adapter.computeBoundingRect(),this.adapter.addClass(l),this.activationTimer=setTimeout((function(){e.activationTimerCallback()}),d)},a.prototype.getFgTranslationCoordinates=function(){var e,t=this.activationState,i=t.activationEvent;return e=t.wasActivatedByPointer?function(e,t,i){if(!e)return{x:0,y:0};var a,o,n=t.x,r=t.y,l=n+i.left,d=r+i.top;if("touchstart"===e.type){var s=e;a=s.changedTouches[0].pageX-l,o=s.changedTouches[0].pageY-d}else{var c=e;a=c.pageX-l,o=c.pageY-d}return{x:a,y:o}}(i,this.adapter.getWindowPageOffset(),this.adapter.computeBoundingRect()):{x:this.frame.width/2,y:this.frame.height/2},{startPoint:e={x:e.x-this.initialSize/2,y:e.y-this.initialSize/2},endPoint:{x:this.frame.width/2-this.initialSize/2,y:this.frame.height/2-this.initialSize/2}}},a.prototype.runDeactivationUXLogicIfReady=function(){var e=this,t=a.cssClasses.FG_DEACTIVATION,i=this.activationState,o=i.hasDeactivationUXRun,n=i.isActivated;(o||!n)&&this.activationAnimationHasEnded&&(this.rmBoundedActivationClasses(),this.adapter.addClass(t),this.fgDeactivationRemovalTimer=setTimeout((function(){e.adapter.removeClass(t)}),un.FG_DEACTIVATION_MS))},a.prototype.rmBoundedActivationClasses=function(){var e=a.cssClasses.FG_ACTIVATION;this.adapter.removeClass(e),this.activationAnimationHasEnded=!1,this.adapter.computeBoundingRect()},a.prototype.resetActivationState=function(){var e=this;this.previousActivationEvent=this.activationState.activationEvent,this.activationState=this.defaultActivationState(),setTimeout((function(){return e.previousActivationEvent=void 0}),a.numbers.TAP_DELAY_MS)},a.prototype.deactivateImpl=function(){var e=this,t=this.activationState;if(t.isActivated){var a=i({},t);t.isProgrammatic?(requestAnimationFrame((function(){e.animateDeactivation(a)})),this.resetActivationState()):(this.deregisterDeactivationHandlers(),requestAnimationFrame((function(){e.activationState.hasDeactivationUXRun=!0,e.animateDeactivation(a),e.resetActivationState()})))}},a.prototype.animateDeactivation=function(e){var t=e.wasActivatedByPointer,i=e.wasElementMadeActive;(t||i)&&this.runDeactivationUXLogicIfReady()},a.prototype.layoutInternal=function(){var e=this;this.frame=this.adapter.computeBoundingRect();var t=Math.max(this.frame.height,this.frame.width);this.maxRadius=this.adapter.isUnbounded()?t:Math.sqrt(Math.pow(e.frame.width,2)+Math.pow(e.frame.height,2))+a.numbers.PADDING;var i=Math.floor(t*a.numbers.INITIAL_ORIGIN_SCALE);this.adapter.isUnbounded()&&i%2!=0?this.initialSize=i-1:this.initialSize=i,this.fgScale=""+this.maxRadius/this.initialSize,this.updateLayoutCssVars()},a.prototype.updateLayoutCssVars=function(){var e=a.strings,t=e.VAR_FG_SIZE,i=e.VAR_LEFT,o=e.VAR_TOP,n=e.VAR_FG_SCALE;this.adapter.updateCssVariable(t,this.initialSize+"px"),this.adapter.updateCssVariable(n,this.fgScale),this.adapter.isUnbounded()&&(this.unboundedCoords={left:Math.round(this.frame.width/2-this.initialSize/2),top:Math.round(this.frame.height/2-this.initialSize/2)},this.adapter.updateCssVariable(i,this.unboundedCoords.left+"px"),this.adapter.updateCssVariable(o,this.unboundedCoords.top+"px"))},a}(ba),vn=bn;
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class yn extends Ca{constructor(){super(...arguments),this.primary=!1,this.accent=!1,this.unbounded=!1,this.disabled=!1,this.activated=!1,this.selected=!1,this.internalUseStateLayerCustomProperties=!1,this.hovering=!1,this.bgFocused=!1,this.fgActivation=!1,this.fgDeactivation=!1,this.fgScale="",this.fgSize="",this.translateStart="",this.translateEnd="",this.leftPos="",this.topPos="",this.mdcFoundationClass=vn}get isActive(){return e=this.parentElement||this,t=":active",(e.matches||e.webkitMatchesSelector||e.msMatchesSelector).call(e,t);
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var e,t}createAdapter(){return{browserSupportsCssVars:()=>!0,isUnbounded:()=>this.unbounded,isSurfaceActive:()=>this.isActive,isSurfaceDisabled:()=>this.disabled,addClass:e=>{switch(e){case"mdc-ripple-upgraded--background-focused":this.bgFocused=!0;break;case"mdc-ripple-upgraded--foreground-activation":this.fgActivation=!0;break;case"mdc-ripple-upgraded--foreground-deactivation":this.fgDeactivation=!0}},removeClass:e=>{switch(e){case"mdc-ripple-upgraded--background-focused":this.bgFocused=!1;break;case"mdc-ripple-upgraded--foreground-activation":this.fgActivation=!1;break;case"mdc-ripple-upgraded--foreground-deactivation":this.fgDeactivation=!1}},containsEventTarget:()=>!0,registerInteractionHandler:()=>{},deregisterInteractionHandler:()=>{},registerDocumentInteractionHandler:()=>{},deregisterDocumentInteractionHandler:()=>{},registerResizeHandler:()=>{},deregisterResizeHandler:()=>{},updateCssVariable:(e,t)=>{switch(e){case"--mdc-ripple-fg-scale":this.fgScale=t;break;case"--mdc-ripple-fg-size":this.fgSize=t;break;case"--mdc-ripple-fg-translate-end":this.translateEnd=t;break;case"--mdc-ripple-fg-translate-start":this.translateStart=t;break;case"--mdc-ripple-left":this.leftPos=t;break;case"--mdc-ripple-top":this.topPos=t}},computeBoundingRect:()=>(this.parentElement||this).getBoundingClientRect(),getWindowPageOffset:()=>({x:window.pageXOffset,y:window.pageYOffset})}}startPress(e){this.waitForFoundation((()=>{this.mdcFoundation.activate(e)}))}endPress(){this.waitForFoundation((()=>{this.mdcFoundation.deactivate()}))}startFocus(){this.waitForFoundation((()=>{this.mdcFoundation.handleFocus()}))}endFocus(){this.waitForFoundation((()=>{this.mdcFoundation.handleBlur()}))}startHover(){this.hovering=!0}endHover(){this.hovering=!1}waitForFoundation(e){this.mdcFoundation?e():this.updateComplete.then(e)}update(e){e.has("disabled")&&this.disabled&&this.endHover(),super.update(e)}render(){const e=this.activated&&(this.primary||!this.accent),t=this.selected&&(this.primary||!this.accent),i={"mdc-ripple-surface--accent":this.accent,"mdc-ripple-surface--primary--activated":e,"mdc-ripple-surface--accent--activated":this.accent&&this.activated,"mdc-ripple-surface--primary--selected":t,"mdc-ripple-surface--accent--selected":this.accent&&this.selected,"mdc-ripple-surface--disabled":this.disabled,"mdc-ripple-surface--hover":this.hovering,"mdc-ripple-surface--primary":this.primary,"mdc-ripple-surface--selected":this.selected,"mdc-ripple-upgraded--background-focused":this.bgFocused,"mdc-ripple-upgraded--foreground-activation":this.fgActivation,"mdc-ripple-upgraded--foreground-deactivation":this.fgDeactivation,"mdc-ripple-upgraded--unbounded":this.unbounded,"mdc-ripple-surface--internal-use-state-layer-custom-properties":this.internalUseStateLayerCustomProperties};return N`
-        <div class="mdc-ripple-surface mdc-ripple-upgraded ${Da(i)}"
-          style="${sn({"--mdc-ripple-fg-scale":this.fgScale,"--mdc-ripple-fg-size":this.fgSize,"--mdc-ripple-fg-translate-end":this.translateEnd,"--mdc-ripple-fg-translate-start":this.translateStart,"--mdc-ripple-left":this.leftPos,"--mdc-ripple-top":this.topPos})}"></div>`}}a([ce(".mdc-ripple-surface")],yn.prototype,"mdcRoot",void 0),a([re({type:Boolean})],yn.prototype,"primary",void 0),a([re({type:Boolean})],yn.prototype,"accent",void 0),a([re({type:Boolean})],yn.prototype,"unbounded",void 0),a([re({type:Boolean})],yn.prototype,"disabled",void 0),a([re({type:Boolean})],yn.prototype,"activated",void 0),a([re({type:Boolean})],yn.prototype,"selected",void 0),a([re({type:Boolean})],yn.prototype,"internalUseStateLayerCustomProperties",void 0),a([le()],yn.prototype,"hovering",void 0),a([le()],yn.prototype,"bgFocused",void 0),a([le()],yn.prototype,"fgActivation",void 0),a([le()],yn.prototype,"fgDeactivation",void 0),a([le()],yn.prototype,"fgScale",void 0),a([le()],yn.prototype,"fgSize",void 0),a([le()],yn.prototype,"translateStart",void 0),a([le()],yn.prototype,"translateEnd",void 0),a([le()],yn.prototype,"leftPos",void 0),a([le()],yn.prototype,"topPos",void 0);
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var xn={NOTCH_ELEMENT_SELECTOR:".mdc-notched-outline__notch"},wn={NOTCH_ELEMENT_PADDING:8},En={NO_LABEL:"mdc-notched-outline--no-label",OUTLINE_NOTCHED:"mdc-notched-outline--notched",OUTLINE_UPGRADED:"mdc-notched-outline--upgraded"},In=function(e){function a(t){return e.call(this,i(i({},a.defaultAdapter),t))||this}return t(a,e),Object.defineProperty(a,"strings",{get:function(){return xn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"cssClasses",{get:function(){return En},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return wn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},setNotchWidthProperty:function(){},removeNotchWidthProperty:function(){}}},enumerable:!1,configurable:!0}),a.prototype.notch=function(e){var t=a.cssClasses.OUTLINE_NOTCHED;e>0&&(e+=wn.NOTCH_ELEMENT_PADDING),this.adapter.setNotchWidthProperty(e),this.adapter.addClass(t)},a.prototype.closeNotch=function(){var e=a.cssClasses.OUTLINE_NOTCHED;this.adapter.removeClass(e),this.adapter.removeNotchWidthProperty()},a}(ba);
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class An extends Ca{constructor(){super(...arguments),this.mdcFoundationClass=In,this.width=0,this.open=!1,this.lastOpen=this.open}createAdapter(){return{addClass:e=>this.mdcRoot.classList.add(e),removeClass:e=>this.mdcRoot.classList.remove(e),setNotchWidthProperty:e=>this.notchElement.style.setProperty("width",`${e}px`),removeNotchWidthProperty:()=>this.notchElement.style.removeProperty("width")}}openOrClose(e,t){this.mdcFoundation&&(e&&void 0!==t?this.mdcFoundation.notch(t):this.mdcFoundation.closeNotch())}render(){this.openOrClose(this.open,this.width);const e=Da({"mdc-notched-outline--notched":this.open});return N`
-      <span class="mdc-notched-outline ${e}">
-        <span class="mdc-notched-outline__leading"></span>
-        <span class="mdc-notched-outline__notch">
-          <slot></slot>
-        </span>
-        <span class="mdc-notched-outline__trailing"></span>
-      </span>`}}a([ce(".mdc-notched-outline")],An.prototype,"mdcRoot",void 0),a([re({type:Number})],An.prototype,"width",void 0),a([re({type:Boolean,reflect:!0})],An.prototype,"open",void 0),a([ce(".mdc-notched-outline__notch")],An.prototype,"notchElement",void 0);
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const kn=s`.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);position:absolute;left:0;-webkit-transform-origin:left top;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform;transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}[dir=rtl] .mdc-floating-label,.mdc-floating-label[dir=rtl]{right:0;left:auto;-webkit-transform-origin:right top;transform-origin:right top;text-align:right}.mdc-floating-label--float-above{cursor:auto}.mdc-floating-label--required::after{margin-left:1px;margin-right:0px;content:"*"}[dir=rtl] .mdc-floating-label--required::after,.mdc-floating-label--required[dir=rtl]::after{margin-left:0;margin-right:1px}.mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-standard 250ms 1}@keyframes mdc-floating-label-shake-float-above-standard{0%{transform:translateX(calc(0 - 0%)) translateY(-106%) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-106%) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-106%) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-106%) scale(0.75)}}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{border-bottom-width:1px;z-index:1}.mdc-line-ripple::after{transform:scaleX(0);border-bottom-width:2px;opacity:0;z-index:2}.mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline,.mdc-notched-outline[dir=rtl]{text-align:right}.mdc-notched-outline__leading,.mdc-notched-outline__notch,.mdc-notched-outline__trailing{box-sizing:border-box;height:100%;border-top:1px solid;border-bottom:1px solid;pointer-events:none}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;width:12px}[dir=rtl] .mdc-notched-outline__leading,.mdc-notched-outline__leading[dir=rtl]{border-left:none;border-right:1px solid}.mdc-notched-outline__trailing{border-left:none;border-right:1px solid;flex-grow:1}[dir=rtl] .mdc-notched-outline__trailing,.mdc-notched-outline__trailing[dir=rtl]{border-left:1px solid;border-right:none}.mdc-notched-outline__notch{flex:0 0 auto;width:auto;max-width:calc(100% - 12px * 2)}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(100% / 0.75)}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch,.mdc-notched-outline--notched .mdc-notched-outline__notch[dir=rtl]{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}.mdc-select{display:inline-flex;position:relative}.mdc-select:not(.mdc-select--disabled) .mdc-select__selected-text{color:rgba(0, 0, 0, 0.87)}.mdc-select.mdc-select--disabled .mdc-select__selected-text{color:rgba(0, 0, 0, 0.38)}.mdc-select:not(.mdc-select--disabled) .mdc-floating-label{color:rgba(0, 0, 0, 0.6)}.mdc-select:not(.mdc-select--disabled).mdc-select--focused .mdc-floating-label{color:rgba(98, 0, 238, 0.87)}.mdc-select.mdc-select--disabled .mdc-floating-label{color:rgba(0, 0, 0, 0.38)}.mdc-select:not(.mdc-select--disabled) .mdc-select__dropdown-icon{fill:rgba(0, 0, 0, 0.54)}.mdc-select:not(.mdc-select--disabled).mdc-select--focused .mdc-select__dropdown-icon{fill:#6200ee;fill:var(--mdc-theme-primary, #6200ee)}.mdc-select.mdc-select--disabled .mdc-select__dropdown-icon{fill:rgba(0, 0, 0, 0.38)}.mdc-select:not(.mdc-select--disabled)+.mdc-select-helper-text{color:rgba(0, 0, 0, 0.6)}.mdc-select.mdc-select--disabled+.mdc-select-helper-text{color:rgba(0, 0, 0, 0.38)}.mdc-select:not(.mdc-select--disabled) .mdc-select__icon{color:rgba(0, 0, 0, 0.54)}.mdc-select.mdc-select--disabled .mdc-select__icon{color:rgba(0, 0, 0, 0.38)}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-select.mdc-select--disabled .mdc-select__selected-text{color:GrayText}.mdc-select.mdc-select--disabled .mdc-select__dropdown-icon{fill:red}.mdc-select.mdc-select--disabled .mdc-floating-label{color:GrayText}.mdc-select.mdc-select--disabled .mdc-line-ripple::before{border-bottom-color:GrayText}.mdc-select.mdc-select--disabled .mdc-notched-outline__leading,.mdc-select.mdc-select--disabled .mdc-notched-outline__notch,.mdc-select.mdc-select--disabled .mdc-notched-outline__trailing{border-color:GrayText}.mdc-select.mdc-select--disabled .mdc-select__icon{color:GrayText}.mdc-select.mdc-select--disabled+.mdc-select-helper-text{color:GrayText}}.mdc-select .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-select .mdc-select__anchor{padding-left:16px;padding-right:0}[dir=rtl] .mdc-select .mdc-select__anchor,.mdc-select .mdc-select__anchor[dir=rtl]{padding-left:0;padding-right:16px}.mdc-select.mdc-select--with-leading-icon .mdc-select__anchor{padding-left:0;padding-right:0}[dir=rtl] .mdc-select.mdc-select--with-leading-icon .mdc-select__anchor,.mdc-select.mdc-select--with-leading-icon .mdc-select__anchor[dir=rtl]{padding-left:0;padding-right:0}.mdc-select .mdc-select__icon{width:24px;height:24px;font-size:24px}.mdc-select .mdc-select__dropdown-icon{width:24px;height:24px}.mdc-select .mdc-select__menu .mdc-deprecated-list-item{padding-left:16px;padding-right:16px}[dir=rtl] .mdc-select .mdc-select__menu .mdc-deprecated-list-item,.mdc-select .mdc-select__menu .mdc-deprecated-list-item[dir=rtl]{padding-left:16px;padding-right:16px}.mdc-select .mdc-select__menu .mdc-deprecated-list-item__graphic{margin-left:0;margin-right:12px}[dir=rtl] .mdc-select .mdc-select__menu .mdc-deprecated-list-item__graphic,.mdc-select .mdc-select__menu .mdc-deprecated-list-item__graphic[dir=rtl]{margin-left:12px;margin-right:0}.mdc-select__dropdown-icon{margin-left:12px;margin-right:12px;display:inline-flex;position:relative;align-self:center;align-items:center;justify-content:center;flex-shrink:0;pointer-events:none}.mdc-select__dropdown-icon .mdc-select__dropdown-icon-active,.mdc-select__dropdown-icon .mdc-select__dropdown-icon-inactive{position:absolute;top:0;left:0}.mdc-select__dropdown-icon .mdc-select__dropdown-icon-graphic{width:41.6666666667%;height:20.8333333333%}.mdc-select__dropdown-icon .mdc-select__dropdown-icon-inactive{opacity:1;transition:opacity 75ms linear 75ms}.mdc-select__dropdown-icon .mdc-select__dropdown-icon-active{opacity:0;transition:opacity 75ms linear}[dir=rtl] .mdc-select__dropdown-icon,.mdc-select__dropdown-icon[dir=rtl]{margin-left:12px;margin-right:12px}.mdc-select--activated .mdc-select__dropdown-icon .mdc-select__dropdown-icon-inactive{opacity:0;transition:opacity 49.5ms linear}.mdc-select--activated .mdc-select__dropdown-icon .mdc-select__dropdown-icon-active{opacity:1;transition:opacity 100.5ms linear 49.5ms}.mdc-select__anchor{width:200px;min-width:0;flex:1 1 auto;position:relative;box-sizing:border-box;overflow:hidden;outline:none;cursor:pointer}.mdc-select__anchor .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-select__selected-text-container{display:flex;appearance:none;pointer-events:none;box-sizing:border-box;width:auto;min-width:0;flex-grow:1;height:28px;border:none;outline:none;padding:0;background-color:transparent;color:inherit}.mdc-select__selected-text{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);line-height:1.75rem;line-height:var(--mdc-typography-subtitle1-line-height, 1.75rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block;width:100%;text-align:left}[dir=rtl] .mdc-select__selected-text,.mdc-select__selected-text[dir=rtl]{text-align:right}.mdc-select--invalid:not(.mdc-select--disabled) .mdc-floating-label{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-floating-label{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--invalid+.mdc-select-helper-text--validation-msg{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled) .mdc-select__dropdown-icon{fill:#b00020;fill:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-select__dropdown-icon{fill:#b00020;fill:var(--mdc-theme-error, #b00020)}.mdc-select--disabled{cursor:default;pointer-events:none}.mdc-select--with-leading-icon .mdc-select__menu .mdc-deprecated-list-item{padding-left:12px;padding-right:12px}[dir=rtl] .mdc-select--with-leading-icon .mdc-select__menu .mdc-deprecated-list-item,.mdc-select--with-leading-icon .mdc-select__menu .mdc-deprecated-list-item[dir=rtl]{padding-left:12px;padding-right:12px}.mdc-select__menu .mdc-deprecated-list .mdc-select__icon,.mdc-select__menu .mdc-list .mdc-select__icon{margin-left:0;margin-right:0}[dir=rtl] .mdc-select__menu .mdc-deprecated-list .mdc-select__icon,[dir=rtl] .mdc-select__menu .mdc-list .mdc-select__icon,.mdc-select__menu .mdc-deprecated-list .mdc-select__icon[dir=rtl],.mdc-select__menu .mdc-list .mdc-select__icon[dir=rtl]{margin-left:0;margin-right:0}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--activated,.mdc-select__menu .mdc-list .mdc-deprecated-list-item--selected,.mdc-select__menu .mdc-list .mdc-deprecated-list-item--activated{color:#000;color:var(--mdc-theme-on-surface, #000)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected .mdc-deprecated-list-item__graphic,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--activated .mdc-deprecated-list-item__graphic,.mdc-select__menu .mdc-list .mdc-deprecated-list-item--selected .mdc-deprecated-list-item__graphic,.mdc-select__menu .mdc-list .mdc-deprecated-list-item--activated .mdc-deprecated-list-item__graphic{color:#000;color:var(--mdc-theme-on-surface, #000)}.mdc-select__menu .mdc-list-item__start{display:inline-flex;align-items:center}.mdc-select__option{padding-left:16px;padding-right:16px}[dir=rtl] .mdc-select__option,.mdc-select__option[dir=rtl]{padding-left:16px;padding-right:16px}.mdc-select__one-line-option.mdc-list-item--with-one-line{height:48px}.mdc-select__two-line-option.mdc-list-item--with-two-lines{height:64px}.mdc-select__two-line-option.mdc-list-item--with-two-lines .mdc-list-item__start{margin-top:20px}.mdc-select__two-line-option.mdc-list-item--with-two-lines .mdc-list-item__primary-text{display:block;margin-top:0;line-height:normal;margin-bottom:-20px}.mdc-select__two-line-option.mdc-list-item--with-two-lines .mdc-list-item__primary-text::before{display:inline-block;width:0;height:28px;content:"";vertical-align:0}.mdc-select__two-line-option.mdc-list-item--with-two-lines .mdc-list-item__primary-text::after{display:inline-block;width:0;height:20px;content:"";vertical-align:-20px}.mdc-select__two-line-option.mdc-list-item--with-two-lines.mdc-list-item--with-trailing-meta .mdc-list-item__end{display:block;margin-top:0;line-height:normal}.mdc-select__two-line-option.mdc-list-item--with-two-lines.mdc-list-item--with-trailing-meta .mdc-list-item__end::before{display:inline-block;width:0;height:36px;content:"";vertical-align:0}.mdc-select__option-with-leading-content{padding-left:0;padding-right:12px}.mdc-select__option-with-leading-content.mdc-list-item{padding-left:0;padding-right:auto}[dir=rtl] .mdc-select__option-with-leading-content.mdc-list-item,.mdc-select__option-with-leading-content.mdc-list-item[dir=rtl]{padding-left:auto;padding-right:0}.mdc-select__option-with-leading-content .mdc-list-item__start{margin-left:12px;margin-right:0}[dir=rtl] .mdc-select__option-with-leading-content .mdc-list-item__start,.mdc-select__option-with-leading-content .mdc-list-item__start[dir=rtl]{margin-left:0;margin-right:12px}.mdc-select__option-with-leading-content .mdc-list-item__start{width:36px;height:24px}[dir=rtl] .mdc-select__option-with-leading-content,.mdc-select__option-with-leading-content[dir=rtl]{padding-left:12px;padding-right:0}.mdc-select__option-with-meta.mdc-list-item{padding-left:auto;padding-right:0}[dir=rtl] .mdc-select__option-with-meta.mdc-list-item,.mdc-select__option-with-meta.mdc-list-item[dir=rtl]{padding-left:0;padding-right:auto}.mdc-select__option-with-meta .mdc-list-item__end{margin-left:12px;margin-right:12px}[dir=rtl] .mdc-select__option-with-meta .mdc-list-item__end,.mdc-select__option-with-meta .mdc-list-item__end[dir=rtl]{margin-left:12px;margin-right:12px}.mdc-select--filled .mdc-select__anchor{height:56px;display:flex;align-items:baseline}.mdc-select--filled .mdc-select__anchor::before{display:inline-block;width:0;height:40px;content:"";vertical-align:0}.mdc-select--filled.mdc-select--no-label .mdc-select__anchor .mdc-select__selected-text::before{content:"​"}.mdc-select--filled.mdc-select--no-label .mdc-select__anchor .mdc-select__selected-text-container{height:100%;display:inline-flex;align-items:center}.mdc-select--filled.mdc-select--no-label .mdc-select__anchor::before{display:none}.mdc-select--filled .mdc-select__anchor{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:0;border-bottom-left-radius:0}.mdc-select--filled:not(.mdc-select--disabled) .mdc-select__anchor{background-color:whitesmoke}.mdc-select--filled.mdc-select--disabled .mdc-select__anchor{background-color:#fafafa}.mdc-select--filled:not(.mdc-select--disabled) .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.42)}.mdc-select--filled:not(.mdc-select--disabled):hover .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.87)}.mdc-select--filled:not(.mdc-select--disabled) .mdc-line-ripple::after{border-bottom-color:#6200ee;border-bottom-color:var(--mdc-theme-primary, #6200ee)}.mdc-select--filled.mdc-select--disabled .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.06)}.mdc-select--filled .mdc-floating-label{max-width:calc(100% - 64px)}.mdc-select--filled .mdc-floating-label--float-above{max-width:calc(100% / 0.75 - 64px / 0.75)}.mdc-select--filled .mdc-menu-surface--is-open-below{border-top-left-radius:0px;border-top-right-radius:0px}.mdc-select--filled.mdc-select--focused.mdc-line-ripple::after{transform:scale(1, 2);opacity:1}.mdc-select--filled .mdc-floating-label{left:16px;right:initial}[dir=rtl] .mdc-select--filled .mdc-floating-label,.mdc-select--filled .mdc-floating-label[dir=rtl]{left:initial;right:16px}.mdc-select--filled.mdc-select--with-leading-icon .mdc-floating-label{left:48px;right:initial}[dir=rtl] .mdc-select--filled.mdc-select--with-leading-icon .mdc-floating-label,.mdc-select--filled.mdc-select--with-leading-icon .mdc-floating-label[dir=rtl]{left:initial;right:48px}.mdc-select--filled.mdc-select--with-leading-icon .mdc-floating-label{max-width:calc(100% - 96px)}.mdc-select--filled.mdc-select--with-leading-icon .mdc-floating-label--float-above{max-width:calc(100% / 0.75 - 96px / 0.75)}.mdc-select--invalid:not(.mdc-select--disabled) .mdc-line-ripple::before{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled):hover .mdc-line-ripple::before{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-select--invalid:not(.mdc-select--disabled) .mdc-line-ripple::after{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-select--outlined{border:none}.mdc-select--outlined .mdc-select__anchor{height:56px}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1)}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--float-above{font-size:.75rem}.mdc-select--outlined .mdc-select__anchor.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined .mdc-select__anchor .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-select--outlined .mdc-select__anchor.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined .mdc-select__anchor .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-select-outlined-56px 250ms 1}@keyframes mdc-floating-label-shake-float-above-select-outlined-56px{0%{transform:translateX(calc(0 - 0%)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-34.75px) scale(0.75)}}.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__leading{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}[dir=rtl] .mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__leading[dir=rtl]{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}@supports(top: max(0%)){.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px, var(--mdc-shape-small, 4px))}}@supports(top: max(0%)){.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:calc(100% - max(12px, var(--mdc-shape-small, 4px)) * 2)}}.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__trailing{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}[dir=rtl] .mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__trailing,.mdc-select--outlined .mdc-notched-outline .mdc-notched-outline__trailing[dir=rtl]{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}@supports(top: max(0%)){.mdc-select--outlined .mdc-select__anchor{padding-left:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}[dir=rtl] .mdc-select--outlined .mdc-select__anchor,.mdc-select--outlined .mdc-select__anchor[dir=rtl]{padding-left:0}@supports(top: max(0%)){[dir=rtl] .mdc-select--outlined .mdc-select__anchor,.mdc-select--outlined .mdc-select__anchor[dir=rtl]{padding-right:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}@supports(top: max(0%)){.mdc-select--outlined+.mdc-select-helper-text{margin-left:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}[dir=rtl] .mdc-select--outlined+.mdc-select-helper-text,.mdc-select--outlined+.mdc-select-helper-text[dir=rtl]{margin-left:0}@supports(top: max(0%)){[dir=rtl] .mdc-select--outlined+.mdc-select-helper-text,.mdc-select--outlined+.mdc-select-helper-text[dir=rtl]{margin-right:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}.mdc-select--outlined:not(.mdc-select--disabled) .mdc-select__anchor{background-color:transparent}.mdc-select--outlined.mdc-select--disabled .mdc-select__anchor{background-color:transparent}.mdc-select--outlined:not(.mdc-select--disabled) .mdc-notched-outline__leading,.mdc-select--outlined:not(.mdc-select--disabled) .mdc-notched-outline__notch,.mdc-select--outlined:not(.mdc-select--disabled) .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.38)}.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.87)}.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__trailing{border-width:2px}.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__trailing{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-select--outlined.mdc-select--disabled .mdc-notched-outline__leading,.mdc-select--outlined.mdc-select--disabled .mdc-notched-outline__notch,.mdc-select--outlined.mdc-select--disabled .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.06)}.mdc-select--outlined .mdc-select__anchor :not(.mdc-notched-outline--notched) .mdc-notched-outline__notch{max-width:calc(100% - 60px)}.mdc-select--outlined .mdc-select__anchor{display:flex;align-items:baseline;overflow:visible}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-select-outlined 250ms 1}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1)}.mdc-select--outlined .mdc-select__anchor .mdc-floating-label--float-above{font-size:.75rem}.mdc-select--outlined .mdc-select__anchor.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined .mdc-select__anchor .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-select--outlined .mdc-select__anchor.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined .mdc-select__anchor .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-select--outlined .mdc-select__anchor .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-select--outlined .mdc-select__anchor .mdc-select__selected-text::before{content:"​"}.mdc-select--outlined .mdc-select__anchor .mdc-select__selected-text-container{height:100%;display:inline-flex;align-items:center}.mdc-select--outlined .mdc-select__anchor::before{display:none}.mdc-select--outlined .mdc-select__selected-text-container{display:flex;border:none;z-index:1;background-color:transparent}.mdc-select--outlined .mdc-select__icon{z-index:2}.mdc-select--outlined .mdc-floating-label{line-height:1.15rem;left:4px;right:initial}[dir=rtl] .mdc-select--outlined .mdc-floating-label,.mdc-select--outlined .mdc-floating-label[dir=rtl]{left:initial;right:4px}.mdc-select--outlined.mdc-select--focused .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled) .mdc-notched-outline__leading,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled) .mdc-notched-outline__notch,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled) .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__anchor:hover .mdc-notched-outline .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__trailing{border-width:2px}.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__leading,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__notch,.mdc-select--outlined.mdc-select--invalid:not(.mdc-select--disabled).mdc-select--focused .mdc-notched-outline .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label{left:36px;right:initial}[dir=rtl] .mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label,.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label[dir=rtl]{left:initial;right:36px}.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--float-above{transform:translateY(-37.25px) translateX(-32px) scale(1)}[dir=rtl] .mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--float-above,.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--float-above[dir=rtl]{transform:translateY(-37.25px) translateX(32px) scale(1)}.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--float-above{font-size:.75rem}.mdc-select--outlined.mdc-select--with-leading-icon.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined.mdc-select--with-leading-icon .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) translateX(-32px) scale(0.75)}[dir=rtl] .mdc-select--outlined.mdc-select--with-leading-icon.mdc-notched-outline--upgraded .mdc-floating-label--float-above,[dir=rtl] .mdc-select--outlined.mdc-select--with-leading-icon .mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined.mdc-select--with-leading-icon.mdc-notched-outline--upgraded .mdc-floating-label--float-above[dir=rtl],.mdc-select--outlined.mdc-select--with-leading-icon .mdc-notched-outline--upgraded .mdc-floating-label--float-above[dir=rtl]{transform:translateY(-34.75px) translateX(32px) scale(0.75)}.mdc-select--outlined.mdc-select--with-leading-icon.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-select--outlined.mdc-select--with-leading-icon .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-select-outlined-leading-icon-56px 250ms 1}@keyframes mdc-floating-label-shake-float-above-select-outlined-leading-icon-56px{0%{transform:translateX(calc(0 - 32px)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 32px)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 32px)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - 32px)) translateY(-34.75px) scale(0.75)}}[dir=rtl] .mdc-select--outlined.mdc-select--with-leading-icon .mdc-floating-label--shake,.mdc-select--outlined.mdc-select--with-leading-icon[dir=rtl] .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-select-outlined-leading-icon-56px 250ms 1}@keyframes mdc-floating-label-shake-float-above-select-outlined-leading-icon-56px-rtl{0%{transform:translateX(calc(0 - -32px)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - -32px)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - -32px)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - -32px)) translateY(-34.75px) scale(0.75)}}.mdc-select--outlined.mdc-select--with-leading-icon .mdc-select__anchor :not(.mdc-notched-outline--notched) .mdc-notched-outline__notch{max-width:calc(100% - 96px)}.mdc-select--outlined .mdc-menu-surface{margin-bottom:8px}.mdc-select--outlined.mdc-select--no-label .mdc-menu-surface,.mdc-select--outlined .mdc-menu-surface--is-open-below{margin-bottom:0}.mdc-select__anchor{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0);will-change:transform,opacity}.mdc-select__anchor .mdc-select__ripple::before,.mdc-select__anchor .mdc-select__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-select__anchor .mdc-select__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-select__anchor .mdc-select__ripple::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-select__anchor.mdc-ripple-upgraded .mdc-select__ripple::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-select__anchor.mdc-ripple-upgraded .mdc-select__ripple::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-select__anchor.mdc-ripple-upgraded--unbounded .mdc-select__ripple::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-select__anchor.mdc-ripple-upgraded--foreground-activation .mdc-select__ripple::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-select__anchor.mdc-ripple-upgraded--foreground-deactivation .mdc-select__ripple::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-select__anchor .mdc-select__ripple::before,.mdc-select__anchor .mdc-select__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-select__anchor.mdc-ripple-upgraded .mdc-select__ripple::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-select__anchor .mdc-select__ripple::before,.mdc-select__anchor .mdc-select__ripple::after{background-color:rgba(0, 0, 0, 0.87);background-color:var(--mdc-ripple-color, rgba(0, 0, 0, 0.87))}.mdc-select__anchor:hover .mdc-select__ripple::before,.mdc-select__anchor.mdc-ripple-surface--hover .mdc-select__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-select__anchor.mdc-ripple-upgraded--background-focused .mdc-select__ripple::before,.mdc-select__anchor:not(.mdc-ripple-upgraded):focus .mdc-select__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-select__anchor .mdc-select__ripple{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected .mdc-deprecated-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected .mdc-deprecated-list-item__ripple::after{background-color:#000;background-color:var(--mdc-ripple-color, var(--mdc-theme-on-surface, #000))}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:hover .mdc-deprecated-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-surface--hover .mdc-deprecated-list-item__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-upgraded--background-focused .mdc-deprecated-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded):focus .mdc-deprecated-list-item__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded) .mdc-deprecated-list-item__ripple::after{transition:opacity 150ms linear}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded):active .mdc-deprecated-list-item__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected .mdc-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected .mdc-list-item__ripple::after{background-color:#000;background-color:var(--mdc-ripple-color, var(--mdc-theme-on-surface, #000))}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:hover .mdc-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-surface--hover .mdc-list-item__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-upgraded--background-focused .mdc-list-item__ripple::before,.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded):focus .mdc-list-item__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded) .mdc-list-item__ripple::after{transition:opacity 150ms linear}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected:not(.mdc-ripple-upgraded):active .mdc-list-item__ripple::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-select__menu .mdc-deprecated-list .mdc-deprecated-list-item--selected.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-select-helper-text{margin:0;margin-left:16px;margin-right:16px;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-caption-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.75rem;font-size:var(--mdc-typography-caption-font-size, 0.75rem);line-height:1.25rem;line-height:var(--mdc-typography-caption-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-caption-font-weight, 400);letter-spacing:0.0333333333em;letter-spacing:var(--mdc-typography-caption-letter-spacing, 0.0333333333em);text-decoration:inherit;text-decoration:var(--mdc-typography-caption-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-caption-text-transform, inherit);display:block;margin-top:0;line-height:normal}[dir=rtl] .mdc-select-helper-text,.mdc-select-helper-text[dir=rtl]{margin-left:16px;margin-right:16px}.mdc-select-helper-text::before{display:inline-block;width:0;height:16px;content:"";vertical-align:0}.mdc-select-helper-text--validation-msg{opacity:0;transition:opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-select--invalid+.mdc-select-helper-text--validation-msg,.mdc-select-helper-text--validation-msg-persistent{opacity:1}.mdc-select--with-leading-icon .mdc-select__icon{display:inline-block;box-sizing:border-box;border:none;text-decoration:none;cursor:pointer;user-select:none;flex-shrink:0;align-self:center;background-color:transparent;fill:currentColor}.mdc-select--with-leading-icon .mdc-select__icon{margin-left:12px;margin-right:12px}[dir=rtl] .mdc-select--with-leading-icon .mdc-select__icon,.mdc-select--with-leading-icon .mdc-select__icon[dir=rtl]{margin-left:12px;margin-right:12px}.mdc-select__icon:not([tabindex]),.mdc-select__icon[tabindex="-1"]{cursor:default;pointer-events:none}.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}:host{display:inline-block;vertical-align:top;outline:none}.mdc-select{width:100%}[hidden]{display:none}.mdc-select__icon{z-index:2}.mdc-select--with-leading-icon{--mdc-list-item-graphic-margin: calc( 48px - var(--mdc-list-item-graphic-size, 24px) - var(--mdc-list-side-padding, 16px) )}.mdc-select .mdc-select__anchor .mdc-select__selected-text{overflow:hidden}.mdc-select .mdc-select__anchor *{display:inline-flex}.mdc-select .mdc-select__anchor .mdc-floating-label{display:inline-block}mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-select-outlined-idle-border-color, rgba(0, 0, 0, 0.38) );--mdc-notched-outline-notch-offset: 1px}:host(:not([disabled]):hover) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-select-outlined-hover-border-color, rgba(0, 0, 0, 0.87) )}:host(:not([disabled])) .mdc-select:not(.mdc-select--disabled) .mdc-select__selected-text{color:rgba(0, 0, 0, 0.87);color:var(--mdc-select-ink-color, rgba(0, 0, 0, 0.87))}:host(:not([disabled])) .mdc-select:not(.mdc-select--disabled) .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.42);border-bottom-color:var(--mdc-select-idle-line-color, rgba(0, 0, 0, 0.42))}:host(:not([disabled])) .mdc-select:not(.mdc-select--disabled):hover .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.87);border-bottom-color:var(--mdc-select-hover-line-color, rgba(0, 0, 0, 0.87))}:host(:not([disabled])) .mdc-select:not(.mdc-select--outlined):not(.mdc-select--disabled) .mdc-select__anchor{background-color:whitesmoke;background-color:var(--mdc-select-fill-color, whitesmoke)}:host(:not([disabled])) .mdc-select.mdc-select--invalid .mdc-select__dropdown-icon{fill:var(--mdc-select-error-dropdown-icon-color, var(--mdc-select-error-color, var(--mdc-theme-error, #b00020)))}:host(:not([disabled])) .mdc-select.mdc-select--invalid .mdc-floating-label,:host(:not([disabled])) .mdc-select.mdc-select--invalid .mdc-floating-label::after{color:var(--mdc-select-error-color, var(--mdc-theme-error, #b00020))}:host(:not([disabled])) .mdc-select.mdc-select--invalid mwc-notched-outline{--mdc-notched-outline-border-color: var(--mdc-select-error-color, var(--mdc-theme-error, #b00020))}.mdc-select__menu--invalid{--mdc-theme-primary: var(--mdc-select-error-color, var(--mdc-theme-error, #b00020))}:host(:not([disabled])) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) .mdc-floating-label,:host(:not([disabled])) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) .mdc-floating-label::after{color:rgba(0, 0, 0, 0.6);color:var(--mdc-select-label-ink-color, rgba(0, 0, 0, 0.6))}:host(:not([disabled])) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) .mdc-select__dropdown-icon{fill:rgba(0, 0, 0, 0.54);fill:var(--mdc-select-dropdown-icon-color, rgba(0, 0, 0, 0.54))}:host(:not([disabled])) .mdc-select.mdc-select--focused mwc-notched-outline{--mdc-notched-outline-stroke-width: 2px;--mdc-notched-outline-notch-offset: 2px}:host(:not([disabled])) .mdc-select.mdc-select--focused:not(.mdc-select--invalid) mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-select-focused-label-color, var(--mdc-theme-primary, rgba(98, 0, 238, 0.87)) )}:host(:not([disabled])) .mdc-select.mdc-select--focused:not(.mdc-select--invalid) .mdc-select__dropdown-icon{fill:rgba(98,0,238,.87);fill:var(--mdc-select-focused-dropdown-icon-color, var(--mdc-theme-primary, rgba(98, 0, 238, 0.87)))}:host(:not([disabled])) .mdc-select.mdc-select--focused:not(.mdc-select--invalid) .mdc-floating-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}:host(:not([disabled])) .mdc-select.mdc-select--focused:not(.mdc-select--invalid) .mdc-floating-label::after{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}:host(:not([disabled])) .mdc-select-helper-text:not(.mdc-select-helper-text--validation-msg){color:var(--mdc-select-label-ink-color, rgba(0, 0, 0, 0.6))}:host([disabled]){pointer-events:none}:host([disabled]) .mdc-select:not(.mdc-select--outlined).mdc-select--disabled .mdc-select__anchor{background-color:#fafafa;background-color:var(--mdc-select-disabled-fill-color, #fafafa)}:host([disabled]) .mdc-select.mdc-select--outlined mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-select-outlined-disabled-border-color, rgba(0, 0, 0, 0.06) )}:host([disabled]) .mdc-select .mdc-select__dropdown-icon{fill:rgba(0, 0, 0, 0.38);fill:var(--mdc-select-disabled-dropdown-icon-color, rgba(0, 0, 0, 0.38))}:host([disabled]) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) .mdc-floating-label,:host([disabled]) .mdc-select:not(.mdc-select--invalid):not(.mdc-select--focused) .mdc-floating-label::after{color:rgba(0, 0, 0, 0.38);color:var(--mdc-select-disabled-ink-color, rgba(0, 0, 0, 0.38))}:host([disabled]) .mdc-select-helper-text{color:rgba(0, 0, 0, 0.38);color:var(--mdc-select-disabled-ink-color, rgba(0, 0, 0, 0.38))}:host([disabled]) .mdc-select__selected-text{color:rgba(0, 0, 0, 0.38);color:var(--mdc-select-disabled-ink-color, rgba(0, 0, 0, 0.38))}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,Tn=s`@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}:host{display:block}.mdc-deprecated-list{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);line-height:1.75rem;line-height:var(--mdc-typography-subtitle1-line-height, 1.75rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);line-height:1.5rem;margin:0;padding:8px 0;list-style-type:none;color:rgba(0, 0, 0, 0.87);color:var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87));padding:var(--mdc-list-vertical-padding, 8px) 0}.mdc-deprecated-list:focus{outline:none}.mdc-deprecated-list-item{height:48px}.mdc-deprecated-list--dense{padding-top:4px;padding-bottom:4px;font-size:.812rem}.mdc-deprecated-list ::slotted([divider]){height:0;margin:0;border:none;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:rgba(0, 0, 0, 0.12)}.mdc-deprecated-list ::slotted([divider][padded]){margin:0 var(--mdc-list-side-padding, 16px)}.mdc-deprecated-list ::slotted([divider][inset]){margin-left:var(--mdc-list-inset-margin, 72px);margin-right:0;width:calc( 100% - var(--mdc-list-inset-margin, 72px) )}[dir=rtl] .mdc-deprecated-list ::slotted([divider][inset]),.mdc-deprecated-list ::slotted([divider][inset][dir=rtl]){margin-left:0;margin-right:var(--mdc-list-inset-margin, 72px)}.mdc-deprecated-list ::slotted([divider][inset][padded]){width:calc( 100% - var(--mdc-list-inset-margin, 72px) - var(--mdc-list-side-padding, 16px) )}.mdc-deprecated-list--dense ::slotted([mwc-list-item]){height:40px}.mdc-deprecated-list--dense ::slotted([mwc-list]){--mdc-list-item-graphic-size: 20px}.mdc-deprecated-list--two-line.mdc-deprecated-list--dense ::slotted([mwc-list-item]),.mdc-deprecated-list--avatar-list.mdc-deprecated-list--dense ::slotted([mwc-list-item]){height:60px}.mdc-deprecated-list--avatar-list.mdc-deprecated-list--dense ::slotted([mwc-list]){--mdc-list-item-graphic-size: 36px}:host([noninteractive]){pointer-events:none;cursor:default}.mdc-deprecated-list--dense ::slotted(.mdc-deprecated-list-item__primary-text){display:block;margin-top:0;line-height:normal;margin-bottom:-20px}.mdc-deprecated-list--dense ::slotted(.mdc-deprecated-list-item__primary-text)::before{display:inline-block;width:0;height:24px;content:"";vertical-align:0}.mdc-deprecated-list--dense ::slotted(.mdc-deprecated-list-item__primary-text)::after{display:inline-block;width:0;height:20px;content:"";vertical-align:-20px}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,Cn=s`:host{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;height:48px;display:flex;position:relative;align-items:center;justify-content:flex-start;overflow:hidden;padding:0;padding-left:var(--mdc-list-side-padding, 16px);padding-right:var(--mdc-list-side-padding, 16px);outline:none;height:48px;color:rgba(0,0,0,.87);color:var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87))}:host:focus{outline:none}:host([activated]){color:#6200ee;color:var(--mdc-theme-primary, #6200ee);--mdc-ripple-color: var( --mdc-theme-primary, #6200ee )}:host([activated]) .mdc-deprecated-list-item__graphic{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}:host([activated]) .fake-activated-ripple::before{position:absolute;display:block;top:0;bottom:0;left:0;right:0;width:100%;height:100%;pointer-events:none;z-index:1;content:"";opacity:0.12;opacity:var(--mdc-ripple-activated-opacity, 0.12);background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-deprecated-list-item__graphic{flex-shrink:0;align-items:center;justify-content:center;fill:currentColor;display:inline-flex}.mdc-deprecated-list-item__graphic ::slotted(*){flex-shrink:0;align-items:center;justify-content:center;fill:currentColor;width:100%;height:100%;text-align:center}.mdc-deprecated-list-item__meta{width:var(--mdc-list-item-meta-size, 24px);height:var(--mdc-list-item-meta-size, 24px);margin-left:auto;margin-right:0;color:rgba(0, 0, 0, 0.38);color:var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38))}.mdc-deprecated-list-item__meta.multi{width:auto}.mdc-deprecated-list-item__meta ::slotted(*){width:var(--mdc-list-item-meta-size, 24px);line-height:var(--mdc-list-item-meta-size, 24px)}.mdc-deprecated-list-item__meta ::slotted(.material-icons),.mdc-deprecated-list-item__meta ::slotted(mwc-icon){line-height:var(--mdc-list-item-meta-size, 24px) !important}.mdc-deprecated-list-item__meta ::slotted(:not(.material-icons):not(mwc-icon)){-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-caption-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.75rem;font-size:var(--mdc-typography-caption-font-size, 0.75rem);line-height:1.25rem;line-height:var(--mdc-typography-caption-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-caption-font-weight, 400);letter-spacing:0.0333333333em;letter-spacing:var(--mdc-typography-caption-letter-spacing, 0.0333333333em);text-decoration:inherit;text-decoration:var(--mdc-typography-caption-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-caption-text-transform, inherit)}[dir=rtl] .mdc-deprecated-list-item__meta,.mdc-deprecated-list-item__meta[dir=rtl]{margin-left:0;margin-right:auto}.mdc-deprecated-list-item__meta ::slotted(*){width:100%;height:100%}.mdc-deprecated-list-item__text{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.mdc-deprecated-list-item__text ::slotted([for]),.mdc-deprecated-list-item__text[for]{pointer-events:none}.mdc-deprecated-list-item__primary-text{text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block;margin-top:0;line-height:normal;margin-bottom:-20px;display:block}.mdc-deprecated-list-item__primary-text::before{display:inline-block;width:0;height:32px;content:"";vertical-align:0}.mdc-deprecated-list-item__primary-text::after{display:inline-block;width:0;height:20px;content:"";vertical-align:-20px}.mdc-deprecated-list-item__secondary-text{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-body2-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.875rem;font-size:var(--mdc-typography-body2-font-size, 0.875rem);line-height:1.25rem;line-height:var(--mdc-typography-body2-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-body2-font-weight, 400);letter-spacing:0.0178571429em;letter-spacing:var(--mdc-typography-body2-letter-spacing, 0.0178571429em);text-decoration:inherit;text-decoration:var(--mdc-typography-body2-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-body2-text-transform, inherit);text-overflow:ellipsis;white-space:nowrap;overflow:hidden;display:block;margin-top:0;line-height:normal;display:block}.mdc-deprecated-list-item__secondary-text::before{display:inline-block;width:0;height:20px;content:"";vertical-align:0}.mdc-deprecated-list--dense .mdc-deprecated-list-item__secondary-text{font-size:inherit}* ::slotted(a),a{color:inherit;text-decoration:none}:host([twoline]){height:72px}:host([twoline]) .mdc-deprecated-list-item__text{align-self:flex-start}:host([disabled]),:host([noninteractive]){cursor:default;pointer-events:none}:host([disabled]) .mdc-deprecated-list-item__text ::slotted(*){opacity:.38}:host([disabled]) .mdc-deprecated-list-item__text ::slotted(*),:host([disabled]) .mdc-deprecated-list-item__primary-text ::slotted(*),:host([disabled]) .mdc-deprecated-list-item__secondary-text ::slotted(*){color:#000;color:var(--mdc-theme-on-surface, #000)}.mdc-deprecated-list-item__secondary-text ::slotted(*){color:rgba(0, 0, 0, 0.54);color:var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, 0.54))}.mdc-deprecated-list-item__graphic ::slotted(*){background-color:transparent;color:rgba(0, 0, 0, 0.38);color:var(--mdc-theme-text-icon-on-background, rgba(0, 0, 0, 0.38))}.mdc-deprecated-list-group__subheader ::slotted(*){color:rgba(0, 0, 0, 0.87);color:var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87))}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic{width:var(--mdc-list-item-graphic-size, 40px);height:var(--mdc-list-item-graphic-size, 40px)}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic.multi{width:auto}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic ::slotted(*){width:var(--mdc-list-item-graphic-size, 40px);line-height:var(--mdc-list-item-graphic-size, 40px)}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic ::slotted(.material-icons),:host([graphic=avatar]) .mdc-deprecated-list-item__graphic ::slotted(mwc-icon){line-height:var(--mdc-list-item-graphic-size, 40px) !important}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic ::slotted(*){border-radius:50%}:host([graphic=avatar]) .mdc-deprecated-list-item__graphic,:host([graphic=medium]) .mdc-deprecated-list-item__graphic,:host([graphic=large]) .mdc-deprecated-list-item__graphic,:host([graphic=control]) .mdc-deprecated-list-item__graphic{margin-left:0;margin-right:var(--mdc-list-item-graphic-margin, 16px)}[dir=rtl] :host([graphic=avatar]) .mdc-deprecated-list-item__graphic,[dir=rtl] :host([graphic=medium]) .mdc-deprecated-list-item__graphic,[dir=rtl] :host([graphic=large]) .mdc-deprecated-list-item__graphic,[dir=rtl] :host([graphic=control]) .mdc-deprecated-list-item__graphic,:host([graphic=avatar]) .mdc-deprecated-list-item__graphic[dir=rtl],:host([graphic=medium]) .mdc-deprecated-list-item__graphic[dir=rtl],:host([graphic=large]) .mdc-deprecated-list-item__graphic[dir=rtl],:host([graphic=control]) .mdc-deprecated-list-item__graphic[dir=rtl]{margin-left:var(--mdc-list-item-graphic-margin, 16px);margin-right:0}:host([graphic=icon]) .mdc-deprecated-list-item__graphic{width:var(--mdc-list-item-graphic-size, 24px);height:var(--mdc-list-item-graphic-size, 24px);margin-left:0;margin-right:var(--mdc-list-item-graphic-margin, 32px)}:host([graphic=icon]) .mdc-deprecated-list-item__graphic.multi{width:auto}:host([graphic=icon]) .mdc-deprecated-list-item__graphic ::slotted(*){width:var(--mdc-list-item-graphic-size, 24px);line-height:var(--mdc-list-item-graphic-size, 24px)}:host([graphic=icon]) .mdc-deprecated-list-item__graphic ::slotted(.material-icons),:host([graphic=icon]) .mdc-deprecated-list-item__graphic ::slotted(mwc-icon){line-height:var(--mdc-list-item-graphic-size, 24px) !important}[dir=rtl] :host([graphic=icon]) .mdc-deprecated-list-item__graphic,:host([graphic=icon]) .mdc-deprecated-list-item__graphic[dir=rtl]{margin-left:var(--mdc-list-item-graphic-margin, 32px);margin-right:0}:host([graphic=avatar]:not([twoLine])),:host([graphic=icon]:not([twoLine])){height:56px}:host([graphic=medium]:not([twoLine])),:host([graphic=large]:not([twoLine])){height:72px}:host([graphic=medium]) .mdc-deprecated-list-item__graphic,:host([graphic=large]) .mdc-deprecated-list-item__graphic{width:var(--mdc-list-item-graphic-size, 56px);height:var(--mdc-list-item-graphic-size, 56px)}:host([graphic=medium]) .mdc-deprecated-list-item__graphic.multi,:host([graphic=large]) .mdc-deprecated-list-item__graphic.multi{width:auto}:host([graphic=medium]) .mdc-deprecated-list-item__graphic ::slotted(*),:host([graphic=large]) .mdc-deprecated-list-item__graphic ::slotted(*){width:var(--mdc-list-item-graphic-size, 56px);line-height:var(--mdc-list-item-graphic-size, 56px)}:host([graphic=medium]) .mdc-deprecated-list-item__graphic ::slotted(.material-icons),:host([graphic=medium]) .mdc-deprecated-list-item__graphic ::slotted(mwc-icon),:host([graphic=large]) .mdc-deprecated-list-item__graphic ::slotted(.material-icons),:host([graphic=large]) .mdc-deprecated-list-item__graphic ::slotted(mwc-icon){line-height:var(--mdc-list-item-graphic-size, 56px) !important}:host([graphic=large]){padding-left:0px}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,On=s`.mdc-ripple-surface{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0);will-change:transform,opacity;position:relative;outline:none;overflow:hidden}.mdc-ripple-surface::before,.mdc-ripple-surface::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-ripple-surface::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-ripple-surface::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-ripple-surface.mdc-ripple-upgraded::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-ripple-surface.mdc-ripple-upgraded::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-ripple-surface.mdc-ripple-upgraded--unbounded::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-ripple-surface.mdc-ripple-upgraded--foreground-activation::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-ripple-surface.mdc-ripple-upgraded--foreground-deactivation::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-ripple-surface::before,.mdc-ripple-surface::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-ripple-surface.mdc-ripple-upgraded::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-ripple-surface[data-mdc-ripple-is-unbounded],.mdc-ripple-upgraded--unbounded{overflow:visible}.mdc-ripple-surface[data-mdc-ripple-is-unbounded]::before,.mdc-ripple-surface[data-mdc-ripple-is-unbounded]::after,.mdc-ripple-upgraded--unbounded::before,.mdc-ripple-upgraded--unbounded::after{top:calc(50% - 50%);left:calc(50% - 50%);width:100%;height:100%}.mdc-ripple-surface[data-mdc-ripple-is-unbounded].mdc-ripple-upgraded::before,.mdc-ripple-surface[data-mdc-ripple-is-unbounded].mdc-ripple-upgraded::after,.mdc-ripple-upgraded--unbounded.mdc-ripple-upgraded::before,.mdc-ripple-upgraded--unbounded.mdc-ripple-upgraded::after{top:var(--mdc-ripple-top, calc(50% - 50%));left:var(--mdc-ripple-left, calc(50% - 50%));width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-ripple-surface[data-mdc-ripple-is-unbounded].mdc-ripple-upgraded::after,.mdc-ripple-upgraded--unbounded.mdc-ripple-upgraded::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-ripple-surface::before,.mdc-ripple-surface::after{background-color:#000;background-color:var(--mdc-ripple-color, #000)}.mdc-ripple-surface:hover::before,.mdc-ripple-surface.mdc-ripple-surface--hover::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-ripple-surface.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-ripple-surface:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-ripple-surface.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}:host{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:block}:host .mdc-ripple-surface{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;will-change:unset}.mdc-ripple-surface--primary::before,.mdc-ripple-surface--primary::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-ripple-surface--primary:hover::before,.mdc-ripple-surface--primary.mdc-ripple-surface--hover::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-ripple-surface--primary.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--primary:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-ripple-surface--primary:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--primary:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-ripple-surface--primary.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-ripple-surface--primary--activated::before{opacity:0.12;opacity:var(--mdc-ripple-activated-opacity, 0.12)}.mdc-ripple-surface--primary--activated::before,.mdc-ripple-surface--primary--activated::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-ripple-surface--primary--activated:hover::before,.mdc-ripple-surface--primary--activated.mdc-ripple-surface--hover::before{opacity:0.16;opacity:var(--mdc-ripple-hover-opacity, 0.16)}.mdc-ripple-surface--primary--activated.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--primary--activated:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.24;opacity:var(--mdc-ripple-focus-opacity, 0.24)}.mdc-ripple-surface--primary--activated:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--primary--activated:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.24;opacity:var(--mdc-ripple-press-opacity, 0.24)}.mdc-ripple-surface--primary--activated.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.24)}.mdc-ripple-surface--primary--selected::before{opacity:0.08;opacity:var(--mdc-ripple-selected-opacity, 0.08)}.mdc-ripple-surface--primary--selected::before,.mdc-ripple-surface--primary--selected::after{background-color:#6200ee;background-color:var(--mdc-ripple-color, var(--mdc-theme-primary, #6200ee))}.mdc-ripple-surface--primary--selected:hover::before,.mdc-ripple-surface--primary--selected.mdc-ripple-surface--hover::before{opacity:0.12;opacity:var(--mdc-ripple-hover-opacity, 0.12)}.mdc-ripple-surface--primary--selected.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--primary--selected:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.2;opacity:var(--mdc-ripple-focus-opacity, 0.2)}.mdc-ripple-surface--primary--selected:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--primary--selected:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.2;opacity:var(--mdc-ripple-press-opacity, 0.2)}.mdc-ripple-surface--primary--selected.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.2)}.mdc-ripple-surface--accent::before,.mdc-ripple-surface--accent::after{background-color:#018786;background-color:var(--mdc-ripple-color, var(--mdc-theme-secondary, #018786))}.mdc-ripple-surface--accent:hover::before,.mdc-ripple-surface--accent.mdc-ripple-surface--hover::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-ripple-surface--accent.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--accent:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-ripple-surface--accent:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--accent:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-ripple-surface--accent.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.12)}.mdc-ripple-surface--accent--activated::before{opacity:0.12;opacity:var(--mdc-ripple-activated-opacity, 0.12)}.mdc-ripple-surface--accent--activated::before,.mdc-ripple-surface--accent--activated::after{background-color:#018786;background-color:var(--mdc-ripple-color, var(--mdc-theme-secondary, #018786))}.mdc-ripple-surface--accent--activated:hover::before,.mdc-ripple-surface--accent--activated.mdc-ripple-surface--hover::before{opacity:0.16;opacity:var(--mdc-ripple-hover-opacity, 0.16)}.mdc-ripple-surface--accent--activated.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--accent--activated:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.24;opacity:var(--mdc-ripple-focus-opacity, 0.24)}.mdc-ripple-surface--accent--activated:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--accent--activated:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.24;opacity:var(--mdc-ripple-press-opacity, 0.24)}.mdc-ripple-surface--accent--activated.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.24)}.mdc-ripple-surface--accent--selected::before{opacity:0.08;opacity:var(--mdc-ripple-selected-opacity, 0.08)}.mdc-ripple-surface--accent--selected::before,.mdc-ripple-surface--accent--selected::after{background-color:#018786;background-color:var(--mdc-ripple-color, var(--mdc-theme-secondary, #018786))}.mdc-ripple-surface--accent--selected:hover::before,.mdc-ripple-surface--accent--selected.mdc-ripple-surface--hover::before{opacity:0.12;opacity:var(--mdc-ripple-hover-opacity, 0.12)}.mdc-ripple-surface--accent--selected.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--accent--selected:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.2;opacity:var(--mdc-ripple-focus-opacity, 0.2)}.mdc-ripple-surface--accent--selected:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--accent--selected:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.2;opacity:var(--mdc-ripple-press-opacity, 0.2)}.mdc-ripple-surface--accent--selected.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-press-opacity, 0.2)}.mdc-ripple-surface--disabled{opacity:0}.mdc-ripple-surface--internal-use-state-layer-custom-properties::before,.mdc-ripple-surface--internal-use-state-layer-custom-properties::after{background-color:#000;background-color:var(--mdc-ripple-hover-state-layer-color, #000)}.mdc-ripple-surface--internal-use-state-layer-custom-properties:hover::before,.mdc-ripple-surface--internal-use-state-layer-custom-properties.mdc-ripple-surface--hover::before{opacity:0.04;opacity:var(--mdc-ripple-hover-state-layer-opacity, 0.04)}.mdc-ripple-surface--internal-use-state-layer-custom-properties.mdc-ripple-upgraded--background-focused::before,.mdc-ripple-surface--internal-use-state-layer-custom-properties:not(.mdc-ripple-upgraded):focus::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-state-layer-opacity, 0.12)}.mdc-ripple-surface--internal-use-state-layer-custom-properties:not(.mdc-ripple-upgraded)::after{transition:opacity 150ms linear}.mdc-ripple-surface--internal-use-state-layer-custom-properties:not(.mdc-ripple-upgraded):active::after{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-pressed-state-layer-opacity, 0.12)}.mdc-ripple-surface--internal-use-state-layer-custom-properties.mdc-ripple-upgraded{--mdc-ripple-fg-opacity:var(--mdc-ripple-pressed-state-layer-opacity, 0.12)}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,Sn=s`mwc-list ::slotted([mwc-list-item]:not([twoline])),mwc-list ::slotted([noninteractive]:not([twoline])){height:var(--mdc-menu-item-height, 48px)}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,Rn=s`.mdc-menu-surface{display:none;position:absolute;box-sizing:border-box;max-width:calc(100vw - 32px);max-width:var(--mdc-menu-max-width, calc(100vw - 32px));max-height:calc(100vh - 32px);max-height:var(--mdc-menu-max-height, calc(100vh - 32px));margin:0;padding:0;transform:scale(1);transform-origin:top left;opacity:0;overflow:auto;will-change:transform,opacity;z-index:8;transition:opacity .03s linear,transform .12s cubic-bezier(0, 0, 0.2, 1),height 250ms cubic-bezier(0, 0, 0.2, 1);box-shadow:0px 5px 5px -3px rgba(0, 0, 0, 0.2),0px 8px 10px 1px rgba(0, 0, 0, 0.14),0px 3px 14px 2px rgba(0,0,0,.12);background-color:#fff;background-color:var(--mdc-theme-surface, #fff);color:#000;color:var(--mdc-theme-on-surface, #000);border-radius:4px;border-radius:var(--mdc-shape-medium, 4px);transform-origin-left:top left;transform-origin-right:top right}.mdc-menu-surface:focus{outline:none}.mdc-menu-surface--animating-open{display:inline-block;transform:scale(0.8);opacity:0}.mdc-menu-surface--open{display:inline-block;transform:scale(1);opacity:1}.mdc-menu-surface--animating-closed{display:inline-block;opacity:0;transition:opacity .075s linear}[dir=rtl] .mdc-menu-surface,.mdc-menu-surface[dir=rtl]{transform-origin-left:top right;transform-origin-right:top left}.mdc-menu-surface--anchor{position:relative;overflow:visible}.mdc-menu-surface--fixed{position:fixed}.mdc-menu-surface--fullwidth{width:100%}:host(:not([open])){display:none}.mdc-menu-surface{z-index:8;z-index:var(--mdc-menu-z-index, 8);min-width:112px;min-width:var(--mdc-menu-min-width, 112px)}`
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */,zn=s`.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline,.mdc-notched-outline[dir=rtl]{text-align:right}.mdc-notched-outline__leading,.mdc-notched-outline__notch,.mdc-notched-outline__trailing{box-sizing:border-box;height:100%;border-top:1px solid;border-bottom:1px solid;pointer-events:none}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;width:12px}[dir=rtl] .mdc-notched-outline__leading,.mdc-notched-outline__leading[dir=rtl]{border-left:none;border-right:1px solid}.mdc-notched-outline__trailing{border-left:none;border-right:1px solid;flex-grow:1}[dir=rtl] .mdc-notched-outline__trailing,.mdc-notched-outline__trailing[dir=rtl]{border-left:1px solid;border-right:none}.mdc-notched-outline__notch{flex:0 0 auto;width:auto;max-width:calc(100% - 12px * 2)}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(100% / 0.75)}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch,.mdc-notched-outline--notched .mdc-notched-outline__notch[dir=rtl]{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}:host{display:block;position:absolute;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] :host,:host([dir=rtl]){text-align:right}::slotted(.mdc-floating-label){display:inline-block;position:relative;top:17px;bottom:auto;max-width:100%}::slotted(.mdc-floating-label--float-above){text-overflow:clip}.mdc-notched-outline--upgraded ::slotted(.mdc-floating-label--float-above){max-width:calc(100% / 0.75)}.mdc-notched-outline .mdc-notched-outline__leading{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}[dir=rtl] .mdc-notched-outline .mdc-notched-outline__leading,.mdc-notched-outline .mdc-notched-outline__leading[dir=rtl]{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}@supports(top: max(0%)){.mdc-notched-outline .mdc-notched-outline__leading{width:max(12px, var(--mdc-shape-small, 4px))}}@supports(top: max(0%)){.mdc-notched-outline .mdc-notched-outline__notch{max-width:calc(100% - max(12px, var(--mdc-shape-small, 4px)) * 2)}}.mdc-notched-outline .mdc-notched-outline__trailing{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}[dir=rtl] .mdc-notched-outline .mdc-notched-outline__trailing,.mdc-notched-outline .mdc-notched-outline__trailing[dir=rtl]{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}.mdc-notched-outline__leading,.mdc-notched-outline__notch,.mdc-notched-outline__trailing{border-color:var(--mdc-notched-outline-border-color, var(--mdc-theme-primary, #6200ee));border-width:1px;border-width:var(--mdc-notched-outline-stroke-width, 1px)}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:0;padding-top:var(--mdc-notched-outline-notch-offset, 0)}`,Mn={"mwc-select":class extends Uo{static get styles(){return kn}},"mwc-list":class extends Zo{static get styles(){return Tn}},"mwc-list-item":class extends Jo{static get styles(){return Cn}},"mwc-ripple":class extends yn{static get styles(){return On}},"mwc-menu":class extends dn{static get styles(){return Sn}},"mwc-menu-surface":class extends mn{static get styles(){return Rn}},"mwc-notched-outline":class extends An{static get styles(){return zn}}};function Ln(e,t,i){if(void 0!==t)
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-return function(e,t,i){const a=e.constructor;if(!i){const e=`__${t}`;if(!(i=a.getPropertyDescriptor(t,e)))throw new Error("@ariaProperty must be used after a @property decorator")}const o=i;let n="";if(!o.set)throw new Error(`@ariaProperty requires a setter for ${t}`);if(e.dispatchWizEvent)return i;const r={configurable:!0,enumerable:!0,set(e){if(""===n){const e=a.getPropertyOptions(t);n="string"==typeof e.attribute?e.attribute:t}this.hasAttribute(n)&&this.removeAttribute(n),o.set.call(this,e)}};return o.get&&(r.get=function(){return o.get.call(this)}),r}(e,t,i);throw new Error("@ariaProperty only supports TypeScript Decorators")}
-/**
- * @license
- * Copyright 2018 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */var $n={CHECKED:"mdc-switch--checked",DISABLED:"mdc-switch--disabled"},Fn={ARIA_CHECKED_ATTR:"aria-checked",NATIVE_CONTROL_SELECTOR:".mdc-switch__native-control",RIPPLE_SURFACE_SELECTOR:".mdc-switch__thumb-underlay"},Nn=function(e){function a(t){return e.call(this,i(i({},a.defaultAdapter),t))||this}return t(a,e),Object.defineProperty(a,"strings",{get:function(){return Fn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"cssClasses",{get:function(){return $n},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},setNativeControlChecked:function(){},setNativeControlDisabled:function(){},setNativeControlAttr:function(){}}},enumerable:!1,configurable:!0}),a.prototype.setChecked=function(e){this.adapter.setNativeControlChecked(e),this.updateAriaChecked(e),this.updateCheckedStyling(e)},a.prototype.setDisabled=function(e){this.adapter.setNativeControlDisabled(e),e?this.adapter.addClass($n.DISABLED):this.adapter.removeClass($n.DISABLED)},a.prototype.handleChange=function(e){var t=e.target;this.updateAriaChecked(t.checked),this.updateCheckedStyling(t.checked)},a.prototype.updateCheckedStyling=function(e){e?this.adapter.addClass($n.CHECKED):this.adapter.removeClass($n.CHECKED)},a.prototype.updateAriaChecked=function(e){this.adapter.setNativeControlAttr(Fn.ARIA_CHECKED_ATTR,""+!!e)},a}(ba);
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-class Pn extends Ca{constructor(){super(...arguments),this.checked=!1,this.disabled=!1,this.shouldRenderRipple=!1,this.mdcFoundationClass=Nn,this.rippleHandlers=new Qo((()=>(this.shouldRenderRipple=!0,this.ripple)))}changeHandler(e){this.mdcFoundation.handleChange(e),this.checked=this.formElement.checked}createAdapter(){return Object.assign(Object.assign({},Ea(this.mdcRoot)),{setNativeControlChecked:e=>{this.formElement.checked=e},setNativeControlDisabled:e=>{this.formElement.disabled=e},setNativeControlAttr:(e,t)=>{this.formElement.setAttribute(e,t)}})}renderRipple(){return this.shouldRenderRipple?N`
-        <mwc-ripple
-          .accent="${this.checked}"
-          .disabled="${this.disabled}"
-          unbounded>
-        </mwc-ripple>`:""}focus(){const e=this.formElement;e&&(this.rippleHandlers.startFocus(),e.focus())}blur(){const e=this.formElement;e&&(this.rippleHandlers.endFocus(),e.blur())}click(){this.formElement&&!this.disabled&&(this.formElement.focus(),this.formElement.click())}firstUpdated(){super.firstUpdated(),this.shadowRoot&&this.mdcRoot.addEventListener("change",(e=>{this.dispatchEvent(new Event("change",e))}))}render(){return N`
-      <div class="mdc-switch">
-        <div class="mdc-switch__track"></div>
-        <div class="mdc-switch__thumb-underlay">
-          ${this.renderRipple()}
-          <div class="mdc-switch__thumb">
-            <input
-              type="checkbox"
-              id="basic-switch"
-              class="mdc-switch__native-control"
-              role="switch"
-              aria-label="${Ho(this.ariaLabel)}"
-              aria-labelledby="${Ho(this.ariaLabelledBy)}"
-              @change="${this.changeHandler}"
-              @focus="${this.handleRippleFocus}"
-              @blur="${this.handleRippleBlur}"
-              @mousedown="${this.handleRippleMouseDown}"
-              @mouseenter="${this.handleRippleMouseEnter}"
-              @mouseleave="${this.handleRippleMouseLeave}"
-              @touchstart="${this.handleRippleTouchStart}"
-              @touchend="${this.handleRippleDeactivate}"
-              @touchcancel="${this.handleRippleDeactivate}">
-          </div>
-        </div>
-      </div>`}handleRippleMouseDown(e){const t=()=>{window.removeEventListener("mouseup",t),this.handleRippleDeactivate()};window.addEventListener("mouseup",t),this.rippleHandlers.startPress(e)}handleRippleTouchStart(e){this.rippleHandlers.startPress(e)}handleRippleDeactivate(){this.rippleHandlers.endPress()}handleRippleMouseEnter(){this.rippleHandlers.startHover()}handleRippleMouseLeave(){this.rippleHandlers.endHover()}handleRippleFocus(){this.rippleHandlers.startFocus()}handleRippleBlur(){this.rippleHandlers.endFocus()}}a([re({type:Boolean}),Ma((function(e){this.mdcFoundation.setChecked(e)}))],Pn.prototype,"checked",void 0),a([re({type:Boolean}),Ma((function(e){this.mdcFoundation.setDisabled(e)}))],Pn.prototype,"disabled",void 0),a([Ln,re({attribute:"aria-label"})],Pn.prototype,"ariaLabel",void 0),a([Ln,re({attribute:"aria-labelledby"})],Pn.prototype,"ariaLabelledBy",void 0),a([ce(".mdc-switch")],Pn.prototype,"mdcRoot",void 0),a([ce("input")],Pn.prototype,"formElement",void 0),a([me("mwc-ripple")],Pn.prototype,"ripple",void 0),a([le()],Pn.prototype,"shouldRenderRipple",void 0),a([se({passive:!0})],Pn.prototype,"handleRippleMouseDown",null),a([se({passive:!0})],Pn.prototype,"handleRippleTouchStart",null);
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const Dn=s`.mdc-switch__thumb-underlay{left:-14px;right:initial;top:-17px;width:48px;height:48px}[dir=rtl] .mdc-switch__thumb-underlay,.mdc-switch__thumb-underlay[dir=rtl]{left:initial;right:-14px}.mdc-switch__native-control{width:64px;height:48px}.mdc-switch{display:inline-block;position:relative;outline:none;user-select:none}.mdc-switch.mdc-switch--checked .mdc-switch__track{background-color:#018786;background-color:var(--mdc-theme-secondary, #018786)}.mdc-switch.mdc-switch--checked .mdc-switch__thumb{background-color:#018786;background-color:var(--mdc-theme-secondary, #018786);border-color:#018786;border-color:var(--mdc-theme-secondary, #018786)}.mdc-switch:not(.mdc-switch--checked) .mdc-switch__track{background-color:#000;background-color:var(--mdc-theme-on-surface, #000)}.mdc-switch:not(.mdc-switch--checked) .mdc-switch__thumb{background-color:#fff;background-color:var(--mdc-theme-surface, #fff);border-color:#fff;border-color:var(--mdc-theme-surface, #fff)}.mdc-switch__native-control{left:0;right:initial;position:absolute;top:0;margin:0;opacity:0;cursor:pointer;pointer-events:auto;transition:transform 90ms cubic-bezier(0.4, 0, 0.2, 1)}[dir=rtl] .mdc-switch__native-control,.mdc-switch__native-control[dir=rtl]{left:initial;right:0}.mdc-switch__track{box-sizing:border-box;width:36px;height:14px;border:1px solid transparent;border-radius:7px;opacity:.38;transition:opacity 90ms cubic-bezier(0.4, 0, 0.2, 1),background-color 90ms cubic-bezier(0.4, 0, 0.2, 1),border-color 90ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-switch__thumb-underlay{display:flex;position:absolute;align-items:center;justify-content:center;transform:translateX(0);transition:transform 90ms cubic-bezier(0.4, 0, 0.2, 1),background-color 90ms cubic-bezier(0.4, 0, 0.2, 1),border-color 90ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-switch__thumb{box-shadow:0px 3px 1px -2px rgba(0, 0, 0, 0.2),0px 2px 2px 0px rgba(0, 0, 0, 0.14),0px 1px 5px 0px rgba(0,0,0,.12);box-sizing:border-box;width:20px;height:20px;border:10px solid;border-radius:50%;pointer-events:none;z-index:1}.mdc-switch--checked .mdc-switch__track{opacity:.54}.mdc-switch--checked .mdc-switch__thumb-underlay{transform:translateX(16px)}[dir=rtl] .mdc-switch--checked .mdc-switch__thumb-underlay,.mdc-switch--checked .mdc-switch__thumb-underlay[dir=rtl]{transform:translateX(-16px)}.mdc-switch--checked .mdc-switch__native-control{transform:translateX(-16px)}[dir=rtl] .mdc-switch--checked .mdc-switch__native-control,.mdc-switch--checked .mdc-switch__native-control[dir=rtl]{transform:translateX(16px)}.mdc-switch--disabled{opacity:.38;pointer-events:none}.mdc-switch--disabled .mdc-switch__thumb{border-width:1px}.mdc-switch--disabled .mdc-switch__native-control{cursor:default;pointer-events:none}:host{display:inline-flex;outline:none;-webkit-tap-highlight-color:transparent}`,Bn={"mwc-switch":class extends Pn{static get styles(){return Dn}},"mwc-ripple":class extends yn{static get styles(){return On}}};
-/**
- * @license
- * Copyright 2016 Google Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-var Hn={ARIA_CONTROLS:"aria-controls",ARIA_DESCRIBEDBY:"aria-describedby",INPUT_SELECTOR:".mdc-text-field__input",LABEL_SELECTOR:".mdc-floating-label",LEADING_ICON_SELECTOR:".mdc-text-field__icon--leading",LINE_RIPPLE_SELECTOR:".mdc-line-ripple",OUTLINE_SELECTOR:".mdc-notched-outline",PREFIX_SELECTOR:".mdc-text-field__affix--prefix",SUFFIX_SELECTOR:".mdc-text-field__affix--suffix",TRAILING_ICON_SELECTOR:".mdc-text-field__icon--trailing"},Vn={DISABLED:"mdc-text-field--disabled",FOCUSED:"mdc-text-field--focused",HELPER_LINE:"mdc-text-field-helper-line",INVALID:"mdc-text-field--invalid",LABEL_FLOATING:"mdc-text-field--label-floating",NO_LABEL:"mdc-text-field--no-label",OUTLINED:"mdc-text-field--outlined",ROOT:"mdc-text-field",TEXTAREA:"mdc-text-field--textarea",WITH_LEADING_ICON:"mdc-text-field--with-leading-icon",WITH_TRAILING_ICON:"mdc-text-field--with-trailing-icon",WITH_INTERNAL_COUNTER:"mdc-text-field--with-internal-counter"},Un={LABEL_SCALE:.75},jn=["pattern","min","max","required","step","minlength","maxlength"],Gn=["color","date","datetime-local","month","range","time","week"],Wn=["mousedown","touchstart"],Kn=["click","keydown"],qn=function(e){function a(t,o){void 0===o&&(o={});var n=e.call(this,i(i({},a.defaultAdapter),t))||this;return n.isFocused=!1,n.receivedUserInput=!1,n.valid=!0,n.useNativeValidation=!0,n.validateOnValueChange=!0,n.helperText=o.helperText,n.characterCounter=o.characterCounter,n.leadingIcon=o.leadingIcon,n.trailingIcon=o.trailingIcon,n.inputFocusHandler=function(){n.activateFocus()},n.inputBlurHandler=function(){n.deactivateFocus()},n.inputInputHandler=function(){n.handleInput()},n.setPointerXOffset=function(e){n.setTransformOrigin(e)},n.textFieldInteractionHandler=function(){n.handleTextFieldInteraction()},n.validationAttributeChangeHandler=function(e){n.handleValidationAttributeChange(e)},n}return t(a,e),Object.defineProperty(a,"cssClasses",{get:function(){return Vn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"strings",{get:function(){return Hn},enumerable:!1,configurable:!0}),Object.defineProperty(a,"numbers",{get:function(){return Un},enumerable:!1,configurable:!0}),Object.defineProperty(a.prototype,"shouldAlwaysFloat",{get:function(){var e=this.getNativeInput().type;return Gn.indexOf(e)>=0},enumerable:!1,configurable:!0}),Object.defineProperty(a.prototype,"shouldFloat",{get:function(){return this.shouldAlwaysFloat||this.isFocused||!!this.getValue()||this.isBadInput()},enumerable:!1,configurable:!0}),Object.defineProperty(a.prototype,"shouldShake",{get:function(){return!this.isFocused&&!this.isValid()&&!!this.getValue()},enumerable:!1,configurable:!0}),Object.defineProperty(a,"defaultAdapter",{get:function(){return{addClass:function(){},removeClass:function(){},hasClass:function(){return!0},setInputAttr:function(){},removeInputAttr:function(){},registerTextFieldInteractionHandler:function(){},deregisterTextFieldInteractionHandler:function(){},registerInputInteractionHandler:function(){},deregisterInputInteractionHandler:function(){},registerValidationAttributeChangeHandler:function(){return new MutationObserver((function(){}))},deregisterValidationAttributeChangeHandler:function(){},getNativeInput:function(){return null},isFocused:function(){return!1},activateLineRipple:function(){},deactivateLineRipple:function(){},setLineRippleTransformOrigin:function(){},shakeLabel:function(){},floatLabel:function(){},setLabelRequired:function(){},hasLabel:function(){return!1},getLabelWidth:function(){return 0},hasOutline:function(){return!1},notchOutline:function(){},closeOutline:function(){}}},enumerable:!1,configurable:!0}),a.prototype.init=function(){var e,t,i,a;this.adapter.hasLabel()&&this.getNativeInput().required&&this.adapter.setLabelRequired(!0),this.adapter.isFocused()?this.inputFocusHandler():this.adapter.hasLabel()&&this.shouldFloat&&(this.notchOutline(!0),this.adapter.floatLabel(!0),this.styleFloating(!0)),this.adapter.registerInputInteractionHandler("focus",this.inputFocusHandler),this.adapter.registerInputInteractionHandler("blur",this.inputBlurHandler),this.adapter.registerInputInteractionHandler("input",this.inputInputHandler);try{for(var n=o(Wn),r=n.next();!r.done;r=n.next()){var l=r.value;this.adapter.registerInputInteractionHandler(l,this.setPointerXOffset)}}catch(t){e={error:t}}finally{try{r&&!r.done&&(t=n.return)&&t.call(n)}finally{if(e)throw e.error}}try{for(var d=o(Kn),s=d.next();!s.done;s=d.next()){l=s.value;this.adapter.registerTextFieldInteractionHandler(l,this.textFieldInteractionHandler)}}catch(e){i={error:e}}finally{try{s&&!s.done&&(a=d.return)&&a.call(d)}finally{if(i)throw i.error}}this.validationObserver=this.adapter.registerValidationAttributeChangeHandler(this.validationAttributeChangeHandler),this.setcharacterCounter(this.getValue().length)},a.prototype.destroy=function(){var e,t,i,a;this.adapter.deregisterInputInteractionHandler("focus",this.inputFocusHandler),this.adapter.deregisterInputInteractionHandler("blur",this.inputBlurHandler),this.adapter.deregisterInputInteractionHandler("input",this.inputInputHandler);try{for(var n=o(Wn),r=n.next();!r.done;r=n.next()){var l=r.value;this.adapter.deregisterInputInteractionHandler(l,this.setPointerXOffset)}}catch(t){e={error:t}}finally{try{r&&!r.done&&(t=n.return)&&t.call(n)}finally{if(e)throw e.error}}try{for(var d=o(Kn),s=d.next();!s.done;s=d.next()){l=s.value;this.adapter.deregisterTextFieldInteractionHandler(l,this.textFieldInteractionHandler)}}catch(e){i={error:e}}finally{try{s&&!s.done&&(a=d.return)&&a.call(d)}finally{if(i)throw i.error}}this.adapter.deregisterValidationAttributeChangeHandler(this.validationObserver)},a.prototype.handleTextFieldInteraction=function(){var e=this.adapter.getNativeInput();e&&e.disabled||(this.receivedUserInput=!0)},a.prototype.handleValidationAttributeChange=function(e){var t=this;e.some((function(e){return jn.indexOf(e)>-1&&(t.styleValidity(!0),t.adapter.setLabelRequired(t.getNativeInput().required),!0)})),e.indexOf("maxlength")>-1&&this.setcharacterCounter(this.getValue().length)},a.prototype.notchOutline=function(e){if(this.adapter.hasOutline()&&this.adapter.hasLabel())if(e){var t=this.adapter.getLabelWidth()*Un.LABEL_SCALE;this.adapter.notchOutline(t)}else this.adapter.closeOutline()},a.prototype.activateFocus=function(){this.isFocused=!0,this.styleFocused(this.isFocused),this.adapter.activateLineRipple(),this.adapter.hasLabel()&&(this.notchOutline(this.shouldFloat),this.adapter.floatLabel(this.shouldFloat),this.styleFloating(this.shouldFloat),this.adapter.shakeLabel(this.shouldShake)),!this.helperText||!this.helperText.isPersistent()&&this.helperText.isValidation()&&this.valid||this.helperText.showToScreenReader()},a.prototype.setTransformOrigin=function(e){if(!this.isDisabled()&&!this.adapter.hasOutline()){var t=e.touches,i=t?t[0]:e,a=i.target.getBoundingClientRect(),o=i.clientX-a.left;this.adapter.setLineRippleTransformOrigin(o)}},a.prototype.handleInput=function(){this.autoCompleteFocus(),this.setcharacterCounter(this.getValue().length)},a.prototype.autoCompleteFocus=function(){this.receivedUserInput||this.activateFocus()},a.prototype.deactivateFocus=function(){this.isFocused=!1,this.adapter.deactivateLineRipple();var e=this.isValid();this.styleValidity(e),this.styleFocused(this.isFocused),this.adapter.hasLabel()&&(this.notchOutline(this.shouldFloat),this.adapter.floatLabel(this.shouldFloat),this.styleFloating(this.shouldFloat),this.adapter.shakeLabel(this.shouldShake)),this.shouldFloat||(this.receivedUserInput=!1)},a.prototype.getValue=function(){return this.getNativeInput().value},a.prototype.setValue=function(e){if(this.getValue()!==e&&(this.getNativeInput().value=e),this.setcharacterCounter(e.length),this.validateOnValueChange){var t=this.isValid();this.styleValidity(t)}this.adapter.hasLabel()&&(this.notchOutline(this.shouldFloat),this.adapter.floatLabel(this.shouldFloat),this.styleFloating(this.shouldFloat),this.validateOnValueChange&&this.adapter.shakeLabel(this.shouldShake))},a.prototype.isValid=function(){return this.useNativeValidation?this.isNativeInputValid():this.valid},a.prototype.setValid=function(e){this.valid=e,this.styleValidity(e);var t=!e&&!this.isFocused&&!!this.getValue();this.adapter.hasLabel()&&this.adapter.shakeLabel(t)},a.prototype.setValidateOnValueChange=function(e){this.validateOnValueChange=e},a.prototype.getValidateOnValueChange=function(){return this.validateOnValueChange},a.prototype.setUseNativeValidation=function(e){this.useNativeValidation=e},a.prototype.isDisabled=function(){return this.getNativeInput().disabled},a.prototype.setDisabled=function(e){this.getNativeInput().disabled=e,this.styleDisabled(e)},a.prototype.setHelperTextContent=function(e){this.helperText&&this.helperText.setContent(e)},a.prototype.setLeadingIconAriaLabel=function(e){this.leadingIcon&&this.leadingIcon.setAriaLabel(e)},a.prototype.setLeadingIconContent=function(e){this.leadingIcon&&this.leadingIcon.setContent(e)},a.prototype.setTrailingIconAriaLabel=function(e){this.trailingIcon&&this.trailingIcon.setAriaLabel(e)},a.prototype.setTrailingIconContent=function(e){this.trailingIcon&&this.trailingIcon.setContent(e)},a.prototype.setcharacterCounter=function(e){if(this.characterCounter){var t=this.getNativeInput().maxLength;if(-1===t)throw new Error("MDCTextFieldFoundation: Expected maxlength html property on text input or textarea.");this.characterCounter.setCounterValue(e,t)}},a.prototype.isBadInput=function(){return this.getNativeInput().validity.badInput||!1},a.prototype.isNativeInputValid=function(){return this.getNativeInput().validity.valid},a.prototype.styleValidity=function(e){var t=a.cssClasses.INVALID;if(e?this.adapter.removeClass(t):this.adapter.addClass(t),this.helperText){if(this.helperText.setValidity(e),!this.helperText.isValidation())return;var i=this.helperText.isVisible(),o=this.helperText.getId();i&&o?this.adapter.setInputAttr(Hn.ARIA_DESCRIBEDBY,o):this.adapter.removeInputAttr(Hn.ARIA_DESCRIBEDBY)}},a.prototype.styleFocused=function(e){var t=a.cssClasses.FOCUSED;e?this.adapter.addClass(t):this.adapter.removeClass(t)},a.prototype.styleDisabled=function(e){var t=a.cssClasses,i=t.DISABLED,o=t.INVALID;e?(this.adapter.addClass(i),this.adapter.removeClass(o)):this.adapter.removeClass(i),this.leadingIcon&&this.leadingIcon.setDisabled(e),this.trailingIcon&&this.trailingIcon.setDisabled(e)},a.prototype.styleFloating=function(e){var t=a.cssClasses.LABEL_FLOATING;e?this.adapter.addClass(t):this.adapter.removeClass(t)},a.prototype.getNativeInput=function(){return(this.adapter?this.adapter.getNativeInput():null)||{disabled:!1,maxLength:-1,required:!1,type:"input",validity:{badInput:!1,valid:!0},value:""}},a}(ba),Xn=qn;
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const Yn={},Zn=Na(class extends Pa{constructor(e){if(super(e),e.type!==$a&&e.type!==La&&e.type!==Fa)throw Error("The `live` directive is not allowed on child or event bindings");if(!(e=>void 0===e.strings)(e))throw Error("`live` bindings can only contain a single expression")}render(e){return e}update(e,[t]){if(t===P||t===D)return t;const i=e.element,a=e.name;if(e.type===$a){if(t===i[a])return P}else if(e.type===Fa){if(!!t===i.hasAttribute(a))return P}else if(e.type===La&&i.getAttribute(a)===t+"")return P;return((e,t=Yn)=>{e._$AH=t;
-/**
- * @license
- * Copyright 2020 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */})(e),t}}),Qn=["touchstart","touchmove","scroll","mousewheel"],Jn=(e={})=>{const t={};for(const i in e)t[i]=e[i];return Object.assign({badInput:!1,customError:!1,patternMismatch:!1,rangeOverflow:!1,rangeUnderflow:!1,stepMismatch:!1,tooLong:!1,tooShort:!1,typeMismatch:!1,valid:!0,valueMissing:!1},t)};class er extends za{constructor(){super(...arguments),this.mdcFoundationClass=Xn,this.value="",this.type="text",this.placeholder="",this.label="",this.icon="",this.iconTrailing="",this.disabled=!1,this.required=!1,this.minLength=-1,this.maxLength=-1,this.outlined=!1,this.helper="",this.validateOnInitialRender=!1,this.validationMessage="",this.autoValidate=!1,this.pattern="",this.min="",this.max="",this.step=null,this.size=null,this.helperPersistent=!1,this.charCounter=!1,this.endAligned=!1,this.prefix="",this.suffix="",this.name="",this.readOnly=!1,this.autocapitalize="",this.outlineOpen=!1,this.outlineWidth=0,this.isUiValid=!0,this.focused=!1,this._validity=Jn(),this.validityTransform=null}get validity(){return this._checkValidity(this.value),this._validity}get willValidate(){return this.formElement.willValidate}get selectionStart(){return this.formElement.selectionStart}get selectionEnd(){return this.formElement.selectionEnd}focus(){const e=new CustomEvent("focus");this.formElement.dispatchEvent(e),this.formElement.focus()}blur(){const e=new CustomEvent("blur");this.formElement.dispatchEvent(e),this.formElement.blur()}select(){this.formElement.select()}setSelectionRange(e,t,i){this.formElement.setSelectionRange(e,t,i)}update(e){e.has("autoValidate")&&this.mdcFoundation&&this.mdcFoundation.setValidateOnValueChange(this.autoValidate),e.has("value")&&"string"!=typeof this.value&&(this.value=`${this.value}`),super.update(e)}setFormData(e){this.name&&e.append(this.name,this.value)}render(){const e=this.charCounter&&-1!==this.maxLength,t=!!this.helper||!!this.validationMessage||e,i={"mdc-text-field--disabled":this.disabled,"mdc-text-field--no-label":!this.label,"mdc-text-field--filled":!this.outlined,"mdc-text-field--outlined":this.outlined,"mdc-text-field--with-leading-icon":this.icon,"mdc-text-field--with-trailing-icon":this.iconTrailing,"mdc-text-field--end-aligned":this.endAligned};return N`
-      <label class="mdc-text-field ${Da(i)}">
-        ${this.renderRipple()}
-        ${this.outlined?this.renderOutline():this.renderLabel()}
-        ${this.renderLeadingIcon()}
-        ${this.renderPrefix()}
-        ${this.renderInput(t)}
-        ${this.renderSuffix()}
-        ${this.renderTrailingIcon()}
-        ${this.renderLineRipple()}
-      </label>
-      ${this.renderHelperText(t,e)}
-    `}updated(e){e.has("value")&&void 0!==e.get("value")&&(this.mdcFoundation.setValue(this.value),this.autoValidate&&this.reportValidity())}renderRipple(){return this.outlined?"":N`
-      <span class="mdc-text-field__ripple"></span>
-    `}renderOutline(){return this.outlined?N`
-      <mwc-notched-outline
-          .width=${this.outlineWidth}
-          .open=${this.outlineOpen}
-          class="mdc-notched-outline">
-        ${this.renderLabel()}
-      </mwc-notched-outline>`:""}renderLabel(){return this.label?N`
-      <span
-          .floatingLabelFoundation=${Co(this.label)}
-          id="label">${this.label}</span>
-    `:""}renderLeadingIcon(){return this.icon?this.renderIcon(this.icon):""}renderTrailingIcon(){return this.iconTrailing?this.renderIcon(this.iconTrailing,!0):""}renderIcon(e,t=!1){return N`<i class="material-icons mdc-text-field__icon ${Da({"mdc-text-field__icon--leading":!t,"mdc-text-field__icon--trailing":t})}">${e}</i>`}renderPrefix(){return this.prefix?this.renderAffix(this.prefix):""}renderSuffix(){return this.suffix?this.renderAffix(this.suffix,!0):""}renderAffix(e,t=!1){return N`<span class="mdc-text-field__affix ${Da({"mdc-text-field__affix--prefix":!t,"mdc-text-field__affix--suffix":t})}">
-        ${e}</span>`}renderInput(e){const t=-1===this.minLength?void 0:this.minLength,i=-1===this.maxLength?void 0:this.maxLength,a=this.autocapitalize?this.autocapitalize:void 0,o=this.validationMessage&&!this.isUiValid,n=this.label?"label":void 0,r=e?"helper-text":void 0,l=this.focused||this.helperPersistent||o?"helper-text":void 0;return N`
-      <input
-          aria-labelledby=${Ho(n)}
-          aria-controls="${Ho(r)}"
-          aria-describedby="${Ho(l)}"
-          class="mdc-text-field__input"
-          type="${this.type}"
-          .value="${Zn(this.value)}"
-          ?disabled="${this.disabled}"
-          placeholder="${this.placeholder}"
-          ?required="${this.required}"
-          ?readonly="${this.readOnly}"
-          minlength="${Ho(t)}"
-          maxlength="${Ho(i)}"
-          pattern="${Ho(this.pattern?this.pattern:void 0)}"
-          min="${Ho(""===this.min?void 0:this.min)}"
-          max="${Ho(""===this.max?void 0:this.max)}"
-          step="${Ho(null===this.step?void 0:this.step)}"
-          size="${Ho(null===this.size?void 0:this.size)}"
-          name="${Ho(""===this.name?void 0:this.name)}"
-          inputmode="${Ho(this.inputMode)}"
-          autocapitalize="${Ho(a)}"
-          @input="${this.handleInputChange}"
-          @focus="${this.onInputFocus}"
-          @blur="${this.onInputBlur}">`}renderLineRipple(){return this.outlined?"":N`
-      <span .lineRippleFoundation=${Ro()}></span>
-    `}renderHelperText(e,t){const i=this.validationMessage&&!this.isUiValid,a={"mdc-text-field-helper-text--persistent":this.helperPersistent,"mdc-text-field-helper-text--validation-msg":i},o=this.focused||this.helperPersistent||i?void 0:"true",n=i?this.validationMessage:this.helper;return e?N`
-      <div class="mdc-text-field-helper-line">
-        <div id="helper-text"
-             aria-hidden="${Ho(o)}"
-             class="mdc-text-field-helper-text ${Da(a)}"
-             >${n}</div>
-        ${this.renderCharCounter(t)}
-      </div>`:""}renderCharCounter(e){const t=Math.min(this.value.length,this.maxLength);return e?N`
-      <span class="mdc-text-field-character-counter"
-            >${t} / ${this.maxLength}</span>`:""}onInputFocus(){this.focused=!0}onInputBlur(){this.focused=!1,this.reportValidity()}checkValidity(){const e=this._checkValidity(this.value);if(!e){const e=new Event("invalid",{bubbles:!1,cancelable:!0});this.dispatchEvent(e)}return e}reportValidity(){const e=this.checkValidity();return this.mdcFoundation.setValid(e),this.isUiValid=e,e}_checkValidity(e){const t=this.formElement.validity;let i=Jn(t);if(this.validityTransform){const t=this.validityTransform(e,i);i=Object.assign(Object.assign({},i),t),this.mdcFoundation.setUseNativeValidation(!1)}else this.mdcFoundation.setUseNativeValidation(!0);return this._validity=i,this._validity.valid}setCustomValidity(e){this.validationMessage=e,this.formElement.setCustomValidity(e)}handleInputChange(){this.value=this.formElement.value}createAdapter(){return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({},this.getRootAdapterMethods()),this.getInputAdapterMethods()),this.getLabelAdapterMethods()),this.getLineRippleAdapterMethods()),this.getOutlineAdapterMethods())}getRootAdapterMethods(){return Object.assign({registerTextFieldInteractionHandler:(e,t)=>this.addEventListener(e,t),deregisterTextFieldInteractionHandler:(e,t)=>this.removeEventListener(e,t),registerValidationAttributeChangeHandler:e=>{const t=new MutationObserver((t=>{e((e=>e.map((e=>e.attributeName)).filter((e=>e)))(t))}));return t.observe(this.formElement,{attributes:!0}),t},deregisterValidationAttributeChangeHandler:e=>e.disconnect()},Ea(this.mdcRoot))}getInputAdapterMethods(){return{getNativeInput:()=>this.formElement,setInputAttr:()=>{},removeInputAttr:()=>{},isFocused:()=>!!this.shadowRoot&&this.shadowRoot.activeElement===this.formElement,registerInputInteractionHandler:(e,t)=>this.formElement.addEventListener(e,t,{passive:e in Qn}),deregisterInputInteractionHandler:(e,t)=>this.formElement.removeEventListener(e,t)}}getLabelAdapterMethods(){return{floatLabel:e=>this.labelElement&&this.labelElement.floatingLabelFoundation.float(e),getLabelWidth:()=>this.labelElement?this.labelElement.floatingLabelFoundation.getWidth():0,hasLabel:()=>Boolean(this.labelElement),shakeLabel:e=>this.labelElement&&this.labelElement.floatingLabelFoundation.shake(e),setLabelRequired:e=>{this.labelElement&&this.labelElement.floatingLabelFoundation.setRequired(e)}}}getLineRippleAdapterMethods(){return{activateLineRipple:()=>{this.lineRippleElement&&this.lineRippleElement.lineRippleFoundation.activate()},deactivateLineRipple:()=>{this.lineRippleElement&&this.lineRippleElement.lineRippleFoundation.deactivate()},setLineRippleTransformOrigin:e=>{this.lineRippleElement&&this.lineRippleElement.lineRippleFoundation.setRippleCenter(e)}}}async getUpdateComplete(){var e;const t=await super.getUpdateComplete();return await(null===(e=this.outlineElement)||void 0===e?void 0:e.updateComplete),t}firstUpdated(){var e;super.firstUpdated(),this.mdcFoundation.setValidateOnValueChange(this.autoValidate),this.validateOnInitialRender&&this.reportValidity(),null===(e=this.outlineElement)||void 0===e||e.updateComplete.then((()=>{var e;this.outlineWidth=(null===(e=this.labelElement)||void 0===e?void 0:e.floatingLabelFoundation.getWidth())||0}))}getOutlineAdapterMethods(){return{closeOutline:()=>this.outlineElement&&(this.outlineOpen=!1),hasOutline:()=>Boolean(this.outlineElement),notchOutline:e=>{this.outlineElement&&!this.outlineOpen&&(this.outlineWidth=e,this.outlineOpen=!0)}}}async layout(){await this.updateComplete;const e=this.labelElement;if(!e)return void(this.outlineOpen=!1);const t=!!this.label&&!!this.value;if(e.floatingLabelFoundation.float(t),!this.outlined)return;this.outlineOpen=t,await this.updateComplete;const i=e.floatingLabelFoundation.getWidth();this.outlineOpen&&(this.outlineWidth=i,await this.updateComplete)}}a([ce(".mdc-text-field")],er.prototype,"mdcRoot",void 0),a([ce("input")],er.prototype,"formElement",void 0),a([ce(".mdc-floating-label")],er.prototype,"labelElement",void 0),a([ce(".mdc-line-ripple")],er.prototype,"lineRippleElement",void 0),a([ce("mwc-notched-outline")],er.prototype,"outlineElement",void 0),a([ce(".mdc-notched-outline__notch")],er.prototype,"notchElement",void 0),a([re({type:String})],er.prototype,"value",void 0),a([re({type:String})],er.prototype,"type",void 0),a([re({type:String})],er.prototype,"placeholder",void 0),a([re({type:String}),Ma((function(e,t){void 0!==t&&this.label!==t&&this.layout()}))],er.prototype,"label",void 0),a([re({type:String})],er.prototype,"icon",void 0),a([re({type:String})],er.prototype,"iconTrailing",void 0),a([re({type:Boolean,reflect:!0})],er.prototype,"disabled",void 0),a([re({type:Boolean})],er.prototype,"required",void 0),a([re({type:Number})],er.prototype,"minLength",void 0),a([re({type:Number})],er.prototype,"maxLength",void 0),a([re({type:Boolean,reflect:!0}),Ma((function(e,t){void 0!==t&&this.outlined!==t&&this.layout()}))],er.prototype,"outlined",void 0),a([re({type:String})],er.prototype,"helper",void 0),a([re({type:Boolean})],er.prototype,"validateOnInitialRender",void 0),a([re({type:String})],er.prototype,"validationMessage",void 0),a([re({type:Boolean})],er.prototype,"autoValidate",void 0),a([re({type:String})],er.prototype,"pattern",void 0),a([re({type:String})],er.prototype,"min",void 0),a([re({type:String})],er.prototype,"max",void 0),a([re({type:String})],er.prototype,"step",void 0),a([re({type:Number})],er.prototype,"size",void 0),a([re({type:Boolean})],er.prototype,"helperPersistent",void 0),a([re({type:Boolean})],er.prototype,"charCounter",void 0),a([re({type:Boolean})],er.prototype,"endAligned",void 0),a([re({type:String})],er.prototype,"prefix",void 0),a([re({type:String})],er.prototype,"suffix",void 0),a([re({type:String})],er.prototype,"name",void 0),a([re({type:String})],er.prototype,"inputMode",void 0),a([re({type:Boolean})],er.prototype,"readOnly",void 0),a([re({type:String})],er.prototype,"autocapitalize",void 0),a([le()],er.prototype,"outlineOpen",void 0),a([le()],er.prototype,"outlineWidth",void 0),a([le()],er.prototype,"isUiValid",void 0),a([le()],er.prototype,"focused",void 0),a([se({passive:!0})],er.prototype,"handleInputChange",null);
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-LIcense-Identifier: Apache-2.0
- */
-const tr=s`.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);position:absolute;left:0;-webkit-transform-origin:left top;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform;transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}[dir=rtl] .mdc-floating-label,.mdc-floating-label[dir=rtl]{right:0;left:auto;-webkit-transform-origin:right top;transform-origin:right top;text-align:right}.mdc-floating-label--float-above{cursor:auto}.mdc-floating-label--required::after{margin-left:1px;margin-right:0px;content:"*"}[dir=rtl] .mdc-floating-label--required::after,.mdc-floating-label--required[dir=rtl]::after{margin-left:0;margin-right:1px}.mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-standard 250ms 1}@keyframes mdc-floating-label-shake-float-above-standard{0%{transform:translateX(calc(0 - 0%)) translateY(-106%) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-106%) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-106%) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-106%) scale(0.75)}}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{border-bottom-width:1px;z-index:1}.mdc-line-ripple::after{transform:scaleX(0);border-bottom-width:2px;opacity:0;z-index:2}.mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline,.mdc-notched-outline[dir=rtl]{text-align:right}.mdc-notched-outline__leading,.mdc-notched-outline__notch,.mdc-notched-outline__trailing{box-sizing:border-box;height:100%;border-top:1px solid;border-bottom:1px solid;pointer-events:none}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;width:12px}[dir=rtl] .mdc-notched-outline__leading,.mdc-notched-outline__leading[dir=rtl]{border-left:none;border-right:1px solid}.mdc-notched-outline__trailing{border-left:none;border-right:1px solid;flex-grow:1}[dir=rtl] .mdc-notched-outline__trailing,.mdc-notched-outline__trailing[dir=rtl]{border-left:1px solid;border-right:none}.mdc-notched-outline__notch{flex:0 0 auto;width:auto;max-width:calc(100% - 12px * 2)}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(100% / 0.75)}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch,.mdc-notched-outline--notched .mdc-notched-outline__notch[dir=rtl]{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}@keyframes mdc-ripple-fg-radius-in{from{animation-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transform:translate(var(--mdc-ripple-fg-translate-start, 0)) scale(1)}to{transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}}@keyframes mdc-ripple-fg-opacity-in{from{animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity, 0)}}@keyframes mdc-ripple-fg-opacity-out{from{animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity, 0)}to{opacity:0}}.mdc-text-field--filled{--mdc-ripple-fg-size: 0;--mdc-ripple-left: 0;--mdc-ripple-top: 0;--mdc-ripple-fg-scale: 1;--mdc-ripple-fg-translate-end: 0;--mdc-ripple-fg-translate-start: 0;-webkit-tap-highlight-color:rgba(0,0,0,0);will-change:transform,opacity}.mdc-text-field--filled .mdc-text-field__ripple::before,.mdc-text-field--filled .mdc-text-field__ripple::after{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.mdc-text-field--filled .mdc-text-field__ripple::before{transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index, 1)}.mdc-text-field--filled .mdc-text-field__ripple::after{z-index:0;z-index:var(--mdc-ripple-z-index, 0)}.mdc-text-field--filled.mdc-ripple-upgraded .mdc-text-field__ripple::before{transform:scale(var(--mdc-ripple-fg-scale, 1))}.mdc-text-field--filled.mdc-ripple-upgraded .mdc-text-field__ripple::after{top:0;left:0;transform:scale(0);transform-origin:center center}.mdc-text-field--filled.mdc-ripple-upgraded--unbounded .mdc-text-field__ripple::after{top:var(--mdc-ripple-top, 0);left:var(--mdc-ripple-left, 0)}.mdc-text-field--filled.mdc-ripple-upgraded--foreground-activation .mdc-text-field__ripple::after{animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.mdc-text-field--filled.mdc-ripple-upgraded--foreground-deactivation .mdc-text-field__ripple::after{animation:mdc-ripple-fg-opacity-out 150ms;transform:translate(var(--mdc-ripple-fg-translate-end, 0)) scale(var(--mdc-ripple-fg-scale, 1))}.mdc-text-field--filled .mdc-text-field__ripple::before,.mdc-text-field--filled .mdc-text-field__ripple::after{top:calc(50% - 100%);left:calc(50% - 100%);width:200%;height:200%}.mdc-text-field--filled.mdc-ripple-upgraded .mdc-text-field__ripple::after{width:var(--mdc-ripple-fg-size, 100%);height:var(--mdc-ripple-fg-size, 100%)}.mdc-text-field__ripple{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}.mdc-text-field{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:0;border-bottom-left-radius:0;display:inline-flex;align-items:baseline;padding:0 16px;position:relative;box-sizing:border-box;overflow:hidden;will-change:opacity,transform,color}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-floating-label{color:rgba(0, 0, 0, 0.6)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__input{color:rgba(0, 0, 0, 0.87)}@media all{.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:rgba(0, 0, 0, 0.54)}}@media all{.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:rgba(0, 0, 0, 0.54)}}.mdc-text-field .mdc-text-field__input{caret-color:#6200ee;caret-color:var(--mdc-theme-primary, #6200ee)}.mdc-text-field:not(.mdc-text-field--disabled)+.mdc-text-field-helper-line .mdc-text-field-helper-text{color:rgba(0, 0, 0, 0.6)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field-character-counter,.mdc-text-field:not(.mdc-text-field--disabled)+.mdc-text-field-helper-line .mdc-text-field-character-counter{color:rgba(0, 0, 0, 0.6)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__icon--leading{color:rgba(0, 0, 0, 0.54)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__icon--trailing{color:rgba(0, 0, 0, 0.54)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__affix--prefix{color:rgba(0, 0, 0, 0.6)}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-text-field__affix--suffix{color:rgba(0, 0, 0, 0.6)}.mdc-text-field .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-text-field__input{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);height:28px;transition:opacity 150ms 0ms cubic-bezier(0.4, 0, 0.2, 1);width:100%;min-width:0;border:none;border-radius:0;background:none;appearance:none;padding:0}.mdc-text-field__input::-ms-clear{display:none}.mdc-text-field__input::-webkit-calendar-picker-indicator{display:none}.mdc-text-field__input:focus{outline:none}.mdc-text-field__input:invalid{box-shadow:none}@media all{.mdc-text-field__input::placeholder{transition:opacity 67ms 0ms cubic-bezier(0.4, 0, 0.2, 1);opacity:0}}@media all{.mdc-text-field__input:-ms-input-placeholder{transition:opacity 67ms 0ms cubic-bezier(0.4, 0, 0.2, 1);opacity:0}}@media all{.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mdc-text-field--focused .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}}@media all{.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}}.mdc-text-field__affix{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-subtitle1-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:1rem;font-size:var(--mdc-typography-subtitle1-font-size, 1rem);font-weight:400;font-weight:var(--mdc-typography-subtitle1-font-weight, 400);letter-spacing:0.009375em;letter-spacing:var(--mdc-typography-subtitle1-letter-spacing, 0.009375em);text-decoration:inherit;text-decoration:var(--mdc-typography-subtitle1-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-subtitle1-text-transform, inherit);height:28px;transition:opacity 150ms 0ms cubic-bezier(0.4, 0, 0.2, 1);opacity:0;white-space:nowrap}.mdc-text-field--label-floating .mdc-text-field__affix,.mdc-text-field--no-label .mdc-text-field__affix{opacity:1}@supports(-webkit-hyphens: none){.mdc-text-field--outlined .mdc-text-field__affix{align-items:center;align-self:center;display:inline-flex;height:100%}}.mdc-text-field__affix--prefix{padding-left:0;padding-right:2px}[dir=rtl] .mdc-text-field__affix--prefix,.mdc-text-field__affix--prefix[dir=rtl]{padding-left:2px;padding-right:0}.mdc-text-field--end-aligned .mdc-text-field__affix--prefix{padding-left:0;padding-right:12px}[dir=rtl] .mdc-text-field--end-aligned .mdc-text-field__affix--prefix,.mdc-text-field--end-aligned .mdc-text-field__affix--prefix[dir=rtl]{padding-left:12px;padding-right:0}.mdc-text-field__affix--suffix{padding-left:12px;padding-right:0}[dir=rtl] .mdc-text-field__affix--suffix,.mdc-text-field__affix--suffix[dir=rtl]{padding-left:0;padding-right:12px}.mdc-text-field--end-aligned .mdc-text-field__affix--suffix{padding-left:2px;padding-right:0}[dir=rtl] .mdc-text-field--end-aligned .mdc-text-field__affix--suffix,.mdc-text-field--end-aligned .mdc-text-field__affix--suffix[dir=rtl]{padding-left:0;padding-right:2px}.mdc-text-field--filled{height:56px}.mdc-text-field--filled .mdc-text-field__ripple::before,.mdc-text-field--filled .mdc-text-field__ripple::after{background-color:rgba(0, 0, 0, 0.87);background-color:var(--mdc-ripple-color, rgba(0, 0, 0, 0.87))}.mdc-text-field--filled:hover .mdc-text-field__ripple::before,.mdc-text-field--filled.mdc-ripple-surface--hover .mdc-text-field__ripple::before{opacity:0.04;opacity:var(--mdc-ripple-hover-opacity, 0.04)}.mdc-text-field--filled.mdc-ripple-upgraded--background-focused .mdc-text-field__ripple::before,.mdc-text-field--filled:not(.mdc-ripple-upgraded):focus .mdc-text-field__ripple::before{transition-duration:75ms;opacity:0.12;opacity:var(--mdc-ripple-focus-opacity, 0.12)}.mdc-text-field--filled::before{display:inline-block;width:0;height:40px;content:"";vertical-align:0}.mdc-text-field--filled:not(.mdc-text-field--disabled){background-color:whitesmoke}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.42)}.mdc-text-field--filled:not(.mdc-text-field--disabled):hover .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.87)}.mdc-text-field--filled .mdc-line-ripple::after{border-bottom-color:#6200ee;border-bottom-color:var(--mdc-theme-primary, #6200ee)}.mdc-text-field--filled .mdc-floating-label{left:16px;right:initial}[dir=rtl] .mdc-text-field--filled .mdc-floating-label,.mdc-text-field--filled .mdc-floating-label[dir=rtl]{left:initial;right:16px}.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{height:100%}.mdc-text-field--filled.mdc-text-field--no-label .mdc-floating-label{display:none}.mdc-text-field--filled.mdc-text-field--no-label::before{display:none}@supports(-webkit-hyphens: none){.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__affix{align-items:center;align-self:center;display:inline-flex;height:100%}}.mdc-text-field--outlined{height:56px;overflow:visible}.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1)}.mdc-text-field--outlined .mdc-floating-label--float-above{font-size:.75rem}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-text-field--outlined .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-text-field-outlined 250ms 1}@keyframes mdc-floating-label-shake-float-above-text-field-outlined{0%{transform:translateX(calc(0 - 0%)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-34.75px) scale(0.75)}}.mdc-text-field--outlined .mdc-text-field__input{height:100%}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.38)}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__leading,.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__notch,.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.87)}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing{border-color:#6200ee;border-color:var(--mdc-theme-primary, #6200ee)}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}[dir=rtl] .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading,.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading[dir=rtl]{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}@supports(top: max(0%)){.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px, var(--mdc-shape-small, 4px))}}@supports(top: max(0%)){.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:calc(100% - max(12px, var(--mdc-shape-small, 4px)) * 2)}}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing{border-top-left-radius:0;border-top-right-radius:4px;border-top-right-radius:var(--mdc-shape-small, 4px);border-bottom-right-radius:4px;border-bottom-right-radius:var(--mdc-shape-small, 4px);border-bottom-left-radius:0}[dir=rtl] .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing,.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing[dir=rtl]{border-top-left-radius:4px;border-top-left-radius:var(--mdc-shape-small, 4px);border-top-right-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:4px;border-bottom-left-radius:var(--mdc-shape-small, 4px)}@supports(top: max(0%)){.mdc-text-field--outlined{padding-left:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}@supports(top: max(0%)){.mdc-text-field--outlined{padding-right:max(16px, var(--mdc-shape-small, 4px))}}@supports(top: max(0%)){.mdc-text-field--outlined+.mdc-text-field-helper-line{padding-left:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}@supports(top: max(0%)){.mdc-text-field--outlined+.mdc-text-field-helper-line{padding-right:max(16px, var(--mdc-shape-small, 4px))}}.mdc-text-field--outlined.mdc-text-field--with-leading-icon{padding-left:0}@supports(top: max(0%)){.mdc-text-field--outlined.mdc-text-field--with-leading-icon{padding-right:max(16px, var(--mdc-shape-small, 4px))}}[dir=rtl] .mdc-text-field--outlined.mdc-text-field--with-leading-icon,.mdc-text-field--outlined.mdc-text-field--with-leading-icon[dir=rtl]{padding-right:0}@supports(top: max(0%)){[dir=rtl] .mdc-text-field--outlined.mdc-text-field--with-leading-icon,.mdc-text-field--outlined.mdc-text-field--with-leading-icon[dir=rtl]{padding-left:max(16px, var(--mdc-shape-small, 4px))}}.mdc-text-field--outlined.mdc-text-field--with-trailing-icon{padding-right:0}@supports(top: max(0%)){.mdc-text-field--outlined.mdc-text-field--with-trailing-icon{padding-left:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}[dir=rtl] .mdc-text-field--outlined.mdc-text-field--with-trailing-icon,.mdc-text-field--outlined.mdc-text-field--with-trailing-icon[dir=rtl]{padding-left:0}@supports(top: max(0%)){[dir=rtl] .mdc-text-field--outlined.mdc-text-field--with-trailing-icon,.mdc-text-field--outlined.mdc-text-field--with-trailing-icon[dir=rtl]{padding-right:max(16px, calc(var(--mdc-shape-small, 4px) + 4px))}}.mdc-text-field--outlined.mdc-text-field--with-leading-icon.mdc-text-field--with-trailing-icon{padding-left:0;padding-right:0}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-text-field--outlined .mdc-text-field__ripple::before,.mdc-text-field--outlined .mdc-text-field__ripple::after{content:none}.mdc-text-field--outlined .mdc-floating-label{left:4px;right:initial}[dir=rtl] .mdc-text-field--outlined .mdc-floating-label,.mdc-text-field--outlined .mdc-floating-label[dir=rtl]{left:initial;right:4px}.mdc-text-field--outlined .mdc-text-field__input{display:flex;border:none !important;background-color:transparent}.mdc-text-field--outlined .mdc-notched-outline{z-index:1}.mdc-text-field--textarea{flex-direction:column;align-items:center;width:auto;height:auto;padding:0;transition:none}.mdc-text-field--textarea .mdc-floating-label{top:19px}.mdc-text-field--textarea .mdc-floating-label:not(.mdc-floating-label--float-above){transform:none}.mdc-text-field--textarea .mdc-text-field__input{flex-grow:1;height:auto;min-height:1.5rem;overflow-x:hidden;overflow-y:auto;box-sizing:border-box;resize:none;padding:0 16px;line-height:1.5rem}.mdc-text-field--textarea.mdc-text-field--filled::before{display:none}.mdc-text-field--textarea.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-10.25px) scale(0.75)}.mdc-text-field--textarea.mdc-text-field--filled .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-textarea-filled 250ms 1}@keyframes mdc-floating-label-shake-float-above-textarea-filled{0%{transform:translateX(calc(0 - 0%)) translateY(-10.25px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-10.25px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-10.25px) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-10.25px) scale(0.75)}}.mdc-text-field--textarea.mdc-text-field--filled .mdc-text-field__input{margin-top:23px;margin-bottom:9px}.mdc-text-field--textarea.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{margin-top:16px;margin-bottom:16px}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:0}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-27.25px) scale(1)}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-floating-label--float-above{font-size:.75rem}.mdc-text-field--textarea.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--textarea.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-24.75px) scale(0.75)}.mdc-text-field--textarea.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--textarea.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-textarea-outlined 250ms 1}@keyframes mdc-floating-label-shake-float-above-textarea-outlined{0%{transform:translateX(calc(0 - 0%)) translateY(-24.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 0%)) translateY(-24.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 0%)) translateY(-24.75px) scale(0.75)}100%{transform:translateX(calc(0 - 0%)) translateY(-24.75px) scale(0.75)}}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-text-field__input{margin-top:16px;margin-bottom:16px}.mdc-text-field--textarea.mdc-text-field--outlined .mdc-floating-label{top:18px}.mdc-text-field--textarea.mdc-text-field--with-internal-counter .mdc-text-field__input{margin-bottom:2px}.mdc-text-field--textarea.mdc-text-field--with-internal-counter .mdc-text-field-character-counter{align-self:flex-end;padding:0 16px}.mdc-text-field--textarea.mdc-text-field--with-internal-counter .mdc-text-field-character-counter::after{display:inline-block;width:0;height:16px;content:"";vertical-align:-16px}.mdc-text-field--textarea.mdc-text-field--with-internal-counter .mdc-text-field-character-counter::before{display:none}.mdc-text-field__resizer{align-self:stretch;display:inline-flex;flex-direction:column;flex-grow:1;max-height:100%;max-width:100%;min-height:56px;min-width:fit-content;min-width:-moz-available;min-width:-webkit-fill-available;overflow:hidden;resize:both}.mdc-text-field--filled .mdc-text-field__resizer{transform:translateY(-1px)}.mdc-text-field--filled .mdc-text-field__resizer .mdc-text-field__input,.mdc-text-field--filled .mdc-text-field__resizer .mdc-text-field-character-counter{transform:translateY(1px)}.mdc-text-field--outlined .mdc-text-field__resizer{transform:translateX(-1px) translateY(-1px)}[dir=rtl] .mdc-text-field--outlined .mdc-text-field__resizer,.mdc-text-field--outlined .mdc-text-field__resizer[dir=rtl]{transform:translateX(1px) translateY(-1px)}.mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field__input,.mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field-character-counter{transform:translateX(1px) translateY(1px)}[dir=rtl] .mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field__input,[dir=rtl] .mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field-character-counter,.mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field__input[dir=rtl],.mdc-text-field--outlined .mdc-text-field__resizer .mdc-text-field-character-counter[dir=rtl]{transform:translateX(-1px) translateY(1px)}.mdc-text-field--with-leading-icon{padding-left:0;padding-right:16px}[dir=rtl] .mdc-text-field--with-leading-icon,.mdc-text-field--with-leading-icon[dir=rtl]{padding-left:16px;padding-right:0}.mdc-text-field--with-leading-icon.mdc-text-field--filled .mdc-floating-label{max-width:calc(100% - 48px);left:48px;right:initial}[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--filled .mdc-floating-label,.mdc-text-field--with-leading-icon.mdc-text-field--filled .mdc-floating-label[dir=rtl]{left:initial;right:48px}.mdc-text-field--with-leading-icon.mdc-text-field--filled .mdc-floating-label--float-above{max-width:calc(100% / 0.75 - 64px / 0.75)}.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label{left:36px;right:initial}[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label,.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label[dir=rtl]{left:initial;right:36px}.mdc-text-field--with-leading-icon.mdc-text-field--outlined :not(.mdc-notched-outline--notched) .mdc-notched-outline__notch{max-width:calc(100% - 60px)}.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) translateX(-32px) scale(1)}[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--float-above,.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--float-above[dir=rtl]{transform:translateY(-37.25px) translateX(32px) scale(1)}.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--float-above{font-size:.75rem}.mdc-text-field--with-leading-icon.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) translateX(-32px) scale(0.75)}[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--with-leading-icon.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above[dir=rtl],.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above[dir=rtl]{transform:translateY(-34.75px) translateX(32px) scale(0.75)}.mdc-text-field--with-leading-icon.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-text-field-outlined-leading-icon 250ms 1}@keyframes mdc-floating-label-shake-float-above-text-field-outlined-leading-icon{0%{transform:translateX(calc(0 - 32px)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - 32px)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - 32px)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - 32px)) translateY(-34.75px) scale(0.75)}}[dir=rtl] .mdc-text-field--with-leading-icon.mdc-text-field--outlined .mdc-floating-label--shake,.mdc-text-field--with-leading-icon.mdc-text-field--outlined[dir=rtl] .mdc-floating-label--shake{animation:mdc-floating-label-shake-float-above-text-field-outlined-leading-icon 250ms 1}@keyframes mdc-floating-label-shake-float-above-text-field-outlined-leading-icon-rtl{0%{transform:translateX(calc(0 - -32px)) translateY(-34.75px) scale(0.75)}33%{animation-timing-function:cubic-bezier(0.5, 0, 0.701732, 0.495819);transform:translateX(calc(4% - -32px)) translateY(-34.75px) scale(0.75)}66%{animation-timing-function:cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);transform:translateX(calc(-4% - -32px)) translateY(-34.75px) scale(0.75)}100%{transform:translateX(calc(0 - -32px)) translateY(-34.75px) scale(0.75)}}.mdc-text-field--with-trailing-icon{padding-left:16px;padding-right:0}[dir=rtl] .mdc-text-field--with-trailing-icon,.mdc-text-field--with-trailing-icon[dir=rtl]{padding-left:0;padding-right:16px}.mdc-text-field--with-trailing-icon.mdc-text-field--filled .mdc-floating-label{max-width:calc(100% - 64px)}.mdc-text-field--with-trailing-icon.mdc-text-field--filled .mdc-floating-label--float-above{max-width:calc(100% / 0.75 - 64px / 0.75)}.mdc-text-field--with-trailing-icon.mdc-text-field--outlined :not(.mdc-notched-outline--notched) .mdc-notched-outline__notch{max-width:calc(100% - 60px)}.mdc-text-field--with-leading-icon.mdc-text-field--with-trailing-icon{padding-left:0;padding-right:0}.mdc-text-field--with-leading-icon.mdc-text-field--with-trailing-icon.mdc-text-field--filled .mdc-floating-label{max-width:calc(100% - 96px)}.mdc-text-field--with-leading-icon.mdc-text-field--with-trailing-icon.mdc-text-field--filled .mdc-floating-label--float-above{max-width:calc(100% / 0.75 - 96px / 0.75)}.mdc-text-field-helper-line{display:flex;justify-content:space-between;box-sizing:border-box}.mdc-text-field+.mdc-text-field-helper-line{padding-right:16px;padding-left:16px}.mdc-form-field>.mdc-text-field+label{align-self:flex-start}.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-floating-label{color:rgba(98, 0, 238, 0.87)}.mdc-text-field--focused .mdc-notched-outline__leading,.mdc-text-field--focused .mdc-notched-outline__notch,.mdc-text-field--focused .mdc-notched-outline__trailing{border-width:2px}.mdc-text-field--focused+.mdc-text-field-helper-line .mdc-text-field-helper-text:not(.mdc-text-field-helper-text--validation-msg){opacity:1}.mdc-text-field--focused.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-text-field--focused.mdc-text-field--outlined.mdc-text-field--textarea .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:0}.mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-line-ripple::before{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-floating-label{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled).mdc-text-field--invalid+.mdc-text-field-helper-line .mdc-text-field-helper-text--validation-msg{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid .mdc-text-field__input{caret-color:#b00020;caret-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__icon--trailing{color:#b00020;color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__leading,.mdc-text-field--invalid:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__notch,.mdc-text-field--invalid:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,.mdc-text-field--invalid:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,.mdc-text-field--invalid:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing{border-color:#b00020;border-color:var(--mdc-theme-error, #b00020)}.mdc-text-field--invalid+.mdc-text-field-helper-line .mdc-text-field-helper-text--validation-msg{opacity:1}.mdc-text-field--disabled{pointer-events:none}.mdc-text-field--disabled .mdc-text-field__input{color:rgba(0, 0, 0, 0.38)}@media all{.mdc-text-field--disabled .mdc-text-field__input::placeholder{color:rgba(0, 0, 0, 0.38)}}@media all{.mdc-text-field--disabled .mdc-text-field__input:-ms-input-placeholder{color:rgba(0, 0, 0, 0.38)}}.mdc-text-field--disabled .mdc-floating-label{color:rgba(0, 0, 0, 0.38)}.mdc-text-field--disabled+.mdc-text-field-helper-line .mdc-text-field-helper-text{color:rgba(0, 0, 0, 0.38)}.mdc-text-field--disabled .mdc-text-field-character-counter,.mdc-text-field--disabled+.mdc-text-field-helper-line .mdc-text-field-character-counter{color:rgba(0, 0, 0, 0.38)}.mdc-text-field--disabled .mdc-text-field__icon--leading{color:rgba(0, 0, 0, 0.3)}.mdc-text-field--disabled .mdc-text-field__icon--trailing{color:rgba(0, 0, 0, 0.3)}.mdc-text-field--disabled .mdc-text-field__affix--prefix{color:rgba(0, 0, 0, 0.38)}.mdc-text-field--disabled .mdc-text-field__affix--suffix{color:rgba(0, 0, 0, 0.38)}.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.06)}.mdc-text-field--disabled .mdc-notched-outline__leading,.mdc-text-field--disabled .mdc-notched-outline__notch,.mdc-text-field--disabled .mdc-notched-outline__trailing{border-color:rgba(0, 0, 0, 0.06)}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__input::placeholder{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__input:-ms-input-placeholder{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-floating-label{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled+.mdc-text-field-helper-line .mdc-text-field-helper-text{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field-character-counter,.mdc-text-field--disabled+.mdc-text-field-helper-line .mdc-text-field-character-counter{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__icon--leading{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__icon--trailing{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__affix--prefix{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-text-field__affix--suffix{color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:GrayText}}@media screen and (forced-colors: active),(-ms-high-contrast: active){.mdc-text-field--disabled .mdc-notched-outline__leading,.mdc-text-field--disabled .mdc-notched-outline__notch,.mdc-text-field--disabled .mdc-notched-outline__trailing{border-color:GrayText}}@media screen and (forced-colors: active){.mdc-text-field--disabled .mdc-text-field__input{background-color:Window}.mdc-text-field--disabled .mdc-floating-label{z-index:1}}.mdc-text-field--disabled .mdc-floating-label{cursor:default}.mdc-text-field--disabled.mdc-text-field--filled{background-color:#fafafa}.mdc-text-field--disabled.mdc-text-field--filled .mdc-text-field__ripple{display:none}.mdc-text-field--disabled .mdc-text-field__input{pointer-events:auto}.mdc-text-field--end-aligned .mdc-text-field__input{text-align:right}[dir=rtl] .mdc-text-field--end-aligned .mdc-text-field__input,.mdc-text-field--end-aligned .mdc-text-field__input[dir=rtl]{text-align:left}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__input,[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__affix,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__input,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__affix{direction:ltr}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__affix--prefix,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__affix--prefix{padding-left:0;padding-right:2px}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__affix--suffix,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__affix--suffix{padding-left:12px;padding-right:0}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__icon--leading,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__icon--leading{order:1}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__affix--suffix,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__affix--suffix{order:2}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__input,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__input{order:3}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__affix--prefix,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__affix--prefix{order:4}[dir=rtl] .mdc-text-field--ltr-text .mdc-text-field__icon--trailing,.mdc-text-field--ltr-text[dir=rtl] .mdc-text-field__icon--trailing{order:5}[dir=rtl] .mdc-text-field--ltr-text.mdc-text-field--end-aligned .mdc-text-field__input,.mdc-text-field--ltr-text.mdc-text-field--end-aligned[dir=rtl] .mdc-text-field__input{text-align:right}[dir=rtl] .mdc-text-field--ltr-text.mdc-text-field--end-aligned .mdc-text-field__affix--prefix,.mdc-text-field--ltr-text.mdc-text-field--end-aligned[dir=rtl] .mdc-text-field__affix--prefix{padding-right:12px}[dir=rtl] .mdc-text-field--ltr-text.mdc-text-field--end-aligned .mdc-text-field__affix--suffix,.mdc-text-field--ltr-text.mdc-text-field--end-aligned[dir=rtl] .mdc-text-field__affix--suffix{padding-left:2px}.mdc-text-field-helper-text{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-caption-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.75rem;font-size:var(--mdc-typography-caption-font-size, 0.75rem);line-height:1.25rem;line-height:var(--mdc-typography-caption-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-caption-font-weight, 400);letter-spacing:0.0333333333em;letter-spacing:var(--mdc-typography-caption-letter-spacing, 0.0333333333em);text-decoration:inherit;text-decoration:var(--mdc-typography-caption-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-caption-text-transform, inherit);display:block;margin-top:0;line-height:normal;margin:0;opacity:0;will-change:opacity;transition:opacity 150ms 0ms cubic-bezier(0.4, 0, 0.2, 1)}.mdc-text-field-helper-text::before{display:inline-block;width:0;height:16px;content:"";vertical-align:0}.mdc-text-field-helper-text--persistent{transition:none;opacity:1;will-change:initial}.mdc-text-field-character-counter{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:Roboto, sans-serif;font-family:var(--mdc-typography-caption-font-family, var(--mdc-typography-font-family, Roboto, sans-serif));font-size:0.75rem;font-size:var(--mdc-typography-caption-font-size, 0.75rem);line-height:1.25rem;line-height:var(--mdc-typography-caption-line-height, 1.25rem);font-weight:400;font-weight:var(--mdc-typography-caption-font-weight, 400);letter-spacing:0.0333333333em;letter-spacing:var(--mdc-typography-caption-letter-spacing, 0.0333333333em);text-decoration:inherit;text-decoration:var(--mdc-typography-caption-text-decoration, inherit);text-transform:inherit;text-transform:var(--mdc-typography-caption-text-transform, inherit);display:block;margin-top:0;line-height:normal;margin-left:auto;margin-right:0;padding-left:16px;padding-right:0;white-space:nowrap}.mdc-text-field-character-counter::before{display:inline-block;width:0;height:16px;content:"";vertical-align:0}[dir=rtl] .mdc-text-field-character-counter,.mdc-text-field-character-counter[dir=rtl]{margin-left:0;margin-right:auto}[dir=rtl] .mdc-text-field-character-counter,.mdc-text-field-character-counter[dir=rtl]{padding-left:0;padding-right:16px}.mdc-text-field__icon{align-self:center;cursor:pointer}.mdc-text-field__icon:not([tabindex]),.mdc-text-field__icon[tabindex="-1"]{cursor:default;pointer-events:none}.mdc-text-field__icon svg{display:block}.mdc-text-field__icon--leading{margin-left:16px;margin-right:8px}[dir=rtl] .mdc-text-field__icon--leading,.mdc-text-field__icon--leading[dir=rtl]{margin-left:8px;margin-right:16px}.mdc-text-field__icon--trailing{padding:12px;margin-left:0px;margin-right:0px}[dir=rtl] .mdc-text-field__icon--trailing,.mdc-text-field__icon--trailing[dir=rtl]{margin-left:0px;margin-right:0px}.material-icons{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}:host{display:inline-flex;flex-direction:column;outline:none}.mdc-text-field{width:100%}.mdc-text-field:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.42);border-bottom-color:var(--mdc-text-field-idle-line-color, rgba(0, 0, 0, 0.42))}.mdc-text-field:not(.mdc-text-field--disabled):hover .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.87);border-bottom-color:var(--mdc-text-field-hover-line-color, rgba(0, 0, 0, 0.87))}.mdc-text-field.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:rgba(0, 0, 0, 0.06);border-bottom-color:var(--mdc-text-field-disabled-line-color, rgba(0, 0, 0, 0.06))}.mdc-text-field.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:#b00020;border-bottom-color:var(--mdc-theme-error, #b00020)}.mdc-text-field__input{direction:inherit}mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-text-field-outlined-idle-border-color, rgba(0, 0, 0, 0.38) )}:host(:not([disabled]):hover) :not(.mdc-text-field--invalid):not(.mdc-text-field--focused) mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-text-field-outlined-hover-border-color, rgba(0, 0, 0, 0.87) )}:host(:not([disabled])) .mdc-text-field:not(.mdc-text-field--outlined){background-color:var(--mdc-text-field-fill-color, whitesmoke)}:host(:not([disabled])) .mdc-text-field.mdc-text-field--invalid mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-text-field-error-color, var(--mdc-theme-error, #b00020) )}:host(:not([disabled])) .mdc-text-field.mdc-text-field--invalid+.mdc-text-field-helper-line .mdc-text-field-character-counter,:host(:not([disabled])) .mdc-text-field.mdc-text-field--invalid .mdc-text-field__icon{color:var(--mdc-text-field-error-color, var(--mdc-theme-error, #b00020))}:host(:not([disabled])) .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused) .mdc-floating-label,:host(:not([disabled])) .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused) .mdc-floating-label::after{color:var(--mdc-text-field-label-ink-color, rgba(0, 0, 0, 0.6))}:host(:not([disabled])) .mdc-text-field.mdc-text-field--focused mwc-notched-outline{--mdc-notched-outline-stroke-width: 2px}:host(:not([disabled])) .mdc-text-field.mdc-text-field--focused:not(.mdc-text-field--invalid) mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-text-field-focused-label-color, var(--mdc-theme-primary, rgba(98, 0, 238, 0.87)) )}:host(:not([disabled])) .mdc-text-field.mdc-text-field--focused:not(.mdc-text-field--invalid) .mdc-floating-label{color:#6200ee;color:var(--mdc-theme-primary, #6200ee)}:host(:not([disabled])) .mdc-text-field .mdc-text-field__input{color:var(--mdc-text-field-ink-color, rgba(0, 0, 0, 0.87))}:host(:not([disabled])) .mdc-text-field .mdc-text-field__input::placeholder{color:var(--mdc-text-field-label-ink-color, rgba(0, 0, 0, 0.6))}:host(:not([disabled])) .mdc-text-field-helper-line .mdc-text-field-helper-text:not(.mdc-text-field-helper-text--validation-msg),:host(:not([disabled])) .mdc-text-field-helper-line:not(.mdc-text-field--invalid) .mdc-text-field-character-counter{color:var(--mdc-text-field-label-ink-color, rgba(0, 0, 0, 0.6))}:host([disabled]) .mdc-text-field:not(.mdc-text-field--outlined){background-color:var(--mdc-text-field-disabled-fill-color, #fafafa)}:host([disabled]) .mdc-text-field.mdc-text-field--outlined mwc-notched-outline{--mdc-notched-outline-border-color: var( --mdc-text-field-outlined-disabled-border-color, rgba(0, 0, 0, 0.06) )}:host([disabled]) .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused) .mdc-floating-label,:host([disabled]) .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused) .mdc-floating-label::after{color:var(--mdc-text-field-disabled-ink-color, rgba(0, 0, 0, 0.38))}:host([disabled]) .mdc-text-field .mdc-text-field__input,:host([disabled]) .mdc-text-field .mdc-text-field__input::placeholder{color:var(--mdc-text-field-disabled-ink-color, rgba(0, 0, 0, 0.38))}:host([disabled]) .mdc-text-field-helper-line .mdc-text-field-helper-text,:host([disabled]) .mdc-text-field-helper-line .mdc-text-field-character-counter{color:var(--mdc-text-field-disabled-ink-color, rgba(0, 0, 0, 0.38))}`,ir={"mwc-textfield":class extends er{static get styles(){return tr}},"mwc-notched-outline":class extends An{static get styles(){return zn}}};let ar=class extends(
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-function(e){return class extends e{createRenderRoot(){const e=this.constructor,{registry:t,elementDefinitions:i,shadowRootOptions:a}=e;i&&!t&&(e.registry=new CustomElementRegistry,Object.entries(i).forEach((([t,i])=>e.registry.define(t,i))));const o=this.renderOptions.creationScope=this.attachShadow({...a,customElements:e.registry});return c(o,this.constructor.elementStyles),o}}}(ie)){constructor(){super(...arguments),this._initialized=!1}setConfig(e){this._config=e,this.loadCardHelpers()}shouldUpdate(){return this._initialized||this._initialize(),!0}get _entity(){var e;return(null===(e=this._config)||void 0===e?void 0:e.entity)||""}get _image(){var e;return(null===(e=this._config)||void 0===e?void 0:e.image)||""}get _model(){var e;return(null===(e=this._config)||void 0===e?void 0:e.model)||!1}get _unit(){var e;return(null===(e=this._config)||void 0===e?void 0:e.unit)||!1}get _theme(){var e;return(null===(e=this._config)||void 0===e?void 0:e.theme)||!1}get _show_name(){var e;return(null===(e=this._config)||void 0===e?void 0:e.show_name)||!1}get _show_states(){var e;return(null===(e=this._config)||void 0===e?void 0:e.show_states)||!1}get _show_attributes(){var e;return(null===(e=this._config)||void 0===e?void 0:e.show_attributes)||!1}get _show_body(){var e;return!1!==this._show_toolbar&&((null===(e=this._config)||void 0===e?void 0:e.show_body)||!1)}get _show_buttons(){var e;return!1!==this._show_toolbar&&((null===(e=this._config)||void 0===e?void 0:e.show_buttons)||!1)}get _always_show_details(){var e;return(null===(e=this._config)||void 0===e?void 0:e.always_show_details)||!1}get _show_toolbar(){var e;return(null===(e=this._config)||void 0===e?void 0:e.show_toolbar)||!1}render(){if(!this.hass||!this._helpers)return N``;const e=Object.keys(this.hass.states).filter((e=>"bodymiscale"===e.substr(0,e.indexOf("."))));return N`
-      <div class="card-config">
-        <p>
-          ${ga("editor.code_information")}
-        </p>
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
-        <mwc-select
-          naturalMenuWidth
-          fixedMenuPosition
-          label="${ga("editor.entity")}"
-          .configValue=${"entity"}
-          .value=${this._entity}
-          @selected=${this._valueChanged}
-          @closed=${e=>e.stopPropagation()}
+
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const t$3=window,e$4=t$3.ShadowRoot&&(void 0===t$3.ShadyCSS||t$3.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,s$3=Symbol(),n$5=new WeakMap;let o$4 = class o{constructor(t,e,n){if(this._$cssResult$=true,n!==s$3)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e;}get styleSheet(){let t=this.o;const s=this.t;if(e$4&&void 0===t){const e=void 0!==s&&1===s.length;e&&(t=n$5.get(s)),void 0===t&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),e&&n$5.set(s,t));}return t}toString(){return this.cssText}};const r$3=t=>new o$4("string"==typeof t?t:t+"",void 0,s$3),i$2=(t,...e)=>{const n=1===t.length?t[0]:e.reduce(((e,s,n)=>e+(t=>{if(true===t._$cssResult$)return t.cssText;if("number"==typeof t)return t;throw Error("Value passed to 'css' function must be a 'css' function result: "+t+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(s)+t[n+1]),t[0]);return new o$4(n,t,s$3)},S$2=(s,n)=>{e$4?s.adoptedStyleSheets=n.map((t=>t instanceof CSSStyleSheet?t:t.styleSheet)):n.forEach((e=>{const n=document.createElement("style"),o=t$3.litNonce;void 0!==o&&n.setAttribute("nonce",o),n.textContent=e.cssText,s.appendChild(n);}));},c$1=e$4?t=>t:t=>t instanceof CSSStyleSheet?(t=>{let e="";for(const s of t.cssRules)e+=s.cssText;return r$3(e)})(t):t;
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */var s$2;const e$3=window,r$2=e$3.trustedTypes,h$1=r$2?r$2.emptyScript:"",o$3=e$3.reactiveElementPolyfillSupport,n$4={toAttribute(t,i){switch(i){case Boolean:t=t?h$1:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t);}return t},fromAttribute(t,i){let s=t;switch(i){case Boolean:s=null!==t;break;case Number:s=null===t?null:Number(t);break;case Object:case Array:try{s=JSON.parse(t);}catch(t){s=null;}}return s}},a$2=(t,i)=>i!==t&&(i==i||t==t),l$3={attribute:true,type:String,converter:n$4,reflect:false,hasChanged:a$2},d$1="finalized";let u$1 = class u extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=false,this.hasUpdated=false,this._$El=null,this._$Eu();}static addInitializer(t){var i;this.finalize(),(null!==(i=this.h)&&void 0!==i?i:this.h=[]).push(t);}static get observedAttributes(){this.finalize();const t=[];return this.elementProperties.forEach(((i,s)=>{const e=this._$Ep(s,i);void 0!==e&&(this._$Ev.set(e,s),t.push(e));})),t}static createProperty(t,i=l$3){if(i.state&&(i.attribute=false),this.finalize(),this.elementProperties.set(t,i),!i.noAccessor&&!this.prototype.hasOwnProperty(t)){const s="symbol"==typeof t?Symbol():"__"+t,e=this.getPropertyDescriptor(t,s,i);void 0!==e&&Object.defineProperty(this.prototype,t,e);}}static getPropertyDescriptor(t,i,s){return {get(){return this[i]},set(e){const r=this[t];this[i]=e,this.requestUpdate(t,r,s);},configurable:true,enumerable:true}}static getPropertyOptions(t){return this.elementProperties.get(t)||l$3}static finalize(){if(this.hasOwnProperty(d$1))return  false;this[d$1]=true;const t=Object.getPrototypeOf(this);if(t.finalize(),void 0!==t.h&&(this.h=[...t.h]),this.elementProperties=new Map(t.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){const t=this.properties,i=[...Object.getOwnPropertyNames(t),...Object.getOwnPropertySymbols(t)];for(const s of i)this.createProperty(s,t[s]);}return this.elementStyles=this.finalizeStyles(this.styles),true}static finalizeStyles(i){const s=[];if(Array.isArray(i)){const e=new Set(i.flat(1/0).reverse());for(const i of e)s.unshift(c$1(i));}else void 0!==i&&s.push(c$1(i));return s}static _$Ep(t,i){const s=i.attribute;return  false===s?void 0:"string"==typeof s?s:"string"==typeof t?t.toLowerCase():void 0}_$Eu(){var t;this._$E_=new Promise((t=>this.enableUpdating=t)),this._$AL=new Map,this._$Eg(),this.requestUpdate(),null===(t=this.constructor.h)||void 0===t||t.forEach((t=>t(this)));}addController(t){var i,s;(null!==(i=this._$ES)&&void 0!==i?i:this._$ES=[]).push(t),void 0!==this.renderRoot&&this.isConnected&&(null===(s=t.hostConnected)||void 0===s||s.call(t));}removeController(t){var i;null===(i=this._$ES)||void 0===i||i.splice(this._$ES.indexOf(t)>>>0,1);}_$Eg(){this.constructor.elementProperties.forEach(((t,i)=>{this.hasOwnProperty(i)&&(this._$Ei.set(i,this[i]),delete this[i]);}));}createRenderRoot(){var t;const s=null!==(t=this.shadowRoot)&&void 0!==t?t:this.attachShadow(this.constructor.shadowRootOptions);return S$2(s,this.constructor.elementStyles),s}connectedCallback(){var t;void 0===this.renderRoot&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(true),null===(t=this._$ES)||void 0===t||t.forEach((t=>{var i;return null===(i=t.hostConnected)||void 0===i?void 0:i.call(t)}));}enableUpdating(t){}disconnectedCallback(){var t;null===(t=this._$ES)||void 0===t||t.forEach((t=>{var i;return null===(i=t.hostDisconnected)||void 0===i?void 0:i.call(t)}));}attributeChangedCallback(t,i,s){this._$AK(t,s);}_$EO(t,i,s=l$3){var e;const r=this.constructor._$Ep(t,s);if(void 0!==r&&true===s.reflect){const h=(void 0!==(null===(e=s.converter)||void 0===e?void 0:e.toAttribute)?s.converter:n$4).toAttribute(i,s.type);this._$El=t,null==h?this.removeAttribute(r):this.setAttribute(r,h),this._$El=null;}}_$AK(t,i){var s;const e=this.constructor,r=e._$Ev.get(t);if(void 0!==r&&this._$El!==r){const t=e.getPropertyOptions(r),h="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==(null===(s=t.converter)||void 0===s?void 0:s.fromAttribute)?t.converter:n$4;this._$El=r,this[r]=h.fromAttribute(i,t.type),this._$El=null;}}requestUpdate(t,i,s){let e=true;void 0!==t&&(((s=s||this.constructor.getPropertyOptions(t)).hasChanged||a$2)(this[t],i)?(this._$AL.has(t)||this._$AL.set(t,i),true===s.reflect&&this._$El!==t&&(void 0===this._$EC&&(this._$EC=new Map),this._$EC.set(t,s))):e=false),!this.isUpdatePending&&e&&(this._$E_=this._$Ej());}async _$Ej(){this.isUpdatePending=true;try{await this._$E_;}catch(t){Promise.reject(t);}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var t;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach(((t,i)=>this[i]=t)),this._$Ei=void 0);let i=false;const s=this._$AL;try{i=this.shouldUpdate(s),i?(this.willUpdate(s),null===(t=this._$ES)||void 0===t||t.forEach((t=>{var i;return null===(i=t.hostUpdate)||void 0===i?void 0:i.call(t)})),this.update(s)):this._$Ek();}catch(t){throw i=false,this._$Ek(),t}i&&this._$AE(s);}willUpdate(t){}_$AE(t){var i;null===(i=this._$ES)||void 0===i||i.forEach((t=>{var i;return null===(i=t.hostUpdated)||void 0===i?void 0:i.call(t)})),this.hasUpdated||(this.hasUpdated=true,this.firstUpdated(t)),this.updated(t);}_$Ek(){this._$AL=new Map,this.isUpdatePending=false;}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(t){return  true}update(t){ void 0!==this._$EC&&(this._$EC.forEach(((t,i)=>this._$EO(i,this[i],t))),this._$EC=void 0),this._$Ek();}updated(t){}firstUpdated(t){}};u$1[d$1]=true,u$1.elementProperties=new Map,u$1.elementStyles=[],u$1.shadowRootOptions={mode:"open"},null==o$3||o$3({ReactiveElement:u$1}),(null!==(s$2=e$3.reactiveElementVersions)&&void 0!==s$2?s$2:e$3.reactiveElementVersions=[]).push("1.6.3");
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+var t$2;const i$1=window,s$1=i$1.trustedTypes,e$2=s$1?s$1.createPolicy("lit-html",{createHTML:t=>t}):void 0,o$2="$lit$",n$3=`lit$${(Math.random()+"").slice(9)}$`,l$2="?"+n$3,h=`<${l$2}>`,r$1=document,u=()=>r$1.createComment(""),d=t=>null===t||"object"!=typeof t&&"function"!=typeof t,c=Array.isArray,v=t=>c(t)||"function"==typeof(null==t?void 0:t[Symbol.iterator]),a$1="[ \t\n\f\r]",f=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,_=/-->/g,m=/>/g,p=RegExp(`>|${a$1}(?:([^\\s"'>=/]+)(${a$1}*=${a$1}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),g=/'/g,$=/"/g,y=/^(?:script|style|textarea|title)$/i,w=t=>(i,...s)=>({_$litType$:t,strings:i,values:s}),x=w(1),T=Symbol.for("lit-noChange"),A=Symbol.for("lit-nothing"),E=new WeakMap,C=r$1.createTreeWalker(r$1,129,null,false);function P(t,i){if(!Array.isArray(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==e$2?e$2.createHTML(i):i}const V$1=(t,i)=>{const s=t.length-1,e=[];let l,r=2===i?"<svg>":"",u=f;for(let i=0;i<s;i++){const s=t[i];let d,c,v=-1,a=0;for(;a<s.length&&(u.lastIndex=a,c=u.exec(s),null!==c);)a=u.lastIndex,u===f?"!--"===c[1]?u=_:void 0!==c[1]?u=m:void 0!==c[2]?(y.test(c[2])&&(l=RegExp("</"+c[2],"g")),u=p):void 0!==c[3]&&(u=p):u===p?">"===c[0]?(u=null!=l?l:f,v=-1):void 0===c[1]?v=-2:(v=u.lastIndex-c[2].length,d=c[1],u=void 0===c[3]?p:'"'===c[3]?$:g):u===$||u===g?u=p:u===_||u===m?u=f:(u=p,l=void 0);const w=u===p&&t[i+1].startsWith("/>")?" ":"";r+=u===f?s+h:v>=0?(e.push(d),s.slice(0,v)+o$2+s.slice(v)+n$3+w):s+n$3+(-2===v?(e.push(void 0),i):w);}return [P(t,r+(t[s]||"<?>")+(2===i?"</svg>":"")),e]};class N{constructor({strings:t,_$litType$:i},e){let h;this.parts=[];let r=0,d=0;const c=t.length-1,v=this.parts,[a,f]=V$1(t,i);if(this.el=N.createElement(a,e),C.currentNode=this.el.content,2===i){const t=this.el.content,i=t.firstChild;i.remove(),t.append(...i.childNodes);}for(;null!==(h=C.nextNode())&&v.length<c;){if(1===h.nodeType){if(h.hasAttributes()){const t=[];for(const i of h.getAttributeNames())if(i.endsWith(o$2)||i.startsWith(n$3)){const s=f[d++];if(t.push(i),void 0!==s){const t=h.getAttribute(s.toLowerCase()+o$2).split(n$3),i=/([.?@])?(.*)/.exec(s);v.push({type:1,index:r,name:i[2],strings:t,ctor:"."===i[1]?H$1:"?"===i[1]?L:"@"===i[1]?z:k});}else v.push({type:6,index:r});}for(const i of t)h.removeAttribute(i);}if(y.test(h.tagName)){const t=h.textContent.split(n$3),i=t.length-1;if(i>0){h.textContent=s$1?s$1.emptyScript:"";for(let s=0;s<i;s++)h.append(t[s],u()),C.nextNode(),v.push({type:2,index:++r});h.append(t[i],u());}}}else if(8===h.nodeType)if(h.data===l$2)v.push({type:2,index:r});else {let t=-1;for(;-1!==(t=h.data.indexOf(n$3,t+1));)v.push({type:7,index:r}),t+=n$3.length-1;}r++;}}static createElement(t,i){const s=r$1.createElement("template");return s.innerHTML=t,s}}function S$1(t,i,s=t,e){var o,n,l,h;if(i===T)return i;let r=void 0!==e?null===(o=s._$Co)||void 0===o?void 0:o[e]:s._$Cl;const u=d(i)?void 0:i._$litDirective$;return (null==r?void 0:r.constructor)!==u&&(null===(n=null==r?void 0:r._$AO)||void 0===n||n.call(r,false),void 0===u?r=void 0:(r=new u(t),r._$AT(t,s,e)),void 0!==e?(null!==(l=(h=s)._$Co)&&void 0!==l?l:h._$Co=[])[e]=r:s._$Cl=r),void 0!==r&&(i=S$1(t,r._$AS(t,i.values),r,e)),i}class M{constructor(t,i){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=i;}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){var i;const{el:{content:s},parts:e}=this._$AD,o=(null!==(i=null==t?void 0:t.creationScope)&&void 0!==i?i:r$1).importNode(s,true);C.currentNode=o;let n=C.nextNode(),l=0,h=0,u=e[0];for(;void 0!==u;){if(l===u.index){let i;2===u.type?i=new R(n,n.nextSibling,this,t):1===u.type?i=new u.ctor(n,u.name,u.strings,this,t):6===u.type&&(i=new Z(n,this,t)),this._$AV.push(i),u=e[++h];}l!==(null==u?void 0:u.index)&&(n=C.nextNode(),l++);}return C.currentNode=r$1,o}v(t){let i=0;for(const s of this._$AV) void 0!==s&&(void 0!==s.strings?(s._$AI(t,s,i),i+=s.strings.length-2):s._$AI(t[i])),i++;}}class R{constructor(t,i,s,e){var o;this.type=2,this._$AH=A,this._$AN=void 0,this._$AA=t,this._$AB=i,this._$AM=s,this.options=e,this._$Cp=null===(o=null==e?void 0:e.isConnected)||void 0===o||o;}get _$AU(){var t,i;return null!==(i=null===(t=this._$AM)||void 0===t?void 0:t._$AU)&&void 0!==i?i:this._$Cp}get parentNode(){let t=this._$AA.parentNode;const i=this._$AM;return void 0!==i&&11===(null==t?void 0:t.nodeType)&&(t=i.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,i=this){t=S$1(this,t,i),d(t)?t===A||null==t||""===t?(this._$AH!==A&&this._$AR(),this._$AH=A):t!==this._$AH&&t!==T&&this._(t):void 0!==t._$litType$?this.g(t):void 0!==t.nodeType?this.$(t):v(t)?this.T(t):this._(t);}k(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}$(t){this._$AH!==t&&(this._$AR(),this._$AH=this.k(t));}_(t){this._$AH!==A&&d(this._$AH)?this._$AA.nextSibling.data=t:this.$(r$1.createTextNode(t)),this._$AH=t;}g(t){var i;const{values:s,_$litType$:e}=t,o="number"==typeof e?this._$AC(t):(void 0===e.el&&(e.el=N.createElement(P(e.h,e.h[0]),this.options)),e);if((null===(i=this._$AH)||void 0===i?void 0:i._$AD)===o)this._$AH.v(s);else {const t=new M(o,this),i=t.u(this.options);t.v(s),this.$(i),this._$AH=t;}}_$AC(t){let i=E.get(t.strings);return void 0===i&&E.set(t.strings,i=new N(t)),i}T(t){c(this._$AH)||(this._$AH=[],this._$AR());const i=this._$AH;let s,e=0;for(const o of t)e===i.length?i.push(s=new R(this.k(u()),this.k(u()),this,this.options)):s=i[e],s._$AI(o),e++;e<i.length&&(this._$AR(s&&s._$AB.nextSibling,e),i.length=e);}_$AR(t=this._$AA.nextSibling,i){var s;for(null===(s=this._$AP)||void 0===s||s.call(this,false,true,i);t&&t!==this._$AB;){const i=t.nextSibling;t.remove(),t=i;}}setConnected(t){var i;void 0===this._$AM&&(this._$Cp=t,null===(i=this._$AP)||void 0===i||i.call(this,t));}}class k{constructor(t,i,s,e,o){this.type=1,this._$AH=A,this._$AN=void 0,this.element=t,this.name=i,this._$AM=e,this.options=o,s.length>2||""!==s[0]||""!==s[1]?(this._$AH=Array(s.length-1).fill(new String),this.strings=s):this._$AH=A;}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(t,i=this,s,e){const o=this.strings;let n=false;if(void 0===o)t=S$1(this,t,i,0),n=!d(t)||t!==this._$AH&&t!==T,n&&(this._$AH=t);else {const e=t;let l,h;for(t=o[0],l=0;l<o.length-1;l++)h=S$1(this,e[s+l],i,l),h===T&&(h=this._$AH[l]),n||(n=!d(h)||h!==this._$AH[l]),h===A?t=A:t!==A&&(t+=(null!=h?h:"")+o[l+1]),this._$AH[l]=h;}n&&!e&&this.j(t);}j(t){t===A?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,null!=t?t:"");}}let H$1 = class H extends k{constructor(){super(...arguments),this.type=3;}j(t){this.element[this.name]=t===A?void 0:t;}};const I=s$1?s$1.emptyScript:"";class L extends k{constructor(){super(...arguments),this.type=4;}j(t){t&&t!==A?this.element.setAttribute(this.name,I):this.element.removeAttribute(this.name);}}class z extends k{constructor(t,i,s,e,o){super(t,i,s,e,o),this.type=5;}_$AI(t,i=this){var s;if((t=null!==(s=S$1(this,t,i,0))&&void 0!==s?s:A)===T)return;const e=this._$AH,o=t===A&&e!==A||t.capture!==e.capture||t.once!==e.once||t.passive!==e.passive,n=t!==A&&(e===A||o);o&&this.element.removeEventListener(this.name,this,e),n&&this.element.addEventListener(this.name,this,t),this._$AH=t;}handleEvent(t){var i,s;"function"==typeof this._$AH?this._$AH.call(null!==(s=null===(i=this.options)||void 0===i?void 0:i.host)&&void 0!==s?s:this.element,t):this._$AH.handleEvent(t);}}class Z{constructor(t,i,s){this.element=t,this.type=6,this._$AN=void 0,this._$AM=i,this.options=s;}get _$AU(){return this._$AM._$AU}_$AI(t){S$1(this,t);}}const B$1=i$1.litHtmlPolyfillSupport;null==B$1||B$1(N,R),(null!==(t$2=i$1.litHtmlVersions)&&void 0!==t$2?t$2:i$1.litHtmlVersions=[]).push("2.8.0");const D$1=(t,i,s)=>{var e,o;const n=null!==(e=null==s?void 0:s.renderBefore)&&void 0!==e?e:i;let l=n._$litPart$;if(void 0===l){const t=null!==(o=null==s?void 0:s.renderBefore)&&void 0!==o?o:null;n._$litPart$=l=new R(i.insertBefore(u(),t),t,void 0,null!=s?s:{});}return l._$AI(t),l};
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */var l$1,o$1;class s extends u$1{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0;}createRenderRoot(){var t,e;const i=super.createRenderRoot();return null!==(t=(e=this.renderOptions).renderBefore)&&void 0!==t||(e.renderBefore=i.firstChild),i}update(t){const i=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=D$1(i,this.renderRoot,this.renderOptions);}connectedCallback(){var t;super.connectedCallback(),null===(t=this._$Do)||void 0===t||t.setConnected(true);}disconnectedCallback(){var t;super.disconnectedCallback(),null===(t=this._$Do)||void 0===t||t.setConnected(false);}render(){return T}}s.finalized=true,s._$litElement$=true,null===(l$1=globalThis.litElementHydrateSupport)||void 0===l$1||l$1.call(globalThis,{LitElement:s});const n$2=globalThis.litElementPolyfillSupport;null==n$2||n$2({LitElement:s});(null!==(o$1=globalThis.litElementVersions)&&void 0!==o$1?o$1:globalThis.litElementVersions=[]).push("3.3.3");
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const e$1=e=>n=>"function"==typeof n?((e,n)=>(customElements.define(e,n),n))(e,n):((e,n)=>{const{kind:t,elements:s}=n;return {kind:t,elements:s,finisher(n){customElements.define(e,n);}}})(e,n);
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const i=(i,e)=>"method"===e.kind&&e.descriptor&&!("value"in e.descriptor)?{...e,finisher(n){n.createProperty(e.key,i);}}:{kind:"field",key:Symbol(),placement:"own",descriptor:{},originalKey:e.key,initializer(){"function"==typeof e.initializer&&(this[e.key]=e.initializer.call(this));},finisher(n){n.createProperty(e.key,i);}},e=(i,e,n)=>{e.constructor.createProperty(n,i);};function n$1(n){return (t,o)=>void 0!==o?e(n,t,o):i(n,t)}
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */function t$1(t){return n$1({...t,state:true})}
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */var n;null!=(null===(n=window.HTMLSlotElement)||void 0===n?void 0:n.prototype.assignedElements)?(o,n)=>o.assignedElements(n):(o,n)=>o.assignedNodes(n).filter((o=>o.nodeType===Node.ELEMENT_NODE));
+
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */const l=l=>null!=l?l:A;
+
+var t,r,a=function(e,t){return o(t).format(e)},o=function(e){return new Intl.DateTimeFormat(e.language,{year:"numeric",month:"long",day:"numeric"})};!function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none";}(t||(t={})),function(e){e.language="language",e.system="system",e.am_pm="12",e.twenty_four="24";}(r||(r={}));var b=function(e){if(e.time_format===r.language||e.time_format===r.system){var t=e.time_format===r.language?e.language:void 0,n=(new Date).toLocaleString(t);return n.includes("AM")||n.includes("PM")}return e.time_format===r.am_pm},D=function(e,t){return S(t).format(e)},S=function(e){return new Intl.DateTimeFormat(e.language,{hour:"numeric",minute:"2-digit",hour12:b(e)})};function O(){return (O=Object.assign||function(e){for(var t=1;t<arguments.length;t++){var r=arguments[t];for(var n in r)Object.prototype.hasOwnProperty.call(r,n)&&(e[n]=r[n]);}return e}).apply(this,arguments)}var U=function(e){switch(e.number_format){case t.comma_decimal:return ["en-US","en"];case t.decimal_comma:return ["de","es","it"];case t.space_comma:return ["fr","sv","cs"];case t.system:return;default:return e.language}},B=function(e,t){return void 0===t&&(t=2),Math.round(e*Math.pow(10,t))/Math.pow(10,t)},H=function(e,r,n){var i=r?U(r):void 0;if(Number.isNaN=Number.isNaN||function e(t){return "number"==typeof t&&e(t)},(null==r?void 0:r.number_format)!==t.none&&!Number.isNaN(Number(e))&&Intl)try{return new Intl.NumberFormat(i,V(e,n)).format(Number(e))}catch(t){return console.error(t),new Intl.NumberFormat(void 0,V(e,n)).format(Number(e))}return "string"==typeof e?e:B(e,void 0).toString()+("")},V=function(e,t){var r=O({maximumFractionDigits:2},t);if("string"!=typeof e)return r;{var n=e.indexOf(".")>-1?e.split(".")[1].length:0;r.minimumFractionDigits=n,r.maximumFractionDigits=n;}return r},ne=function(e,t,r,n){n=n||{},r=null==r?{}:r;var i=new Event(t,{bubbles:void 0===n.bubbles||n.bubbles,cancelable:Boolean(n.cancelable),composed:void 0===n.composed||n.composed});return i.detail=r,e.dispatchEvent(i),i};function _e(e,t,r){if(t.has("config")||r)return  true;if(e.config.entity){var n=t.get("hass");return !n||n.states[e.config.entity]!==e.hass.states[e.config.entity]}return  false}
+
+var common$f = {
+	version: "Verze",
+	name: "Karta Bodymiscale",
+	description: "Karta bodymiscale ukazuje údaje ohledně váhy a tělesných proporcí",
+	not_available: "Bodymiscale není dostupná",
+	toggle_power: "Více podrobností jako například BMI kCal zobrazit / skrýt"
+};
+var states$g = {
+	ok: "MĚŘENÍ: OK",
+	unknown: "STAV: neznámý",
+	problem: "Problém",
+	none: "Žádný",
+	weight_unavailable: "Váha není dostupná",
+	impedance_unavailable: "Impedance není dostupná",
+	weight_unavailable_and_impedance_unavailable: "Váha a impedance není dostupná",
+	weight_low: "nízká váha",
+	impedance_low: "nízká impedance",
+	weight_low_and_impedance_low: "nízká Váha a impedance",
+	impedance_low_and_weight_low: "nízká Impedance a váha",
+	weight_high: "vysoká váha",
+	impedance_high: "vysoká impedance",
+	weight_high_and_impedance_high: "vysoká Váha a impedance",
+	weight_high_and_impedance_low: "vysoká váha, nízká impedance",
+	weight_low_and_impedance_high: "nízká váha, vysoká impedance"
+};
+var attributes$f = {
+	"weight: ": "Váha: ",
+	"impedance: ": "Impedance: ",
+	"height: ": "Výška: ",
+	"age: ": "Věk: ",
+	"gender: ": "Pohlaví: "
+};
+var attributes_value$f = {
+	male: "muž",
+	female: "žena",
+	unavailable: "nedostupná"
+};
+var body$f = {
+	bmi: "BMI",
+	bmi_label: "BMI popis",
+	visceral_fat: "Viscerální tuk",
+	body_fat: "Tělesný tuk",
+	protein: "Protein",
+	water: "Voda",
+	muscle_mass: "Svalová hmota",
+	bone_mass: "Kostní hmota",
+	weight: "Váha",
+	ideal: "Ideální",
+	basal_metabolism: "Základní metabolismus",
+	body_type: "Tělesný typ",
+	metabolic_age: "Metabolický věk"
+};
+var body_value$f = {
+	skinny: "štíhlý",
+	balanced_skinny: "štíhlý-vyvážený",
+	skinny_muscular: "štíhlý-svalnatý",
+	balanced: "vyvážený",
+	balanced_muscular: "vyvážený-svalnatý",
+	lack_exercise: "nedostatek cvičení",
+	thick_set: "pevné",
+	obese: "obézní",
+	overweight: "nadváha",
+	underweight: "podváha",
+	normal_or_healthy_weight: "normální či zdravá váha",
+	slight_overweight: "lehká nadváha",
+	moderate_obesity: "menší obezita",
+	severe_obesity: "vážná obezita",
+	massive_obesity: "velká obezita",
+	unavailable: "nedostupná"
+};
+var unit$f = {
+	" years": " let"
+};
+var error$f = {
+	missing_entity: "Prosím definujte entitu.",
+	missing_entity_bodymiscale: "Prosím definujte entitu bodymiscale."
+};
+var editor$g = {
+	entity: "Prosím definujte účet váhy (povinné) !",
+	image: "Obrázek pozadí (volitelné)",
+	model: "Máte senzor impedance?",
+	model1: "Aktivujte tuto funkci pro přesné měření složení těla.",
+	model_aria_label_on: "Aktivovat impedanci",
+	model_aria_label_off: "Deaktivovat impedanci",
+	unit: "Převést kilogramy na libry",
+	unit_aria_label_on: "Zapnout konverzi",
+	unit_aria_label_off: "Vypnout konverzi",
+	show_name: "Zobrazovat jméno účtu jako titulek ?",
+	show_name_aria_label_on: "Zapnout zobrazování jména",
+	show_name_aria_label_off: "Vypnout zobrazování jména",
+	show_states: "Zobrazit stav ?",
+	show_states_aria_label_on: "Zapnout zobrazování stavu",
+	show_states_aria_label_off: "Vypnout zobrazování stavu",
+	show_attributes: "Show hlavní osobní data (vpravo nahoře) ?",
+	show_attributes_aria_label_on: "Zapnout zobrazování atributů",
+	show_attributes_aria_label_off: "Vypnout zobrazování atributů",
+	show_always_details: "Vždy zobrazovat detaily",
+	show_always_details_aria_label_on: "Zapnout výchozí zobrazení podrobností",
+	show_always_details_aria_label_off: "Vypnout výchozí zobrazení podrobností",
+	show_toolbar: "Zobrazit pokročilá nastavení ?",
+	show_toolbar_aria_label_on: "Zapnout zobrazení pokročilých nastavení",
+	show_toolbar_aria_label_off: "Vypnout zobrazení pokročilých nastavení",
+	show_body: "Nabízet další detaily měření",
+	show_body1: "(spodní polovina - zobrazí se po klepnutí na ikonu šipky dolů) ?",
+	show_body_aria_label_on: "Zapnout zobrazování tělesného skóre",
+	show_body_aria_label_off: "Vypnout zobrazování tělesného skóre",
+	show_buttons: "Povolit změnu účtu ?",
+	show_buttons_aria_label_on: "Zapnout zobrazování tlačítek",
+	show_buttons_aria_label_off: "Vypnout zobrazování tlačítek",
+	header_options: "1. Možnosti záhlaví karty",
+	body_options: "2. Více možností karty",
+	code_only_note: "POZOR: Další možnosti jsou dostupné pouze v editor kódu."
+};
+var cs = {
+	common: common$f,
+	states: states$g,
+	attributes: attributes$f,
+	attributes_value: attributes_value$f,
+	body: body$f,
+	body_value: body_value$f,
+	unit: unit$f,
+	error: error$f,
+	editor: editor$g
+};
+
+var cs$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$f,
+    attributes_value: attributes_value$f,
+    body: body$f,
+    body_value: body_value$f,
+    common: common$f,
+    default: cs,
+    editor: editor$g,
+    error: error$f,
+    states: states$g,
+    unit: unit$f
+});
+
+var common$e = {
+	version: "Version",
+	name: "Bodymiscale Karte",
+	description: "Die bodymiscale Karte zeigt Ihren gewichtsmäßigen Körperstatus an.",
+	not_available: "Bodymiscale ist momenatan nicht verfügbar",
+	toggle_power: "Weitere Details wie BMI kCal anzeigen / ausblenden"
+};
+var states$f = {
+	ok: "MESSUNG: OK",
+	unknown: "STATUS: unbekannt",
+	problem: "Problem",
+	none: "keine",
+	weight_unavailable: "Gewichtsmessung nicht verfügbar",
+	impedance_unavailable: "Bioelektrische Impedanzmessung (Körperzusammensetzung) nicht verfügbar",
+	weight_unavailable_and_impedance_unavailable: "Gewichts- und bioelektrische Impedanzmessung (Körperzusammensetzung) nicht verfügbar."
+};
+var attributes$e = {
+	"weight: ": "Gewicht: ",
+	"impedance: ": "Zusammensetzung: ",
+	"height: ": "Körpergröße: ",
+	"age: ": "Alter: ",
+	"gender: ": "Geschlecht: "
+};
+var attributes_value$e = {
+	male: "männl.",
+	female: "weibl.",
+	unavailable: "Nicht verfügbar"
+};
+var body$e = {
+	bmi: "BMI",
+	bmi_label: "BMI Klassifikation",
+	visceral_fat: "Bauchfett",
+	body_fat: "Körperfett",
+	protein: "Protein",
+	water: "Wasser",
+	muscle_mass: "Muskelmasse",
+	bone_mass: "Knochenmasse",
+	weight: "Gewicht",
+	ideal: "Idealgewicht",
+	basal_metabolism: "Grundumsatz",
+	body_type: "Körperbau",
+	metabolic_age: "stoffwechselbedingtes Körperalter"
+};
+var body_value$e = {
+	skinny: "schlank",
+	balanced_skinny: "ausgeglichen schlank",
+	skinny_muscular: "muskulös schlank",
+	balanced: "ausgewogen",
+	balanced_muscular: "ausgewogen muskulös",
+	lack_exercise: "Bewegungsmangel",
+	thick_set: "stämmig",
+	obese: "fettleibig",
+	overweight: "Übergewicht",
+	underweight: "Untergewicht",
+	normal_or_healthy_weight: "Normal - gesundes Gewicht",
+	slight_overweight: "leichtes Übergewicht",
+	moderate_obesity: "moderate Fettleibigkeit",
+	severe_obesity: "schwere Fettleibigkeit",
+	massive_obesity: "massive Fettleibigkeit",
+	unavailable: "Nicht verfügbar"
+};
+var unit$e = {
+	" years": " Jahre"
+};
+var error$e = {
+	missing_entity: "Bitte definieren Sie eine Entität in der Konfiguration.",
+	missing_entity_bodymiscale: "Bitte definieren Sie \"bodymiscale\" als Entität in der Konfiguration."
+};
+var editor$f = {
+	entity: "Bitte ein Konto auf der Waage wählen (erforderlich)!",
+	image: "Hintergrundbild (optional)",
+	model: "Haben Sie einen Impedanzsensor?",
+	model1: "Aktivieren Sie diese Funktion für genaue Körperzusammensetzungsmessungen.",
+	model_aria_label_on: "Impedanz aktivieren",
+	model_aria_label_off: "Impedanz deaktivieren",
+	unit: "kg in lbs umrechnen",
+	unit_aria_label_on: "Konvertierung einschalten",
+	unit_aria_label_off: "Umwandlung deaktivieren",
+	show_name: "Namen des Konto als Titel anzeigen?",
+	show_name_aria_label_on: "Namensanzeige einschalten",
+	show_name_aria_label_off: "Namesanzeige ausschalten",
+	show_states: "Status anzeigen (Symbole links oben)?",
+	show_states_aria_label_on: "Statusanzeige einschalten",
+	show_states_aria_label_off: "Statusanzeige ausschalten",
+	show_attributes: "Persönliche Stammdaten anzeigen (rechts oben)?",
+	show_attributes_aria_label_on: "Basis Daten einblenden (rechts oben) einschalten",
+	show_attributes_aria_label_off: "Basis Daten einblenden (rechts oben) ausschalten",
+	show_always_details: "Details immer anzeigen",
+	show_always_details_aria_label_on: "Schalten Sie die standardmäßige Detailansicht ein",
+	show_always_details_aria_label_off: "Schaltet die standardmäßige Detailansicht aus",
+	show_toolbar: "Fortgeschrittene Optionen anzeigen ?",
+	show_toolbar_aria_label_on: "Symbolleiste anzeigen einschalten",
+	show_toolbar_aria_label_off: "Symbolleiste anzeigen ausschalten",
+	show_body: "Weitere Messergebnisse anbieten",
+	show_body1: "(untere Hälfte - per Chevron-Symbol einblenden)?",
+	show_body_aria_label_on: "Körperwertanzeige einschalten",
+	show_body_aria_label_off: "Körperwertanzeige ausschalten",
+	show_buttons: "Kontowechsel erlauben?",
+	show_buttons_aria_label_on: "Schaltfläche anzeigen einschalten",
+	show_buttons_aria_label_off: "Schaltfläche anzeigen ausschalten",
+	header_options: "1. Kartenkopf Optionen",
+	body_options: "2. mehr Kartenoptionen",
+	code_only_note: "ACHTUNG: Weitere Optionen sind nur im Code Editor verfügbar."
+};
+var de = {
+	common: common$e,
+	states: states$f,
+	attributes: attributes$e,
+	attributes_value: attributes_value$e,
+	body: body$e,
+	body_value: body_value$e,
+	unit: unit$e,
+	error: error$e,
+	editor: editor$f
+};
+
+var de$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$e,
+    attributes_value: attributes_value$e,
+    body: body$e,
+    body_value: body_value$e,
+    common: common$e,
+    default: de,
+    editor: editor$f,
+    error: error$e,
+    states: states$f,
+    unit: unit$e
+});
+
+var common$d = {
+	version: "Version",
+	name: "Bodymiscale Card",
+	description: "The bodymiscale card shows you your weight wise / related body status.",
+	not_available: "Bodymiscale is not available",
+	toggle_power: "More details like BMI kCal show / hide"
+};
+var states$e = {
+	ok: "MEASUREMENT: OK",
+	unknown: "STATE: unknown",
+	problem: "Problem",
+	none: "None",
+	weight_unavailable: "Weight unavailable",
+	impedance_unavailable: "Impedance unavailable",
+	weight_unavailable_and_impedance_unavailable: "Weight and impedance unavailable",
+	weight_low: "Weight low",
+	impedance_low: "Impedance low",
+	weight_low_and_impedance_low: "Weight and impedance low",
+	impedance_low_and_weight_low: "Impedance and weight low",
+	weight_high: "Weight high",
+	impedance_high: "Impedance high",
+	weight_high_and_impedance_high: "Weight and impedance high",
+	weight_high_and_impedance_low: "Weight high, impedance low",
+	weight_low_and_impedance_high: "Weight low, impedance high"
+};
+var attributes$d = {
+	"weight: ": "Weight: ",
+	"impedance: ": "Impedance: ",
+	"height: ": "Height: ",
+	"age: ": "Age: ",
+	"gender: ": "Gender: "
+};
+var attributes_value$d = {
+	male: "male",
+	female: "female",
+	unavailable: "unavailable"
+};
+var body$d = {
+	bmi: "BMI",
+	bmi_label: "BMI label",
+	visceral_fat: "Visceral fat",
+	body_fat: "Body fat",
+	protein: "Protein",
+	water: "Water",
+	muscle_mass: "Muscle mass",
+	bone_mass: "Bone mass",
+	weight: "Weight",
+	ideal: "Ideal",
+	basal_metabolism: "Basal metabolism",
+	body_type: "Body type",
+	metabolic_age: "Metabolic age"
+};
+var body_value$d = {
+	skinny: "Skinny",
+	balanced_skinny: "Balanced-skinny",
+	skinny_muscular: "Skinny-muscular",
+	balanced: "Balanced",
+	balanced_muscular: "Balanced-muscular",
+	lack_exercise: "Lack-exercise",
+	thick_set: "Thick-set",
+	obese: "Obese",
+	overweight: "Overweight",
+	underweight: "Underweight",
+	normal_or_healthy_weight: "Normal or Healthy Weight",
+	slight_overweight: "Slight overweight",
+	moderate_obesity: "Moderate obesity",
+	severe_obesity: "Severe obesity",
+	massive_obesity: "Massive obesity",
+	unavailable: "unavailable"
+};
+var unit$d = {
+	" years": " years"
+};
+var error$d = {
+	invalid_config: "Invalid configuration",
+	missing_entity: "Please define an entity.",
+	missing_entity_bodymiscale: "Please define a bodymiscale entity."
+};
+var editor$e = {
+	entity: "Please select an account on the scale (required)!",
+	image: "Background image (optional)",
+	model: "Do you have an impedance sensor?",
+	model1: "Enable this feature for accurate body composition measurements.",
+	model_aria_label_on: "Enable impedance",
+	model_aria_label_off: "Disable impedance",
+	unit: "Convert kg to lbs",
+	unit_aria_label_on: "Toggle the conversion on",
+	unit_aria_label_off: "Toggle the conversion off",
+	theme: "Configure the theme you use.",
+	theme_aria_label_on: "Toggle theme light on",
+	theme_aria_label_off: "Toggle theme dark off",
+	show_name: "Show the name of the account as title?",
+	show_name_aria_label_on: "Toggle display name on",
+	show_name_aria_label_off: "Toggle display name off",
+	show_states: "Show State?",
+	show_states_aria_label_on: "Toggle display state on",
+	show_states_aria_label_off: "Toggle display state off",
+	show_attributes: "Show personal master data (top right)?",
+	show_attributes_aria_label_on: "Toggle display attributes on",
+	show_attributes_aria_label_off: "Toggle display attributes off",
+	show_always_details: "Always show details",
+	show_always_details_aria_label_on: "Toggle default detail view on",
+	show_always_details_aria_label_off: "Toggle default detail view off",
+	show_toolbar: "Show advanced options?",
+	show_toolbar_aria_label_on: "Toggle display advanced options on",
+	show_toolbar_aria_label_off: "Toggle display advanced options off",
+	show_body: "Offer further measurement details",
+	show_body1: "(lower half - icon chevron down will show those)?",
+	show_body_aria_label_on: "Toggle display body score on",
+	show_body_aria_label_off: "Toggle display body score off",
+	show_buttons: "Allow account switch?",
+	show_buttons_aria_label_on: "Toggle display buttons on",
+	show_buttons_aria_label_off: "Toggle display buttons off",
+	header_options: "1. Card header options",
+	body_options: "2. More card options",
+	code_only_note: "ATTENTION: Additional options are only available in the code editor."
+};
+var en = {
+	common: common$d,
+	states: states$e,
+	attributes: attributes$d,
+	attributes_value: attributes_value$d,
+	body: body$d,
+	body_value: body_value$d,
+	unit: unit$d,
+	error: error$d,
+	editor: editor$e
+};
+
+var en$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$d,
+    attributes_value: attributes_value$d,
+    body: body$d,
+    body_value: body_value$d,
+    common: common$d,
+    default: en,
+    editor: editor$e,
+    error: error$d,
+    states: states$e,
+    unit: unit$d
+});
+
+var common$c = {
+	version: "Versión",
+	name: "Tarjeta Bodymiscale",
+	description: "La tarjeta bodymiscale muestra el estado de tu cuerpo en relación a tu peso.",
+	not_available: "Bodymiscale no está disponible",
+	toggle_power: "Mostrar / ocultar más detalles como IMC,kCal"
+};
+var states$d = {
+	ok: "MEDICIÓN: OK",
+	unknown: "ESTADO: desconocido",
+	problem: "Problema",
+	none: "Ninguno",
+	weight_unavailable: "Peso no disponible",
+	impedance_unavailable: "Impedancia no disponible",
+	weight_unavailable_and_impedance_unavailable: "Peso e impedancia no disponibles",
+	weight_low: "Peso bajo",
+	impedance_low: "Impedancia baja",
+	weight_low_and_impedance_low: "Peso e impedancia bajos",
+	impedance_low_and_weight_low: "Impedancia y peso bajos",
+	weight_high: "Peso alto",
+	impedance_high: "Impedancia alta",
+	weight_high_and_impedance_high: "Peso e impedancia altos",
+	weight_high_and_impedance_low: "Peso alto, impedancia baja",
+	weight_low_and_impedance_high: "Peso bajo, impedancia alta"
+};
+var attributes$c = {
+	"weight: ": "Peso: ",
+	"impedance: ": "Impedancia: ",
+	"height: ": "Altura: ",
+	"age: ": "Edad: ",
+	"gender: ": "Sexo: "
+};
+var attributes_value$c = {
+	male: "masculino",
+	female: "femenino",
+	unavailable: "no disponible"
+};
+var body$c = {
+	bmi: "IMC",
+	bmi_label: "Etiqueta IMC",
+	visceral_fat: "Grasa visceral",
+	body_fat: "Grasa corporal",
+	protein: "Proteína",
+	water: "Agua",
+	muscle_mass: "Masa muscular",
+	bone_mass: "Masa ósea",
+	weight: "Peso",
+	ideal: "Ideal",
+	basal_metabolism: "Metabolismo basal",
+	body_type: "Tipo de cuerpo",
+	metabolic_age: "Edad metabólica"
+};
+var body_value$c = {
+	skinny: "Flaco",
+	balanced_skinny: "Flaco equilibrado",
+	skinny_muscular: "Flaco musculoso",
+	balanced: "Equilibrado",
+	balanced_muscular: "Musculuso equilibrado",
+	lack_exercise: "Falto de ejercicio",
+	thick_set: "Rechoncho",
+	obese: "Obeso",
+	overweight: "Sobrepeso",
+	underweight: "Por debajo del peso normal",
+	normal_or_healthy_weight: "Normal",
+	slight_overweight: "Ligero sobrepeso",
+	moderate_obesity: "Obesidad moderada",
+	severe_obesity: "Obesidad severa",
+	massive_obesity: "Obesidad masiva",
+	unavailable: "no disponible"
+};
+var unit$c = {
+	" years": " años"
+};
+var error$c = {
+	missing_entity: "Por favor, defina una entidad.",
+	missing_entity_bodymiscale: "Por favor, defina una entidad bodymiscale."
+};
+var editor$d = {
+	entity: "Por favor, escoja una cuenta de la bácula (necesario)!",
+	image: "Imagen de fondo (opcional)",
+	model: "¿Tiene un sensor de impedancia?",
+	model1: "Active esta función para mediciones precisas de la composición corporal.",
+	model_aria_label_on: "Activar impedancia",
+	model_aria_label_off: "Desactivar impedancia",
+	unit: "Convertir kg a lbs",
+	unit_aria_label_on: "Activar conversión",
+	unit_aria_label_off: "Desactivar conversión",
+	show_name: "¿Mostrar el nombre de la cuenta como título?",
+	show_name_aria_label_on: "Mostrar nombre como título",
+	show_name_aria_label_off: "Ocultar nombre como título",
+	show_states: "¿Mostrar estado de la báscula?",
+	show_states_aria_label_on: "Mostrar estado de la báscula",
+	show_states_aria_label_off: "Ocultar estado de la báscula",
+	show_attributes: "¿Mostrar datos de perfil personal (esquina superior derecha)?",
+	show_attributes_aria_label_on: "Mostrar atributos",
+	show_attributes_aria_label_off: "Ocultar atributos",
+	show_always_details: "Mostrar siempre los detalles",
+	show_always_details_aria_label_on: "Mostrar la vista de detalles predeterminada",
+	show_always_details_aria_label_off: "Ocultar la vista de detalles predeterminada",
+	show_toolbar: "¿Mostrar opciones avanzadas?",
+	show_toolbar_aria_label_on: "Mostrar opciones avanzadas",
+	show_toolbar_aria_label_off: "Ocultar opciones avanzadas",
+	show_body: "Mostrar más detalles de la medición",
+	show_body1: "¿(parte inferior - pulsar en la fecha para mostrar)?",
+	show_body_aria_label_on: "Mostrar puntuación corporal",
+	show_body_aria_label_off: "Ocultar puntuación corporal",
+	show_buttons: "¿Permitir cambio de cuenta?",
+	show_buttons_aria_label_on: "Mostrar botones de cuenta",
+	show_buttons_aria_label_off: "Ocultar botones de cuenta",
+	header_options: "1. Opciones de cabecera de tarjeta",
+	body_options: "2. Más opciones de tarjeta",
+	code_only_note: "ATENCIÓN: Opciones adicionales sólo están disponibles en el editor de código."
+};
+var es = {
+	common: common$c,
+	states: states$d,
+	attributes: attributes$c,
+	attributes_value: attributes_value$c,
+	body: body$c,
+	body_value: body_value$c,
+	unit: unit$c,
+	error: error$c,
+	editor: editor$d
+};
+
+var es$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$c,
+    attributes_value: attributes_value$c,
+    body: body$c,
+    body_value: body_value$c,
+    common: common$c,
+    default: es,
+    editor: editor$d,
+    error: error$c,
+    states: states$d,
+    unit: unit$c
+});
+
+var common$b = {
+	version: "Version",
+	name: "Carte Bodymiscale",
+	description: "La carte bodymiscale corporelle vous indique votre poids et votre état corporel.",
+	not_available: "Bodymiscale n'est pas disponible",
+	toggle_power: "Plus de détails comme IMC kCal afficher / cacher"
+};
+var states$c = {
+	ok: "MESURE : OK",
+	unknown: "ÉTAT : inconnu",
+	problem: "Problème",
+	none: "Aucun",
+	weight_unavailable: "Poids indisponible",
+	impedance_unavailable: "Impédance indisponible",
+	weight_unavailable_and_impedance_unavailable: "Poids et impédance indisponibles",
+	weight_low: "Poids faible",
+	impedance_low: "Impédance faible",
+	weight_low_and_impedance_low: "Poids et impédance faibles",
+	impedance_low_and_weight_low: "Impédance et poids faibles",
+	weight_high: "Poids élevé",
+	impedance_high: "Impédance élevée",
+	weight_high_and_impedance_high: "Poids et impédance élevés",
+	weight_high_and_impedance_low: "Poids élevé, impédance faible",
+	weight_low_and_impedance_high: "Poids faible, impédance élevée"
+};
+var attributes$b = {
+	"weight: ": "Poids: ",
+	"impedance: ": "Impédance: ",
+	"height: ": "Taille: ",
+	"age: ": "Age: ",
+	"gender: ": "Genre: "
+};
+var attributes_value$b = {
+	male: "homme",
+	female: "femme",
+	unavailable: "indisponible"
+};
+var body$b = {
+	bmi: "IMC",
+	bmi_label: "Étiquette IMC",
+	visceral_fat: "Graisse viscérale",
+	body_fat: "Graisse corporelle",
+	protein: "Protéine",
+	water: "Eau",
+	muscle_mass: "Masse musculaire",
+	bone_mass: "Masse osseuse",
+	weight: "Poids",
+	ideal: "Poids idéal",
+	basal_metabolism: "Métabolisme de base",
+	body_type: "Corpulence",
+	metabolic_age: "Age corporel"
+};
+var body_value$b = {
+	skinny: "Maigre",
+	balanced_skinny: "Équilibré maigre",
+	skinny_muscular: "Maigre musclé",
+	balanced: "Équilibré",
+	balanced_muscular: "Musclé équilibré",
+	lack_exercise: "Manque d'exercice",
+	thick_set: "Trapu",
+	obese: "Obèse",
+	overweight: "Surpoids",
+	underweight: "Insuffisance pondérale",
+	normal_or_healthy_weight: "Normal - poids de santé",
+	slight_overweight: "Léger surpoids",
+	moderate_obesity: "Obésité modérée",
+	severe_obesity: "Obésité sévère",
+	massive_obesity: "Obésité massive",
+	unavailable: "indisponible"
+};
+var unit$b = {
+	" years": " ans"
+};
+var error$b = {
+	missing_entity: "Veuillez définir une entité.",
+	missing_entity_bodymiscale: "Veuillez définir une entité Bodymiscale."
+};
+var editor$c = {
+	entity: "Veuillez choisir un compte de la balance (obligatoire) !",
+	image: "Image de fond (facultatif)",
+	model: "Vous avez un capteur d'impédance ?",
+	model1: "Activez cette fonctionnalité pour des mesures corporelle précises.",
+	model_aria_label_on: "Activez l'impédance",
+	model_aria_label_off: "Désactiver l'impédance",
+	unit: "Convertir les kg en lbs",
+	unit_aria_label_on: "Activer la conversion",
+	unit_aria_label_off: "Désactiver la conversion",
+	theme: "Configurer le thème que vous utilisez.",
+	theme_aria_label_on: "Activer thème clair",
+	theme_aria_label_off: "Désactiver thème sombre",
+	show_name: "Afficher le nom du compte comme titre ?",
+	show_name_aria_label_on: "Activer affichage du nom",
+	show_name_aria_label_off: "Désactiver affichage du nom",
+	show_states: "Afficher l'état ?",
+	show_states_aria_label_on: "Activer l'affichage de l'état",
+	show_states_aria_label_off: "Désactiver l'affichage de l'état",
+	show_attributes: "Afficher les données personnelles de base (en haut à droite) ?",
+	show_attributes_aria_label_on: "Activer l'affichage des données personnelles de base",
+	show_attributes_aria_label_off: "Désactiver l'affichage des données personnelles de base",
+	show_always_details: "Toujours afficher les détails",
+	show_always_details_aria_label_on: "Activer l'affichage des détails par défaut",
+	show_always_details_aria_label_off: "Désactiver l'affichage des détails par défaut",
+	show_toolbar: "Afficher les options avancées ?",
+	show_toolbar_aria_label_on: "Activer l'affichage des options avancées",
+	show_toolbar_aria_label_off: "Désactiver l'affichage des options avancées",
+	show_body: "Offrir d'autres détails de mesure",
+	show_body1: "(partie inférieure - affichage via l'icone chevron bas) ?",
+	show_body_aria_label_on: "Activer l'affichage des autres détails de mesure",
+	show_body_aria_label_off: "Désactiver l'affichage des autres détails de mesure",
+	show_buttons: "Autoriser le changement de compte ?",
+	show_buttons_aria_label_on: "Activer le changement de compte",
+	show_buttons_aria_label_off: "Désactiver le changement de compte",
+	header_options: "1. Options d'en-tête de la carte",
+	body_options: "2. Plus d'options de la cartes",
+	code_only_note: "ATTENTION: Les options supplémentaires ne sont disponibles que dans l'éditeur de code."
+};
+var fr = {
+	common: common$b,
+	states: states$c,
+	attributes: attributes$b,
+	attributes_value: attributes_value$b,
+	body: body$b,
+	body_value: body_value$b,
+	unit: unit$b,
+	error: error$b,
+	editor: editor$c
+};
+
+var fr$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$b,
+    attributes_value: attributes_value$b,
+    body: body$b,
+    body_value: body_value$b,
+    common: common$b,
+    default: fr,
+    editor: editor$c,
+    error: error$b,
+    states: states$c,
+    unit: unit$b
+});
+
+var common$a = {
+	version: "Verzió",
+	name: "Bodymiscale Kártya",
+	description: "A BodyMiScale kártya megmutatja az ön súlyhoz viszonyított testi állapotát.",
+	not_available: "A Bodymiscale nem elérhető",
+	toggle_power: "További részletek, például a BMI, kCal megjelenítése / elrejtése"
+};
+var states$b = {
+	ok: "MÉRÉS: RENDBEN",
+	unknown: "ÁLLAPOT: ismeretlen",
+	problem: "Probléma",
+	none: "Nincs",
+	weight_unavailable: "Súly nem elérhető",
+	impedance_unavailable: "Impedancia nem elérhető",
+	weight_unavailable_and_impedance_unavailable: "Súly és impedancia nem elérhető",
+	weight_low: "Alacsony súly",
+	impedance_low: "Alacsony impedancia",
+	weight_low_and_impedance_low: "Alacsony súly és impedancia",
+	impedance_low_and_weight_low: "Alacsony impedancia és súly",
+	weight_high: "Magas súly",
+	impedance_high: "Magas impedancia",
+	weight_high_and_impedance_high: "Magas súly és impedancia",
+	weight_high_and_impedance_low: "Magas súly, alacsony impedancia",
+	weight_low_and_impedance_high: "Alacsony súly, magas impedancia"
+};
+var attributes$a = {
+	"weight: ": "Súly: ",
+	"impedance: ": "Impedancia: ",
+	"height: ": "Magasság: ",
+	"age: ": "Kor: ",
+	"gender: ": "Nem: "
+};
+var attributes_value$a = {
+	male: "férfi",
+	female: "nő",
+	unavailable: "nem elérhető"
+};
+var body$a = {
+	bmi: "BMI",
+	bmi_label: "BMI címke",
+	visceral_fat: "Zsigeri zsír",
+	body_fat: "Testzsír",
+	protein: "Fehérje",
+	water: "Víz",
+	muscle_mass: "Izomtömeg",
+	bone_mass: "Csonttömeg",
+	weight: "Súly",
+	ideal: "Ideális",
+	basal_metabolism: "Alapanyagcsere",
+	body_type: "Testtípus",
+	metabolic_age: "Anyagcsere kor"
+};
+var body_value$a = {
+	skinny: "Sovány",
+	balanced_skinny: "Kiegyensúlyozott-sovány",
+	skinny_muscular: "Sovány-izmos",
+	balanced: "Kiegyensúlyozott",
+	balanced_muscular: "Kiegyensúlyozott-izmos",
+	lack_exercise: "Mozgáshiányos",
+	thick_set: "Közepesen molett",
+	obese: "Kórosan elhízott",
+	overweight: "Túlsúlyos",
+	underweight: "Súlyhiányos",
+	normal_or_healthy_weight: "Normál vagy egészséges testsúly",
+	slight_overweight: "Enyhe túlsúly",
+	moderate_obesity: "Közepes elhízottság",
+	severe_obesity: "Súlyos elhízottság",
+	massive_obesity: "Masszív elhízottság",
+	unavailable: "nem elérhető"
+};
+var unit$a = {
+	" years": " év"
+};
+var error$a = {
+	missing_entity: "Kérjük, definiáljon egy entitást.",
+	missing_entity_bodymiscale: "Kérjük, definiáljon egy BodyMiScale entitást."
+};
+var editor$b = {
+	entity: "Kérjük, válasszon egy fiókot a mérlegen (kötelező)!",
+	image: "Háttérkép (opcionális)",
+	model: "Rendelkezik impedancia érzékelővel?",
+	model1: "A pontos testösszetétel mérésekhez aktiválja ezt a funkciót.",
+	model_aria_label_on: "Impedancia engedélyezése",
+	model_aria_label_off: "Impedancia letiltása",
+	unit: "Kg átszámítása fonttá",
+	unit_aria_label_on: "Átszámítás bekapcsolása",
+	unit_aria_label_off: "Átszámítás kikapcsolása",
+	theme: "Állítsa be a használt témát.",
+	theme_aria_label_on: "Világos téma bekapcsolása",
+	theme_aria_label_off: "Sötét téma kikapcsolása",
+	show_name: "Mutassa a fiók nevét címként?",
+	show_name_aria_label_on: "Név megjelenítésének bekapcsolása",
+	show_name_aria_label_off: "Név megjelenítésének kikapcsolása",
+	show_states: "Állapot mutatása?",
+	show_states_aria_label_on: "Állapot megjelenítésének bekapcsolása",
+	show_states_aria_label_off: "Állapot megjelenítésének kikapcsolása",
+	show_attributes: "Személyes adatok mutatása (jobb felső sarokban)?",
+	show_attributes_aria_label_on: "Személyes adatok megjelenítésének bekapcsolása",
+	show_attributes_aria_label_off: "Személyes adatok megjelenítésének kikapcsolása",
+	show_always_details: "Mindig mutassa a részleteket",
+	show_always_details_aria_label_on: "Alapértelmezett részletes nézet bekapcsolása",
+	show_always_details_aria_label_off: "Alapértelmezett részletes nézet kikapcsolása",
+	show_toolbar: "Mutassa a haladó beállításokat?",
+	show_toolbar_aria_label_on: "Haladó beállítások megjelenítésének bekapcsolása",
+	show_toolbar_aria_label_off: "Haladó beállítások megjelenítésének kikapcsolása",
+	show_body: "Kínáljon további mérési részleteket",
+	show_body1: "(alsó rész - a lefelé mutató nyíl ikonra kattintva megjeleníthető)?",
+	show_body_aria_label_on: "Test pontszám megjelenítésének bekapcsolása",
+	show_body_aria_label_off: "Test pontszám megjelenítésének kikapcsolása",
+	show_buttons: "Fiókváltás engedélyezése?",
+	show_buttons_aria_label_on: "Gombok megjelenítésének bekapcsolása",
+	show_buttons_aria_label_off: "Gombok megjelenítésének kikapcsolása",
+	header_options: "1. Kártya fejléc beállítások",
+	body_options: "2. További kártya beállítások",
+	code_only_note: "FIGYELEM: További beállítások csak a kód szerkesztőben érhetők el."
+};
+var hu = {
+	common: common$a,
+	states: states$b,
+	attributes: attributes$a,
+	attributes_value: attributes_value$a,
+	body: body$a,
+	body_value: body_value$a,
+	unit: unit$a,
+	error: error$a,
+	editor: editor$b
+};
+
+var hu$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$a,
+    attributes_value: attributes_value$a,
+    body: body$a,
+    body_value: body_value$a,
+    common: common$a,
+    default: hu,
+    editor: editor$b,
+    error: error$a,
+    states: states$b,
+    unit: unit$a
+});
+
+var common$9 = {
+	version: "Versione",
+	name: "Bodymiscale Card",
+	description: "La card bodymiscale ti mostra il tuo peso/stato corporeo relativo.",
+	not_available: "Bodymiscale non è disponibile",
+	toggle_power: "Più dettagli come BMI kCal mostra / nascondi"
+};
+var states$a = {
+	ok: "MISURAZIONE: OK",
+	unknown: "STATO: sconosciuto",
+	problem: "Problema",
+	none: "Nessuno",
+	weight_unavailable: "Peso non disponibile",
+	impedance_unavailable: "Impedenza non disponibile",
+	weight_unavailable_and_impedance_unavailable: "Peso e impedenza non disponibili",
+	weight_low: "Peso basso",
+	impedance_low: "Impedenza bassa",
+	weight_low_and_impedance_low: "Peso e impedenza bassi",
+	impedance_low_and_weight_low: "Impedenza e peso bassi",
+	weight_high: "Peso alto",
+	impedance_high: "Impedenza alta",
+	weight_high_and_impedance_high: "Peso e impedenza alti",
+	weight_high_and_impedance_low: "Peso alto, impedenza bassa",
+	weight_low_and_impedance_high: "Peso basso, impedenza alta"
+};
+var attributes$9 = {
+	"weight: ": "Peso: ",
+	"impedance: ": "Impedenza: ",
+	"height: ": "Altezza: ",
+	"age: ": "Età: ",
+	"gender: ": "Sesso: "
+};
+var attributes_value$9 = {
+	male: "uomo",
+	female: "donna",
+	unavailable: "non disponibile"
+};
+var body$9 = {
+	bmi: "BMI",
+	bmi_label: "BMI Categoria",
+	visceral_fat: "Grasso viscerale",
+	body_fat: "Grasso corporeo",
+	protein: "Proteine",
+	water: "Acqua",
+	muscle_mass: "Massa muscolare",
+	bone_mass: "Massa ossea",
+	weight: "Peso",
+	ideal: "Ideale",
+	basal_metabolism: "Metabolismo base",
+	body_type: "Tipo di corpo",
+	metabolic_age: "Età metabolica"
+};
+var body_value$9 = {
+	skinny: "Magro",
+	balanced_skinny: "Bilanciato-magro",
+	skinny_muscular: "Magro-muscoloso",
+	balanced: "Bilanciato",
+	balanced_muscular: "Bilanciato-muscoloso",
+	lack_exercise: "Manca-esercizio",
+	thick_set: "Spesso-impostato",
+	obese: "Obeso",
+	overweight: "Sovrappeso",
+	underweight: "Sottopeso",
+	normal_or_healthy_weight: "Normale o Peso Sano",
+	slight_overweight: "Leggermente in sovrappeso",
+	moderate_obesity: "Obesità Moderata",
+	severe_obesity: "Obesità Grave",
+	massive_obesity: "Obesità Massiccia",
+	unavailable: "non disponibile"
+};
+var unit$9 = {
+	" years": " anni"
+};
+var error$9 = {
+	missing_entity: "Perfavore definisci un'entità.",
+	missing_entity_bodymiscale: "Perfavore definisci un'entità di tipo bodymiscale."
+};
+var editor$a = {
+	entity: "Perfavore seleziona un account sulla bilancia (richiesto) !",
+	image: "Immagine di sfondo (opzionale)",
+	model: "Hai un sensore di impedenza?",
+	model1: "Attiva questa funzione per misurazioni accurate della composizione corporea.",
+	model_aria_label_on: "Abilita impedenza",
+	model_aria_label_off: "Disabilita impedenza",
+	unit: "Converti da kg a lbs",
+	unit_aria_label_on: "Attiva la conversione",
+	unit_aria_label_off: "Disattiva la conversione",
+	show_name: "Mostrare il nome dell'account come titolo  ?",
+	show_name_aria_label_on: "Attiva la visione del nome",
+	show_name_aria_label_off: "Disattiva la visione del nome",
+	show_states: "Mostrare lo Stato ?",
+	show_states_aria_label_on: "Attiva la visione dello stato",
+	show_states_aria_label_off: "Disattiva la visione dello stato",
+	show_attributes: "Mostrare i dati anagrafici personali (in alto a destra) ?",
+	show_attributes_aria_label_on: "Attiva la visione degli attributi",
+	show_attributes_aria_label_off: "Disattiva la visione degli attributi",
+	show_always_details: "Mostra sempre i dettagli",
+	show_always_details_aria_label_on: "Attiva la visualizzazione dettagliata predefinita",
+	show_always_details_aria_label_off: "Disattiva la visualizzazione dettagliata predefinita",
+	show_toolbar: "Mostrare opzioni avanzate ?",
+	show_toolbar_aria_label_on: "Attiva opzioni avanzate",
+	show_toolbar_aria_label_off: "Disattiva opzioni avanzate",
+	show_body: "Offrire ulteriori dettagli di misurazione",
+	show_body1: "(metà inferiore - l'icona con la spunta ve li mostrerà) ?",
+	show_body_aria_label_on: "Attiva la visione del punteggio del corpo",
+	show_body_aria_label_off: "Disattiva la visione del punteggio del corpo",
+	show_buttons: "Consenti il cambio di account ?",
+	show_buttons_aria_label_on: "Attiva la visione dei pulsanti",
+	show_buttons_aria_label_off: "Disattiva la visione dei pulsanti",
+	header_options: "1. Opzioni di intestazione della card",
+	body_options: "2. Ulteriori opzioni della card",
+	code_only_note: "ATTENZIONE: Le opzioni aggiuntive sono disponibili solo nella modalità editor di codice."
+};
+var it = {
+	common: common$9,
+	states: states$a,
+	attributes: attributes$9,
+	attributes_value: attributes_value$9,
+	body: body$9,
+	body_value: body_value$9,
+	unit: unit$9,
+	error: error$9,
+	editor: editor$a
+};
+
+var it$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$9,
+    attributes_value: attributes_value$9,
+    body: body$9,
+    body_value: body_value$9,
+    common: common$9,
+    default: it,
+    editor: editor$a,
+    error: error$9,
+    states: states$a,
+    unit: unit$9
+});
+
+var common$8 = {
+	version: "Versie",
+	name: "Bodymiscale Card",
+	description: "De bodymiscale kaart toont u uw gewicht / gerelateerde lichaamsstatus.",
+	not_available: "Bodymiscale is niet beschikbaar",
+	toggle_power: "Meer details zoals BMI kCal tonen / verbergen"
+};
+var states$9 = {
+	ok: "METING: OK",
+	unknown: "STATUS: onbekend",
+	problem: "Probleem",
+	none: "Geen",
+	weight_unavailable: "Gewicht niet beschikbar",
+	impedance_unavailable: "Impedantie niet beschikbaar",
+	weight_unavailable_and_impedance_unavailable: "Gewicht en impedantie niet beschikbaar",
+	weight_low: "Gewicht laag",
+	impedance_low: "Impedantie laag",
+	weight_low_and_impedance_low: "Laag gewicht en impedantie",
+	impedance_low_and_weight_low: "Lage impedantie en gewicht",
+	weight_high: "Gewicht hoog",
+	impedance_high: "Impedantie hoog",
+	weight_high_and_impedance_high: "Hoog gewicht en impedantie",
+	weight_high_and_impedance_low: "Gewicht hoog, impedantie laag",
+	weight_low_and_impedance_high: "Gewicht laag, impedantie hoog"
+};
+var attributes$8 = {
+	"weight: ": "Gewicht: ",
+	"impedance: ": "Impedantie: ",
+	"height: ": "Lengte: ",
+	"age: ": "Leeftijd: ",
+	"gender: ": "Geslacht: "
+};
+var attributes_value$8 = {
+	male: "man",
+	female: "vrouw",
+	unavailable: "niet beschikbaar"
+};
+var body$8 = {
+	bmi: "BMI",
+	bmi_label: "BMI label",
+	visceral_fat: "Visceraal vet",
+	body_fat: "Lichaamsvet",
+	protein: "Proteine",
+	water: "Water",
+	muscle_mass: "Spiermassa",
+	bone_mass: "Botgewicht",
+	weight: "Gewicht",
+	ideal: "Ideaal",
+	basal_metabolism: "Basaal metabolisme",
+	body_type: "Lichaamstype",
+	metabolic_age: "Metabolistische leeftijd"
+};
+var body_value$8 = {
+	skinny: "Mager",
+	balanced_skinny: "Gebalanceerd-mager",
+	skinny_muscular: "Mager-gespierd",
+	balanced: "Gebalanceerd",
+	balanced_muscular: "Gebalanceerd-gespierd",
+	lack_exercise: "Weinig-beweging",
+	thick_set: "Dik",
+	obese: "Obesitas",
+	overweight: "Overgewicht",
+	underweight: "Ondergewicht",
+	normal_or_healthy_weight: "Normaal of gezond gewicht",
+	slight_overweight: "Licht overgewicht",
+	moderate_obesity: "Gemiddeld overgewicht",
+	severe_obesity: "Ruim overgewicht",
+	massive_obesity: "Enorm overgewicht",
+	unavailable: "niet beschikbaar"
+};
+var unit$8 = {
+	" years": " jaren"
+};
+var error$8 = {
+	missing_entity: "Geef een entiteit in.",
+	missing_entity_bodymiscale: "Geef een bodymiscale entiteit in."
+};
+var editor$9 = {
+	entity: "Kies een account op de schaal (verplicht) !",
+	image: "Achtergrondafbeelding (facultatief)",
+	model: "Heeft u een impedantie sensor?",
+	model1: "Activeer deze functie voor nauwkeurige metingen van de lichaamssamenstelling.",
+	model_aria_label_on: "Impedantie inschakelen",
+	model_aria_label_off: "Impedantie uitschakelen",
+	unit: "Converteer kg naar lbs",
+	unit_aria_label_on: "Activeer conversie",
+	unit_aria_label_off: "Conversie deactiveren",
+	show_name: "Toon de naam van de rekening als titel ?",
+	show_name_aria_label_on: "Zet naam aan",
+	show_name_aria_label_off: "Zet naam uit",
+	show_states: "Geef status weer ?",
+	show_states_aria_label_on: "Zet status aan",
+	show_states_aria_label_off: "Zet status uit",
+	show_attributes: "Persoonlijke stamgegevens weergeven (rechtsboven) ?",
+	show_attributes_aria_label_on: "Zet attributen aan",
+	show_attributes_aria_label_off: "Zet attributen uit",
+	show_always_details: "Toon altijd details",
+	show_always_details_aria_label_on: "Zet standaard detailweergave aan",
+	show_always_details_aria_label_off: "Zet standaard detailweergave uit",
+	show_toolbar: "Toon geavanceerde opties ?",
+	show_toolbar_aria_label_on: "Zet knoppenbalk aan",
+	show_toolbar_aria_label_off: "Zet knoppenbalk uit",
+	show_body: "Bieden verdere meting details",
+	show_body1: "(onderste helft - pictogram chevron naar beneden zal tonen die) ?",
+	show_body_aria_label_on: "Zet lichaamsscore aan",
+	show_body_aria_label_off: "Zet lichaamsscore uit",
+	show_buttons: "Accountwissel toestaan ?",
+	show_buttons_aria_label_on: "Zet knoppen aan",
+	show_buttons_aria_label_off: "Zet knoppen uit",
+	header_options: "1. Kaart koptekst opties",
+	body_options: "2. Meer boordopties",
+	code_only_note: "LET OP: Extra opties zijn alleen beschikbaar in de code editor."
+};
+var nl = {
+	common: common$8,
+	states: states$9,
+	attributes: attributes$8,
+	attributes_value: attributes_value$8,
+	body: body$8,
+	body_value: body_value$8,
+	unit: unit$8,
+	error: error$8,
+	editor: editor$9
+};
+
+var nl$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$8,
+    attributes_value: attributes_value$8,
+    body: body$8,
+    body_value: body_value$8,
+    common: common$8,
+    default: nl,
+    editor: editor$9,
+    error: error$8,
+    states: states$9,
+    unit: unit$8
+});
+
+var common$7 = {
+	version: "Wersja",
+	name: "Karta Bodymiscale",
+	description: "Karta BodyMiScale pokazuje Twoją wagę oraz parametry ciała.",
+	not_available: "Bodymiscale jest niedostępna",
+	toggle_power: "Więcej szczegółów jak BMI kCal - pokaż / ukryj"
+};
+var states$8 = {
+	ok: "POMIAR: OK",
+	unknown: "STATUS: nieznany",
+	problem: "Problem",
+	none: "Brak",
+	weight_unavailable: "Waga niedostępna",
+	impedance_unavailable: "Impedancja niedostępna",
+	weight_unavailable_and_impedance_unavailable: "Waga i impedancja niedostępne",
+	weight_low: "Niska waga",
+	impedance_low: "Niska impedancja",
+	weight_low_and_impedance_low: "Niska waga i impedancja",
+	impedance_low_and_weight_low: "Niska impedancja i waga",
+	weight_high: "Waga wysoka",
+	impedance_high: "Impedancja wysoka",
+	weight_high_and_impedance_high: "Wysoka waga i impedancja",
+	weight_high_and_impedance_low: "Waga wysoka a impedancja niska",
+	weight_low_and_impedance_high: "Waga nizska a impedancja wysoka"
+};
+var attributes$7 = {
+	"weight: ": "Waga: ",
+	"impedance: ": "Impedancja: ",
+	"height: ": "Wzrost: ",
+	"age: ": "Wiek: ",
+	"gender: ": "Płeć: "
+};
+var attributes_value$7 = {
+	male: "męska",
+	female: "żeńska",
+	unavailable: "niedstępna"
+};
+var body$7 = {
+	bmi: "BMI",
+	bmi_label: "BMI label",
+	visceral_fat: "Tłuszcz brzuszny",
+	body_fat: "Tłuszcz Ciała",
+	protein: "Białko",
+	water: "Woda",
+	muscle_mass: "Masa mięśniowa",
+	bone_mass: "Masa kostna",
+	weight: "Waga",
+	ideal: "Idealna",
+	basal_metabolism: "Metabolizm podstawowy",
+	body_type: "Typ sylwetki",
+	metabolic_age: "Wiek metaboliczny"
+};
+var body_value$7 = {
+	skinny: "Chudy",
+	balanced_skinny: "Umiarkowanie chudy",
+	skinny_muscular: "Chudy muskularny",
+	balanced: "Zrównoważony",
+	balanced_muscular: "Zrównoważony muskularny",
+	lack_exercise: "Mało aktywny",
+	thick_set: "Gruby",
+	obese: "Otyły",
+	overweight: "Nadwaga",
+	underweight: "Niedowaga",
+	normal_or_healthy_weight: "Normalna lub zdrowa waga",
+	slight_overweight: "Lekka nadwaga",
+	moderate_obesity: "Lekka otyłość",
+	severe_obesity: "Średnia otyłość",
+	massive_obesity: "Poważna otyłość",
+	unavailable: "niedostępny"
+};
+var unit$7 = {
+	" years": " lat"
+};
+var error$7 = {
+	missing_entity: "Proszę zdefiniuj encje.",
+	missing_entity_bodymiscale: "Proszę zdefiniuj encję bodymiscale."
+};
+var editor$8 = {
+	entity: "Proszę wybierz konto na wadze (wymagane)!",
+	image: "Obraz tła (opcjonalne)",
+	model: "Czy masz czujnik impedancji?",
+	model1: "Włącz tę funkcję, aby uzyskać dokładne pomiary składu ciała.",
+	model_aria_label_on: "Włącz impedancję",
+	model_aria_label_off: "Wyłącz impedancję",
+	unit: "Zamień kg na lbs",
+	unit_aria_label_on: "Włącz opcję konwersji",
+	unit_aria_label_off: "Włącz opcję konwersji",
+	theme: "Wybierz rodza motywu.",
+	theme_aria_label_on: "Włącz jasny motyw",
+	theme_aria_label_off: "Włącz ciemny motyw",
+	show_name: "Użyć imienia jako tytułu karty?",
+	show_name_aria_label_on: "Włącz opcję imienia jako tytułu",
+	show_name_aria_label_off: "Wyłącz opcję imienia jako tytułu",
+	show_states: "Wyświetlić stan?",
+	show_states_aria_label_on: "Włącz wyświetlanie stanu",
+	show_states_aria_label_off: "Wyłącz wyświetlanie stanu",
+	show_attributes: "Show personal master data (gora po prawej)?",
+	show_attributes_aria_label_on: "Toggle display attributes on",
+	show_attributes_aria_label_off: "Toggle display attributes off",
+	show_always_details: "Zawsze pokazuj szczegóły",
+	show_always_details_aria_label_on: "Włącz domyślny widok szczegółów",
+	show_always_details_aria_label_off: "Wyłącz domyślny widok szczegółów",
+	show_toolbar: "Pokazać zaawansowane opcje?",
+	show_toolbar_aria_label_on: "Włącz zaawansowane opcje",
+	show_toolbar_aria_label_off: "Wyłącz zaawansowane opcje",
+	show_body: "Offer further measurement details",
+	show_body1: "(lower half - icon chevron down will show those)?",
+	show_body_aria_label_on: "Toggle display body score on",
+	show_body_aria_label_off: "Toggle display body score off",
+	show_buttons: "Allow account switch?",
+	show_buttons_aria_label_on: "Toggle display buttons on",
+	show_buttons_aria_label_off: "Toggle display buttons off",
+	header_options: "1. Opcje nagłówka",
+	body_options: "2. Więcej opcji karty",
+	code_only_note: "UWAGA: Dodatkowe opcje dostępne są tylko poprzez edycje kodu."
+};
+var pl = {
+	common: common$7,
+	states: states$8,
+	attributes: attributes$7,
+	attributes_value: attributes_value$7,
+	body: body$7,
+	body_value: body_value$7,
+	unit: unit$7,
+	error: error$7,
+	editor: editor$8
+};
+
+var pl$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$7,
+    attributes_value: attributes_value$7,
+    body: body$7,
+    body_value: body_value$7,
+    common: common$7,
+    default: pl,
+    editor: editor$8,
+    error: error$7,
+    states: states$8,
+    unit: unit$7
+});
+
+var common$6 = {
+	version: "Versão",
+	name: "Bodymiscale Card",
+	description: "O cartão bodymiscale mostra-lhe o estado do seu corpo em relação ao peso.",
+	not_available: "Bodymiscale não está disponível",
+	toggle_power: "Mostrando/escondendo mais detalhes tal como o kCal,IMC"
+};
+var states$7 = {
+	ok: "MEDIÇÃO: OK",
+	unknown: "ESTATUTO: desconhecido",
+	problem: "Problema",
+	none: "Nenhum",
+	weight_unavailable: "Peso indisponível",
+	impedance_unavailable: "Impedância indisponível",
+	weight_unavailable_and_impedance_unavailable: "Peso e impedância indisponíveis",
+	weight_low: "Peso baixo",
+	impedance_low: "Impedância baixa",
+	weight_low_and_impedance_low: "Peso e impedância baixos",
+	impedance_low_and_weight_low: "Impedância e peso baixos",
+	weight_high: "Peso alto",
+	impedance_high: "Impedância alta",
+	weight_high_and_impedance_high: "Peso e impedância altos",
+	weight_high_and_impedance_low: "Peso alto, impedância baixa",
+	weight_low_and_impedance_high: "Peso baixo, impedância alta"
+};
+var attributes$6 = {
+	"weight: ": "Peso: ",
+	"impedance: ": "Impedância: ",
+	"height: ": "Altura: ",
+	"age: ": "Idade: ",
+	"gender: ": "Gênero: "
+};
+var attributes_value$6 = {
+	male: "masculino",
+	female: "femenino",
+	unavailable: "indisponível"
+};
+var body$6 = {
+	bmi: "IMC",
+	bmi_label: "Etiqueta IMC",
+	visceral_fat: "Gordura visceral",
+	body_fat: "Gordura corporal",
+	protein: "Proteína",
+	water: "Água",
+	muscle_mass: "Massa muscular",
+	bone_mass: "Massa óssea",
+	weight: "Peso",
+	ideal: "Ideal",
+	basal_metabolism: "Metabolismo basal",
+	body_type: "Tipo de corpo",
+	metabolic_age: "Idade metabólica"
+};
+var body_value$6 = {
+	skinny: "Magro",
+	balanced_skinny: "Magro equilibrado",
+	skinny_muscular: "Magro musculoso",
+	balanced: "Equilibrado",
+	balanced_muscular: "Musculoso equilibrado",
+	lack_exercise: "Falta de exercício",
+	thick_set: "Estatura sólida",
+	obese: "Obeso",
+	overweight: "Acima do peso normal",
+	underweight: "Abaixo do peso normal",
+	normal_or_healthy_weight: "Normal",
+	slight_overweight: "Ligeiramente acima do peso",
+	moderate_obesity: "Obesidade moderada",
+	severe_obesity: "Obesidade severa",
+	massive_obesity: "Obesidade maciça",
+	unavailable: "indisponível"
+};
+var unit$6 = {
+	" years": " Anos"
+};
+var error$6 = {
+	missing_entity: "Por favor, defina uma entidade.",
+	missing_entity_bodymiscale: "Por favor, defina uma entidade bodymiscale."
+};
+var editor$7 = {
+	entity: "Por favor, escolha a entidade da balança com o nome da pessoa (obrigatório) !",
+	image: "Imagem de fundo (opcional)",
+	model: "Tem um sensor de impedância?",
+	model1: "Ative esta função para medições precisas da composição corporal.",
+	model_aria_label_on: "Ativar impedância",
+	model_aria_label_off: "Desativar impedância",
+	unit: "Converter kg em libras",
+	unit_aria_label_on: "Ativar a conversão kg para lbs",
+	unit_aria_label_off: "Desativar a conversão kg para lbs",
+	show_name: "Mostrar o nome da conta como título ?",
+	show_name_aria_label_on: "Mostrar o nome como título",
+	show_name_aria_label_off: "Esconder o nome como título",
+	show_states: "Mostrar Estado da balança ?",
+	show_states_aria_label_on: "Mostrar o estado da balança",
+	show_states_aria_label_off: "Esconder o estado da balança",
+	show_attributes: "Mostrar os dados do perfil pessoal (canto superior direito) ?",
+	show_attributes_aria_label_on: "Mostrar atributos",
+	show_attributes_aria_label_off: "Esconder atributos",
+	show_always_details: "Mostrar sempre detalhes",
+	show_always_details_aria_label_on: "Alternar a vista de detalhe por defeito em",
+	show_always_details_aria_label_off: "Alternar a vista de detalhe por defeito",
+	show_toolbar: "Mostrar opções avançadas ?",
+	show_toolbar_aria_label_on: "Mostrar a barra de ferramentas",
+	show_toolbar_aria_label_off: "Esconder a barra de ferramentas",
+	show_body: "Mostrar mais detalhes da medição",
+	show_body1: "(parte inferior - clicar na seta para mostrar) ?",
+	show_body_aria_label_on: "Mostrar mais detalhes no corpo",
+	show_body_aria_label_off: "Esconder mais detalhes no corpo",
+	show_buttons: "Permitir a troca de conta ?",
+	show_buttons_aria_label_on: "Mostrar botões das contas",
+	show_buttons_aria_label_off: "Esconder botões das contas",
+	header_options: "1. Opções do cabeçalho do cartão",
+	body_options: "2. Mais opções do corpo do cartão",
+	code_only_note: "CUIDADO: Opções adicionais estão disponíveis apenas no editor de código."
+};
+var pt = {
+	common: common$6,
+	states: states$7,
+	attributes: attributes$6,
+	attributes_value: attributes_value$6,
+	body: body$6,
+	body_value: body_value$6,
+	unit: unit$6,
+	error: error$6,
+	editor: editor$7
+};
+
+var pt$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$6,
+    attributes_value: attributes_value$6,
+    body: body$6,
+    body_value: body_value$6,
+    common: common$6,
+    default: pt,
+    editor: editor$7,
+    error: error$6,
+    states: states$7,
+    unit: unit$6
+});
+
+var common$5 = {
+	version: "Versão",
+	name: "Bodymiscale Card",
+	description: "O cartão bodymiscale mostra-lhe o estado do seu corpo em relação ao peso.",
+	not_available: "Bodymiscale não é avaialável",
+	toggle_power: "Mais detalhes como o kCal show / hide da BMI"
+};
+var states$6 = {
+	ok: "MEDIÇÃO: OK",
+	unknown: "ESTATUTO: desconhecido",
+	problem: "Problema",
+	none: "Nenhum",
+	weight_unavailable: "Peso indisponível",
+	impedance_unavailable: "Impedance indisponível",
+	weight_unavailable_and_impedance_unavailable: "Peso e impedância indisponíveis",
+	weight_low: "Peso baixo",
+	impedance_low: "Impedância baixa",
+	weight_low_and_impedance_low: "Peso e impedância baixos",
+	impedance_low_and_weight_low: "Impedância e peso baixos",
+	weight_high: "Peso alto",
+	impedance_high: "Impedância alta",
+	weight_high_and_impedance_high: "Peso e impedância altos",
+	weight_high_and_impedance_low: "Peso alto, impedância baixa",
+	weight_low_and_impedance_high: "Peso baixo, impedância alta"
+};
+var attributes$5 = {
+	"weight: ": "Peso: ",
+	"impedance: ": "Impedance: ",
+	"height: ": "Cintura: ",
+	"age: ": "Idade: ",
+	"gender: ": "Gênero: "
+};
+var attributes_value$5 = {
+	male: "macho",
+	female: "fêmea",
+	unavailable: "indisponível"
+};
+var body$5 = {
+	bmi: "IMC",
+	bmi_label: "Etiqueta IMC",
+	visceral_fat: "Gordura visceral",
+	body_fat: "Gordura corporal",
+	protein: "Proteína",
+	water: "Água",
+	muscle_mass: "Massa muscular",
+	bone_mass: "Massa óssea",
+	weight: "Peso",
+	ideal: "Ideal",
+	basal_metabolism: "Metabolismo basal",
+	body_type: "Tipo de corpo",
+	metabolic_age: "Idade metabólica"
+};
+var body_value$5 = {
+	skinny: "Magro",
+	balanced_skinny: "Magro equilibrado",
+	skinny_muscular: "Magro musculoso",
+	balanced: "Equilibrado",
+	balanced_muscular: "Musculoso equilibrado",
+	lack_exercise: "Falta de exercício",
+	thick_set: "Grosso-conjunto",
+	obese: "Obeso",
+	overweight: "Sobrepeso",
+	underweight: "Underweight",
+	normal_or_healthy_weight: "Normal",
+	slight_overweight: "Ligeiro acima do peso",
+	moderate_obesity: "Obesidade moderada",
+	severe_obesity: "Obesidade severa",
+	massive_obesity: "Obesidade maciça",
+	unavailable: "indisponível"
+};
+var unit$5 = {
+	" years": " Anos"
+};
+var error$5 = {
+	missing_entity: "Por favor, defina uma entidade.",
+	missing_entity_bodymiscale: "Por favor, defina uma entidade bodymiscale."
+};
+var editor$6 = {
+	entity: "Por favor, escolha uma conta na escala (obrigatório) !",
+	image: "Imagem de fundo (opcional)",
+	model: "Você tem um sensor de impedância?",
+	model1: "Ative esta função para medições precisas da composição corporal.",
+	model_aria_label_on: "Ativar impedância",
+	model_aria_label_off: "Desativar impedância",
+	unit: "Converter kg em libras",
+	unit_aria_label_on: "Ativar a conversão",
+	unit_aria_label_off: "Desativar a conversão",
+	show_name: "Mostrar o nome da conta como título ?",
+	show_name_aria_label_on: "Alternar o nome da exibição",
+	show_name_aria_label_off: "Alternar o nome da exibição",
+	show_states: "Mostrar Estado ?",
+	show_states_aria_label_on: "Alternar estado de exibição ligado",
+	show_states_aria_label_off: "Alternar estado de exibição fora",
+	show_attributes: "Mostrar dados mestres pessoais (canto superior direito) ?",
+	show_attributes_aria_label_on: "Alternar atributos de exibição em",
+	show_attributes_aria_label_off: "Alternar atributos de exibição fora",
+	show_always_details: "Mostrar sempre detalhes",
+	show_always_details_aria_label_on: "Alternar a visualização de detalhes padrão em",
+	show_always_details_aria_label_off: "Alternar a visualização de detalhes padrão fora",
+	show_toolbar: "Mostrar opções avançadas ?",
+	show_toolbar_aria_label_on: "Alternar a barra de ferramentas do display em",
+	show_toolbar_aria_label_off: "Alternar barra de ferramentas de exibição fora",
+	show_body: "Oferecer mais detalhes de medição",
+	show_body1: "(parte inferior - ícone chevron down mostrará aqueles) ?",
+	show_body_aria_label_on: "Alternar a pontuação do corpo do display em",
+	show_body_aria_label_off: "Alternar a pontuação do corpo do display fora",
+	show_buttons: "Permitir a troca de conta ?",
+	show_buttons_aria_label_on: "Alternar botões de exibição",
+	show_buttons_aria_label_off: "Alternar botões de exibição desligados",
+	header_options: "1. Opções do cabeçalho do cartão",
+	body_options: "2. Mais opções de placas",
+	code_only_note: "CUIDADO: Opções adicionais estão disponíveis apenas no editor de código."
+};
+var ptBR = {
+	common: common$5,
+	states: states$6,
+	attributes: attributes$5,
+	attributes_value: attributes_value$5,
+	body: body$5,
+	body_value: body_value$5,
+	unit: unit$5,
+	error: error$5,
+	editor: editor$6
+};
+
+var pt_BR = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$5,
+    attributes_value: attributes_value$5,
+    body: body$5,
+    body_value: body_value$5,
+    common: common$5,
+    default: ptBR,
+    editor: editor$6,
+    error: error$5,
+    states: states$6,
+    unit: unit$5
+});
+
+var common$4 = {
+	version: "Versiune",
+	name: "Bodymiscale Card",
+	description: "Cardul bodymiscale îți arată starea ta în funcție de greutate/corespunzătoare corpului.",
+	not_available: "Bodymiscale nu este disponibil",
+	toggle_power: "Mai multe detalii precum BMI kCal arată/ascunde"
+};
+var states$5 = {
+	ok: "MĂSURARE: OK",
+	unknown: "Stare: unknown",
+	problem: "Problemă",
+	none: "Nimic",
+	weight_unavailable: "Greutate indisponibilă",
+	impedance_unavailable: "Impedanță indisponibilă",
+	weight_unavailable_and_impedance_unavailable: "Greutate și impedanță indisponibile",
+	weight_low: "Greutate redusă",
+	impedance_low: "Impedanță scăzută",
+	weight_low_and_impedance_low: "Greutate și impedanță scăzute",
+	impedance_low_and_weight_low: "Impedanță și greutate scăzute",
+	weight_high: "Greutate mare",
+	impedance_high: "Impedanță mare",
+	weight_high_and_impedance_high: "Greutate și impedanță ridicate",
+	weight_high_and_impedance_low: "Greutate mare, impedanță scăzută",
+	weight_low_and_impedance_high: "Greutate redusă, impedanță ridicată"
+};
+var attributes$4 = {
+	"weight: ": "Greutate: ",
+	"impedance: ": "Impedanță: ",
+	"height: ": "Înălţime: ",
+	"age: ": "Vârstă: ",
+	"gender: ": "Gen: "
+};
+var attributes_value$4 = {
+	male: "masculin",
+	female: "feminin",
+	unavailable: "indisponibil"
+};
+var body$4 = {
+	bmi: "IMC",
+	bmi_label: "Eticheta IMC",
+	visceral_fat: "Grasime viscerala",
+	body_fat: "Grăsime corporală",
+	protein: "Proteină",
+	water: "Apă",
+	muscle_mass: "Masă musculară",
+	bone_mass: "Masă osoasă",
+	weight: "Greutate",
+	ideal: "Ideal",
+	basal_metabolism: "Metabolismul bazal",
+	body_type: "Tipul corpului",
+	metabolic_age: "Vârsta metabolică"
+};
+var body_value$4 = {
+	skinny: "Slab",
+	balanced_skinny: "Slab-echilibrat",
+	skinny_muscular: "Slab-muscular",
+	balanced: "Echilibrat",
+	balanced_muscular: "Balanced-muscular",
+	lack_exercise: "Lipsa-exercițiu",
+	thick_set: "Îndesat",
+	obese: "Obez",
+	overweight: "Supraponderal",
+	underweight: "Subponderal",
+	normal_or_healthy_weight: "Greutate normală sau sănătoasă",
+	slight_overweight: "Ușor supraponderal",
+	moderate_obesity: "Obezitate moderată",
+	severe_obesity: "Obezitate severă",
+	massive_obesity: "Obezitate masivă",
+	unavailable: "indisponibil"
+};
+var unit$4 = {
+	" years": " ani"
+};
+var error$4 = {
+	missing_entity: "Vă rugăm să definiți o entitate.",
+	missing_entity_bodymiscale: "Definiți o entitate bodymiscale."
+};
+var editor$5 = {
+	entity: "Vă rugăm să selectați un cont de cântar (obligatoriu)!",
+	image: "Imagine de fundal (opțional)",
+	model: "Aveți un senzor de impedanță?",
+	model1: "Activați această funcție pentru măsurători precise ale compoziției corporale.",
+	model_aria_label_on: "Activare impedanță",
+	model_aria_label_off: "Dezactivare impedanță",
+	unit: "Convertiți kg în lbs",
+	unit_aria_label_on: "Activați conversia",
+	unit_aria_label_off: "Dezactivați conversia",
+	theme: "Configurați tema pe care o utilizați.",
+	theme_aria_label_on: "Activează lumina temei",
+	theme_aria_label_off: "Dezactivați tema întunecată",
+	show_name: "Afișați numele contului ca titlu?",
+	show_name_aria_label_on: "Activează numele afișat",
+	show_name_aria_label_off: "Dezactivați numele afișat",
+	show_states: "Arată starea?",
+	show_states_aria_label_on: "Comutați starea afișajului",
+	show_states_aria_label_off: "Dezactivați starea afișajului",
+	show_attributes: "Afișați datele de bază personale (dreapta sus)?",
+	show_attributes_aria_label_on: "Activați/dezactivați atributele de afișare",
+	show_attributes_aria_label_off: "Dezactivați atributele de afișare",
+	show_always_details: "Afișați întotdeauna detalii",
+	show_always_details_aria_label_on: "Activați vizualizarea implicită a detaliilor",
+	show_always_details_aria_label_off: "Dezactivați vizualizarea implicită a detaliilor",
+	show_toolbar: "Arată opțiuni avansate?",
+	show_toolbar_aria_label_on: "Comutați afișarea opțiunilor avansate",
+	show_toolbar_aria_label_off: "Dezactivați afișarea opțiunilor avansate",
+	show_body: "Oferiți detalii suplimentare de măsurare",
+	show_body1: "(Jumătatea inferioară - pictograma chevron în jos le va arăta)?",
+	show_body_aria_label_on: "Comutați afișarea scorului corporal",
+	show_body_aria_label_off: "Dezactivați scorul pentru corpul afișat",
+	show_buttons: "Permiteți schimbarea contului?",
+	show_buttons_aria_label_on: "Activați butoanele afișajului",
+	show_buttons_aria_label_off: "Dezactivați butoanele de afișare",
+	header_options: "1. Opțiuni pentru antetul cardului",
+	body_options: "2. Mai multe opțiuni de card",
+	code_only_note: "ATENŢIE: Opțiuni suplimentare sunt disponibile numai în editorul de cod."
+};
+var ro = {
+	common: common$4,
+	states: states$5,
+	attributes: attributes$4,
+	attributes_value: attributes_value$4,
+	body: body$4,
+	body_value: body_value$4,
+	unit: unit$4,
+	error: error$4,
+	editor: editor$5
+};
+
+var ro$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$4,
+    attributes_value: attributes_value$4,
+    body: body$4,
+    body_value: body_value$4,
+    common: common$4,
+    default: ro,
+    editor: editor$5,
+    error: error$4,
+    states: states$5,
+    unit: unit$4
+});
+
+var common$3 = {
+	version: "Версия",
+	name: "Карточка Bodymiscale",
+	description: "Карточка BodyMiScale отображает показатели тела, рассчитанные на основе результатов измерения веса и биоимпеданса.",
+	not_available: "Компонент Bodymiscale не доступен",
+	toggle_power: "Показать/скрыть дополнительные сведения о BMI"
+};
+var states$4 = {
+	ok: "Измерение: OK",
+	unknown: "Состояние: неизвестно",
+	problem: "Проблема",
+	none: "Нет",
+	weight_unavailable: "Вес недоступен",
+	impedance_unavailable: "Биоимпеданс недоступен",
+	weight_unavailable_and_impedance_unavailable: "Вес и импеданс недоступны",
+	weight_low: "Низкий вес",
+	impedance_low: "Низкий биоимпеданс",
+	weight_low_and_impedance_low: "Низкий вес и импеданс",
+	impedance_low_and_weight_low: "Низкий импеданс и вес",
+	weight_high: "Высокий вес",
+	impedance_high: "Высокий биоимпеданс",
+	weight_high_and_impedance_high: "Высокий вес и импеданс",
+	weight_high_and_impedance_low: "Высокий вес, низкий биоимпеданс",
+	weight_low_and_impedance_high: "Низкий вес, высокий биоимпеданс"
+};
+var attributes$3 = {
+	"weight: ": "Вес: ",
+	"impedance: ": "Импеданс: ",
+	"height: ": "Рост: ",
+	"age: ": "Возраст: ",
+	"gender: ": "Пол: "
+};
+var attributes_value$3 = {
+	male: "мужской",
+	female: "женский",
+	unavailable: "недоступен"
+};
+var body$3 = {
+	bmi: "Индекс BMI",
+	bmi_label: "Интерпретация BMI",
+	visceral_fat: "Висцеральный жир",
+	body_fat: "Жировая ткань",
+	protein: "Белки",
+	water: "Вода",
+	muscle_mass: "Мышечная масса",
+	bone_mass: "Костная масса",
+	weight: "Вес",
+	ideal: "Идеальный вес",
+	basal_metabolism: "Базальный метаболизм",
+	body_type: "Тип тела",
+	metabolic_age: "Метаболический возраст"
+};
+var body_value$3 = {
+	skinny: "Тощий",
+	balanced_skinny: "Худощавый",
+	skinny_muscular: "Подтянуто-мускулистый",
+	balanced: "Оптимальный",
+	balanced_muscular: "Мускулистый",
+	lack_exercise: "Недостаток упражнений",
+	thick_set: "Коренастый",
+	obese: "Ожирение",
+	overweight: "Лишний вес",
+	underweight: "Недостаточный вес",
+	normal_or_healthy_weight: "Нормальный вес",
+	slight_overweight: "Избыточный вес",
+	moderate_obesity: "Ожирение 1й степени",
+	severe_obesity: "Ожирение 2й степени",
+	massive_obesity: "Ожирение 3й степени",
+	unavailable: "недоступен"
+};
+var unit$3 = {
+	" years": " года(лет)"
+};
+var error$3 = {
+	missing_entity: "Определите сущность.",
+	missing_entity_bodymiscale: "Определите сущность BodyMiScale."
+};
+var editor$4 = {
+	entity: "Сущность BodyMiScale (обязательно)",
+	image: "Фоновое изображение (опционально)",
+	model: "У вас есть датчик импеданса?",
+	model1: "Включите эту функцию для точных измерений состава тела.",
+	model_aria_label_on: "Включить импеданс",
+	model_aria_label_off: "Выключить импеданс",
+	unit: "Преобразование кг в фунты",
+	unit_aria_label_on: "Преобразовать кг в фунты",
+	unit_aria_label_off: "Не преобразовывать кг в фунты",
+	show_name: "Отображение имени пользователя",
+	show_name_aria_label_on: "Отображать имя пользователя",
+	show_name_aria_label_off: "Не отображать имя пользователя",
+	show_states: "Отображение состояния",
+	show_states_aria_label_on: "Отображать состояние",
+	show_states_aria_label_off: "Не отображать состояние",
+	show_attributes: "Отображение персональных данных",
+	show_attributes_aria_label_on: "Отображать персональные данные",
+	show_attributes_aria_label_off: "Не отображать персональные данные",
+	show_always_details: "Всегда показывать детали",
+	show_always_details_aria_label_on: "Постоянное отображение деталей",
+	show_always_details_aria_label_off: "Не отображайте данные на постоянной основе",
+	show_toolbar: "Отображение панели дополнительных параметров",
+	show_toolbar_aria_label_on: "Отображать панель дополнительных параметров",
+	show_toolbar_aria_label_off: "Не отображать панель дополнительных параметров",
+	show_body: "Отображение дополнительных параметров",
+	show_body1: "(по нажатию кнопки со стрелкой вниз)",
+	show_body_aria_label_on: "Отображать дополнительные параметры",
+	show_body_aria_label_off: "Не отображать дополнительные параметры",
+	show_buttons: "Переключение аккаунтов",
+	show_buttons_aria_label_on: "Отображать кнопки",
+	show_buttons_aria_label_off: "Не отображать кнопки",
+	header_options: "1. Настройки заголовка карточки",
+	body_options: "2. Дополнительные настройки карточки",
+	code_only_note: "ВНИМАНИЕ: Дополнительные настройки отображаются только в редакторе кода."
+};
+var ru = {
+	common: common$3,
+	states: states$4,
+	attributes: attributes$3,
+	attributes_value: attributes_value$3,
+	body: body$3,
+	body_value: body_value$3,
+	unit: unit$3,
+	error: error$3,
+	editor: editor$4
+};
+
+var ru$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$3,
+    attributes_value: attributes_value$3,
+    body: body$3,
+    body_value: body_value$3,
+    common: common$3,
+    default: ru,
+    editor: editor$4,
+    error: error$3,
+    states: states$4,
+    unit: unit$3
+});
+
+var common$2 = {
+	version: "Version",
+	name: "Bodymiscale Card",
+	description: "The bodymiscale card shows you your weight wise / related body status.",
+	not_available: "Bodymiscale is not available",
+	toggle_power: "More details like BMI kCal show / hide"
+};
+var states$3 = {
+	ok: "MEASUREMENT: OK",
+	unknown: "STATE: unknown",
+	problem: "Problem",
+	none: "None",
+	weight_unavailable: "Weight unavailable",
+	impedance_unavailable: "Impedance unavailable",
+	weight_unavailable_and_impedance_unavailable: "Weight and impedance unavailable",
+	weight_low: "Weight low",
+	impedance_low: "Impedance low",
+	weight_low_and_impedance_low: "Weight and impedance low",
+	impedance_low_and_weight_low: "Impedance and weight low",
+	weight_high: "Weight high",
+	impedance_high: "Impedance high",
+	weight_high_and_impedance_high: "Weight and impedance high",
+	weight_high_and_impedance_low: "Weight high, impedance low",
+	weight_low_and_impedance_high: "Weight low, impedance high"
+};
+var attributes$2 = {
+	"weight: ": "Weight: ",
+	"impedance: ": "Impedance: ",
+	"height: ": "Height: ",
+	"age: ": "Age: ",
+	"gender: ": "Gender: "
+};
+var attributes_value$2 = {
+	male: "male",
+	female: "female",
+	unavailable: "unavailable"
+};
+var body$2 = {
+	bmi: "BMI",
+	bmi_label: "BMI label",
+	visceral_fat: "Mỡ nội tạng",
+	body_fat: "Mỡ cơ thể",
+	protein: "Chất đạm",
+	water: "Nước",
+	muscle_mass: "Khối lượng cơ",
+	bone_mass: "Khối lượng xương",
+	weight: "Cân nặng",
+	ideal: "Lý tưởng",
+	basal_metabolism: "Trao đổi chất cơ bản",
+	body_type: "Kiểu cơ thể",
+	metabolic_age: "Tuổi chuyển hóa"
+};
+var body_value$2 = {
+	skinny: "Gầy",
+	balanced_skinny: "Cân đối - gầy",
+	skinny_muscular: "Gầy - cơ bắp",
+	balanced: "Cân bằng",
+	balanced_muscular: "Cơ bắp cân bằng",
+	lack_exercise: "Thiếu tập thể dục",
+	thick_set: "Thick-set",
+	obese: "Béo phì",
+	overweight: "Thừa cân",
+	underweight: "Thiếu cân",
+	normal_or_healthy_weight: "Cân nặng bình thường hoặc khỏe mạnh",
+	slight_overweight: "Hơi thừa cân",
+	moderate_obesity: "Béo phì vừa phải",
+	severe_obesity: "Béo phì nghiêm trọng",
+	massive_obesity: "Massive obesity",
+	unavailable: "Không có sẵn"
+};
+var unit$2 = {
+	" years": " years"
+};
+var error$2 = {
+	missing_entity: "Please define an entity.",
+	missing_entity_bodymiscale: "Please define a bodymiscale entity."
+};
+var editor$3 = {
+	entity: "Please select an account on the scale (required)!",
+	image: "Background image (optional)",
+	model: "Do you have an impedance sensor?",
+	model1: "Enable this feature for accurate body composition measurements.",
+	model_aria_label_on: "Enable impedance",
+	model_aria_label_off: "Disable impedance",
+	unit: "Convert kg to lbs",
+	unit_aria_label_on: "Toggle the conversion on",
+	unit_aria_label_off: "Toggle the conversion off",
+	theme: "Configure the theme you use.",
+	theme_aria_label_on: "Toggle theme light on",
+	theme_aria_label_off: "Toggle theme dark off",
+	show_name: "Show the name of the account as title?",
+	show_name_aria_label_on: "Toggle display name on",
+	show_name_aria_label_off: "Toggle display name off",
+	show_states: "Show State?",
+	show_states_aria_label_on: "Toggle display state on",
+	show_states_aria_label_off: "Toggle display state off",
+	show_attributes: "Show personal master data (top right)?",
+	show_attributes_aria_label_on: "Toggle display attributes on",
+	show_attributes_aria_label_off: "Toggle display attributes off",
+	show_always_details: "Always show details",
+	show_always_details_aria_label_on: "Toggle default detail view on",
+	show_always_details_aria_label_off: "Toggle default detail view off",
+	show_toolbar: "Show advanced options?",
+	show_toolbar_aria_label_on: "Toggle display advanced options on",
+	show_toolbar_aria_label_off: "Toggle display advanced options off",
+	show_body: "Offer further measurement details",
+	show_body1: "(lower half - icon chevron down will show those)?",
+	show_body_aria_label_on: "Toggle display body score on",
+	show_body_aria_label_off: "Toggle display body score off",
+	show_buttons: "Allow account switch?",
+	show_buttons_aria_label_on: "Toggle display buttons on",
+	show_buttons_aria_label_off: "Toggle display buttons off",
+	header_options: "1. Card header options",
+	body_options: "2. More card options",
+	code_only_note: "ATTENTION: Additional options are only available in the code editor."
+};
+var vi = {
+	common: common$2,
+	states: states$3,
+	attributes: attributes$2,
+	attributes_value: attributes_value$2,
+	body: body$2,
+	body_value: body_value$2,
+	unit: unit$2,
+	error: error$2,
+	editor: editor$3
+};
+
+var vi$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$2,
+    attributes_value: attributes_value$2,
+    body: body$2,
+    body_value: body_value$2,
+    common: common$2,
+    default: vi,
+    editor: editor$3,
+    error: error$2,
+    states: states$3,
+    unit: unit$2
+});
+
+var common$1 = {
+	version: "版本",
+	name: "米家体脂称卡片",
+	description: "米家体脂称卡片会显示你的体重以及相关身体状态",
+	not_available: "Bodymiscale 不可用",
+	toggle_power: "显示/隐藏更多详情,例如: BMI, kCal"
+};
+var states$2 = {
+	ok: "测量: OK",
+	unknown: "状态: 未知",
+	problem: "故障",
+	none: "无",
+	weight_unavailable: "体重不可用",
+	impedance_unavailable: "阻抗不可用",
+	weight_unavailable_and_impedance_unavailable: "体重和阻抗均不可用",
+	weight_low: "体重过轻",
+	impedance_low: "阻抗低",
+	weight_low_and_impedance_low: "体重和阻抗均偏低",
+	impedance_low_and_weight_low: "阻抗和体重均偏低",
+	weight_high: "体重过重",
+	impedance_high: "阻抗高",
+	weight_high_and_impedance_high: "体重和阻抗均偏高",
+	weight_high_and_impedance_low: "体重过重, 阻抗低",
+	weight_low_and_impedance_high: "体重过轻, 阻抗高"
+};
+var attributes$1 = {
+	"weight: ": "重量: ",
+	"impedance: ": "阻抗: ",
+	"height: ": "身高: ",
+	"age: ": "年龄: ",
+	"gender: ": "性别: "
+};
+var attributes_value$1 = {
+	male: "男",
+	female: "女",
+	unavailable: "不可用"
+};
+var body$1 = {
+	bmi: "BMI",
+	bmi_label: "BMI 标签",
+	visceral_fat: "内脏脂肪",
+	body_fat: "体脂",
+	protein: "蛋白质",
+	water: "水分",
+	muscle_mass: "肌肉量",
+	bone_mass: "骨量",
+	weight: "体重",
+	ideal: "理想体重",
+	basal_metabolism: "基本代谢",
+	body_type: "身体类型",
+	metabolic_age: "代谢年龄"
+};
+var body_value$1 = {
+	skinny: "偏瘦",
+	balanced_skinny: "健美型",
+	skinny_muscular: "偏瘦肌肉",
+	balanced: "标准型",
+	balanced_muscular: "标准肌肉",
+	lack_exercise: "缺乏运动",
+	thick_set: "结实型偏胖",
+	obese: "偏胖型",
+	overweight: "肥胖型",
+	underweight: "过轻",
+	normal_or_healthy_weight: "正常或健康",
+	slight_overweight: "轻微超重",
+	moderate_obesity: "中度肥胖",
+	severe_obesity: "过度肥胖",
+	massive_obesity: "严重肥胖",
+	unavailable: "不可用"
+};
+var unit$1 = {
+	" years": " 岁"
+};
+var error$1 = {
+	missing_entity: "Please define an entity.",
+	missing_entity_bodymiscale: "Please define a bodymiscale entity."
+};
+var editor$2 = {
+	entity: "Please select an account on the scale (required) !",
+	image: "Background image (optional)",
+	model: "Do you have an impedance sensor?",
+	model1: "Enable this feature for accurate body composition measurements.",
+	model_aria_label_on: "Enable impedance",
+	model_aria_label_off: "Disable impedance",
+	unit: "Convert kg to lbs",
+	unit_aria_label_on: "Toggle the conversion on",
+	unit_aria_label_off: "Toggle the conversion off",
+	show_name: "Show the name of the account as title ?",
+	show_name_aria_label_on: "Toggle display name on",
+	show_name_aria_label_off: "Toggle display name off",
+	show_states: "Show State ?",
+	show_states_aria_label_on: "Toggle display state on",
+	show_states_aria_label_off: "Toggle display state off",
+	show_attributes: "Show personal master data (top right) ?",
+	show_attributes_aria_label_on: "Toggle display attributes on",
+	show_attributes_aria_label_off: "Toggle display attributes off",
+	show_always_details: "Always show details",
+	show_always_details_aria_label_on: "Toggle default detail view on",
+	show_always_details_aria_label_off: "Toggle default detail view off",
+	show_toolbar: "Show advanced options ?",
+	show_toolbar_aria_label_on: "Toggle display advanced options on",
+	show_toolbar_aria_label_off: "Toggle display advanced options off",
+	show_body: "Offer further measurement details",
+	show_body1: "(lower half - icon chevron down will show those) ?",
+	show_body_aria_label_on: "Toggle display body score on",
+	show_body_aria_label_off: "Toggle display body score off",
+	show_buttons: "Allow account switch ?",
+	show_buttons_aria_label_on: "Toggle display buttons on",
+	show_buttons_aria_label_off: "Toggle display buttons off",
+	header_options: "1. Card header options",
+	body_options: "2. More card options",
+	code_only_note: "ATTENTION: Additional options are only available in the code editor."
+};
+var zhHans = {
+	common: common$1,
+	states: states$2,
+	attributes: attributes$1,
+	attributes_value: attributes_value$1,
+	body: body$1,
+	body_value: body_value$1,
+	unit: unit$1,
+	error: error$1,
+	editor: editor$2
+};
+
+var zh_Hans = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes$1,
+    attributes_value: attributes_value$1,
+    body: body$1,
+    body_value: body_value$1,
+    common: common$1,
+    default: zhHans,
+    editor: editor$2,
+    error: error$1,
+    states: states$2,
+    unit: unit$1
+});
+
+var common = {
+	version: "版本",
+	name: "米家體脂計卡片",
+	description: "米家體脂計卡片會顯示你的體重以及相關身體狀態",
+	not_available: "Bodymiscale 不可用",
+	toggle_power: "顯示/隱藏更多詳情,例如: BMI, kCal"
+};
+var states$1 = {
+	ok: "測量: OK",
+	unknown: "狀態: 未知",
+	problem: "故障",
+	none: "無",
+	weight_unavailable: "體重不可用",
+	impedance_unavailable: "阻抗不可用",
+	weight_unavailable_and_impedance_unavailable: "體重和阻抗均不可用",
+	weight_low: "體重過輕",
+	impedance_low: "阻抗低",
+	weight_low_and_impedance_low: "體重和阻抗均偏低",
+	impedance_low_and_weight_low: "阻抗和體重均偏低",
+	weight_high: "體重過重",
+	impedance_high: "阻抗高",
+	weight_high_and_impedance_high: "體重和阻抗均偏高",
+	weight_high_and_impedance_low: "體重過重, 阻抗低",
+	weight_low_and_impedance_high: "體重過輕, 阻抗高"
+};
+var attributes = {
+	"weight: ": "重量: ",
+	"impedance: ": "阻抗: ",
+	"height: ": "身高: ",
+	"age: ": "年齡: ",
+	"gender: ": "性別: "
+};
+var attributes_value = {
+	male: "男",
+	female: "女",
+	unavailable: "不可用"
+};
+var body = {
+	bmi: "BMI",
+	bmi_label: "BMI 標籤",
+	visceral_fat: "內臟脂肪",
+	body_fat: "體脂",
+	protein: "蛋白質",
+	water: "水分",
+	muscle_mass: "肌肉量",
+	bone_mass: "骨量",
+	weight: "體重",
+	ideal: "理想體重",
+	basal_metabolism: "基本代謝",
+	body_type: "身體類型",
+	metabolic_age: "代謝年齡"
+};
+var body_value = {
+	skinny: "偏瘦",
+	balanced_skinny: "健美型",
+	skinny_muscular: "偏瘦肌肉",
+	balanced: "標準型",
+	balanced_muscular: "標準肌肉",
+	lack_exercise: "缺乏運動",
+	thick_set: "結實型偏胖",
+	obese: "偏胖型",
+	overweight: "肥胖型",
+	underweight: "過輕",
+	normal_or_healthy_weight: "正常或健康",
+	slight_overweight: "輕微超重",
+	moderate_obesity: "中度肥胖",
+	severe_obesity: "過度肥胖",
+	massive_obesity: "嚴重肥胖",
+	unavailable: "不可用"
+};
+var unit = {
+	" years": " 歲"
+};
+var error = {
+	missing_entity: "Please define an entity.",
+	missing_entity_bodymiscale: "Please define a bodymiscale entity."
+};
+var editor$1 = {
+	entity: "Please select an account on the scale (required) !",
+	image: "Background image (optional)",
+	model: "Do you have an impedance sensor?",
+	model1: "Enable this feature for accurate body composition measurements.",
+	model_aria_label_on: "Enable impedance",
+	model_aria_label_off: "Disable impedance",
+	unit: "Convert kg to lbs",
+	unit_aria_label_on: "Toggle the conversion on",
+	unit_aria_label_off: "Toggle the conversion off",
+	show_name: "Show the name of the account as title ?",
+	show_name_aria_label_on: "Toggle display name on",
+	show_name_aria_label_off: "Toggle display name off",
+	show_states: "Show State ?",
+	show_states_aria_label_on: "Toggle display state on",
+	show_states_aria_label_off: "Toggle display state off",
+	show_attributes: "Show personal master data (top right) ?",
+	show_attributes_aria_label_on: "Toggle display attributes on",
+	show_attributes_aria_label_off: "Toggle display attributes off",
+	show_always_details: "Always show details",
+	show_always_details_aria_label_on: "Toggle default detail view on",
+	show_always_details_aria_label_off: "Toggle default detail view off",
+	show_toolbar: "Show advanced options ?",
+	show_toolbar_aria_label_on: "Toggle display advanced options on",
+	show_toolbar_aria_label_off: "Toggle display advanced options off",
+	show_body: "Offer further measurement details",
+	show_body1: "(lower half - icon chevron down will show those) ?",
+	show_body_aria_label_on: "Toggle display body score on",
+	show_body_aria_label_off: "Toggle display body score off",
+	show_buttons: "Allow account switch ?",
+	show_buttons_aria_label_on: "Toggle display buttons on",
+	show_buttons_aria_label_off: "Toggle display buttons off",
+	header_options: "1. Card header options",
+	body_options: "2. More card options",
+	code_only_note: "ATTENTION: Additional options are only available in the code editor."
+};
+var zhHant = {
+	common: common,
+	states: states$1,
+	attributes: attributes,
+	attributes_value: attributes_value,
+	body: body,
+	body_value: body_value,
+	unit: unit,
+	error: error,
+	editor: editor$1
+};
+
+var zh_Hant = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    attributes: attributes,
+    attributes_value: attributes_value,
+    body: body,
+    body_value: body_value,
+    common: common,
+    default: zhHant,
+    editor: editor$1,
+    error: error,
+    states: states$1,
+    unit: unit
+});
+
+const languages = {
+    cs: cs$1,
+    de: de$1,
+    en: en$1,
+    es: es$1,
+    fr: fr$1,
+    hu: hu$1,
+    it: it$1,
+    nl: nl$1,
+    pl: pl$1,
+    pt: pt$1,
+    pt_BR: pt_BR,
+    ro: ro$1,
+    ru: ru$1,
+    vi: vi$1,
+    zh_Hans: zh_Hans,
+    zh_Hant: zh_Hant,
+};
+const DEFAULT_LANG = 'en';
+function localize(str, search, replace) {
+    var _a;
+    const [section, key] = str.toLowerCase().split('.');
+    let langStored = null;
+    try {
+        langStored = JSON.parse((_a = localStorage.getItem('selectedLanguage')) !== null && _a !== void 0 ? _a : '');
+    }
+    catch (e) {
+        console.warn(e);
+        langStored = localStorage.getItem('selectedLanguage');
+    }
+    const lang = (langStored || navigator.language.split('-')[0] || DEFAULT_LANG)
+        .replace(/['"]+/g, '')
+        .replace('-', '_');
+    let translated;
+    try {
+        translated = languages[lang][section][key];
+    }
+    catch (e) {
+        console.warn(e);
+        translated = languages[DEFAULT_LANG][section][key];
+    }
+    if (translated === undefined) {
+        translated = languages[DEFAULT_LANG][section][key];
+    }
+    if (translated === undefined) {
+        return;
+    }
+    return translated;
+}
+
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css_248z$1 = i$2`:host {
+  --vc-background: var(--ha-card-background, var(--card-background-color, white));
+  --vc-primary-text-color: var(--primary-text-color, #000);
+  --vc-secondary-text-color: var(--secondary-text-color, #555);
+  --vc-icon-color: var(--secondary-text-color);
+  --vc-toolbar-background: var(--vc-background);
+  --vc-toolbar-text-color: var(--vc-secondary-text-color);
+  --vc-toolbar-icon-color: var(--vc-secondary-text-color);
+  --vc-divider-color: var(--entities-divider-color, var(--divider-color, #ccc));
+  --vc-spacing: 10px;
+  --ha-card-border-radius: 12px;
+  --ha-icon-size: 24px;
+  
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+ha-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--ha-card-border-radius);
+  overflow: hidden;
+}
+
+.background {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  height: auto;
+  border-radius: var(--ha-card-border-radius);
+  overflow: hidden;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.preview {
+  background-color: #008CBA;
+  background-color: var(--primary-color, #008CBA);
+  cursor: pointer;
+  position: relative;
+}
+
+.preview.not-available {
+  filter: grayscale(1);
+}
+
+.not-available {
+  text-align: center;
+  color: #333;
+  color: var(--text-primary-color, #333);
+  font-size: 16px;
+}
+
+.metadata {
+  margin: var(--vc-spacing) auto;
+}
+
+.title {
+  font-size: 20px;
+  padding: 5px 16px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  cursor: pointer;
+}
+
+.grid-left,
+.grid-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grid-left {
+  text-align: left;
+  padding-left: 10px;
+  border-left: 2px solid var(--primary-color);
+}
+
+.grid-right {
+  text-align: right;
+  padding-right: 10px;
+  border-right: 2px solid var(--primary-color);
+}
+
+#items {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-in-out;
+}
+
+#items[open] {
+  overflow: hidden;
+  max-height: 500px;
+}
+
+.toolbar {
+  min-height: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar ha-icon-button:first-child {
+  margin-left: var(--vc-spacing);
+}
+
+.toolbar ha-icon-button:last-child {
+  margin-right: var(--vc-spacing);
+}
+
+.toolbar ha-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar ha-icon {
+  width: var(--ha-icon-size);
+  height: var(--ha-icon-size);
+  fill: currentColor;
+  margin: 0;
+}
+
+.image {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  vertical-align: middle;
+  fill: currentColor;
+  width: var(--ha-icon-size);
+  height: var(--ha-icon-size);
+}
+
+.problem {
+  color: #f44336;
+  color: var(--error-color, #f44336);
+  animation: blinker 2s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+}
+
+@keyframes blinker {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.state-div {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-items: start;
+}
+
+.state-label {
+  padding: 3px 0 0 10px;
+}
+
+#score {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 8px;
+}
+
+#score > * {
+  margin-bottom: 8px;
+}
+
+#score > :last-child {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#score > :first-child {
+  margin-top: 0;
+}
+
+score-card-row {
+  display: flex;
+  flex-grow: 1;
+}
+
+score-card-row > div {
+  flex-basis: 100%;
+}
+
+score-card-row:empty {
+  display: none;
+}
+
+score-card-card {
+  display: flex;
+  flex-basis: 100%;
+  flex-direction: row;
+  margin-right: 8px;
+}
+
+score-card-card:last-child {
+  margin-right: 0;
+}
+
+score-card-background {
+  cursor: pointer;
+  flex-grow: 1;
+  position: relative;
+}
+
+score-card-iconbar {
+  color: var(--icon-color, var(--paper-item-icon-color));
+  align-items: center;
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+score-card-currentbar,
+score-card-backgroundbar,
+score-card-contentbar,
+score-card-targetbar {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  border-radius: var(--score-card-border-radius, var(--ha-card-border-radius));
+}
+
+score-card-contentbar {
+  align-items: center;
+  color: var(--primary-text-color);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.contentbar-direction-right {
+  flex-direction: row;
+}
+
+.contentbar-direction-up {
+  flex-direction: column;
+}
+
+score-card-backgroundbar {
+  background: var(--bar-color);
+  filter: brightness(0.5);
+  opacity: 0.25;
+}
+
+score-card-currentbar {
+  background: linear-gradient(
+    to var(--bar-direction),
+    var(--bar-color) var(--bar-percent),
+    transparent var(--bar-percent),
+    transparent var(--bar-percent)
+  );
+}
+
+score-card-targetbar {
+  background: linear-gradient(
+    to var(--bar-direction),
+    transparent var(--bar-percent),
+    var(--bar-color) var(--bar-percent),
+    var(--bar-color) var(--bar-target-percent),
+    transparent var(--bar-target-percent)
+  );
+  display: var(--target-display);
+  filter: brightness(0.66);
+  opacity: 0.33;
+}
+
+score-card-markerbar {
+  background: var(--bar-color);
+  filter: brightness(0.75);
+  opacity: 0.5;
+  position: absolute;
+}
+
+score-card-name {
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+  overflow: hidden;
+  position: relative;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.name-outside {
+  margin-left: 16px;
+}
+
+score-card-value,
+score-card-min,
+score-card-max,
+score-card-divider {
+  align-self: center;
+  position: relative;
+}
+
+score-card-min,
+score-card-max,
+score-card-divider {
+  font-size: 10px;
+  margin: 2px;
+  opacity: 0.5;
+}
+
+.min-direction-up {
+  margin-top: auto;
+}
+
+.min-direction-right {
+  margin-left: auto;
+}
+
+score-card-divider {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+score-card-value {
+  white-space: nowrap;
+  margin: 4px;
+}
+
+.value-direction-right {
+  margin-left: auto;
+}
+
+.value-direction-up {
+  margin-top: auto;
+}
+`;
+styleInject(css_248z$1);
+
+const states = {
+    status: {
+        key: 'status',
+        icon: 'mdi:scale-bathroom',
+    },
+    problem: {
+        key: 'problem',
+        icon: 'mdi:alert',
+    },
+    last_measurement_time: {
+        key: 'last_measurement_time',
+        icon: 'mdi:calendar-clock'
+    },
+};
+const attributes_kg = {
+    weight: {
+        key: 'weight',
+        label: localize(`attributes.${'weight: '}`),
+        unit: ' kg',
+    },
+    impedance: {
+        key: 'impedance',
+        label: localize(`attributes.${'impedance: '}`),
+        unit: ' ohm',
+    },
+    height: {
+        key: 'height',
+        label: localize(`attributes.${'height: '}`),
+        unit: ' cm',
+    },
+    age: {
+        key: 'age',
+        label: localize(`attributes.${'age: '}`),
+        unit: localize(`unit.${' years'}`),
+    },
+    gender: {
+        key: 'gender',
+        label: localize(`attributes.${'gender: '}`),
+    },
+};
+const attributes_lb = {
+    weight: {
+        key: 'weight',
+        label: localize(`attributes.${'weight: '}`),
+        unit: ' lbs',
+    },
+    impedance: {
+        key: 'impedance',
+        label: localize(`attributes.${'impedance: '}`),
+        unit: ' ohm',
+    },
+    height: {
+        key: 'height',
+        label: localize(`attributes.${'height: '}`),
+        unit: ' cm',
+    },
+    age: {
+        key: 'age',
+        label: localize(`attributes.${'age: '}`),
+        unit: localize(`unit.${' years'}`),
+    },
+    gender: {
+        key: 'gender',
+        label: localize(`attributes.${'gender: '}`),
+    },
+};
+const body_kg = {
+    bmi: {
+        key: 'bmi',
+        label: localize(`body.${'bmi'}`),
+        icon: '/local/images/bodyscoreIcon/bmi.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 40,
+        min: 0,
+        severity: [
+            { from: 0, to: 18.5, color: 'blue' },
+            { from: 18.51, to: 25, color: 'green' },
+            { from: 25.01, to: 28, color: 'orange' },
+            { from: 28.01, to: 32, color: 'orangered' },
+            { from: 32.01, to: Infinity, color: 'red' },
+        ],
+        target: 21.75,
+    },
+    bmi_label: {
+        key: 'bmi_label',
+        label: localize(`body.${'bmi_label'}`),
+        icon: '/local/images/bodyscoreIcon/body_type.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+    },
+    visceral_fat: {
+        key: 'visceral_fat',
+        label: localize(`body.${'visceral_fat'}`),
+        icon: '/local/images/bodyscoreIcon/visceral_fat.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 20,
+        min: 0,
+        severity: [
+            { from: 0, to: 10, color: 'green' },
+            { from: 10.01, to: 15, color: 'orange' },
+            { from: 15.01, to: Infinity, color: 'orangered' },
+        ],
+        target: 12.5,
+    },
+    body_fat: {
+        key: 'body_fat',
+        label: localize(`body.${'body_fat'}`),
+        icon: '/local/images/bodyscoreIcon/body_fat.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 40,
+        min: 0,
+        severity: [
+            { from: 0, to: 12, color: 'blue' },
+            { from: 12.01, to: 18, color: 'royalblue' },
+            { from: 18.01, to: 23, color: 'green' },
+            { from: 23.01, to: 28, color: 'orange' },
+            { from: 28.01, to: Infinity, color: 'orangered' },
+        ],
+        target: 20.5,
+    },
+    protein: {
+        key: 'protein',
+        label: localize(`body.${'protein'}`),
+        icon: '/local/images/bodyscoreIcon/protein.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 32,
+        min: 0,
+        severity: [
+            { from: 0, to: 16, color: 'orangered' },
+            { from: 16.01, to: 20, color: 'green' },
+            { from: 20.01, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 18,
+    },
+    water: {
+        key: 'water',
+        label: localize(`body.${'water'}`),
+        icon: '/local/images/bodyscoreIcon/water.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 80,
+        min: 0,
+        severity: [
+            { from: 0, to: 55, color: 'orangered' },
+            { from: 55.01, to: 65.1, color: 'green' },
+            { from: 65.11, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 60,
+    },
+    muscle_mass: {
+        key: 'muscle_mass',
+        label: localize(`body.${'muscle_mass'}`),
+        icon: '/local/images/bodyscoreIcon/muscle_mass.png',
+        unit: ' kg',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 100,
+        min: 0,
+        severity: [
+            { from: 0, to: 49.4, color: 'orangered' },
+            { from: 49.41, to: 59.5, color: 'green' },
+            { from: 59.51, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 54.45,
+    },
+    bone_mass: {
+        key: 'bone_mass',
+        label: localize(`body.${'bone_mass'}`),
+        icon: '/local/images/bodyscoreIcon/bone_mass.png',
+        unit: ' kg',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 8,
+        min: 0,
+        severity: [
+            { from: 0, to: 2, color: 'orangered' },
+            { from: 2.01, to: 4.2, color: 'green' },
+            { from: 4.21, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 3.1,
+    },
+    weight: {
+        key: 'weight',
+        label: localize(`body.${'weight'}`),
+        icon: '/local/images/bodyscoreIcon/ideal.png',
+        unit: ' kg',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 130,
+        min: 0,
+        severity: [
+            { from: 0, to: 57.3, color: 'blue' },
+            { from: 57.31, to: 77.4, color: 'green' },
+            { from: 77.41, to: 86.7, color: 'orange' },
+            { from: 86.71, to: 99.1, color: 'orangered' },
+            { from: 99.11, to: Infinity, color: 'red' },
+        ],
+        target: 67.35,
+    },
+    ideal: {
+        key: 'ideal',
+        label: localize(`body.${'ideal'}`),
+        icon: '/local/images/bodyscoreIcon/ideal.png',
+        unit: ' kg',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 130,
+        min: 0,
+        severity: [
+            { from: 0, to: 57.3, color: 'blue' },
+            { from: 57.31, to: 77.4, color: 'green' },
+            { from: 77.41, to: 86.7, color: 'orange' },
+            { from: 86.71, to: 99.1, color: 'orangered' },
+            { from: 99.11, to: Infinity, color: 'red' },
+        ],
+        target: 67.35,
+    },
+    basal_metabolism: {
+        key: 'basal_metabolism',
+        label: localize(`body.${'basal_metabolism'}`),
+        icon: '/local/images/bodyscoreIcon/basal_metabolism.png',
+        unit: ' kcal',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 3000,
+        min: 0,
+        severity: [
+            { from: 0, to: 1530, color: 'orangered' },
+            { from: 1530.01, to: Infinity, color: 'green' },
+        ],
+        target: 1530,
+    },
+    body_type: {
+        key: 'body_type',
+        label: localize(`body.${'body_type'}`),
+        icon: '/local/images/bodyscoreIcon/body_type.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+    },
+    metabolic_age: {
+        key: 'metabolic_age',
+        label: localize(`body.${'metabolic_age'}`),
+        icon: '/local/images/bodyscoreIcon/metabolic_age.png',
+        unit: localize(`unit.${' years'}`),
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: null,
+        min: null,
+        severity: null,
+        target: null,
+    },
+};
+const body_lb = {
+    bmi: {
+        key: 'bmi',
+        label: localize(`body.${'bmi'}`),
+        icon: '/local/images/bodyscoreIcon/bmi.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 40,
+        min: 0,
+        severity: [
+            { from: 0, to: 18.5, color: 'blue' },
+            { from: 18.51, to: 25, color: 'green' },
+            { from: 25.01, to: 28, color: 'orange' },
+            { from: 28.01, to: 32, color: 'orangered' },
+            { from: 32.01, to: Infinity, color: 'red' },
+        ],
+        target: 21.75,
+    },
+    bmi_label: {
+        key: 'bmi_label',
+        label: localize(`body.${'bmi_label'}`),
+        icon: '/local/images/bodyscoreIcon/body_type.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+    },
+    visceral_fat: {
+        key: 'visceral_fat',
+        label: localize(`body.${'visceral_fat'}`),
+        icon: '/local/images/bodyscoreIcon/visceral_fat.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 20,
+        min: 0,
+        severity: [
+            { from: 0, to: 10, color: 'green' },
+            { from: 10.01, to: 15, color: 'orange' },
+            { from: 15.01, to: Infinity, color: 'orangered' },
+        ],
+        target: 12.5,
+    },
+    body_fat: {
+        key: 'body_fat',
+        label: localize(`body.${'body_fat'}`),
+        icon: '/local/images/bodyscoreIcon/body_fat.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 40,
+        min: 0,
+        severity: [
+            { from: 0, to: 12, color: 'blue' },
+            { from: 12.01, to: 18, color: 'royalblue' },
+            { from: 18.01, to: 23, color: 'green' },
+            { from: 23.01, to: 28, color: 'orange' },
+            { from: 28.01, to: Infinity, color: 'orangered' },
+        ],
+        target: 20.5,
+    },
+    protein: {
+        key: 'protein',
+        label: localize(`body.${'protein'}`),
+        icon: '/local/images/bodyscoreIcon/protein.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 32,
+        min: 0,
+        severity: [
+            { from: 0, to: 16, color: 'orangered' },
+            { from: 16.01, to: 20, color: 'green' },
+            { from: 20.01, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 18,
+    },
+    water: {
+        key: 'water',
+        label: localize(`body.${'water'}`),
+        icon: '/local/images/bodyscoreIcon/water.png',
+        unit: ' %',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 80,
+        min: 0,
+        severity: [
+            { from: 0, to: 55, color: 'orangered' },
+            { from: 55.01, to: 65.1, color: 'green' },
+            { from: 65.11, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 60,
+    },
+    muscle_mass: {
+        key: 'muscle_mass',
+        label: localize(`body.${'muscle_mass'}`),
+        icon: '/local/images/bodyscoreIcon/muscle_mass.png',
+        unit: ' lbs',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 220.5,
+        min: 0,
+        severity: [
+            { from: 0, to: 108.9, color: 'orangered' },
+            { from: 109, to: 131.2, color: 'green' },
+            { from: 131.3, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 120.1,
+    },
+    bone_mass: {
+        key: 'bone_mass',
+        label: localize(`body.${'bone_mass'}`),
+        icon: '/local/images/bodyscoreIcon/bone_mass.png',
+        unit: ' lbs',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 17.6,
+        min: 0,
+        severity: [
+            { from: 0, to: 4.4, color: 'orangered' },
+            { from: 4.5, to: 9.3, color: 'green' },
+            { from: 9.4, to: Infinity, color: 'darkgreen' },
+        ],
+        target: 6.9,
+    },
+    weight: {
+        key: 'weight',
+        label: localize(`body.${'weight'}`),
+        icon: '/local/images/bodyscoreIcon/ideal.png',
+        unit: ' lbs',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 286.6,
+        min: 0,
+        severity: [
+            { from: 0, to: 126.3, color: 'blue' },
+            { from: 126.4, to: 170.6, color: 'green' },
+            { from: 170.7, to: 191.1, color: 'orange' },
+            { from: 191.2, to: 218.5, color: 'orangered' },
+            { from: 218.6, to: Infinity, color: 'red' },
+        ],
+        target: 148.5,
+    },
+    ideal: {
+        key: 'ideal',
+        label: localize(`body.${'ideal'}`),
+        icon: '/local/images/bodyscoreIcon/ideal.png',
+        unit: ' lbs',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 286.6,
+        min: 0,
+        severity: [
+            { from: 0, to: 126.3, color: 'blue' },
+            { from: 126.4, to: 170.6, color: 'green' },
+            { from: 170.7, to: 191.1, color: 'orange' },
+            { from: 191.2, to: 218.5, color: 'orangered' },
+            { from: 218.6, to: Infinity, color: 'red' },
+        ],
+        target: 148.5,
+    },
+    basal_metabolism: {
+        key: 'basal_metabolism',
+        label: localize(`body.${'basal_metabolism'}`),
+        icon: '/local/images/bodyscoreIcon/basal_metabolism.png',
+        unit: ' kcal',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            indicator: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: 3000,
+        min: 0,
+        severity: [
+            { from: 0, to: 1530, color: 'orangered' },
+            { from: 1530.01, to: Infinity, color: 'green' },
+        ],
+        target: 1530,
+    },
+    body_type: {
+        key: 'body_type',
+        label: localize(`body.${'body_type'}`),
+        icon: '/local/images/bodyscoreIcon/body_type.png',
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+    },
+    metabolic_age: {
+        key: 'metabolic_age',
+        label: localize(`body.${'metabolic_age'}`),
+        icon: '/local/images/bodyscoreIcon/metabolic_age.png',
+        unit: localize(`unit.${' years'}`),
+        direction: 'right',
+        height: '30px',
+        width: '100%',
+        positions: {
+            icon: 'outside',
+            name: 'inside',
+            minmax: 'off',
+            value: 'inside',
+        },
+        color: 'var(--score-card-color, var(--ha-card-background))',
+        max: null,
+        min: null,
+        severity: null,
+        target: null,
+    },
+};
+const buttons = {
+    user1: {
+        show: false,
+        label: 'User1',
+        icon: 'mdi:alpha-u-circle',
+    },
+    user2: {
+        show: false,
+        label: 'User2',
+        icon: 'mdi:alpha-u-circle',
+    },
+    user3: {
+        show: false,
+        label: 'User3',
+        icon: 'mdi:alpha-u-circle',
+    },
+    user4: {
+        show: false,
+        label: 'User4',
+        icon: 'mdi:alpha-u-circle',
+    },
+    user5: {
+        show: false,
+        label: 'User5',
+        icon: 'mdi:alpha-u-circle',
+    },
+};
+const compute = {
+    convertkgtolb: (v) => Math.round((Number(v) * 2.20462) * 10) / 10,
+};
+const models = {
+    no_impedance: {
+        states: {
+            status: {
+                key: 'state',
+            },
+        },
+        attributes_kg: {
+            weight: { key: 'weight' },
+            impedance: false,
+            height: { key: 'height' },
+            age: { key: 'age' },
+            gender: { key: 'gender' },
+        },
+        attributes_lb: {
+            weight: {
+                key: 'weight',
+                compute: compute.convertkgtolb,
+            },
+            impedance: false,
+            height: { key: 'height' },
+            age: { key: 'age' },
+            gender: { key: 'gender' },
+        },
+        body_kg: {
+            bmi: { key: 'bmi' },
+            bmi_label: { key: 'bmi_label' },
+            visceral_fat: { key: 'visceral_fat' },
+            body_fat: false,
+            protein: false,
+            water: false,
+            muscle_mass: false,
+            bone_mass: false,
+            weight: { key: 'weight' },
+            ideal: { key: 'ideal' },
+            basal_metabolism: { key: 'basal_metabolism' },
+            body_type: false,
+            metabolic_age: false,
+        },
+        body_lb: {
+            bmi: { key: 'bmi' },
+            bmi_label: { key: 'bmi_label' },
+            visceral_fat: { key: 'visceral_fat' },
+            body_fat: false,
+            protein: false,
+            water: false,
+            muscle_mass: false,
+            bone_mass: false,
+            weight: {
+                key: 'weight',
+                compute: compute.convertkgtolb,
+            },
+            ideal: {
+                key: 'ideal',
+                compute: compute.convertkgtolb,
+            },
+            basal_metabolism: { key: 'basal_metabolism' },
+            body_type: false,
+            metabolic_age: false,
+        },
+        buttons: {},
+    },
+    with_impedance: {
+        states: {
+            status: {
+                key: 'state',
+            },
+        },
+        attributes_kg: {
+            weight: { key: 'weight' },
+            impedance: { key: 'impedance' },
+            height: { key: 'height' },
+            age: { key: 'age' },
+            gender: { key: 'gender' },
+        },
+        attributes_lb: {
+            weight: {
+                key: 'weight',
+                compute: compute.convertkgtolb,
+            },
+            impedance: { key: 'impedance' },
+            height: { key: 'height' },
+            age: { key: 'age' },
+            gender: { key: 'gender' },
+        },
+        body_kg: {
+            bmi: { key: 'bmi' },
+            bmi_label: { key: 'bmi_label' },
+            visceral_fat: { key: 'visceral_fat' },
+            body_fat: { key: 'body_fat' },
+            protein: { key: 'protein' },
+            water: { key: 'water' },
+            muscle_mass: { key: 'muscle_mass' },
+            bone_mass: { key: 'bone_mass' },
+            weight: { key: 'weight' },
+            ideal: { key: 'ideal' },
+            basal_metabolism: { key: 'basal_metabolism' },
+            body_type: { key: 'body_type' },
+            metabolic_age: { key: 'metabolic_age' },
+        },
+        body_lb: {
+            bmi: { key: 'bmi' },
+            bmi_label: { key: 'bmi_label' },
+            visceral_fat: { key: 'visceral_fat' },
+            body_fat: { key: 'body_fat' },
+            protein: { key: 'protein' },
+            water: { key: 'water' },
+            muscle_mass: {
+                key: 'muscle_mass',
+                compute: compute.convertkgtolb,
+            },
+            bone_mass: {
+                key: 'bone_mass',
+                compute: compute.convertkgtolb,
+            },
+            weight: {
+                key: 'weight',
+                compute: compute.convertkgtolb,
+            },
+            ideal: {
+                key: 'ideal',
+                compute: compute.convertkgtolb,
+            },
+            basal_metabolism: { key: 'basal_metabolism' },
+            body_type: { key: 'body_type' },
+            metabolic_age: { key: 'metabolic_age' },
+        },
+        buttons: {},
+    },
+};
+const defaultCardConfig = {
+    entity: '',
+    image: '',
+    model: false,
+    unit: false,
+    theme: true,
+    show_name: true,
+    show_states: true,
+    show_attributes: true,
+    show_always_details: false,
+    show_toolbar: true,
+    show_body: true,
+    show_buttons: false,
+};
+
+function deepMerge(...sources) {
+    const isObject = (obj) => obj && typeof obj === 'object';
+    const target = {};
+    sources.filter((source) => isObject(source)).forEach((source) => {
+        Object.keys(source).forEach((key) => {
+            const targetValue = target[key];
+            const sourceValue = source[key];
+            if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
+                target[key] = targetValue.concat(sourceValue);
+            }
+            else if (isObject(targetValue) && isObject(sourceValue)) {
+                target[key] = deepMerge(Object.assign({}, targetValue), sourceValue);
+            }
+            else {
+                target[key] = sourceValue;
+            }
+        });
+    });
+    return target;
+}
+
+function buildStyles(config) {
+    const { image, theme, show_toolbar, name, buttons } = config;
+    return {
+        background: image
+            ? `
+          background-image: url('${image}');
+          color: white;
+          text-shadow: 0 0 10px black;
+          min-height: 220px;
+          border-radius: var(--ha-card-border-radius, 12px);
+          ${show_toolbar === false ? 'border-radius: var(--ha-card-border-radius, 12px);' : 'border-radius: 0;'}
+          overflow: hidden;
+        `
+            : '',
+        icon: `color: ${image ? 'white' : 'var(--paper-item-icon-color)'};`,
+        iconbody: `background-color: ${theme !== false ? 'var(--paper-item-icon-color)' : 'white'};`,
+        content: `padding: ${name !== false ? '8px' : '16px'} ${buttons !== false ? '8px' : '16px'};`,
+    };
+}
+function buildConfig(config) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
+    if (!config) {
+        throw new Error(localize('error.invalid_config'));
+    }
+    if (!config.entity) {
+        throw new Error(localize('error.missing_entity'));
+    }
+    if (config.entity.split('.')[0] !== 'bodymiscale') {
+        throw new Error(localize('error.missing_entity_bodymiscale'));
+    }
+    const model = config.model ? models.with_impedance : models.no_impedance;
+    // Fusionner les données et préparer les valeurs par défaut
+    return {
+        name: (_a = config.name) !== null && _a !== void 0 ? _a : '',
+        entity: (_b = config.entity) !== null && _b !== void 0 ? _b : '',
+        image: (_c = config.image) !== null && _c !== void 0 ? _c : undefined,
+        model: (_d = config.model) !== null && _d !== void 0 ? _d : undefined,
+        unit: (_e = config.unit) !== null && _e !== void 0 ? _e : undefined,
+        theme: (_f = config.theme) !== null && _f !== void 0 ? _f : undefined,
+        show_name: (_g = config.show_name) !== null && _g !== void 0 ? _g : undefined,
+        show_states: (_h = config.show_states) !== null && _h !== void 0 ? _h : undefined,
+        show_attributes: (_j = config.show_attributes) !== null && _j !== void 0 ? _j : undefined,
+        show_always_details: (_k = config.show_always_details) !== null && _k !== void 0 ? _k : undefined,
+        show_toolbar: (_l = config.show_toolbar) !== null && _l !== void 0 ? _l : undefined,
+        show_body: (_m = config.show_body) !== null && _m !== void 0 ? _m : undefined,
+        show_buttons: (_o = config.show_buttons) !== null && _o !== void 0 ? _o : undefined,
+        states: deepMerge(states, model.states, config.states),
+        attributes: config.unit
+            ? deepMerge(attributes_lb, model.attributes_lb, config.attributes)
+            : deepMerge(attributes_kg, model.attributes_kg, config.attributes),
+        body: config.unit
+            ? deepMerge(body_lb, model.body_lb, config.body)
+            : deepMerge(body_kg, model.body_kg, config.body),
+        buttons: config.buttons === true ? {} : deepMerge(buttons, model.buttons, config.buttons),
+        direction: 'right',
+        styles: buildStyles(config),
+        open: (_p = config.open) !== null && _p !== void 0 ? _p : false,
+        height: (_q = config.height) !== null && _q !== void 0 ? _q : 'auto',
+        width: (_r = config.width) !== null && _r !== void 0 ? _r : '100%',
+        stats: (_s = config.stats) !== null && _s !== void 0 ? _s : {},
+        type: (_t = config.type) !== null && _t !== void 0 ? _t : 'custom:body-miscale-card',
+        min: (_u = config.min) !== null && _u !== void 0 ? _u : 0,
+        max: (_v = config.max) !== null && _v !== void 0 ? _v : 100,
+        color: (_w = config.color) !== null && _w !== void 0 ? _w : 'var(--primary-color)',
+        columns: (_x = config.columns) !== null && _x !== void 0 ? _x : '1',
+    };
+}
+
+// String in the right side will be replaced by Rollup
+const PKG_VERSION = 'DEVELOPMENT';
+console.info(`%c Body-miscale-card \n%c  ${localize('common.version')} ${PKG_VERSION} `, 'color: cyan; background: black; font-weight: bold;', 'color: darkblue; background: white; font-weight: bold;');
+let BodymiscaleCard = class BodymiscaleCard extends s {
+    constructor() {
+        super(...arguments);
+        this.open = false;
+    }
+    static get styles() {
+        return css_248z$1;
+    }
+    static async getConfigElement() {
+        Promise.resolve().then(function () { return editor; });
+        return document.createElement('body-miscale-card-editor');
+    }
+    static getStubConfig(_, entities) {
+        const [bodymiscaleEntity] = entities.filter((eid) => eid.startsWith('bodymiscale'));
+        return Object.assign(Object.assign({}, defaultCardConfig), { entity: bodymiscaleEntity !== null && bodymiscaleEntity !== void 0 ? bodymiscaleEntity : '' });
+    }
+    get entity() {
+        return this.hass.states[this.config.entity];
+    }
+    setConfig(config) {
+        this.config = buildConfig(config);
+    }
+    getCardSize() {
+        return this.config.show_name && this.config.show_buttons ? 4
+            : this.config.show_name || this.config.show_buttons ? 3
+                : 2;
+    }
+    shouldShowBackground() {
+        return !(this.config.image === "" &&
+            this.config.show_states === false &&
+            this.config.show_attributes === false &&
+            this.config.show_always_details === true &&
+            this.config.show_body === true);
+    }
+    shouldUpdate(changedProps) {
+        return _e(this, changedProps, false);
+    }
+    toggle(event) {
+        event === null || event === void 0 ? void 0 : event.stopPropagation();
+        this.open = !this.open;
+    }
+    customEvent(event) {
+        var _a;
+        if ((_a = event.detail) === null || _a === void 0 ? void 0 : _a.fold_row) {
+            this.toggle(event);
+        }
+    }
+    toggleMenu(key) {
+        var _a;
+        const menu = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector(`#bmc-menu-${key}`);
+        if (menu && 'open' in menu) {
+            menu.open = !menu.open;
+        }
+    }
+    handleChange(mode, key, service) {
+        var _a;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity))
+            return;
+        const stateObj = this.hass.states[this.config.entity];
+        if (!stateObj)
+            return;
+        this.callService(service !== null && service !== void 0 ? service : `bodymiscale.set_${key}`, {
+            entity_id: stateObj.entity_id,
+            [key]: mode,
+        });
+    }
+    callService(service, data) {
+        var _a;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity))
+            return;
+        const stateObj = this.hass.states[this.config.entity];
+        if (!stateObj) {
+            console.error("Entity not found:", this.config.entity);
+            return;
+        }
+        const [domain, name] = service.split(".");
+        const serviceData = Object.assign({ entity_id: stateObj.entity_id }, data);
+        this.hass.callService(domain, name, serviceData);
+    }
+    moreInfo() {
+        var _a;
+        if (!((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            console.warn("No entity defined in the config.");
+            return;
+        }
+        ne(this, 'hass-more-info', {
+            entityId: this.config.entity,
+        });
+    }
+    renderName(stateObj) {
+        if (!this.config.show_name) {
+            return A;
+        }
+        return x ` <div class="title">${this.config.name || stateObj.attributes.friendly_name}</div> `;
+    }
+    renderState(data) {
+        var _a, _b, _c, _d, _e;
+        if (!this.config.show_states) {
+            return A;
+        }
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return x `<div>${localize('state.default.unavailable')}</div>`;
+        }
+        const stateObj = (_b = this.hass.states) === null || _b === void 0 ? void 0 : _b[this.config.entity];
+        if (!stateObj) {
+            return x `<div>${this.hass.localize('state.default.unavailable')}</div>`;
+        }
+        const keyExists = (data === null || data === void 0 ? void 0 : data.key) && stateObj;
+        const isValidAttribute = keyExists && ((_c = stateObj.attributes) === null || _c === void 0 ? void 0 : _c[data.key]) !== undefined;
+        const isValidEntityData = keyExists && stateObj[data.key] !== undefined;
+        let value = isValidAttribute
+            ? stateObj.attributes[data.key]
+            : isValidEntityData
+                ? stateObj[data.key]
+                : this.hass.localize('state.default.unavailable');
+        if (data.key === "last_measurement_time" && typeof value === "string") {
+            try {
+                const parsedDate = new Date(value.replace(" ", "T"));
+                const formattedDate = a(parsedDate, this.hass.locale);
+                const formattedTime = D(parsedDate, this.hass.locale);
+                value = `${formattedDate} ${formattedTime}`;
+            }
+            catch ( /* empty */_f) { /* empty */ }
+        }
+        const formatValue = typeof value === 'number' ? H(value, this.hass.locale) : value;
+        const localizedValue = localize(`states.${value}`) || formatValue;
+        const attribute = stateObj.state === 'ok' && data.icon === 'mdi:alert'
+            ? A
+            : x ` <div class="state-div">
+                  <div>${data.icon && this.renderIcon(data)}</div>
+                  <div class="state-label">
+                    ${(_d = data.label) !== null && _d !== void 0 ? _d : ''}${localizedValue}${(_e = data.unit) !== null && _e !== void 0 ? _e : ''}</div>
+                </div>`;
+        const hasDropdown = `${data.key}_list` in stateObj.attributes;
+        return hasDropdown && (isValidAttribute || isValidEntityData) && data.service
+            ? this.renderDropdown(attribute, data.key, data.service)
+            : attribute;
+    }
+    renderAttribute(data) {
+        var _a, _b, _c, _d, _e;
+        if (!this.config.show_attributes) {
+            return A;
+        }
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return x `<div>${localize('state.default.unavailable')}</div>`;
+        }
+        const stateObj = (_b = this.hass.states) === null || _b === void 0 ? void 0 : _b[this.config.entity];
+        if (!stateObj) {
+            return x `<div>${this.hass.localize('state.default.unavailable')}</div>`;
+        }
+        const computeFunc = typeof data.compute === 'function' ? data.compute : (v) => v;
+        const keyExists = (data === null || data === void 0 ? void 0 : data.key) && stateObj;
+        const isValidAttribute = keyExists && ((_c = stateObj.attributes) === null || _c === void 0 ? void 0 : _c[data.key]) !== undefined;
+        const isValidEntityData = keyExists && stateObj[data.key] !== undefined;
+        let value = isValidAttribute
+            ? computeFunc(stateObj.attributes[data.key])
+            : isValidEntityData
+                ? computeFunc(stateObj[data.key])
+                : this.hass.localize('state.default.unavailable');
+        if (data.key === "last_measurement_time" && typeof value === "string") {
+            try {
+                const parsedDate = new Date(value.replace(" ", "T"));
+                const formattedDate = a(parsedDate, this.hass.locale);
+                const formattedTime = D(parsedDate, this.hass.locale);
+                value = `${formattedDate} ${formattedTime}`;
+            }
+            catch ( /* empty */_f) { /* empty */ }
+        }
+        const formatValue = typeof value === 'number' ? H(value, this.hass.locale) : value;
+        const localizedValue = localize(`attributes_value.${value}`) || formatValue;
+        const attribute = x `<div>
+      ${data.icon && this.renderIcon(data)}
+      ${(_d = data.label) !== null && _d !== void 0 ? _d : ''}${localizedValue}${(_e = data.unit) !== null && _e !== void 0 ? _e : ''}
+    </div>`;
+        const hasDropdown = `${data.key}_list` in stateObj.attributes;
+        return hasDropdown && (isValidAttribute || isValidEntityData) && data.service
+            ? this.renderDropdown(attribute, data.key, data.service)
+            : attribute;
+    }
+    renderBody(data) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+        if (!this.config.show_body) {
+            return A;
+        }
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return x `<div>${localize('state.default.unavailable')}</div>`;
+        }
+        const stateObj = (_b = this.hass.states) === null || _b === void 0 ? void 0 : _b[this.config.entity];
+        if (!stateObj) {
+            return x `<div>${this.hass.localize('state.default.unavailable')}</div>`;
+        }
+        const computeFunc = typeof data.compute === 'function' ? data.compute : (v) => v;
+        const keyExists = (data === null || data === void 0 ? void 0 : data.key) && stateObj;
+        const isValidAttribute = keyExists && ((_c = stateObj.attributes) === null || _c === void 0 ? void 0 : _c[data.key]) !== undefined;
+        const isValidEntityData = keyExists && stateObj[data.key] !== undefined;
+        let value = isValidAttribute
+            ? computeFunc(stateObj.attributes[data.key])
+            : isValidEntityData
+                ? computeFunc(stateObj[data.key])
+                : this.hass.localize('state.default.unavailable');
+        if (data.key === "last_measurement_time" && typeof value === "string") {
+            try {
+                const parsedDate = new Date(value.replace(" ", "T"));
+                const formattedDate = a(parsedDate, this.hass.locale);
+                const formattedTime = D(parsedDate, this.hass.locale);
+                value = `${formattedDate} ${formattedTime}`;
+            }
+            catch ( /* empty */_p) { /* empty */ }
+        }
+        const formatValue = typeof value === 'number' ? H(value, this.hass.locale) : value;
+        // Defined height and check for configured height.
+        let barHeight = 30;
+        if (typeof data.height === 'number' || typeof data.height === 'string') {
+            barHeight = data.height;
+        }
+        // Set style variables based on direction.
+        let alignItems = 'stretch';
+        let backgroundMargin = '0px 0px 0px 13px';
+        let barDirection = 'right';
+        let flexDirection = 'row';
+        let markerDirection = 'left';
+        let markerStyle = 'height: 100%; width: 2px;';
+        switch (data.direction) {
+            case 'right':
+                barDirection = 'right';
+                markerDirection = 'left';
+                break;
+            case 'up':
+                backgroundMargin = '0px';
+                barDirection = 'top';
+                flexDirection = 'column-reverse';
+                markerDirection = 'bottom';
+                markerStyle = 'height: 2px; width: 100%;';
+                break;
+        }
+        // Set icon position html.
+        let iconOutside;
+        let iconInside;
+        const positions = data.positions || {};
+        switch (positions.icon) {
+            case 'outside':
+                iconOutside = x ` <score-card-iconbar> ${data.icon && this.renderIconbody(data)} </score-card-iconbar> `;
+                break;
+            case 'inside':
+                iconInside = x ` <score-card-iconbar> ${data.icon && this.renderIconbody(data)} </score-card-iconbar> `;
+                backgroundMargin = '0px';
+                break;
+            case 'off':
+                backgroundMargin = '0px';
+                break;
+        }
+        // Set name html based on position.
+        let nameOutside;
+        let nameInside;
+        switch (data.positions.name) {
+            case 'outside':
+                nameOutside = x `
+          <score-card-name
+            style="${data.direction == 'up'
+                    ? ''
+                    : data.width
+                        ? `width: calc(100% - ${data.width});`
+                        : ''}"
+            >${(_d = data.label) !== null && _d !== void 0 ? _d : ''}</score-card-name
+          >
+        `;
+                backgroundMargin = '0px';
+                break;
+            case 'inside':
+                nameInside = x ` <score-card-name>${(_e = data.label) !== null && _e !== void 0 ? _e : ''}</score-card-name> `;
+                break;
+        }
+        // Set min and max html based on position.
+        let minMaxOutside;
+        let minMaxInside;
+        const min = (_f = data.min) !== null && _f !== void 0 ? _f : 0;
+        const max = (_g = data.max) !== null && _g !== void 0 ? _g : 100;
+        switch (data.positions.minmax) {
+            case 'outside':
+                minMaxOutside = x `
+          <score-card-min>${min + ((_h = data.unit) !== null && _h !== void 0 ? _h : '')}</score-card-min>
+          <score-card-divider>/</score-card-divider>
+          <score-card-max>${max + ((_j = data.unit) !== null && _j !== void 0 ? _j : '')}</score-card-max>
+        `;
+                break;
+            case 'inside':
+                minMaxInside = x `
+          <score-card-min class="${data.direction == 'up' ? 'min-direction-up' : 'min-direction-right'}"
+            >${min + ((_k = data.unit) !== null && _k !== void 0 ? _k : '')}</score-card-min
+          >
+          <score-card-divider>/</score-card-divider>
+          <score-card-max> ${max + ((_l = data.unit) !== null && _l !== void 0 ? _l : '')}</score-card-max>
+        `;
+                break;
+        }
+        // Set value html based on position.
+        let valueOutside;
+        let valueInside;
+        switch (data.positions.value) {
+            case 'outside':
+                valueOutside = x `
+          <score-card-value class="${data.direction == 'up' ? 'value-direction-up' : 'value-direction-right'}"
+            >${(localize(`body_value.${value}`) || formatValue)}
+             ${((_m = data.unit) !== null && _m !== void 0 ? _m : '')}</score-card-value
+          >
+        `;
+                break;
+            case 'inside':
+                valueInside = x `
+          <score-card-value
+            class="${data.positions.minmax == 'inside'
+                    ? ''
+                    : data.direction == 'up'
+                        ? 'value-direction-up'
+                        : 'value-direction-right'}"
+            >${(localize(`body_value.${value}`) || formatValue)}
+             ${((_o = data.unit) !== null && _o !== void 0 ? _o : '')}</score-card-value
+          >
+        `;
+                break;
+            case 'off':
+                backgroundMargin = '0px';
+                break;
+        }
+        // Set bar color.
+        const barColor = this.computeBarColor(data, Number(value));
+        // Set bar percent and marker percent based on value difference.
+        const barPercent = this.computePercent(data, Number(value));
+        const targetMarkerPercent = this.computePercent(data, data.target);
+        let targetStartPercent = barPercent;
+        let targetEndPercent = this.computePercent(data, data.target);
+        if (targetEndPercent < targetStartPercent) {
+            targetStartPercent = targetEndPercent;
+            targetEndPercent = barPercent;
+        }
+        // Set bar width if configured.
+        let barWidth = '';
+        if (data.width) {
+            alignItems = 'center';
+            barWidth = `width: ${data.width}`;
+        }
+        // Create array containing all rows.
+        let rowFlexDirection = 'column';
+        if (this.config.columns)
+            rowFlexDirection = 'row';
+        const attribute = x ` <score-card-row style="flex-direction: ${rowFlexDirection};">
+      <score-card-card style="flex-direction: ${flexDirection}; align-items: ${alignItems};">
+        ${iconOutside} ${nameOutside}
+        <score-card-background
+          style="margin: ${backgroundMargin}; height: ${barHeight}${typeof barHeight == 'number'
+            ? 'px'
+            : ''}; ${barWidth}"
         >
-          ${e.map((e=>N`<mwc-list-item .value=${e}>${e}</mwc-list-item>`))}
-        </mwc-select>
-
-        <mwc-textfield
-          label="${ga("editor.image")}"
-          .value=${this._image}
-          .configValue=${"image"}
-          @input=${this._valueChanged}
-        ></mwc-textfield>
-
-        ${ga("editor.model")}<br>
-        ${ga("editor.model1")}<br>
-        <mwc-formfield class="option" .label=${ga(this._model?"editor.model_aria_label_off":"editor.model_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._model}
-            .configValue=${"model"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        ${ga("editor.unit")}<br>
-        <mwc-formfield class="option" .label=${ga(this._unit?"editor.unit_aria_label_off":"editor.unit_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._unit}
-            .configValue=${"unit"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        ${ga("editor.theme")}<br>
-        <mwc-formfield class="option" .label=${ga(this._theme?"editor.theme_aria_label_off":"editor.theme_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._theme}
-            .configValue=${"theme"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        <p style="font-size: large; line-height: 200%;">
-          <U>${ga("editor.header_options")}</U>
-        </p><br>
-
-        ${ga("editor.show_name")}<br>
-        <mwc-formfield class="option" .label=${ga(this._show_name?"editor.show_name_aria_label_off":"editor.show_name_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_name}
-            .configValue=${"show_name"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        ${ga("editor.show_states")}<br>
-        <mwc-formfield class="option" .label=${ga(this._show_states?"editor.show_states_aria_label_off":"editor.show_states_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_states}
-            .configValue=${"show_states"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        ${ga("editor.show_attributes")}<br>
-        <mwc-formfield class="option" .label=${ga(this._show_attributes?"editor.show_attributes_aria_label_off":"editor.show_attributes_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_attributes}
-            .configValue=${"show_attributes"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        <p style="font-size: large; line-height: 200%;">
-          <U>${ga("editor.body_options")}</U>
-        </p><br>
-
-        ${ga("editor.always_show_details")}<br>
-        <mwc-formfield class="option" .label=${ga(this._always_show_details?"editor.always_show_details_aria_label_off":"editor.always_show_details_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._always_show_details}
-            .configValue=${"always_show_details"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        ${ga("editor.show_toolbar")}<br>
-        <mwc-formfield class="option" .label=${ga(this._show_toolbar?"editor.show_toolbar_aria_label_off":"editor.show_toolbar_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_toolbar}
-            .configValue=${"show_toolbar"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        <div style="padding:0 0 0 45px">
-          ${ga("editor.show_body")}<br>
-          ${ga("editor.show_body1")}<br>
-        </div>
-        <mwc-formfield class="option" style="padding:0 0 0 45px" .label=${ga(this._show_body?"editor.show_body_aria_label_off":"editor.show_body_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_body}
-            .configValue=${"show_body"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-
-        <div style="padding:0 0 0 45px">
-          ${ga("editor.show_buttons")}<br>
-        </div>
-        <mwc-formfield class="option" style="padding:0 0 0 45px" .label=${ga(this._show_buttons?"editor.show_buttons_aria_label_off":"editor.show_buttons_aria_label_on")}>
-          <mwc-switch
-            .checked=${!1!==this._show_buttons}
-            .configValue=${"show_buttons"}
-            @change=${this._valueChanged}
-          ></mwc-switch>
-        </mwc-formfield>
-       
-        <p>
-          <U><B>${ga("editor.warning")}</B></U> ${ga("editor.code_only_note")}
-        </p>
+          <score-card-backgroundbar style="--bar-color: ${barColor};"></score-card-backgroundbar>
+          <score-card-currentbar
+            style="--bar-color: ${barColor}; --bar-percent: ${barPercent}%; --bar-direction: ${barDirection}"
+          ></score-card-currentbar>
+          ${data.target
+            ? x `
+                <score-card-targetbar
+                  style="--bar-color: ${barColor}; --bar-percent: ${targetStartPercent}%; --bar-target-percent: ${targetEndPercent}%; --bar-direction: ${barDirection};"
+                ></score-card-targetbar>
+                <score-card-markerbar
+                  style="--bar-color: ${barColor}; --bar-target-percent: ${targetMarkerPercent}%; ${markerDirection}: calc(${targetMarkerPercent}% - 1px); ${markerStyle}"
+                ></score-card-markerbar>
+              `
+            : ''}
+          <score-card-contentbar
+            class="${data.direction == 'up' ? 'contentbar-direction-up' : 'contentbar-direction-right'}"
+          >
+            ${iconInside} ${nameInside} ${minMaxInside} ${valueInside}
+          </score-card-contentbar>
+        </score-card-background>
+        ${minMaxOutside} ${valueOutside}
+      </score-card-card>
+    </score-card-row>`;
+        const hasDropdown = `${data.key}_list` in stateObj.attributes;
+        return hasDropdown && (isValidAttribute || isValidEntityData)
+            ? this.renderDropdown(attribute, data.key, data.service)
+            : attribute;
+    }
+    renderIcon(data) {
+        var _a, _b;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return A;
+        }
+        const stateObj = this.hass.states[this.config.entity];
+        if (!stateObj) {
+            return A;
+        }
+        const icon = data.key === 'water' && 'water_icon' in stateObj.attributes
+            ? stateObj.attributes.water_icon
+            : data.icon;
+        if (!icon) {
+            return A; // Évite un <ha-icon> inutile
+        }
+        const isProblem = stateObj.attributes.problem !== 'none' && icon === 'mdi:alert';
+        const iconClass = isProblem ? 'problem' : '';
+        return x `
+      <ha-icon
+        class="${iconClass}"
+        icon="${icon}"
+        style="margin-right: 10px; ${((_b = this.config.styles) === null || _b === void 0 ? void 0 : _b.icon) || ''} ${isProblem ? 'color: var(--error-color) !important;' : ''}"
+      ></ha-icon>
+    `;
+    }
+    renderIconbody(data) {
+        var _a, _b;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return A;
+        }
+        const stateObj = this.hass.states[this.config.entity];
+        if (!stateObj) {
+            return A;
+        }
+        const icon = data.key === 'Water' && 'water_icon' in stateObj.attributes
+            ? stateObj.attributes.water_icon
+            : data.icon;
+        if (!icon) {
+            return A; // Évite un ha-icon inutile
+        }
+        return x `
+      <ha-icon
+        class="image"
+        style="-webkit-mask-image: url('${icon}'); -webkit-mask-size: 24px; 
+          ${((_b = this.config.styles) === null || _b === void 0 ? void 0 : _b.iconbody) || ''}"
+      ></ha-icon>
+    `;
+    }
+    renderButton(data) {
+        var _a;
+        if (!this.config.show_buttons || !(data === null || data === void 0 ? void 0 : data.icon) || data.show === false) {
+            return A;
+        }
+        return x `
+      <ha-icon-button
+        @click=${() => this.callService(data.service, data.service_data)}
+        title=${l(data.label)}
+        style=${((_a = this.config.styles) === null || _a === void 0 ? void 0 : _a.icon) || ''}>
+        <ha-icon icon="${data.icon}"></ha-icon>
+      </ha-icon-button>
+    `;
+    }
+    renderToolbar() {
+        var _a;
+        if (!this.config.show_toolbar) {
+            return A;
+        }
+        return x `
+      <div class="toolbar" @ll-custom=${this.customEvent} ?open=${this.open}>
+        <ha-icon-button
+          @click=${this.toggle}
+          title=${l(localize('common.toggle_power') || undefined)}
+          style="color: var(--primary-color);">
+            <ha-icon icon=${this.config.show_always_details ? '' : this.open ? 'mdi:chevron-up' : 'mdi:chevron-down'}></ha-icon>
+        </ha-icon-button>
+        <div class="fill-gap"></div>
+        ${Object.values((_a = this.config.buttons) !== null && _a !== void 0 ? _a : {})
+            .filter(Boolean)
+            .map(this.renderButton.bind(this))}
       </div>
-    `}_initialize(){void 0!==this.hass&&void 0!==this._config&&void 0!==this._helpers&&(this._initialized=!0)}async loadCardHelpers(){this._helpers=await window.loadCardHelpers()}_valueChanged(e){if(!this._config||!this.hass)return;const t=e.target;if(this[`_${t.configValue}`]!==t.value){if(t.configValue)if(""===t.value){const e=Object.assign({},this._config);delete e[t.configValue],this._config=e}else this._config=Object.assign(Object.assign({},this._config),{[t.configValue]:void 0!==t.checked?t.checked:t.value});ge(this,"config-changed",{config:this._config})}}};ar.elementDefinitions=Object.assign(Object.assign(Object.assign(Object.assign({},ir),Mn),Bn),Va),ar.styles=s`
-    mwc-select,
-    mwc-textfield {
-      margin-bottom: 16px;
-      display: block;
+    `;
     }
-    mwc-formfield {
-      padding-bottom: 8px;
+    renderDropdown(attribute, key, service) {
+        var _a, _b;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return A;
+        }
+        const stateObj = this.hass.states[this.config.entity];
+        if (!(stateObj === null || stateObj === void 0 ? void 0 : stateObj.attributes)) {
+            return A;
+        }
+        const list = (_b = stateObj.attributes[`${key}_list`]) !== null && _b !== void 0 ? _b : [];
+        if (!Array.isArray(list) || list.length === 0) {
+            return A;
+        }
+        return x `
+    <div style="position: relative" @click=${(e) => e.stopPropagation()}>
+      <ha-button @click=${() => this.toggleMenu(key)}>
+        ${attribute}
+      </ha-button>
+        <mwc-menu
+          @selected=${(e) => this.handleChange(list[e.detail.index], key, service)}
+          id=${l(`bmc-menu-${key}`)}
+          activatable
+          corner="BOTTOM_START">
+          ${list.map((item) => x `<mwc-list-item value=${item}>${item}</mwc-list-item>`)}
+        </mwc-menu>
+    </div>`;
     }
-    mwc-switch {
-      --mdc-theme-secondary: var(--switch-checked-color);
+    computeBarColor(data, numberValue) {
+        var _a, _b;
+        if (data.severity) {
+            return this.computeSeverityColor(data, numberValue);
+        }
+        if (data == 'unavailable') {
+            return `var(--score-card-disabled-color, ${(_a = data.color) !== null && _a !== void 0 ? _a : 'gray'})`;
+        }
+        return (_b = data.color) !== null && _b !== void 0 ? _b : 'gray';
     }
-    .option {
-      display: flex;
-      align-items: center;
+    computeSeverityColor(data, numberValue) {
+        var _a;
+        const sections = data.severity;
+        let color;
+        if (isNaN(numberValue)) {
+            sections.forEach((section) => {
+                if (data == section.text) {
+                    color = section.color;
+                }
+            });
+        }
+        else {
+            sections.forEach((section) => {
+                if (numberValue >= section.from && numberValue <= section.to) {
+                    color = section.color;
+                }
+            });
+        }
+        return (_a = color !== null && color !== void 0 ? color : data.color) !== null && _a !== void 0 ? _a : 'gray'; // Défaut à 'gray' si aucune couleur trouvée
     }
-  `,a([re({attribute:!1})],ar.prototype,"hass",void 0),a([le()],ar.prototype,"_config",void 0),a([le()],ar.prototype,"_helpers",void 0),ar=a([oe("body-miscale-card-editor")],ar);const or={status:{key:"status",icon:"mdi:scale-bathroom"},problem:{key:"problem",icon:"mdi:alert"}},nr={weight:{key:"weight",label:ga("attributes.weight: "),unit:" kg"},impedance:{key:"impedance",label:ga("attributes.impedance: "),unit:" ohm"},height:{key:"height",label:ga("attributes.height: "),unit:" cm"},age:{key:"age",label:ga("attributes.age: "),unit:ga("unit. years")},gender:{key:"gender",label:ga("attributes.gender: ")}},rr={weight:{key:"weight",label:ga("attributes.weight: "),unit:" lbs"},impedance:{key:"impedance",label:ga("attributes.impedance: "),unit:" ohm"},height:{key:"height",label:ga("attributes.height: "),unit:" cm"},age:{key:"age",label:ga("attributes.age: "),unit:ga("unit. years")},gender:{key:"gender",label:ga("attributes.gender: ")}},lr={bmi:{key:"bmi",label:ga("body.bmi"),icon:"/local/images/bodyscoreIcon/bmi.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:40,min:0,severity:[{from:0,to:18.5,color:"blue"},{from:18.51,to:25,color:"green"},{from:25.01,to:28,color:"orange"},{from:28.01,to:32,color:"orangered"},{from:32.01,to:1/0,color:"red"}],target:21.75},bmi_label:{key:"bmi_label",label:ga("body.bmi_label"),icon:"/local/images/bodyscoreIcon/body_type.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))"},visceral_fat:{key:"visceral_fat",label:ga("body.visceral_fat"),icon:"/local/images/bodyscoreIcon/visceral_fat.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:20,min:0,severity:[{from:0,to:10,color:"green"},{from:10.01,to:15,color:"orange"},{from:15.01,to:1/0,color:"orangered"}],target:12.5},body_fat:{key:"body_fat",label:ga("body.body_fat"),icon:"/local/images/bodyscoreIcon/body_fat.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:40,min:0,severity:[{from:0,to:12,color:"blue"},{from:12.01,to:18,color:"royalblue"},{from:18.01,to:23,color:"green"},{from:23.01,to:28,color:"orange"},{from:28.01,to:1/0,color:"orangered"}],target:20.5},protein:{key:"protein",label:ga("body.protein"),icon:"/local/images/bodyscoreIcon/protein.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:32,min:0,severity:[{from:0,to:16,color:"orangered"},{from:16.01,to:20,color:"green"},{from:20.01,to:1/0,color:"darkgreen"}],target:18},water:{key:"water",label:ga("body.water"),icon:"/local/images/bodyscoreIcon/water.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:80,min:0,severity:[{from:0,to:55,color:"orangered"},{from:55.01,to:65.1,color:"green"},{from:65.11,to:1/0,color:"darkgreen"}],target:60},muscle_mass:{key:"muscle_mass",label:ga("body.muscle_mass"),icon:"/local/images/bodyscoreIcon/muscle_mass.png",unit:" kg",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:100,min:0,severity:[{from:0,to:49.4,color:"orangered"},{from:49.41,to:59.5,color:"green"},{from:59.51,to:1/0,color:"darkgreen"}],target:54.45},bone_mass:{key:"bone_mass",label:ga("body.bone_mass"),icon:"/local/images/bodyscoreIcon/bone_mass.png",unit:" kg",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:8,min:0,severity:[{from:0,to:2,color:"orangered"},{from:2.01,to:4.2,color:"green"},{from:4.21,to:1/0,color:"darkgreen"}],target:3.1},weight:{key:"weight",label:ga("body.weight"),icon:"/local/images/bodyscoreIcon/ideal.png",unit:" kg",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:130,min:0,severity:[{from:0,to:57.3,color:"blue"},{from:57.31,to:77.4,color:"green"},{from:77.41,to:86.7,color:"orange"},{from:86.71,to:99.1,color:"orangered"},{from:99.11,to:1/0,color:"red"}],target:67.35},ideal:{key:"ideal",label:ga("body.ideal"),icon:"/local/images/bodyscoreIcon/ideal.png",unit:" kg",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:130,min:0,severity:[{from:0,to:57.3,color:"blue"},{from:57.31,to:77.4,color:"green"},{from:77.41,to:86.7,color:"orange"},{from:86.71,to:99.1,color:"orangered"},{from:99.11,to:1/0,color:"red"}],target:67.35},basal_metabolism:{key:"basal_metabolism",label:ga("body.basal_metabolism"),icon:"/local/images/bodyscoreIcon/basal_metabolism.png",unit:" kcal",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:3e3,min:0,severity:[{from:0,to:1530,color:"orangered"},{from:1530.01,to:1/0,color:"green"}],target:1530},body_type:{key:"body_type",label:ga("body.body_type"),icon:"/local/images/bodyscoreIcon/body_type.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))"},metabolic_age:{key:"metabolic_age",label:ga("body.metabolic_age"),icon:"/local/images/bodyscoreIcon/metabolic_age.png",unit:ga("unit. years"),direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:"",min:"",severity:"",target:""}},dr={bmi:{key:"bmi",label:ga("body.bmi"),icon:"/local/images/bodyscoreIcon/bmi.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:40,min:0,severity:[{from:0,to:18.5,color:"blue"},{from:18.51,to:25,color:"green"},{from:25.01,to:28,color:"orange"},{from:28.01,to:32,color:"orangered"},{from:32.01,to:1/0,color:"red"}],target:21.75},bmi_label:{key:"bmi_label",label:ga("body.bmi_label"),icon:"/local/images/bodyscoreIcon/body_type.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))"},visceral_fat:{key:"visceral_fat",label:ga("body.visceral_fat"),icon:"/local/images/bodyscoreIcon/visceral_fat.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:20,min:0,severity:[{from:0,to:10,color:"green"},{from:10.01,to:15,color:"orange"},{from:15.01,to:1/0,color:"orangered"}],target:12.5},body_fat:{key:"body_fat",label:ga("body.body_fat"),icon:"/local/images/bodyscoreIcon/body_fat.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:40,min:0,severity:[{from:0,to:12,color:"blue"},{from:12.01,to:18,color:"royalblue"},{from:18.01,to:23,color:"green"},{from:23.01,to:28,color:"orange"},{from:28.01,to:1/0,color:"orangered"}],target:20.5},protein:{key:"protein",label:ga("body.protein"),icon:"/local/images/bodyscoreIcon/protein.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:32,min:0,severity:[{from:0,to:16,color:"orangered"},{from:16.01,to:20,color:"green"},{from:20.01,to:1/0,color:"darkgreen"}],target:18},water:{key:"water",label:ga("body.water"),icon:"/local/images/bodyscoreIcon/water.png",unit:" %",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:80,min:0,severity:[{from:0,to:55,color:"orangered"},{from:55.01,to:65.1,color:"green"},{from:65.11,to:1/0,color:"darkgreen"}],target:60},muscle_mass:{key:"muscle_mass",label:ga("body.muscle_mass"),icon:"/local/images/bodyscoreIcon/muscle_mass.png",unit:" lbs",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:220.5,min:0,severity:[{from:0,to:108.9,color:"orangered"},{from:109,to:131.2,color:"green"},{from:131.3,to:1/0,color:"darkgreen"}],target:120.1},bone_mass:{key:"bone_mass",label:ga("body.bone_mass"),icon:"/local/images/bodyscoreIcon/bone_mass.png",unit:" lbs",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:17.6,min:0,severity:[{from:0,to:4.4,color:"orangered"},{from:4.5,to:9.3,color:"green"},{from:9.4,to:1/0,color:"darkgreen"}],target:6.9},weight:{key:"weight",label:ga("body.weight"),icon:"/local/images/bodyscoreIcon/ideal.png",unit:" lbs",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:286.6,min:0,severity:[{from:0,to:126.3,color:"blue"},{from:126.4,to:170.6,color:"green"},{from:170.7,to:191.1,color:"orange"},{from:191.2,to:218.5,color:"orangered"},{from:218.6,to:1/0,color:"red"}],target:148.5},ideal:{key:"ideal",label:ga("body.ideal"),icon:"/local/images/bodyscoreIcon/ideal.png",unit:" lbs",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:286.6,min:0,severity:[{from:0,to:126.3,color:"blue"},{from:126.4,to:170.6,color:"green"},{from:170.7,to:191.1,color:"orange"},{from:191.2,to:218.5,color:"orangered"},{from:218.6,to:1/0,color:"red"}],target:148.5},basal_metabolism:{key:"basal_metabolism",label:ga("body.basal_metabolism"),icon:"/local/images/bodyscoreIcon/basal_metabolism.png",unit:" kcal",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",indicator:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:3e3,min:0,severity:[{from:0,to:1530,color:"orangered"},{from:1530.01,to:1/0,color:"green"}],target:1530},body_type:{key:"body_type",label:ga("body.body_type"),icon:"/local/images/bodyscoreIcon/body_type.png",direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))"},metabolic_age:{key:"metabolic_age",label:ga("body.metabolic_age"),icon:"/local/images/bodyscoreIcon/metabolic_age.png",unit:ga("unit. years"),direction:"right",height:"30px",width:"100%",positions:{icon:"outside",name:"inside",minmax:"off",value:"inside"},color:"var(--score-card-color, var(--ha-card-background))",max:"",min:"",severity:"",target:""}},sr={user1:{show:!1,label:"User1",icon:"mdi:alpha-u-circle"},user2:{show:!1,label:"User2",icon:"mdi:alpha-u-circle"},user3:{show:!1,label:"User3",icon:"mdi:alpha-u-circle"},user4:{show:!1,label:"User4",icon:"mdi:alpha-u-circle"},user5:{show:!1,label:"User5",icon:"mdi:alpha-u-circle"}},cr={convertkgtolb:e=>Math.round(2.20462*Number(e)*10)/10},mr={false:{states:{status:{key:"state"}},attributes_kg:{weight:{key:"weight"},impedance:!1,height:{key:"height"},age:{key:"age"},gender:{key:"gender"}},attributes_lb:{weight:{key:"weight",compute:cr.convertkgtolb},impedance:!1,height:{key:"height"},age:{key:"age"},gender:{key:"gender"}},body_kg:{bmi:{key:"bmi"},bmi_label:{key:"bmi_label"},visceral_fat:{key:"visceral_fat"},body_fat:!1,protein:!1,water:!1,muscle_mass:!1,bone_mass:!1,weight:{key:"weight"},ideal:{key:"ideal"},basal_metabolism:{key:"basal_metabolism"},body_type:!1,metabolic_age:!1},body_lb:{bmi:{key:"bmi"},bmi_label:{key:"bmi_label"},visceral_fat:{key:"visceral_fat"},body_fat:!1,protein:!1,water:!1,muscle_mass:!1,bone_mass:!1,weight:{key:"weight",compute:cr.convertkgtolb},ideal:{key:"ideal",compute:cr.convertkgtolb},basal_metabolism:{key:"basal_metabolism"},body_type:!1,metabolic_age:!1}},true:{states:{status:{key:"state"}},attributes_kg:{weight:{key:"weight"},impedance:{key:"impedance"},height:{key:"height"},age:{key:"age"},gender:{key:"gender"}},attributes_lb:{weight:{key:"weight",compute:cr.convertkgtolb},impedance:{key:"impedance"},height:{key:"height"},age:{key:"age"},gender:{key:"gender"}},body_kg:{bmi:{key:"bmi"},bmi_label:{key:"bmi_label"},visceral_fat:{key:"visceral_fat"},body_fat:{key:"body_fat"},protein:{key:"protein"},water:{key:"water"},muscle_mass:{key:"muscle_mass"},bone_mass:{key:"bone_mass"},weight:{key:"weight"},ideal:{key:"ideal"},basal_metabolism:{key:"basal_metabolism"},body_type:{key:"body_type"},metabolic_age:{key:"metabolic_age"}},body_lb:{bmi:{key:"bmi"},bmi_label:{key:"bmi_label"},visceral_fat:{key:"visceral_fat"},body_fat:{key:"body_fat"},protein:{key:"protein"},water:{key:"water"},muscle_mass:{key:"muscle_mass",compute:cr.convertkgtolb},bone_mass:{key:"bone_mass",compute:cr.convertkgtolb},weight:{key:"weight",compute:cr.convertkgtolb},ideal:{key:"ideal",compute:cr.convertkgtolb},basal_metabolism:{key:"basal_metabolism"},body_type:{key:"body_type"},metabolic_age:{key:"metabolic_age"}}}},hr=s`
-  ha-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .background {
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-    height: 220px;
-  }
-  .pointer {
-    cursor: pointer;
-  }
-  .preview {
-    background-color: var(--primary-color);
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-  }
-  .preview.not-available {
-    filter: grayscale(1);
-  }
-  .not-available {
-    text-align: center;
-    color: var(--text-primary-color);
-    font-size: 16px;
-  }
-  .metadata {
-    margin: 10px auto;
-  }
-  .title {
-    font-size: 20px;
-    padding: 12px 16px 8px;
-    text-align: center;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-  .flex {
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    cursor: pointer;
-  }
-  .grid-content {
-    display: grid;
-    align-content: flex-start;
-    grid-row-gap: 6px;
-  }
-  .grid-left {
-    text-align: left;
-    font-size: 110%;
-    padding-left: 10px;
-    border-left: 2px solid var(--primary-color);
-  }
-  .grid-right {
-    text-align: right;
-    padding-right: 10px;
-    border-right: 2px solid var(--primary-color);
-  }
-  #items {
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-    max-height: 0;
-  }
-  #items[open] {
-    overflow: visible;
-    max-height: none;
-  }
-  .toolbar {
-    min-height: 30px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-  }
-  .toolbar ha-icon-button:first-child {
-    margin-left: 5px;
-  }
-  .toolbar ha-icon-button:last-child {
-    margin-right: 5px;
-  }
-  .fill-gap {
-    flex-grow: 1;
-  }
-  .image {
-    display: var(--ha-icon-display, inline-flex);
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    vertical-align: middle;
-    fill: currentcolor;
-    width: var(--mdc-icon-size, 24px);
-    height: var(--mdc-icon-size, 24px);
-  }
-  .ok {
-    visibility: hidden;
-  }
-  .problem {
-    color: var(--error-color);
-    animation: blinker 2s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
-  }
-  @keyframes blinker {
-    from {
-      opacity: 1;
+    computePercent(data, numberValue) {
+        if (data === 'unavailable')
+            return 0;
+        if (isNaN(numberValue))
+            return 100;
+        // Vérifier que min et max existent et sont bien des nombres
+        const min = typeof data.min === 'number' ? data.min : 0;
+        const max = typeof data.max === 'number' ? data.max : 100;
+        if (min >= max)
+            return 0; // Évite une division par zéro ou un pourcentage incorrect
+        const percent = (100 * (numberValue - min)) / (max - min);
+        switch (data.direction) {
+            case 'right-reverse':
+            case 'left-reverse':
+            case 'up-reverse':
+            case 'down-reverse':
+                return 100 - percent;
+            default:
+                return percent;
+        }
     }
-    to {
-      opacity: 0;
-    }
-  }
-  .state-div {
-    display: grid;
-    grid-template-columns: 24px repeat(1, auto);
-  }
-  .state-label {
-    padding: 3px 0px 0px 10px;
-  }
-  #score {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    padding: 8px;
-  }
-  #score > * {
-    margin-bottom: 8px;
-  }
-  #score > :last-child {
-    margin-top: 0px;
-    margin-bottom: 0px;
-  }
-  #score > :first-child {
-    margin-top: 0px;
-  }
-  score-card-row {
-    display: flex;
-    flex-grow: 1;
-  }
-  score-card-row > div {
-    flex-basis: 100%;
-  }
-  score-card-row:empty {
-    display: none;
-  }
-  score-card-card {
-    display: flex;
-    flex-basis: 100%;
-    flex-direction: row;
-    margin-right: 8px;
-  }
-  score-card-card:last-child {
-    margin-right: 0px;
-  }
-  score-card-background {
-    cursor: pointer;
-    flex-grow: 1;
-    position: relative;
-  }
-  score-card-iconbar {
-    color: var(--icon-color, var(--paper-item-icon-color));
-    align-items: center;
-    align-self: center;
-    display: flex;
-    height: 30px;
-    justify-content: center;
-    position: relative;
-    width: 30px;
-  }
-  score-card-currentbar,
-  score-card-backgroundbar,
-  score-card-contentbar,
-  score-card-targetbar {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    border-radius: var(--score-card-border-radius, var(--ha-card-border-radius));
-  }
-  score-card-contentbar {
-    align-items: center;
-    color: var(--primary-text-color);
-    display: flex;
-    justify-content: flex-start;
-  }
-  .contentbar-direction-right {
-    flex-direction: row;
-  }
-  .contentbar-direction-up {
-    flex-direction: column;
-  }
-  score-card-backgroundbar {
-    background: var(--bar-color);
-    filter: brightness(0.5);
-    opacity: 0.25;
-  }
-  score-card-currentbar {
-    background: linear-gradient(
-      to var(--bar-direction),
-      var(--bar-color) var(--bar-percent),
-      #0000 var(--bar-percent),
-      #0000 var(--bar-percent)
-    );
-  }
-  score-card-targetbar {
-    background: linear-gradient(
-      to var(--bar-direction),
-      #0000 var(--bar-percent),
-      var(--bar-color) var(--bar-percent),
-      var(--bar-color) var(--bar-target-percent),
-      #0000 var(--bar-target-percent)
-    );
-    display: var(--target-display);
-    filter: brightness(0.66);
-    opacity: 0.33;
-  }
-  score-card-markerbar {
-    background: var(--bar-color);
-    filter: brightness(0.75);
-    opacity: 50%;
-    position: absolute;
-  }
-  score-card-name {
-    align-items: center;
-    align-self: center;
-    justify-content: center;
-    margin: 4px;
-    overflow: hidden;
-    position: relative;
-    text-align: left;
-    text-overflow: ellipsis;
-  }
-  .name-outside {
-    margin-left: 16px;
-  }
-  score-card-value,
-  score-card-min,
-  score-card-max,
-  score-card-divider {
-    align-self: center;
-    position: relative;
-  }
-  score-card-min,
-  score-card-max,
-  score-card-divider {
-    font-size: 10px;
-    margin: 2px;
-    opacity: 0.5;
-  }
-  .min-direction-up {
-    margin-top: auto;
-  }
-  .min-direction-right {
-    margin-left: auto;
-  }
-  score-card-divider {
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-  score-card-value {
-    white-space: nowrap;
-    margin: 4px;
-  }
-  .value-direction-right {
-    margin-left: auto;
-  }
-  .value-direction-up {
-    margin-top: auto;
-  }
-`;function pr(...e){const t=e=>e&&"object"==typeof e,i={};return e.filter((e=>t(e))).forEach((e=>{Object.keys(e).forEach((a=>{const o=i[a],n=e[a];Array.isArray(o)&&Array.isArray(n)?i[a]=o.concat(n):t(o)&&t(n)?i[a]=pr(Object.assign({},o),n):i[a]=n}))})),i}var ur;!function(e){e.language="language",e.system="system",e.comma_decimal="comma_decimal",e.decimal_comma="decimal_comma",e.space_comma="space_comma",e.none="none"}(ur||(ur={}));const fr=(e,t,i)=>{let a;switch(null==t?void 0:t.number_format){case ur.comma_decimal:a=["en-US","en"];break;case ur.decimal_comma:a=["de","es","it"];break;case ur.space_comma:a=["fr","sv","cs"];break;case ur.system:a=void 0;break;default:a=null==t?void 0:t.language}if(Number.isNaN=Number.isNaN||function e(t){return"number"==typeof t&&e(t)},!Number.isNaN(Number(e))&&Intl&&(null==t?void 0:t.number_format)!==ur.none)try{return new Intl.NumberFormat(a,_r(e,i)).format(Number(e))}catch(t){return console.error(t),new Intl.NumberFormat(void 0,_r(e,i)).format(Number(e))}return e.toString()},_r=(e,t)=>{const i=t||{};if("string"!=typeof e)return i;if(!t||!t.minimumFractionDigits&&!t.maximumFractionDigits){const t=e.indexOf(".")>-1?e.split(".")[1].length:0;i.minimumFractionDigits=t,i.maximumFractionDigits=t}return i};console.info(`%c  Body-miscale-card \n%c  ${ga("common.version")} 2024.08.0    `,"color: cyan; background: black; font-weight: bold;","color: darkblue; background: white; font-weight: bold;"),window.customCards=window.customCards||[],window.customCards.push({type:"body-miscale-card",name:ga("common.name"),description:ga("common.description")});let gr=class extends ie{constructor(){super(...arguments),this._configArray=[],this.open=!1}static async getConfigElement(){return document.createElement("body-miscale-card-editor")}static getStubConfig(){return{}}getCardSize(){return this.config.show_name&&this.config.show_buttons?4:this.config.show_name||this.config.show_buttons?3:2}setConfig(e){if(!e.entity)throw new Error(ga("error.missing_entity"));if("bodymiscale"!==e.entity.split(".")[0])throw new Error(ga("error.missing_entity_bodymiscale"));if(e.model&&!(e.model in mr))throw new Error(ga("error.missing_model"));const t=mr[e.model]||mr.false;this.config=Object.assign(Object.assign({name:e.name,show_name:e.show_name,show_states:e.show_states,show_attributes:e.show_attributes,show_body:e.show_body,show_buttons:e.show_buttons,show_toolbar:e.show_toolbar,always_show_details:e.always_show_details},e),{states:pr(or,t.states,e.states),attributes:e.unit?pr(rr,t.attributes_lb,e.attributes):pr(nr,t.attributes_kg,e.attributes),body:e.unit?pr(dr,t.body_lb,e.body):pr(lr,t.body_kg,e.body),buttons:pr(sr,t.buttons,e.buttons),direction:"right",styles:{background:e.image?`background-image: url('${e.image}'); color: white; text-shadow: 0 0 10px black;`:"",icon:`color: ${e.image?"white":"var(--paper-item-icon-color)"};`,iconbody:`background-color: ${!1!==e.theme?"var(--paper-item-icon-color)":"white"};`,content:`padding: ${!1!==e.name?"8px":"16px"} ${!1!==e.buttons?"8px":"16px"};`}}),this.open=this.open||this.config.open}shouldUpdate(e){return function(e,t,i){if(t.has("config")||i)return!0;if(e.config.entity){var a=t.get("hass");return!a||a.states[e.config.entity]!==e.hass.states[e.config.entity]}return!1}(this,e,!1)}toggle(e){e&&e.stopPropagation(),this.open=!this.open}_customEvent(e){e.detail.fold_row&&this.toggle(e)}render(){if(!this.hass||!this.config)return N``;const e=this.hass.states[this.config.entity];return e?N` <ha-card>
-      <div class="background" style="${this.config.styles.background}">
-        <div>${this.renderName(e)}</div>
-        <div class="grid" style="${this.config.styles.content}" @click="${this._moreInfo}" tabindex="0">
-          <div class="grid-content grid-left">
-            ${Object.values(this.config.states).filter((e=>e)).map(this.renderState.bind(this))}
-          </div>
-          <div class="grid-content grid-right">
-            ${Object.values(this.config.attributes).filter((e=>e)).map(this.renderAttribute.bind(this))}
-          </div>
-        </div>
-      </div>
-      ${this.renderToolbar()}
-      <div id="items" ?open=${this.open||this.config.always_show_details}>
-        <div id="score" class="card-content" style="${"up"==this.config.direction?"":"flex-grow: 0;"}">
-          ${Object.values(this.config.body).filter((e=>e)).map(this.renderBody.bind(this))}
-          </score-card-row>
-        </div>
-      </div>
-    </ha-card>`:N`
+    render() {
+        var _a, _b, _c;
+        if (!this.hass || !((_a = this.config) === null || _a === void 0 ? void 0 : _a.entity)) {
+            return A;
+        }
+        const stateObj = this.hass.states[this.config.entity];
+        if (!stateObj) {
+            return x `
         <ha-card>
           <div class="preview not-available">
             <div class="metadata">
-              <div class="not-available">${ga("common.not_available")}</div>
+              <div class="not-available">
+                ${localize('common.not_available')}
+              </div>
             </div>
           </div>
         </ha-card>
-      `}renderName(e){return this.config.show_name?N` <div class="title">${this.config.name||e.attributes.friendly_name}</div> `:N``}renderState(e){if(!this.config.show_states)return N``;const t=this.hass.states[this.config.entity],i=e&&e.key in t.attributes,a=e&&e.key in t,o=i?t.attributes[e.key]:a?t[e.key]:this.hass.localize("state.default.unavailable"),n=fr(o,this.hass.locale),r=N`<div class="state-div ${"ok"===t.state&&"mdi:alert"===e.icon?"ok":""}">
-      <div>${e.icon&&this.renderIcon(e)}</div>
-      <div class="state-label">
-        ${(e.label||"")+(ga(`states.${o}`)||n)+(e.unit||"")}
+      `;
+        }
+        return x `
+      <ha-card>
+        ${this.shouldShowBackground()
+            ? x `
+              <div class="background" 
+                style="
+                  ${((_b = this.config.styles) === null || _b === void 0 ? void 0 : _b.background) || ''};
+              ">
+                ${this.config.show_name ? x `<div class="title">${this.renderName(stateObj)}</div>` : ""}
+                <div class="grid" 
+                  style="${((_c = this.config.styles) === null || _c === void 0 ? void 0 : _c.content) || ''}" 
+                  @click="${this.moreInfo}" 
+                  tabindex="0">
+                  <div class="grid-left">
+                    ${(this.config.states ? Object.values(this.config.states) : [])
+                .filter((v) => v)
+                .map(this.renderState.bind(this))}
+                  </div>
+                  <div class="grid-right">
+                    ${(this.config.attributes ? Object.values(this.config.attributes) : [])
+                .filter((v) => v)
+                .map(this.renderAttribute.bind(this))}
+                  </div>
+                </div>
+              </div>
+            `
+            : this.config.show_name
+                ? x `<div class="title">${this.renderName(stateObj)}</div>`
+                : ""}
+        
+        ${this.renderToolbar()}
+        <div id="items" ?open=${this.open || this.config.show_always_details}>
+          <div id="score" class="card-content" style=${this.config.direction === 'up' ? '' : 'flex-grow: 0;'}>
+            ${(this.config.body ? Object.values(this.config.body) : [])
+            .filter(Boolean)
+            .map(this.renderBody.bind(this))}
+          </div>
+        </div>
+      </ha-card>
+    `;
+    }
+};
+__decorate([
+    n$1({ attribute: false })
+], BodymiscaleCard.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], BodymiscaleCard.prototype, "config", void 0);
+__decorate([
+    t$1()
+], BodymiscaleCard.prototype, "open", void 0);
+BodymiscaleCard = __decorate([
+    e$1('body-miscale-card')
+], BodymiscaleCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    preview: true,
+    type: 'body-miscale-card',
+    name: localize('common.name'),
+    description: localize('common.description'),
+});
+
+var css_248z = i$2`.card-config {
+    flex-direction: column;
+    display: flex;
+  }
+  
+  .option {
+    display: flex;
+    align-items: center;
+  }
+  
+  .option ha-switch {
+    --mdc-theme-secondary: var(--switch-checked-color);
+  }
+  
+  .option ha-select,
+  .option ha-textfield {
+    width: 100%;
+  }
+
+  .option ha-formfield {
+    padding-bottom: 8px;
+  }`;
+styleInject(css_248z);
+
+let BodymiscaleCardEditor = class BodymiscaleCardEditor extends s {
+    constructor() {
+        super(...arguments);
+        this.config = {};
+        this.isInitialized = false;
+    }
+    setConfig(config) {
+        this.config = Object.assign({}, config);
+    }
+    async connectedCallback() {
+        super.connectedCallback();
+        await this.loadCardHelpers();
+    }
+    shouldUpdate() {
+        if (!this.isInitialized) {
+            this.initialize();
+        }
+        return true;
+    }
+    render() {
+        if (!this.hass || !this.helpers) {
+            return A;
+        }
+        const config = Object.assign(Object.assign({}, defaultCardConfig), this.config);
+        const entities = Object.keys(this.hass.states).filter((entity) => entity.startsWith("bodymiscale."));
+        return x `
+      <div class="card-config">
+        <div class="option">
+          <ha-select
+            .label=${localize('editor.entity')}
+            @selected=${this.valueChanged}
+            .configValue=${'entity'}
+            .value=${config.entity}
+            @closed=${(e) => e.stopPropagation()}
+            fixedMenuPosition
+            naturalMenuWidth
+            required
+            .validationMessage=${localize('error.missing_entity')}
+          >
+            ${entities.map((entity) => x `<mwc-list-item .value=${entity}>${entity}</mwc-list-item>`)}
+          </ha-select>
+        </div>
+
+        <div class="option">
+          <ha-textfield
+            .label=${localize('editor.image')}
+            .value=${config.image || ''}
+            .configValue=${'image'}
+            @input=${this.valueChanged}
+          ></ha-textfield>
+        </div>
+
+        ${this.renderSwitch('model', config)}
+        ${this.renderSwitch('unit', config)}
+        ${this.renderSwitch('theme', config)}
+
+        <p style="font-size: large; line-height: 200%;">
+          <u>${localize('editor.header_options')}</u>
+        </p>
+
+        ${this.renderSwitch('show_name', config)}
+        ${this.renderSwitch('show_states', config)}
+        ${this.renderSwitch('show_attributes', config)}
+
+        <p style="font-size: large; line-height: 200%;">
+          <u>${localize('editor.body_options')}</u>
+        </p>
+
+        ${this.renderSwitch('show_always_details', config)}
+        ${this.renderSwitch('show_toolbar', config)}
+        ${this.renderSwitch('show_body', config, true)}
+        ${this.renderSwitch('show_buttons', config, true)}
+
+        <strong>${localize('editor.code_only_note')}</strong>
       </div>
-    </div>`;return`${e.key}_list`in t.attributes&&(i||a)?this.renderDropdown(r,e.key,e.service):r}renderAttribute(e){if(!this.config.show_attributes)return N``;const t=this.hass.states[this.config.entity],i=e.compute||(e=>e),a=e&&e.key in t.attributes,o=e&&e.key in t,n=a?i(t.attributes[e.key]):o?i(t[e.key]):this.hass.localize("state.default.unavailable"),r=fr(n,this.hass.locale),l=N`<div>
-      ${e.icon&&this.renderIcon(e)}${(e.label||"")+(ga(`attributes_value.${n}`)||r)+(e.unit||"")}
-    </div>`;return`${e.key}_list`in t.attributes&&(a||o)?this.renderDropdown(l,e.key,e.service):l}renderBody(e){if(!this.config.show_body)return N``;const t=this.hass.states[this.config.entity],i=e.compute||(e=>e),a=e&&e.key in t.attributes,o=e&&e.key in t,n=a?i(t.attributes[e.key]):o?i(t[e.key]):this.hass.localize("state.default.unavailable"),r=fr(n,this.hass.locale);let l=30;e.height&&(l=e.height);let d,s,c,m,h,p,u,f,_="stretch",g="0px 0px 0px 13px",b="right",v="row",y="left",x="height: 100%; width: 2px;";switch(e.direction){case"right":b="right",y="left";break;case"up":g="0px",b="top",v="column-reverse",y="bottom",x="height: 2px; width: 100%;"}switch(e.positions.icon){case"outside":d=N` <score-card-iconbar> ${e.icon&&this.renderIconbody(e)} </score-card-iconbar> `;break;case"inside":s=N` <score-card-iconbar> ${e.icon&&this.renderIconbody(e)} </score-card-iconbar> `,g="0px";break;case"off":g="0px"}switch(e.positions.name){case"outside":c=N`
-          <score-card-name
-            style="${"up"==e.direction?"":e.width?`width: calc(100% - ${e.width});`:""}"
-            >${e.label||""}</score-card-name
+    `;
+    }
+    renderSwitch(option, config, padded = false) {
+        return x `
+      <div style="padding: ${padded ? '0 0 0 45px' : '0'}">
+        ${localize(`editor.${option}`)}
+        <div class="option">
+          <ha-formfield
+            .label=${localize(config[option]
+            ? `editor.${option}_aria_label_off`
+            : `editor.${option}_aria_label_on`)}
           >
-        `,g="0px";break;case"inside":m=N` <score-card-name>${e.label||""}</score-card-name> `}switch(e.positions.minmax){case"outside":h=N`
-          <score-card-min>${e.min+(e.unit||"")}</score-card-min>
-          <score-card-divider>/</score-card-divider>
-          <score-card-max>${e.max+(e.unit||"")}</score-card-max>
-        `;break;case"inside":p=N`
-          <score-card-min class="${"up"==e.direction?"min-direction-up":"min-direction-right"}"
-            >${e.min+(e.unit||"")}</score-card-min
-          >
-          <score-card-divider>/</score-card-divider>
-          <score-card-max> ${e.max+(e.unit||"")}</score-card-max>
-        `}switch(e.positions.value){case"outside":u=N`
-          <score-card-value class="${"up"==e.direction?"value-direction-up":"value-direction-right"}"
-            >${(ga(`body_value.${n}`)||r)+(e.unit||"")}</score-card-value
-          >
-        `;break;case"inside":f=N`
-          <score-card-value
-            class="${"inside"==e.positions.minmax?"":"up"==e.direction?"value-direction-up":"value-direction-right"}"
-            >${(ga(`body_value.${n}`)||r)+(e.unit||"")}</score-card-value
-          >
-        `;break;case"off":g="0px"}const w=this._computeBarColor(e,Number(n)),E=this._computePercent(e,Number(n)),I=this._computePercent(e,e.target);let A=E,k=this._computePercent(e,e.target);k<A&&(A=k,k=E);let T="";e.width&&(_="center",T=`width: ${e.width}`);let C="column";this.config.columns&&(C="row");const O=N` <score-card-row style="flex-direction: ${C};">
-      <score-card-card style="flex-direction: ${v}; align-items: ${_};">
-        ${d} ${c}
-        <score-card-background
-          style="margin: ${g}; height: ${l}${"number"==typeof l?"px":""}; ${T}"
-        >
-          <score-card-backgroundbar style="--bar-color: ${w};"></score-card-backgroundbar>
-          <score-card-currentbar
-            style="--bar-color: ${w}; --bar-percent: ${E}%; --bar-direction: ${b}"
-          ></score-card-currentbar>
-          ${e.target?N`
-                <score-card-targetbar
-                  style="--bar-color: ${w}; --bar-percent: ${A}%; --bar-target-percent: ${k}%; --bar-direction: ${b};"
-                ></score-card-targetbar>
-                <score-card-markerbar
-                  style="--bar-color: ${w}; --bar-target-percent: ${I}%; ${y}: calc(${I}% - 1px); ${x}"
-                ></score-card-markerbar>
-              `:""}
-          <score-card-contentbar
-            class="${"up"==e.direction?"contentbar-direction-up":"contentbar-direction-right"}"
-          >
-            ${s} ${m} ${p} ${f}
-          </score-card-contentbar>
-        </score-card-background>
-        ${h} ${u}
-      </score-card-card>
-    </score-card-row>`;return`${e.key}_list`in t.attributes&&(a||o)?this.renderDropdown(O,e.key,e.service):O}renderIcon(e){const t=this.hass.states[this.config.entity],i="water"===e.key&&"water_icon"in this.stateObj.attributes?this.stateObj.attributes.water_icon:e.icon;return"none"!==t.attributes.problem&&"mdi:alert"===i?N`<ha-icon class="problem" icon="${i}"></ha-icon>`:N`<ha-icon icon="${i}" style="margin-right: 10px; ${this.config.styles.icon}"></ha-icon>`}renderIconbody(e){const t="Water"===e.key&&"water_icon"in this.stateObj.attributes?this.stateObj.attributes.water_icon:e.icon;return N`<ha-icon
-      class="image"
-      style="-webkit-mask-image: url('${t}');-webkit-mask-size: 24px; ${this.config.styles.iconbody}"
-    ></ha-icon>`}renderButton(e){return this.config.show_buttons?e&&!1!==e.show?N`<ha-icon-button
-          @click="${()=>this.callService(e.service,e.service_data)}"
-          title="${e.label||""}"
-          style="${this.config.styles.icon}">
-            <ha-icon icon="${e.icon}"></ha-icon>
-          </ha-icon-button>`:null:N``}renderToolbar(){return this.config.show_toolbar?N`
-      <div class="toolbar" @ll-custom=${this._customEvent} ?open=${this.open}>
-        <ha-icon-button
-          @click=${this.toggle}
-          title="${ga("common.toggle_power")}"
-          style="color: var(--primary-color);">
-            <ha-icon icon=${this.config.always_show_details?"":this.open?"mdi:chevron-up":"mdi:chevron-down"}></ha-icon>
-        </ha-icon-button>
-        <div class="fill-gap"></div>
-        ${Object.values(this.config.buttons).filter((e=>e)).map(this.renderButton.bind(this))}
+            <ha-switch
+              .checked=${Boolean(config[option])}
+              .configValue=${option}
+              @change=${this.valueChanged}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
       </div>
-    `:N``}handleChange(e,t,i){const a=this.hass.states[this.config.entity];this.callService(i||`bodymiscale.set_${t}`,{entity_id:a.entity_id,[t]:e})}callService(e,t={entity_id:this.stateObj.entity_id}){const[i,a]=e.split(".");this.hass.callService(i,a,t)}renderDropdown(e,t,i){if(!this.hass||!this.config)return N``;const a=this.hass.states[this.config.entity].attributes[`${t}_list`];return N`
-      <div style="position: relative" @click=${e=>e.stopPropagation()}>
-        <ha-button @click=${()=>this.toggleMenu(t)}>
-          ${e}
-        </ha-button>
-        <mwc-menu
-        @selected=${e=>this.handleChange(a[e.detail.index],t,i)}
-          id=${`bmc-menu-${t}`}
-          activatable
-          corner="BOTTOM_START">
-            ${a.map((e=>N`<mwc-list-item value=${e}>${e}</mwc-list-item>`))}
-        </mwc-menu>
-      </div>`}toggleMenu(e){const t=this.shadowRoot.querySelector(`#bmc-menu-${e}`);t.open=!t.open}static get styles(){return hr}_computeBarColor(e,t){let i;return i=e.severity?this._computeSeverityColor(e,t):"unavailable"==e?`var(--score-card-disabled-color, ${e.color})`:e.color,i}_computeSeverityColor(e,t){const i=e.severity;let a;return isNaN(t)?i.forEach((t=>{e==t.text&&(a=t.color)})):i.forEach((e=>{t>=e.from&&t<=e.to&&(a=e.color)})),null==a&&(a=e.color),a}_computePercent(e,t){if("unavailable"==e)return 0;if(isNaN(t))return 100;switch(e.direction){case"right-reverse":case"left-reverse":case"up-reverse":case"down-reverse":return 100-100*(t-e.min)/(e.max-e.min);default:return 100*(t-e.min)/(e.max-e.min)}}_moreInfo(){ge(this,"hass-more-info",{entityId:this.config.entity})}};a([re({attribute:!1})],gr.prototype,"hass",void 0),a([le()],gr.prototype,"config",void 0),a([le()],gr.prototype,"_configArray",void 0),a([le()],gr.prototype,"open",void 0),gr=a([oe("body-miscale-card")],gr);export{gr as BodyMiScaleCard};
+    `;
+    }
+    valueChanged(event) {
+        if (!this.config || !this.hass || !event.target) {
+            return;
+        }
+        const target = event.target;
+        if (target.configValue) {
+            const newValue = target.checked !== undefined ? target.checked : target.value || undefined;
+            this.config = Object.assign(Object.assign({}, this.config), { [target.configValue]: newValue });
+            ne(this, 'config-changed', { config: this.config });
+        }
+    }
+    initialize() {
+        if (this.hass && this.config && this.helpers) {
+            this.isInitialized = true;
+        }
+    }
+    async loadCardHelpers() {
+        this.helpers = await window.loadCardHelpers();
+    }
+    static get styles() {
+        return css_248z;
+    }
+};
+__decorate([
+    n$1({ attribute: false })
+], BodymiscaleCardEditor.prototype, "hass", void 0);
+__decorate([
+    t$1()
+], BodymiscaleCardEditor.prototype, "config", void 0);
+__decorate([
+    t$1()
+], BodymiscaleCardEditor.prototype, "helpers", void 0);
+BodymiscaleCardEditor = __decorate([
+    e$1('body-miscale-card-editor')
+], BodymiscaleCardEditor);
+
+var editor = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    get BodymiscaleCardEditor () { return BodymiscaleCardEditor; }
+});
+
+export { BodymiscaleCard };
