@@ -86,7 +86,7 @@
                                 | sum(start=[])
                                 | select('in', entity_list)
                                 | select('search', 'media_player.')
-                                | select('is_state', ['playing', 'paused'])
+                                | select('is_state', 'playing')
                                 | list
         -%}
       {%- endif -%}
@@ -111,7 +111,7 @@
             or state_attr(player, 'app_name')
             or state_attr(player, 'media_title')
             or state_attr(player, 'source')
-            or ' '
+            or area_data(area=area, output=output, availability=availability, binary=binary, sensor=sensor, media=false)
           -}}
         {%- endif -%}
       {%- elif output == 'icon_color' -%}
