@@ -85,3 +85,9 @@ good_morning_routine:
                 entity_id:
                   - light.booglamp
                   - light.wereldbol
+        - conditions: "{{ area == 'Werkkamer Martijn' }}"
+          sequence:
+            - alias: "Turn on correct script"
+              action: script.turn_on
+              target:
+                entity_id: script.martijn_starts_working
