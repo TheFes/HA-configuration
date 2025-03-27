@@ -178,8 +178,8 @@ script:
         target:
           entity_id: scene.before
 
-# Template sensor to store lights for which script is active
 template:
+  # Template sensor to store lights for which script is active
   - trigger:
       - platform: event
         event_type: light_effect_blink
@@ -200,70 +200,38 @@ template:
               {{ current }}
             {% endif %}
 
-# Convert switches to lights, and add blink effect
-light:
-  - platform: template
-    lights:
-      booglamp:
-        unique_id: 85d30c5c-f581-40bd-a048-162d10dcfd60
-        friendly_name: "Booglamp"
-        icon_template: mdi:floor-lamp
-        value_template: &value >
-          {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-          {% set switch = states.switch
-              | selectattr('object_id', 'search', id ~ '_relay')
-              | map(attribute='entity_id')
-              | list 
-          %}
-          {% set switch = switch | first if switch else 'none' %}
-          {{
-            is_state(switch, 'on')
-            or is_state('switch.' ~ id, 'on')
-            or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
-          }}
-        availability_template: &availability >
-          {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-          {% set switch = states.switch
-              | selectattr('object_id', 'search', id ~ '_relay')
-              | map(attribute='entity_id')
-              | list 
-          %}
-          {% set switch = switch | first if switch else 'none' %}
-          {{ switch | has_value or ('switch.' ~ id) | has_value }}
-        turn_on: &turn_on
-          - action: switch.turn_on
-            target:
-              entity_id: >
-                {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-                {% set switch = states.switch
-                    | selectattr('object_id', 'search', id ~ '_relay')
-                    | map(attribute='entity_id')
-                    | list 
-                %}
-                {% set switch = switch | first if switch else 'none' %}
-                {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
-        turn_off: &turn_off
-          - action: switch.turn_off
-            target:
-              entity_id: >
-                {% set id = this.entity_id | regex_replace('light.|_template', '') %}
-                {% set switch = states.switch
-                    | selectattr('object_id', 'search', id ~ '_relay')
-                    | map(attribute='entity_id')
-                    | list 
-                %}
-                {% set switch = switch | first if switch else 'none' %}
-                {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
-        effect_list_template: &effect_list "{{ ['Fast Pulse', 'Slow Pulse', 'None'] }}"
-        effect_template: &effect "{{ state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') }}"
-        set_effect: &set_effect
-          - action: script.turn_on
-            target:
-              entity_id: script.light_blink
-            data:
-              variables:
-                light: "{{ this.entity_id }}"
-                toggle_entity: >
+  # Convert switches to lights, and add blink effect
+  - light:
+      - unique_id: 85d30c5c-f581-40bd-a048-162d10dcfd60
+        name: "Booglamp"
+        icon: mdi:floor-lamp
+        <<: &config
+          state: >
+            {% set id = this.entity_id | regex_replace('light.|_template', '') %}
+            {% set switch = states.switch
+                | selectattr('object_id', 'search', id ~ '_relay')
+                | map(attribute='entity_id')
+                | list 
+            %}
+            {% set switch = switch | first if switch else 'none' %}
+            {{
+              is_state(switch, 'on')
+              or is_state('switch.' ~ id, 'on')
+              or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
+            }}
+          availability: >
+            {% set id = this.entity_id | regex_replace('light.|_template', '') %}
+            {% set switch = states.switch
+                | selectattr('object_id', 'search', id ~ '_relay')
+                | map(attribute='entity_id')
+                | list 
+            %}
+            {% set switch = switch | first if switch else 'none' %}
+            {{ switch | has_value or ('switch.' ~ id) | has_value }}
+          turn_on:
+            - action: switch.turn_on
+              target:
+                entity_id: >
                   {% set id = this.entity_id | regex_replace('light.|_template', '') %}
                   {% set switch = states.switch
                       | selectattr('object_id', 'search', id ~ '_relay')
@@ -272,64 +240,59 @@ light:
                   %}
                   {% set switch = switch | first if switch else 'none' %}
                   {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
-                effect: "{{ effect }}"
+          turn_off:
+            - action: switch.turn_off
+              target:
+                entity_id: >
+                  {% set id = this.entity_id | regex_replace('light.|_template', '') %}
+                  {% set switch = states.switch
+                      | selectattr('object_id', 'search', id ~ '_relay')
+                      | map(attribute='entity_id')
+                      | list 
+                  %}
+                  {% set switch = switch | first if switch else 'none' %}
+                  {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
+          effect_list: "{{ ['Fast Pulse', 'Slow Pulse', 'None'] }}"
+          effect: "{{ state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') }}"
+          set_effect:
+            - action: script.turn_on
+              target:
+                entity_id: script.light_blink
+              data:
+                variables:
+                  light: "{{ this.entity_id }}"
+                  toggle_entity: >
+                    {% set id = this.entity_id | regex_replace('light.|_template', '') %}
+                    {% set switch = states.switch
+                        | selectattr('object_id', 'search', id ~ '_relay')
+                        | map(attribute='entity_id')
+                        | list 
+                    %}
+                    {% set switch = switch | first if switch else 'none' %}
+                    {{ [ switch, 'switch.' ~ id] | select('has_value') | list | first }}
+                  effect: "{{ effect }}"
 
-      voordeur:
-        unique_id: 88a90466-f1d2-48ae-af0b-7c4494141148
-        friendly_name: "Voordeur"
-        icon_template: mdi:coach-lamp
-        value_template: *value
-        availability_template: *availability
-        turn_on: *turn_on
-        turn_off: *turn_off
-        effect_list_template: *effect_list
-        effect_template: *effect
-        set_effect: *set_effect
+      - unique_id: 88a90466-f1d2-48ae-af0b-7c4494141148
+        name: "Voordeur"
+        icon: mdi:coach-lamp
+        <<: *config
 
-      nijntje:
-        unique_id: 18918667-0bde-4ed3-a753-9860aa9e9596
-        friendly_name: "Nijntje"
-        icon_template: mdi:rabbit-variant
-        value_template: *value
-        availability_template: *availability
-        turn_on: *turn_on
-        turn_off: *turn_off
-        effect_list_template: *effect_list
-        effect_template: *effect
-        set_effect: *set_effect
+      - unique_id: 18918667-0bde-4ed3-a753-9860aa9e9596
+        name: "Nijntje"
+        icon: mdi:rabbit-variant
+        <<: *config
 
-      badkamerspiegel:
-        unique_id: 4ba1e527-8550-4118-8e6c-e191273f100c
-        friendly_name: "Badkamerspiegel"
-        icon_template: mdi:mirror-rectangle
-        value_template: *value
-        availability_template: *availability
-        turn_on: *turn_on
-        turn_off: *turn_off
-        effect_list_template: *effect_list
-        effect_template: *effect
-        set_effect: *set_effect
+      - unique_id: 4ba1e527-8550-4118-8e6c-e191273f100c
+        name: "Badkamerspiegel"
+        icon: mdi:mirror-rectangle
+        <<: *config
 
-      technische_ruimte:
-        unique_id: 167b02e7-eae5-4203-b964-a09098e0f417
-        friendly_name: "Technische Ruimte"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-        value_template: *value
-        availability_template: *availability
-        turn_on: *turn_on
-        turn_off: *turn_off
-        effect_list_template: *effect_list
-        effect_template: *effect
-        set_effect: *set_effect
+      - unique_id: 167b02e7-eae5-4203-b964-a09098e0f417
+        name: "Technische Ruimte"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config
 
-      badkamerspiegel_zolder:
-        unique_id: f6ca2c05-ccea-478f-b4f9-e361688e5f5c
-        friendly_name: "Badkamerspiegel Zolder"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
-        value_template: *value
-        availability_template: *availability
-        turn_on: *turn_on
-        turn_off: *turn_off
-        effect_list_template: *effect_list
-        effect_template: *effect
-        set_effect: *set_effect
+      - unique_id: f6ca2c05-ccea-478f-b4f9-e361688e5f5c
+        name: "Badkamerspiegel Zolder"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+        <<: *config

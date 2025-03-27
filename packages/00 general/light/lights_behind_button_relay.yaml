@@ -1,13 +1,11 @@
 # Create template lights
-light:
-  - platform: template
-    lights:
-      eettafel_template:
-        unique_id: 847f5495-8971-4656-8fde-7a636e983735
-        friendly_name: "Eettafel Template"
-        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+template:
+  - light:
+      - unique_id: 847f5495-8971-4656-8fde-7a636e983735
+        name: Eettafel Template
+        icon: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
         <<: &config_general
-          value_template: >
+          state: >
             {% set room = this.entity_id | regex_replace('light.|_template', '') %}
             {% set light = 'light.' ~ room %}
             {% set switch = states.switch
@@ -25,7 +23,7 @@ light:
                   and (is_state(switch, 'on') if switch else true)
                 )
             }}
-          availability_template: >
+          availability: >
             {% set room = this.entity_id | regex_replace('light.|_template', '') %}
             {% set light = 'light.' ~ room %}
             {% set switch = states.switch
@@ -48,11 +46,11 @@ light:
               data:
                 template_light: "{{ this.entity_id }}"
                 action: turn_off
-          effect_list_template: >
+          effect_list: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {% set effect = state_attr(light, 'effect_list') | default([], true) %}
             {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
-          effect_template: >
+          effect: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {% set custom = state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
             {% set def = state_attr(light, effect) | default('None') %}
@@ -65,7 +63,7 @@ light:
                 action: set_effect
                 effect: "{{ effect }}"
         <<: &config_brightness
-          level_template: >
+          level: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {% if light in integration_entities('esphome') %}
               {{ [ 1, ((state_attr(light, 'brightness') | int(0)- 255*0.145) / 0.855) | round ] | max }}
@@ -79,13 +77,13 @@ light:
                 action: set_level
                 brightness: "{{ brightness }}"
         <<: &config_color_temp
-          temperature_template: >
+          temperature: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {{ state_attr(light, 'color_temp') }}
-          min_mireds_template: >
+          min_mireds: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {{ state_attr(light, 'min_mireds') }}
-          max_mireds_template: >
+          max_mireds: >
             {% set light = this.entity_id | regex_replace('_template', '') %}
             {{ state_attr(light, 'max_mireds') }}
           set_temperature:
@@ -94,80 +92,70 @@ light:
                 entity_id: "{{ this.entity_id | regex_replace('_template', '') }}"
                 color_temp_kelvin: "{{ (1000000 / color_temp) | int }}"
 
-      werkkamer_marleen_template:
-        unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
-        friendly_name: "Werkamer Marleen Template"
-        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+      - unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
+        name: "Werkamer Marleen Template"
+        icon: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
         <<: *config_general
         <<: *config_brightness
 
-      pepijn_template:
-        unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
-        friendly_name: "Pepijn Template"
-        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
-        <<: *config_general
-        <<: *config_brightness
-        <<: *config_color_temp
-
-      floris_template:
-        unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
-        friendly_name: "Floris Template"
-        icon_template: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
+      - unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
+        name: "Pepijn Template"
+        icon: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      trapkast_template:
-        unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
-        friendly_name: "Trapkast Template"
-        icon_template: mdi:bulkhead-light
-        <<: *config_general
-        <<: *config_brightness
-
-      slaapkamer_plafond_template:
-        unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
-        friendly_name: "Slaapkamer Plafond Template"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+      - unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+        name: "Floris Template"
+        icon: "{{ 'mdi:ceiling-light' if this.state == 'on' else 'mdi:ceiling-light-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      werkkamer_martijn_plafond_template:
-        unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
-        friendly_name: "Werkkamer Martijn Plafond Template"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+      - unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
+        name: "Trapkast Template"
+        icon: mdi:bulkhead-light
+        <<: *config_general
+        <<: *config_brightness
+
+      - unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
+        name: "Slaapkamer Plafond Template"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      wasmachinehoek_template:
-        unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
-        friendly_name: "Wasmachinehoek Template"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+      - unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
+        name: "Werkkamer Martijn Plafond Template"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      badkamer_zolder_template:
-        unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
-        friendly_name: "Badkamer Zolder Template"
-        icon_template: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
+      - unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
+        name: "Wasmachinehoek Template"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      speelhoek_template:
-        unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
-        friendly_name: "Speelhoek Template"
-        icon_template: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
+      - unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
+        name: "Badkamer Zolder Template"
+        icon: "{{ 'mdi:wall-sconce-flat' if this.state == 'on' else 'mdi:wall-sconce-flat-outline' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
 
-      tv_template:
-        unique_id: 6adf6928-c15c-4945-8416-ef2c2e20b52b
-        friendly_name: "TV Lamp Template"
-        icon_template: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
+      - unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
+        name: "Speelhoek Template"
+        icon: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
+        <<: *config_general
+        <<: *config_brightness
+        <<: *config_color_temp
+
+      - unique_id: 6adf6928-c15c-4945-8416-ef2c2e20b52b
+        name: "TV Lamp Template"
+        icon: "{{ 'mdi:lightbulb' if this.state == 'on' else 'mdi:lightbulb-off' }}"
         <<: *config_general
         <<: *config_brightness
         <<: *config_color_temp
