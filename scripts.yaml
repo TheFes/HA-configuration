@@ -156,3 +156,12 @@ voice_get_todo_entries_full_llm_script:
   description: Fetch todo items from my todo lists. Note that the shopping list is
     also considered a todo list. Ignore items marked as completed, unless the uses
     specifically requests them.
+voice_set_reminder_full_llm_script:
+  alias: Voice - Set Reminder - Full LLM script
+  use_blueprint:
+    path: TheFes/3_voice_reminder_full_llm.yaml
+    input:
+      todo_entity: todo.reminder
+  description: Tool to set reminders based on voice commands. In case not recipient
+    is provided ask for it, in case no clear date and time is provided ask for it,
+    in case no recipient is provided ask for it

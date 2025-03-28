@@ -1,0 +1,174 @@
+blueprint:
+  name: Voice - Set Reminders - Full LLM script
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/3_voice_reminder_full_llm.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/reminder/3_voice_reminder_full_llm.md)
+
+    # Set reminders
+
+    ### Prerequisites
+
+    * Createa a ToDo entity to store the reminders in. You can use the button below
+    to start the config flow
+
+    [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=todo)
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set a todo entity to be used to store the reminders
+
+    #### Optional
+
+    * Change the prompt settings for the LLM
+
+    * Change or translate the settings for the response given by Assist
+
+    #### Note:
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for the todo list items.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+    #### Example for script description:
+
+
+    `Tool to set reminders based on voice commands. In case not recipient is provided
+    ask for it, in case no clear date and time is provided ask for it, in case no
+    recipient is provided ask for it`
+
+    ### Usage
+
+    You can request for a reminder to be set. The LLM will ask you for missing data.
+
+    #### Examples
+
+    ```
+
+    Set a reminder to take out the trash
+
+    Remind me to buy flowers for my partner
+
+    Make sure I do not forget to buy a gift for Mothers day
+
+    ```'
+  domain: script
+  homeassistant:
+    min_version: 2024.3.999
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      description: General settings for the script
+      input:
+        todo_entity:
+          name: ToDo entity
+          description: Select the ToDo entity to use for the reminders.
+          selector:
+            entity:
+              multiple: false
+              filter:
+              - domain:
+                - todo
+    prompt_settings:
+      name: Prompt settings for the LLM
+      icon: mdi:robot
+      description: You can use these settings to finetune the prompts for your specific
+        LLM (model). In most cases the defaults should be fine.
+      collapsed: true
+      input:
+        recipient_prompt:
+          name: Recipient prompt
+          description: The prompt which will be used to the LLM can provide the recipients
+            for the reminder
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: The recipients of the reminder based on the command given
+        reminder_text_prompt:
+          name: Reminder text prompt
+          description: The prompt which will be used to the LLM can provide the text
+            for the reminder
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: The text for the reminder which will be sent
+        date_prompt:
+          name: Date prompt
+          description: The prompt which will be used to the LLM can provide de right
+            recipient names for the reminder
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the date on which the reminder should be sent. In case only a
+            time is provided by the user, take the next occurance of that time. So
+            if the request is for a reminder at 6 o clock in the evening, and it''s
+            already 8 o clock in the evening set the reminder for tomorrow. The date
+            needs be in the format YYYY-MM-DD. Always provide a date, and only provide
+            a date, do not include a time'
+        time_prompt:
+          name: Time prompt
+          description: The prompt which will be used to the LLM can provide the time
+            for the reminder
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This argument is mandatory and must always be provided no matter
+            what!
+
+            Provide the time on which the requested period starts. This time should
+            be in the format HH:MM:SS in 24 hour format (for example 17:00:00). Always
+            provide a time. In case only a day is provided, use 00:00:00.'
+mode: parallel
+max_exceeded: silent
+fields:
+  recipient:
+    name: Recipient
+    description: !input recipient_prompt
+    selector:
+      text:
+    required: true
+  reminder_text:
+    name: Reminder text
+    description: !input reminder_text_prompt
+    selector:
+      text:
+    required: true
+  date:
+    name: Start Date
+    description: !input date_prompt
+    selector:
+      date:
+    required: true
+  time:
+    name: Start Time
+    description: !input time_prompt
+    selector:
+      time:
+    required: true
+sequence:
+- variables:
+    version: 20250327
+    date: '{{ (date | as_datetime(default=now())).date() }}'
+    time: '{{ time | default(''00:00:00'') | as_timedelta | default(''00:00:00'',
+      true) }}'
+    datetime: '{{ as_datetime(date) + as_timedelta(time) }}'
+- alias: Set todo item for reminder
+  action: todo.add_item
+  target:
+    entity_id: !input todo_entity
+  data:
+    item: '{{ reminder_text }}'
+    due_datetime: '{{ datetime }}'
+    description: '{{ recipient }}'

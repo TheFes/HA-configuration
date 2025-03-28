@@ -347,3 +347,44 @@
       no_items_response: '{list_name} is leeg.'
       list_items_response: 'Er staan {item_count} dingen op: {list_items}'
       invalid_list_response: Ik kan geen lijst met de naam {list_name} vinden.
+- id: '1743151381222'
+  alias: Voice - Send Reminder - Automation
+  description: ''
+  use_blueprint:
+    path: TheFes/0_voice_send_reminder.yaml
+    input:
+      recipients:
+      - name: Martijn
+        description: Father of the house
+        notifiers:
+        - action: notify.mobile_app_pixel_7_pro
+          data:
+            data:
+              channel: Reminders
+              ttl: 0
+              priority: high
+              notification_icon: mdi:reminder
+          condition: '{{ is_state(''input_boolean.test'', ''on'') }}'
+        - action: tts.speak
+          target:
+            entity_id: tts.home_assistant_cloud
+          data:
+            media_player_entity_id: media_player.martijn
+          prefix: 'Dit is een reminder voor:'
+          condition: '{{ is_state(''person.martijn'', ''home'') }}'
+      - name: Marleen
+        description: Mother of the house
+        notifiers:
+        - action: notify.mobile_app_pixel_8_marleen
+          data:
+            data:
+              channel: Reminders
+              ttl: 0
+              priority: high
+              notification_icon: mdi:reminder
+      llm_agent: conversation.chatgpt
+      todo_entity: todo.reminder
+      triggers:
+      - alias: Trigger to check for Todo items every minute
+        trigger: time_pattern
+        minutes: /5

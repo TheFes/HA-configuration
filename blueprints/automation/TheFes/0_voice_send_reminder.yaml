@@ -1,0 +1,213 @@
+blueprint:
+  domain: automation
+  name: Voice - Send Reminder - Automation
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/0_voice_send_reminder.yaml
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+
+    # Automation to send the reminders set by voice
+
+    ### Blueprint setup
+
+    #### Required
+
+    * Set the LLM conversation agent which will be used to process the recipients
+    to the right names
+
+    * Set the ToDo list which is used to store the reminders
+
+    * Enter the recipient data, it should contain at least the name and description
+    and one notifier.
+
+    The notifier should be an action to send the notification, it can be any action
+    you want, which supports the `message` field in the data. So a persistent notification,
+    tts message, notify message, etc.
+
+    You can add addtional action data as normal, for example a `title`.
+
+    It is also possible to use a jinja template as `condition` to determine if the
+    reminder should be sent, however, if all notifiers have a condition, and it returns
+    `false` for all, the reminder will not be removed from the list. Only when at
+    least one action is performed, the item will be removed.
+
+    Lastly it is possible to add a `prefix` for the message, so for example you can
+    prefix the a TTS announcement with `This is a reminder for: `
+
+    The default setting in this selector acts as an example, make sure to adjust it
+    to your own system.
+
+
+
+    #### Optional
+
+    * Adjust the trigger to check for the reminders, by default it will check every
+    minute
+
+    * Adjust the prompt used to get the right names
+
+
+
+    ### Usage
+
+    Nothing from your side is needed, the automation will check every minute if there
+    are todo items due, and perform the actions if this is the case.'
+  homeassistant:
+    min_version: 2024.3.999
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      description: General settings for the script
+      input:
+        llm_agent:
+          name: LLM converation agent
+          description: The LLM agent you want to use to process the query
+          selector:
+            entity:
+              filter:
+              - domain:
+                - conversation
+              multiple: false
+        todo_entity:
+          name: ToDo entity
+          description: Select the calendar entity to use for the reminders.
+          selector:
+            entity:
+              multiple: false
+              filter:
+              - domain:
+                - todo
+        recipients:
+          name: Notification recipients
+          description: Provide the recipients for the reminders
+          selector:
+            object: {}
+          default:
+          - name: John
+            description: Father of the house
+            notifiers:
+            - action: notify.mobile_app_john
+              data:
+                data:
+                  channel: Reminders
+                  ttl: 0
+                  priority: high
+                  notification_icon: mdi:reminder
+            - action: tts.speak
+              target:
+                entity_id: tts.home_assistant_cloud
+              data:
+                media_player_entity_id: media_player.office_john
+              prefix: 'This is a reminder for:'
+              condition: '{{ is_state(''person.john'', ''home'') }}'
+    trigger_setting:
+      name: Trigger for automation
+      icon: mdi:timer
+      description: Set the trigger for the automation to send the notifications
+      collapsed: true
+      input:
+        triggers:
+          name: Triggers
+          description: Set the triggers when the automation should check for reminders,
+            default trigger checks every minute
+          selector:
+            trigger: {}
+          default:
+          - alias: Trigger to check for Todo items every minute
+            trigger: time_pattern
+            minutes: /1
+    prompt_setting:
+      name: Prompt setting for the LLM
+      icon: mdi:robot
+      description: You can use these setting to finetune the prompt for your specific
+        LLM (model). In most cases the default should be fine.
+      collapsed: true
+      input:
+        recipient_prompt:
+          name: LLM Prompt
+          description: The prompt which will be used to the LLM can provide the recipient
+            names based on the calendar entries
+          selector:
+            text:
+              multiline: true
+              multiple: false
+          default: 'This is a list of names and descriptions: {{ recipient_data }}
+
+            Match the following entries to those names and descriptions: {{ entries
+            }}
+
+            Provide the names for the list with names and descriptions based on the
+            entries Provide the names in json format. Only provide the json data,
+            do not provide any additional explanation, descriptions or code tags.
+            Always provide it as a list. In case one of the entries can not be matched,
+            ignore it in the output. In case no entry can be matched, or no entries
+            are provided, provide an empty list. also when only one entry is provided.
+            The output can for example be: ["Name 1", "Name 2"]
+
+            ONLY OUTPUT THE JSON, NO CODE TAGS, NO EXPLANATION, NO DESCRIPTION as
+            this is used for further processing in actions. '
+triggers: !input triggers
+variables:
+  todo_entity: !input todo_entity
+  recipients: !input recipients
+  recipient_data: "{% set ns = namespace(recipient_data=[]) %} {% for item in recipients
+    %}\n  {% set ns.recipient_data = ns.recipient_data + [dict(name=item.name, description=item.description)]
+    %}\n{% endfor %} {{ ns.recipient_data }}\n"
+actions:
+- alias: Get todo entries
+  action: todo.get_items
+  target:
+    entity_id: !input todo_entity
+  response_variable: todo_data
+- alias: Set new variable
+  variables:
+    items: '{{ todo_data[todo_entity][''items''] | selectattr(''due'', ''<'', (now()+timedelta(seconds=30)).isoformat())
+      | list }}'
+- alias: Repeat sending the notifications for eacht event
+  repeat:
+    for_each: '{{ items }}'
+    sequence:
+    - variables:
+        item: '{{ repeat.item }}'
+        text: '{{ item.summary }}'
+        entries: '{{ item.description | default(''No entries provided'') }}'
+        notifiers_used: 0
+    - alias: Get right recipient names
+      action: conversation.process
+      data:
+        agent_id: !input llm_agent
+        text: !input recipient_prompt
+      response_variable: recipient_llm_raw
+    - variables:
+        recipients_llm: '{{ recipient_llm_raw.response.speech.plain.speech }}'
+    - alias: Repeat sending the notification for each recipient
+      repeat:
+        for_each: '{{ recipients_llm }}'
+        sequence:
+        - variables:
+            actions: '{{ recipients | selectattr(''name'', ''eq'', repeat.item) |
+              map(attribute=''notifiers'') | first | default([], true) }}'
+        - alias: Repeat for each notification action
+          repeat:
+            for_each: '{{ actions }}'
+            sequence:
+            - variables:
+                condition: '{{ repeat.item.condition if repeat.item.condition is defined
+                  else true}}'
+            - if: '{{ condition }}'
+              then:
+              - alias: send notification
+                action: '{{ repeat.item.action }}'
+                target: '{{ repeat.item.target | default({}, true) }}'
+                data: '{{ combine(repeat.item.data | default({}, true), dict(message=[repeat.item.prefix
+                  | default, text] | join('' ''))) }}'
+              - variables:
+                  notifiers_used: '{{ notifiers_used + 1 }}'
+    - if: '{{ notifiers_used > 0}}'
+      then:
+      - alias: remove item from list
+        action: todo.remove_item
+        target:
+          entity_id: !input todo_entity
+        data:
+          item: '{{ text }}'
