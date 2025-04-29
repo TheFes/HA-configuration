@@ -19,95 +19,46 @@ template:
             weather.buienradar:
               current: 2
               daily: 2
-      - alias: Reset entity overview in template sensor
-        event: forecast_add_entity
-        event_data:
-          type: reset
-      - alias: Short delay to make sure event is processed
-        delay: 0.5
-      - alias: Set right forecast type
-        variables:
-          type: daily
-      - alias: Sequence to get the daily forecast data
-        sequence: &get_forecast_data
-          - alias: Run through weather entities to check if the right forecast is provided
-            repeat:
-              for_each: >
-                {{
-                  states.weather
-                    | map(attribute='entity_id')
-                    | select('has_value')
-                    | reject('search', 'combined')
-                    | list
-                  }}
-              sequence:
-                - alias: Try to get forecast out
-                  action: weather.get_forecasts
-                  data:
-                    type: "{{ type }}"
-                  response_variable: forecast
-                  target:
-                    entity_id: "{{ repeat.item }}"
-                  continue_on_error: true
-                - alias: Check if forecast was available
-                  variables:
-                    entity: "{{ repeat.item }}"
-                    valid: >
-                      {{
-                        forecast is defined
-                        and forecast is mapping
-                        and entity in forecast
-                        and forecast[entity].forecast is list
-                        and forecast[entity].forecast | count > 0
-                        and forecast[entity].forecast[0].datetime is defined
-                        and forecast[entity].forecast[0].datetime | as_datetime(none) is not none
-                      }}
-                - if: "{{ valid }}"
-                  then:
-                    - alias: Store entity in template sensor
-                      event: forecast_add_entity
-                      event_data:
-                        type: "{{ type }}"
-                        entity: "{{ entity }}"
-                - alias: Short delay to make sure everything is processed
-                  delay: 0.2
       - alias: Set right forecast type
         variables:
           type: hourly
-      - alias: Sequence to get the hourly forecast data
-        sequence: *get_forecast_data
-      - alias: Short delay to make sure everything is processed
-        delay: 0.5
-      - if: "{{ state_attr('sensor.weather_forecast_entities', 'hourly') | count > 0 }}"
-        then:
-          - alias: Get hourly forecast data out of selected entities
-            action: weather.get_forecasts
-            data:
-              type: hourly
-            target:
-              entity_id: "{{ state_attr('sensor.weather_forecast_entities', 'hourly') }}"
-            response_variable: forecast_hourly
-      - if: "{{ state_attr('sensor.weather_forecast_entities', 'hourly') | count > 0 }}"
-        then:
-          - alias: Get daily forecast data out of selected entities
-            action: weather.get_forecasts
-            data:
-              type: daily
-            target:
-              entity_id: "{{ state_attr('sensor.weather_forecast_entities', 'daily') }}"
-            response_variable: forecast_daily
-      - alias: Combine daily forecasts from seperate entities into one
+          supported: [2, 3, 6, 7]
+      - alias: Get the forecast data from the entities
+        sequence: &get_forecasts
+          - alias: Get all entities which support the forecast type
+            variables:
+              weather_entities: >
+                {{
+                  states.weather 
+                    | selectattr('attributes.supported_features', 'defined')
+                    | selectattr('attributes.supported_features', 'in', supported)
+                    | map(attribute='entity_id') 
+                    | reject('in', integration_entities('template'))
+                    | select('has_value')
+                    | list
+                }}
+          - alias: Get forecasts in case there are entities
+            if: "{{ weather_entities | count > 0 }}"
+            then:
+              - variables:
+                  forecast_available: true
+              - alias: Get hourly forecast data out of selected entities
+                action: weather.get_forecasts
+                data:
+                  type: "{{ type }}"
+                target:
+                  entity_id: "{{ weather_entities }}"
+                response_variable: forecast
+            else:
+              - variables:
+                  forecast_available: fale
+      - alias: Combine the forecasts in one
         variables:
-          type: daily
-          daily: &combine_forecasts >
+          hourly: &combine_forecasts >
             {# set number of days to use for forecasts #}
               {% set forecast_days = 3 if type == 'hourly' else 10 %}
-            {# deterimine which forecast to use #}
-              {% set hourly_check = forecast_hourly is defined %}
-              {% set daily_check = forecast_daily is defined %}
-              {% set data_check = hourly_check if type == 'hourly' else daily_check %}
-              {% if data_check %}
-                {% set forecast = forecast_hourly if type == 'hourly' else forecast_daily %}
+            {# check if forecast is retreived #}
+              {% if forecast_available %}
                 {% set forecast_all = 
                   [
                     dict(attr='condition'),
@@ -195,10 +146,34 @@ template:
             {% else %}
               []
             {% endif %}
-      - alias: Combine hourly forecasts from seperate entities into one
+      - alias: Set right forecast type
         variables:
-          type: hourly
-          hourly: *combine_forecasts
+          type: daily
+          supported: [1, 3, 5, 7]
+      - alias: Get the forecast data from the entities
+        sequence: *get_forecasts
+      - alias: Combine the forecasts in one
+        variables:
+          daily: *combine_forecasts
+      - alias: Set right forecast type
+        variables:
+          type: twice_daily
+          supported: [4, 5, 6, 7]
+      - alias: Get the forecast data from the entities
+        sequence: *get_forecasts
+      - alias: Combine the forecasts in one
+        variables:
+          twice_daily: *combine_forecasts
+      - alias: Set variable for weather entities for attributes
+        variables:
+          weather_entities: >
+            {{
+              states.weather
+                | map(attribute='entity_id')
+                | reject('in', integration_entities('template'))
+                | select('has_value')
+                | list
+            }}
     # template weather entity which will combine all the data from the other weather entities
     weather:
       - name: Combined
@@ -206,13 +181,13 @@ template:
         condition_template: >
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [states(e)] * w %}
             {% endfor %}
             {{ statistical_mode(ns.weight) }}
           {% else %}
-            {{ expand(state_attr('sensor.weather_forecast_entities', 'entities'))
+            {{ expand(weather_entities)
                 | map(attribute='state')
                 | list
                 | statistical_mode(none)
@@ -222,15 +197,15 @@ template:
           {%- set attribute = 'temperature' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -242,15 +217,15 @@ template:
           {%- set attribute = 'apparent_temperature' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -262,15 +237,15 @@ template:
           {%- set attribute = 'pressure' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -282,15 +257,15 @@ template:
           {%- set attribute = 'wind_speed' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -302,15 +277,15 @@ template:
           {%- set attribute = 'wind_gust_speed' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -322,15 +297,15 @@ template:
           {%- set attribute = 'visibility' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -342,15 +317,15 @@ template:
           {%- set attribute = 'humidity' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -362,15 +337,15 @@ template:
           {%- set attribute = 'wind_bearing' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -382,15 +357,15 @@ template:
           {%- set attribute = 'ozone' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -402,15 +377,15 @@ template:
           {%- set attribute = 'cloud_coverage' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -422,15 +397,15 @@ template:
           {%- set attribute = 'dew_point' %}
           {% if weight is defined and weight is mapping %}
             {% set ns = namespace(weight=[]) %}
-            {% for e in state_attr('sensor.weather_forecast_entities', 'entities') %}
+            {% for e in weather_entities %}
               {% set w = weight.get(e, {}).get('current', 1) %}
               {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
             {% endfor %}
             {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
           {% else %}
             {{
-              expand(state_attr('sensor.weather_forecast_entities', 'entities'))
-                | selectattr('attributes.'~attribute, 'defined')
+              expand(weather_entities)
+                | selectattr('attributes.' ~ attribute, 'defined')
                 | map(attribute='attributes.' ~ attribute)
                 | select('is_number')
                 | list
@@ -445,6 +420,7 @@ template:
         precipitation_unit: "mm"
         forecast_hourly_template: "{{ hourly }}"
         forecast_daily_template: "{{ daily }}"
+        # forecast_twice_daily_template: "{{ twice_daily }}"
     # other template sensors using the combined forecast data generated for the weather entity
     sensor:
       - unique_id: 7b190917-6d93-4c01-8854-4a1b7bf9d886
@@ -531,65 +507,3 @@ template:
           {% set next_hours = hourly[:3] | map(attribute='condition') | list %}
           {{ icon.get(statistical_mode(next_hours), 'mdi:cloud-alert') }}
         availability: "{{ hourly is defined and hourly is list and hourly | count >= 3 }}"
-
-  # template sensor to store which weather entities support hourly and daily forecasts
-  - trigger:
-      - platform: event
-        event_type: forecast_add_entity
-    sensor:
-      - unique_id: d82efa90-1eeb-4b07-a093-8c6cc4ee55b4
-        name: Weather Forecast Entities
-        state: "{{ now().replace(microsecond=0).isoformat() }}"
-        attributes:
-          hourly: >
-            {% set a = 'hourly' %}
-            {% set type = trigger.event.data.type %}
-            {% set current = this.attributes[a] | default([], true) %}
-            {% if type == 'reset' %}
-              {{ [] }}
-            {% elif a != type %}
-              {{ current }}
-            {% else %}
-              {% set entity = trigger.event.data.entity %}
-              {{ current + [entity] }}
-            {% endif %}
-          daily: >
-            {% set a = 'daily' %}
-            {% set type = trigger.event.data.type %}
-            {% set current = this.attributes[a] | default([], true) %}
-            {% if type == 'reset' %}
-              {{ [] }}
-            {% elif a != type %}
-              {{ current }}
-            {% else %}
-              {% set entity = trigger.event.data.entity %}
-              {{ current + [entity] }}
-            {% endif %}
-          entities: >
-            {% set type = trigger.event.data.type %}
-            {% set current = this.attributes.entities | default([], true) %}
-            {% if type == 'reset' %}
-              {{ [] }}
-            {% else %}
-              {% set entity = trigger.event.data.entity %}
-              {% set entities = (current + [entity]) | unique | list %}
-              {% set ns = namespace(integrations=[], entities=[]) %}
-              {% for e in entities %}
-                {% set integration = device_attr(e, 'identifiers')| map(attribute='0') | join %}
-                {% if integration and integration not in ns.integrations %}
-                  {% set ns.entities = ns.entities + [e] %}
-                  {% set ns.integrations = ns.integrations + [integration] %}
-                {% elif not iif(integration) %}
-                  {% set ns.entities = ns.entities + [e] %}
-                {% endif %}
-              {% endfor %} 
-              {{ ns.entities }}
-            {% endif %}
-
-# don't log error messages about unsupported forecast types
-logger:
-  filters:
-    homeassistant.helpers.script.trigger_update_coordinator:
-      - "Trigger Update Coordinator: Sequence to get the .* forecast data: Run through weather entities to check if the right forecast is provided: Error executing script. Error for call_service at pos 1: Weather entity '.*' does not support '.*' forecast"
-      - "Trigger Update Coordinator: Sequence to get the .* forecast data: Run through weather entities to check if the right forecast is provided: Error executing script. Error for call_service at pos 1: Service call requested response data but did not match any entities"
-      - "Trigger Update Coordinator: Sequence to get the .* forecast data: Run through weather entities to check if the right forecast is provided: Error executing script. Error for call_service at pos 1: Entity .* does not support this service."
