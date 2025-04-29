@@ -2060,7 +2060,7 @@
 {%- set _12 = not (hour % 12) %}
 {%- set _24 = not (hour % 24) %}
 {%- set use_twelve = translate('time_of_day', 'use_twelve', language=language, fallback=false) %}
-{%- set _12hr = translate('time','format') == '12-hr' %}
+{%- set _12hr = translate('time','format', language=language) == '12-hr' %}
 {%- if _12 and _24 and _12hr and not use_twelve %}
   {{- translate('time_of_day', 'midnight', language=language) }}
 {%- elif _12 and _12hr and not use_twelve %}
