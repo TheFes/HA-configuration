@@ -43,10 +43,24 @@ event:
     event_types:
       - "single_press"
       - "double_press"
-      - "triple_press"
+      - "tripple_press"
       - "quintuple_press"
       - "long_press"
       - "release"
+
+number:
+  - platform: template
+    name: "Start Brightness"
+    id: start_brightness
+    optimistic: true
+    min_value: 1
+    max_value: 100
+    step: 1
+    restore_value: true
+    initial_value: 100
+    entity_category: config
+    icon: mdi:brightness-percent
+    unit_of_measurement: "%"
 
 light:
   - platform: shelly_dimmer
@@ -259,7 +273,8 @@ script:
             - light.turn_on:
                 id: dimmer
                 brightness: !lambda |-
-                  return id(dimmer).remote_values.get_brightness();
+                  return id(start_brightness).state / 100;
+            - logger.log: "Light turned on"
 
 binary_sensor:
   - platform: gpio
@@ -270,15 +285,15 @@ binary_sensor:
     internal: false
     on_multi_click:
       - timing:
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
+          - ON for at most 300ms
+          - OFF for at most 300ms
+          - ON for at most 300ms
+          - OFF for at least 300ms
+          - ON for at most 300ms
+          - OFF for at most 300ms
+          - ON for at most 300ms
+          - OFF for at least 300ms
+          - ON for at most 300ms
           - OFF for at least 0.2s
         then:
           - if:
@@ -296,10 +311,27 @@ binary_sensor:
                       button: "1"
           - button.press: restart_button
       - timing:
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at least 0.2s
+          - ON for at most 300ms
+          - OFF for at most 300ms
+          - ON for at most 300ms
+          - OFF for at most 300ms
+          - ON for at most 300ms
+          - OFF for at least 200ms
+        then:
+          - homeassistant.event:
+              event: esphome.button_pressed
+              data:
+                device: ${name}
+                click_type: triple
+          - event.trigger:
+              id: event_entity
+              event_type: "tripple_press"
+          - switch.toggle: control_light_active
+      - timing:
+          - ON for at most 300ms
+          - OFF for at most 300ms
+          - ON for at most 300ms
+          - OFF for at least 200ms
         then:
           - homeassistant.event:
               event: esphome.button_pressed
