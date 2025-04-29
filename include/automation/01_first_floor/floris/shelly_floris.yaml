@@ -21,12 +21,25 @@ action:
             condition: template
             value_template: "{{ trigger.event.data.click_type == 'short' }}"
         sequence:
-          - if: "{{ is_state('light.groep_floris', 'on') }}"
+          - if: >
+              {{
+                area_entities('slaapkamer_floris')
+                  | select('in', label_entities('lights_off_long_press'))
+                  | select('is_state', 'on')
+                  | list
+                  | count > 0
+              }}
             then:
-              - alias: "Turn off all lights in room"
+              - alias: "Light off"
                 action: light.turn_off
                 target:
-                  entity_id: light.groep_floris
+                  entity_id: >
+                    {{
+                      area_entities('slaapkamer_floris')
+                        | select('in', label_entities('lights_off_long_press'))
+                        | select('is_state', 'on')
+                        | list
+                    }}
             else:
               - alias: "Turn on main light"
                 action: light.turn_on

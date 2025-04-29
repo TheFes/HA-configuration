@@ -3,9 +3,7 @@ alias: "Xiaomi button Guest Bed"
 trigger:
   - platform: state
     entity_id: event.knop_logeerbed_action
-    not_from:
-      - unavailable
-      - unknown
+    not_from: unavailable
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
 action:

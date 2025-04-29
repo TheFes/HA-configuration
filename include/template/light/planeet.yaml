@@ -1,7 +1,7 @@
 - light:
     - name: Planeet
       unique_id: 6ba8eb34-2a08-43b0-8ea7-73505d46e883
-      state: "{{ is_state('switch.planeet', 'on') and states('sensor.planeet_power') | float > 0 }}"
+      state: "{{ is_state('switch.planeet', 'on') }}"
       turn_off:
         - action: switch.turn_off
           target:
