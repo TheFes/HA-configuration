@@ -41,7 +41,7 @@ action:
                 {%- if trigger.id == 'docked' %}
                   De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} ladingen in z'n bakkie.
                 {%- else %}
-                  Er is iets mis met de stofzuiger. De melding is: {{ state_attr('vacuum.valetudo_brokenachingdragonfly', 'error') }}
+                  Er is iets mis met de stofzuiger. De melding is: {{ states('sensor.valetudo_brokenachingdragonfly_error') }}
                 {%- endif %}
           - alias: "Notification to phones"
             action: notify.all_phones
