@@ -1,0 +1,35 @@
+# SQL sensor to retreive oldest date from statistics table
+sql:
+  - name: Oldest Statistics Date
+    unique_id: afb77a9d-0549-4f8e-990e-b17839b59ddb
+    column: ts
+    query: >
+      SELECT MIN(start_ts) as ts
+      FROM statistics
+    value_template: "{{ (value | int | as_datetime).date() }}"
+    icon: mdi:calendar
+
+automation:
+  - id: 3152abda-e95c-4d49-8314-b6b6a803cc16
+    alias: Send notification for corrupted database
+    triggers:
+      - alias: Check if oldest date matches expected date
+        trigger: template
+        # change the date in the template to the result of the SQL sensor created above
+        value_template: >
+          {{
+            'sensor.oldest_statistics_date' | has_value
+            and states('sensor.oldest_statistics_date') != '2021-07-07'
+          }}
+    action:
+      # change the notification according to your preferences
+      - alias: Send notification
+        action: notify.mobile_app_pixel_7_pro
+        data:
+          title: 🚨 Database waarschuwing 🚨
+          message: De Home Assistant database is mogelijk corrupt! Controleer de database.
+          data:
+            channel: Database Warning
+            ttl: 0
+            priority: high
+            notification_icon: mdi:database
