@@ -125,65 +125,107 @@ action:
               entity_id: light.voordeur
             data:
               effect: Slow Pulse
-  - variables:
-      ha_url: !secret ha_url
-  - alias: "TTS announcement in case of birthday"
-    if:
-      - "{{ birthday_today }}"
-      - alias: "Someone home"
-        condition: numeric_state
-        entity_id: zone.home
-        above: 0
-    then:
-      - variables:
-          name_a: >
-            {{
-              expand(birthday)
-                | selectattr('state', 'eq', '0')
-                | map(attribute='object_id')
-                | map('replace', 'anniversary_', '')
-                | join
-            }}
-          name_c: >
-            {% set m = state_attr('calendar.m_m', 'message') | lower %}
-            {{ m.split(' ') | last | title }}
-          name: "{{ name_a or name_c }}"
-      - action: input_select.select_option
-        target:
-          entity_id: select.ha_voice_keuken_assistent_pipeline
-        data:
-          option: Google House
-      - wait_template: "{{ is_state('select.ha_voice_keuken_assistent_pipeline', 'Google House') }}"
-      - action: assist_satellite.announce
-        data:
-          entity_id: assist_satellite.keuken
-          message: >
-            <speak>
-              <par>
-                <media xml:id="hoera" begin="0.5s">
-                  <speak><emphasis level="strong">Hoera!</emphasis></speak>
-                </media>
-                <media xml:id="deur" begin="hoera.end+1.5s">
-                  <speak>Er staat iemand aan de deur! Misschien is het wel visite voor {{ name }}!</speak>
-                </media>
-                <media begin="deur.end-0.2s" soundLevel="-6dB">
-                  <audio
-                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
-                </media>
-                <media begin="hoera.begin+0.5s" soundLevel="-2dB"
-                  fadeInDur="2s" fadeOutDur="0.2s">
-                  <audio
-                    src="{{ ha_url }}/local/misc/roltong1.mp3"/>
-                </media>
-                <media repeatCount="2" soundLevel="+2.28dB"
-                  fadeInDur="2s" fadeOutDur="0.2s" begin="0s">
-                  <audio
-                    src="{{ ha_url }}/local/misc/roltong2.mp3"/>
-                </media>
-              </par>
-            </speak>
-      - action: input_select.select_option
-        target:
-          entity_id: select.ha_voice_keuken_assistent_pipeline
-        data:
-          option: preferred
+      - conditions:
+          - alias: "Chime active"
+            condition: state
+            entity_id: switch.doorbell_chime_active
+            state: "on"
+          - alias: "Someone home"
+            condition: numeric_state
+            entity_id: zone.home
+            above: 0
+        sequence:
+          - variables:
+              name_a: >
+                {{
+                  expand(birthday)
+                    | selectattr('state', 'eq', '0')
+                    | map(attribute='object_id')
+                    | map('replace', 'anniversary_', '')
+                    | join
+                }}
+              name_c: >
+                {% set m = state_attr('calendar.m_m', 'message') %}
+                {{ m.split(' ')[1:] | join(' ') }}
+              name: "{{ name_a or name_c }}"
+              sound: "{{ 'roltong.mp3' if birthday_today else 'dingdong.mp3' }}"
+              message: >
+                Er staat iemand aan de deur! {{ ('Misschien is het wel visite voor ' ~ name ~ '!') if birthday_today }}
+              sat_id: >
+                {% set reject_list = ['assist_satellite.m5stack_atom_echo_d4e7f8_assist_satellite', 'assist_satellite.grandstream'] %}
+                {% set reject_list = (reject_list + ['assist_satellite.pepijn']) if is_state('binary_sensor.pepijn_sleeping', 'on') else reject_list %}
+                {% set reject_list = (reject_list + ['assist_satellite.floris']) if is_state('binary_sensor.floris_sleeping', 'on') else reject_list %}
+                {{
+                  states.assist_satellite
+                    | map(attribute='entity_id')
+                    | reject('in', reject_list)
+                    | list
+                }}
+              vol: >
+                {% set id = sat_id | map('device_id') | map('device_entities') | flatten | select('match', 'media_player.') | select('has_value') | list %}
+                {% set vol = id | map('state_attr', 'volume_level') | map('round', 2) | list %}
+                {{ zip(id, vol) | list}}
+          - alias: Set all players to at least 80%
+            repeat:
+              count: "{{ vol | count }}"
+              sequence:
+                - alias: Set all player to at least 80%
+                  action: media_player.volume_set
+                  target:
+                    entity_id: "{{ repeat.item[0] }}"
+                  data:
+                    volume_level: "{{ [0.8, repeat.item[1]] | max }}"
+          - alias: Make sure soundbar is ready
+            if: "{{ 'assist_satellite.woonkamer' in sat_id }}"
+            then:
+              - alias: Turn soundbar on in case it wasn't already
+                action: media_player.turn_on
+                target:
+                  entity_id: media_player.soundbar_template
+              - alias: Make sure soundbar is on
+                wait_template: "{{ not 'media_player.soundbar_template' | has_value or state_attr('media_player.soundbar_template', 'volume_level') is not none }}"
+              - alias: Set soundbar to the correct source
+                action: media_player.select_source
+                data:
+                  source: aux
+                target:
+                  entity_id: media_player.soundbar_template
+              - alias: Store volume level
+                variables:
+                  sb_vol: "{{ state_attr('media_player.soundbar_template', 'volume_level') | default(0.5, true) }}"
+              - alias: Set volume to at least 0.5
+                action: media_player.volume_set
+                target:
+                  entity_id: media_player.soundbar_template
+                data:
+                  volume_level: "{{ [0.5, sb_vol] | max }}"
+          - alias: Send announcement
+            action: assist_satellite.announce
+            data:
+              preannounce_media_id: media-source://media_source/local/misc/{{ sound }}
+              message: "{{ message }}"
+            target:
+              entity_id: "{{ sat_id }}"
+          - alias: Wait until at least one satellite is responding
+            wait_template: "{{ sat_id | select('is_state', 'responding') | list | count > 0 }}"
+          - alias: Wait until no satellite is responding
+            wait_template: "{{ sat_id | select('is_state', 'responding') | list | count == 0 }}"
+          - alias: Set all players to orignal volume
+            repeat:
+              count: "{{ vol | count }}"
+              sequence:
+                - alias: Set all player to original volume
+                  action: media_player.volume_set
+                  target:
+                    entity_id: "{{ repeat.item[0] }}"
+                  data:
+                    volume_level: "{{ repeat.item[1] }}"
+          - alias: Restore volume soundbar
+            if: "{{ 'assist_satellite.woonkamer' in sat_id }}"
+            then:
+              - alias: Set soundbar back to original volume
+                action: media_player.volume_set
+                target:
+                  entity_id: media_player.soundbar_template
+                data:
+                  volume_level: "{{ sb_vol }}"
