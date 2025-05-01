@@ -52,29 +52,6 @@ action:
         action: media_player.media_pause
         target:
           entity_id: media_player.nvidia_shield
-  - alias: "Media Player office Martijn active or someone there"
-    if:
-      - or:
-          - alias: "Speaker Martijn playing"
-            condition: state
-            entity_id:
-              - media_player.martijn
-            match: any
-            state: "playing"
-          - alias: "Someone on attic"
-            condition: state
-            entity_id:
-              - sensor.location_phone_martijn
-              - sensor.location_phone_marleen
-            match: any
-            state: "🏡2️⃣"
-    then:
-      - alias: "Send TTS message"
-        action: assist_satellite.announce
-        target:
-          entity_id: assist_satellite.martijn
-        data:
-          message: "Ding Dong! Er staat iemand aan de deur!"
   - alias: "Chime off and someone home?"
     choose:
       # Blink lights when chime is off and someone is home
@@ -167,7 +144,7 @@ action:
                 {{ zip(id, vol) | list}}
           - alias: Set all players to at least 80%
             repeat:
-              count: "{{ vol | count }}"
+              for_each: "{{ vol }}"
               sequence:
                 - alias: Set all player to at least 80%
                   action: media_player.volume_set
@@ -208,11 +185,15 @@ action:
               entity_id: "{{ sat_id }}"
           - alias: Wait until at least one satellite is responding
             wait_template: "{{ sat_id | select('is_state', 'responding') | list | count > 0 }}"
+            timeout: "00:00:01"
+            continue_on_timeout: true
           - alias: Wait until no satellite is responding
             wait_template: "{{ sat_id | select('is_state', 'responding') | list | count == 0 }}"
+            timeout: "00:00:10"
+            continue_on_timeout: true
           - alias: Set all players to orignal volume
             repeat:
-              count: "{{ vol | count }}"
+              for_each: "{{ vol }}"
               sequence:
                 - alias: Set all player to original volume
                   action: media_player.volume_set
