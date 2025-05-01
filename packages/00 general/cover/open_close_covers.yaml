@@ -391,63 +391,42 @@ template:
         name: "Screen Veranda manual"
         <<: *config_manual
 
-# template covers to invert status
-cover:
-  - platform: template
-    covers:
-      pepijn_template:
-        unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
-        friendly_name: "Screen Pepijn"
+  # template covers to invert status
+  - cover:
+      - unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
+        name: "{{ 'Screen Pepijn' if this.state != 'unknown' else 'Pepijn Template' }}"
         device_class: shade
         <<: &config_invert
-          value_template: &value "{{ states(this.entity_id | replace('_template', '')) }}"
-          position_template: &position >
+          state: "{{ states(this.entity_id | replace('_template', '')) }}"
+          position: >
             {%- set c = this.entity_id | replace('_template', '') %}
-            {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
-            {%- set s = state_attr(c, 'current_position') %}
-            {%- set i = is_state(b, 'on') %}
-            {{ 100 - s if i else s }}
-          availability_template: &availability >
-            {{ (this.entity_id | replace('_template', '')) | has_value }}
-          open_cover: &open_cover
-            - service: >
-                {%- set c = this.entity_id | replace('_template', '') %}
-                {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
-                {%- set i = is_state(b, 'on') %}
-                {{ 'cover.close_cover' if i else 'cover.open_cover' }}
+            {{ 100 - state_attr(c, 'current_position') }}
+          availability: "{{ (this.entity_id | replace('_template', '')) | has_value }}"
+          open_cover:
+            - action: cover.close_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
-          close_cover: &close_cover
-            - service: >
-                {%- set c = this.entity_id | replace('_template', '') %}
-                {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
-                {%- set i = is_state(b, 'on') %}
-                {{ 'cover.open_cover' if i else 'cover.close_cover' }}
+          close_cover:
+            - action: cover.open_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
-          stop_cover: &stop_cover
+          stop_cover:
             - service: cover.stop_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
-          set_cover_position: &set_cover_position
+          set_cover_position:
             - service: cover.set_cover_position
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
               data:
-                position: >
-                  {%- set c = this.entity_id | replace('_template', '') %}
-                  {%- set b = 'input_boolean.' ~ c | replace('.', '_') ~ '_invert' %}
-                  {%- set i = is_state(b, 'on') %}
-                  {{ 100 - position if i else position }}
+                position: "{{ 100 - position }}"
 
-      slaapkamer_zolder_template:
-        unique_id: 95fb6193-3557-435e-8b5b-8fdf8bdacd3f
-        friendly_name: "Screen Slaapkamer Zolder"
+      - unique_id: 95fb6193-3557-435e-8b5b-8fdf8bdacd3f
+        name: "{{ 'Slaapkamer Zolder Template' if this.state == 'unknown'  else 'Screen Slaapkamer Zolder' }}"
         device_class: shade
         <<: *config_invert
 
-      overloop_zolder_template:
-        unique_id: f257aa95-bd57-4f22-baf3-613754cb23ab
-        friendly_name: "Screen Overloop Zolder"
+      - unique_id: f257aa95-bd57-4f22-baf3-613754cb23ab
+        name: "{{ 'Overloop Zolder Template' if this.state == 'unknown' else 'Screen Overloop Zolder' }}"
         device_class: shade
         <<: *config_invert

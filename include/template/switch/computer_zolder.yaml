@@ -1,0 +1,13 @@
+- switch:
+    - unique_id: 622e113d-67c2-4f96-8a6e-5e97cf28ce7c
+      name: Computer Zolder
+      state: "{{ is_state('device_tracker.martijn_desktop', 'home') }}"
+      turn_on:
+        service: wake_on_lan.send_magic_packet
+        data:
+          mac: BC:5F:F4:8B:73:17
+      turn_off:
+        service: hassio.addon_stdin
+        data:
+          addon: core_rpc_shutdown
+          input: computer_zolder

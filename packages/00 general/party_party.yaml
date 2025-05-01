@@ -220,15 +220,13 @@ automation:
                       set_by: "song"
                 - delay: 0.5
 
-light:
-  - platform: template
-    lights:
-      party_pepijn:
-        unique_id: 71f830d4-7786-4f58-9a81-76e63b8961e0
-        friendly_name: Feestverlichting Slaapkamer Pepijn
+template:
+  - light:
+      - unique_id: 71f830d4-7786-4f58-9a81-76e63b8961e0
+        name: "{{ 'Feestverlichting Slaapkamer Pepijn' if this.state != 'unknown' else 'Party Pepijn' }}"
         <<: &config
-          icon_template: mdi:party-popper
-          value_template: >
+          icon: mdi:party-popper
+          state: >
             {% set area = area_id(this.entity_id) %}
             {{
               ((state_attr('sensor.variables', 'variables') | default({}, true)).get('party_mode', {}).items()
@@ -264,15 +262,12 @@ light:
                   area: "{{ area }}"
                   party_on: false
                   set_by: "light"
-      party_keuken:
-        unique_id: 766a8a7d5-c460-464d-8732-61c80cf01930
-        friendly_name: Feestverlichting Keuken
+      - unique_id: 766a8a7d5-c460-464d-8732-61c80cf01930
+        name: "{{ 'Feestverlichting Keuken' if this.state != 'unknown' else 'Party Keuken' }}"
         <<: *config
-      party_woonkamer:
-        unique_id: 22eb9256-a6b7-4ece-a6f9-84f59fc5372f
-        friendly_name: Feestverlichting Woonkamer
+      - unique_id: 22eb9256-a6b7-4ece-a6f9-84f59fc5372f
+        name: "{{ 'Feestverlichting Woonkamer' if this.state != 'unknown' else 'Party Woonkamer' }}"
         <<: *config
-      party_slaapkamer:
-        unique_id: d6845ab8-82be-4a3d-95e8-fedb9d9a24db
-        friendly_name: Feestverlichting Slaapkamer
+      - unique_id: d6845ab8-82be-4a3d-95e8-fedb9d9a24db
+        name: "{{ 'Feestverlichting Slaapkamer' if this.state != 'unknown' else 'Party Slaapkamer' }}"
         <<: *config

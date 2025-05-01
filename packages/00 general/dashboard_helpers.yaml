@@ -770,25 +770,12 @@ template:
         state: "{{ false }}"
         icon: mdi:stop
 
-# small script to toggle vacuum
-script:
-  vacuum_toggle:
-    alias: Vacuum toggle
-    sequence:
-      - action: "vacuum.{{ 'start' if is_state('vacuum.vacuum.valetudo_brokenachingdragonfly', 'docked') else 'return_to_dock' }}"
-        target:
-          entity_id: vacuum.valetudo_brokenachingdragonfly
-
-# template switch for kitchen appliances
-switch:
-  - platform: template
-    switches:
-      kitchen_appliances:
-        unique_id: 98efcbde-ffbe-4050-98f9-cf60275a8f81
-        friendly_name: Kitchen Appliances
-        value_template: >
+  - switch:
+      - unique_id: 98efcbde-ffbe-4050-98f9-cf60275a8f81
+        name: Kitchen Appliances
+        state: >
           {{ is_state('switch.groep_keuken', 'on') }}
-        icon_template: >
+        icon: >
           {% if is_state('switch.espresso', 'on') and is_state('switch.waterkoker', 'on') %}
             mdi:coffee
           {% elif is_state('switch.espresso', 'on') %}
@@ -806,3 +793,13 @@ switch:
           - action: switch.turn_off
             target:
               entity_id: switch.groep_keuken
+        availability: "{{ 'switch.groep_keuken' | has_value }}"
+
+# small script to toggle vacuum
+script:
+  vacuum_toggle:
+    alias: Vacuum toggle
+    sequence:
+      - action: "vacuum.{{ 'start' if is_state('vacuum.vacuum.valetudo_brokenachingdragonfly', 'docked') else 'return_to_dock' }}"
+        target:
+          entity_id: vacuum.valetudo_brokenachingdragonfly
