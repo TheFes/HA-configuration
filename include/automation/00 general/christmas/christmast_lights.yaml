@@ -24,13 +24,14 @@ trigger:
       - "on"
       - "off"
     id: lantarn
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Eettafel
-      click_type: long
+  - trigger: state
+    entity_id: event.shelly1_eettafel_shelly1_eettafel
+    not_from: unavailable
     id: to_bed
 condition:
+  - alias: "Check for long press event on Eettaffel button"
+    condition: template
+    value_template: "{{ trigger.id != to_bed or trigger.to_state.attributes.event_type == 'long_press' }}"
   - alias: "It's Chirstmas time"
     condition: state
     entity_id: input_boolean.christmas_time

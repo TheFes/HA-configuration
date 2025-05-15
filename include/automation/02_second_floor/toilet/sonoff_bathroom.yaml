@@ -3,19 +3,18 @@ alias: "Actions with wall button Bathroom 2nd Floor"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Badkamer Zolder
+  - trigger: state
+    entity_id: event.sonoff_badkamer_zolder_sonoff_badkamer_zolder
+    not_from: unavailable
 action:
   - variables:
-      main: light.{{ trigger.event.data.device | slugify }}_template
+      main: light.badkamer_zolder_template
   - alias: "Click type?"
     choose:
       - conditions:
           - alias: "Short?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
         sequence:
           - alias: "Turn off main light"
             action: light.toggle
@@ -24,7 +23,7 @@ action:
       - conditions:
           - alias: "Double?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
         sequence:
           - alias: "Light to 100% brightness"
             action: light.turn_on
@@ -41,7 +40,7 @@ action:
       - conditions:
           - alias: "Long"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
         sequence:
           - alias: "Turn on light with low brightness"
             action: light.turn_on

@@ -2,23 +2,38 @@ id: 1021cdb8-6a53-4e31-bc04-5d776323e1c8
 alias: "Actions for stairs closet sonoff"
 mode: parallel
 max_exceeded: silent
-trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Trapkast
-      click_type: short
-condition:
+triggers:
+  - trigger: state
+    entity_id: event.sonoff_trapkast_sonoff_trapkast
+    not_from: unavailable
+conditions:
   - condition: state
     entity_id: select.sonoff_trapkast_button_type
     state: Detached
 action:
   - if: "{{ 'light.trapkast' | has_value }}"
     then:
-      - alias: "Toggle light"
-        action: light.toggle
-        target:
-          entity_id: light.trapkast_template
+      - choose:
+          - conditions:
+              - alias: "Short?"
+                condition: template
+                value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
+            sequence:
+              - alias: "Toggle light"
+                action: light.toggle
+                target:
+                  entity_id: light.trapkast_template
+          - conditions:
+              - alias: "Double?"
+                condition: template
+                value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
+            sequence:
+              - alias: "Toggle light to 100%"
+                action: light.toggle
+                target:
+                  entity_id: light.trapkast_template
+                data:
+                  brightness: 255
     else:
       - alias: "Toggle switch"
         action: switch.toggle

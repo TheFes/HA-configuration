@@ -3,10 +3,9 @@ alias: "Actions for dining table shelly"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Eettafel
+  - trigger: state
+    entity_id: event.shelly1_eettafel_shelly1_eettafel
+    not_from: unavailable
 action:
   - alias: "Shelly on or not?"
     choose:
@@ -26,7 +25,7 @@ action:
           - conditions:
               - alias: "Short?"
                 condition: template
-                value_template: "{{ trigger.event.data.click_type == 'short' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
             sequence:
               - alias: "Toggle light"
                 action: light.toggle
@@ -35,7 +34,7 @@ action:
           - conditions:
               - alias: "Double?"
                 condition: template
-                value_template: "{{ trigger.event.data.click_type == 'double' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
             sequence:
               - alias: "Light on 100%"
                 action: light.turn_on
@@ -46,7 +45,7 @@ action:
           - conditions:
               - alias: "Long?"
                 condition: template
-                value_template: "{{ trigger.event.data.click_type == 'long' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
             sequence:
               - alias: "Turn off lights downstairs"
                 action: light.turn_off

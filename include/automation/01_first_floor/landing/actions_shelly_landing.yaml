@@ -3,20 +3,16 @@ alias: "Actions with wall button Landing"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Overloop
+  - trigger: state
+    entity_id: event.dimmer_overloop_overloop
+    not_from: unavailable
 action:
-  - variables:
-      main: light.{{ trigger.event.data.device | lower }}_template
-      group: light.groep_{{ trigger.event.data.device | lower }}
   - alias: "Click type?"
     choose:
       - conditions:
           - alias: "Short?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
         sequence:
           - alias: Toggle Overloop
             action: light.toggle
@@ -25,7 +21,7 @@ action:
       - conditions:
           - alias: "Double?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
         sequence:
           - alias: Set overloop to 100%
             action: light.turn_on
@@ -35,7 +31,7 @@ action:
       - conditions:
           - alias: "Long"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
         sequence:
           - alias: Turn of all lights on 1st floor, 2nd floor and attic
             action: light.turn_off

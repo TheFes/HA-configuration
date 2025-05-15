@@ -3,26 +3,20 @@ alias: "Actions with wall buttons landing 2nd floor"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Zolder
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Wasmachinehoek
+  - trigger: state
+    entity_id: 
+      - event.dimmer_zolder_zolder
+      - event.sonoff_wasmachinehoek_sonoff_wasmachinehoek
+    not_from: unavailable
 condition:
-  - "{{ is_state('switch.zolder_control_light', 'off') if trigger.event.data.device == 'Zolder' else true }}"
+  - "{{ trigger.entity_id != 'event.dimmer_zolder_zolder' or is_state('switch.zolder_control_light', 'off') }}"
 action:
-  - variables:
-      main: light.{{ trigger.event.data.device | lower }}_template
-      group: light.groep_{{ trigger.event.data.device | lower }}
   - alias: "Click type?"
     choose:
       - conditions:
           - alias: "Short?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
         sequence:
           - alias: Toggle Overloop group
             action: light.toggle
@@ -31,7 +25,7 @@ action:
       - conditions:
           - alias: "Double?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
         sequence:
           - alias: Set overloop group to 100%
             action: light.turn_on
@@ -41,7 +35,7 @@ action:
       - conditions:
           - alias: "Long"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
         sequence:
           - alias: Turn of all lights on 2nd floor and attic
             action: light.turn_off

@@ -3,20 +3,19 @@ alias: "Actions with wall button Pepijn"
 mode: parallel
 max_exceeded: silent
 trigger:
-  - platform: event
-    event_type: esphome.button_pressed
-    event_data:
-      device: Pepijn
+  - trigger: state
+    entity_id: event.shelly1_pepijn_shelly1_pepijn
+    not_from: unavailable
 action:
   - variables:
-      main: light.{{ trigger.event.data.device | lower }}_template
-      group: light.groep_{{ trigger.event.data.device | lower }}
+      main: light.pepijn_template
+      group: light.groep_pepijn
   - alias: "Click type?"
     choose:
       - conditions:
           - alias: "Short?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'short' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
         sequence:
           - if: "{{ is_state(group, 'on') }}"
             then:
@@ -35,7 +34,7 @@ action:
       - conditions:
           - alias: "Double?"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
         sequence:
           - if: "{{ main in state_attr('group.transition_active', 'entity_id') or main | replace('_template', '') in state_attr('group.transition_active', 'entity_id') }}"
             then:
@@ -56,7 +55,7 @@ action:
       - conditions:
           - alias: "Long"
             condition: template
-            value_template: "{{ trigger.event.data.click_type == 'long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
         sequence:
           - alias: "Toggle Bed Group"
             action: light.toggle
@@ -67,7 +66,7 @@ action:
               brightness_pct: 20
           - delay: 0.5
           - if:
-              - alias: "Graafmachine on"
+              - alias: "Leeslamp on"
                 condition: state
                 entity_id: light.pepijn_leeslamp
                 state: "on"
