@@ -1,0 +1,23 @@
+id: 3147138e-30e5-47cb-888c-042b94f28d3e
+alias: "Doorbell reset with switch"
+trigger:
+  - platform: template
+    value_template: >
+      {{
+        not 'switch.doorbell_chime_active' | has_value 
+        and now() - states.switch.doorbell_chime_active.last_updated > timedelta(minutes=2)
+      }}
+    id: "off"
+  - platform: state
+    entity_id: switch.deurbel_reset
+    to: "off"
+    for:
+      seconds: 1
+    id: "on"
+  - platform: homeassistant
+    event: start
+    id: "on"
+action:
+  - action: switch.turn_{{ trigger.id }}
+    target:
+      entity_id: switch.deurbel_reset
