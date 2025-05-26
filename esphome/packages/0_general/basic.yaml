@@ -3,8 +3,6 @@ time:
   - platform: homeassistant
     id: time_homeassistant
     timezone: "Europe/Amsterdam"
-    on_time_sync:
-      - component.update: sensor_uptime_timestamp
 
 text_sensor:
   # IP Address & SSID
@@ -13,30 +11,6 @@ text_sensor:
       name: "IP Address"
       icon: mdi:wifi
       entity_category: diagnostic
-
-# Sensors with general information.
-sensor:
-  # Uptime sensor (internal only).
-  - platform: uptime
-    id: sensor_uptime
-  # Uptime timestamp
-  - platform: template
-    id: sensor_uptime_timestamp
-    name: "Uptime"
-    device_class: "timestamp"
-    accuracy_decimals: 0
-    update_interval: never
-    lambda: |-
-      static float timestamp = (
-        id(time_homeassistant).utcnow().timestamp - id(sensor_uptime).state
-      );
-      return timestamp;
-    entity_category: diagnostic
-  # WiFi Signal sensor.
-  - platform: wifi_signal
-    name: WiFi Signal
-    icon: mdi:wifi-strength-2
-    update_interval: 60s
 
 button:
   # restart button
