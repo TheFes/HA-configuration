@@ -579,27 +579,27 @@ template:
       # template binary sensors to revert active icon color for covers
       - unique_id: 21bc3453-4f48-479a-a216-f50fdc23b79b
         name: Cover Floris Dashboard Helper
-        state: "{{ state_attr('cover.floris', 'current_position') < 100 }}"
+        state: "{{ state_attr('cover.floris', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.floris' | has_value }}"
       - unique_id: fca7cce8-d0e7-434f-9b7e-f5a2ea24e7e8
         name: Cover Overloop Zolder Dashboard Helper
-        state: "{{ state_attr('cover.overloop_zolder_template', 'current_position') < 100 }}"
+        state: "{{ state_attr('cover.overloop_zolder_template', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.overloop_zolder' | has_value }}"
       - unique_id: c59709fc-ab8b-495c-830f-337e87696108
         name: Cover Pepijn Dashboard Helper
-        state: "{{ state_attr('cover.pepijn_template', 'current_position') < 100 }}"
+        state: "{{ state_attr('cover.pepijn_template', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.pepijn' | has_value }}"
       - unique_id: 89c3ae41-1ba5-483f-8108-d7e6d04af2de
         name: Cover Werkkamer Marleen Helper
-        state: "{{ state_attr('cover.werkkamer_marleen', 'current_position') < 100 }}"
+        state: "{{ state_attr('cover.werkkamer_marleen', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.werkkamer_marleen' | has_value }}"
       - unique_id: 8c9fbbee-8914-41b8-9310-3a1151c9ec22
         name: Cover Slaapkamer Zolder
-        state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') < 100 }}"
+        state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.slaapkamer_zolder_template' | has_value }}"
       # other binary sensors for dashboard

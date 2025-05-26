@@ -300,7 +300,7 @@ automation:
                 target:
                   entity_id: >
                     {{
-                      long_press_off
+                      long_press_entities
                         | map('device_id')
                         | map('device_entities')
                         | flatten
@@ -361,7 +361,7 @@ automation:
               - alias: Set all number entities to 100
                 action: number.set_value
                 target:
-                  entity_id: "{{ settings | map(attribute='entity_id') | list }}"
+                  entity_id: "{{ settings | map(attribute='entity') | list }}"
                 data:
                   value: 100
           - alias: Actions when house mode changes to Tandenpoetsen
