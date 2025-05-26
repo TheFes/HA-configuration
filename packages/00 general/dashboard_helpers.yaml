@@ -684,8 +684,7 @@ template:
           {{ is_state('sensor.wasmachine', 'on') }}
 
       - unique_id: sensor_anniversary_martijn
-        name: >
-          {{ "Dashboard Anniversary Martijn" if this.state == "unknown" else "Martijn" }}
+        name: Martijn
         attributes:
           source: sensor.anniversary_martijn
           text: &anniversary_text >
@@ -707,49 +706,43 @@ template:
             {%- set source = this.attributes.get('source', 'not ready') %}
             {{ states(source) | int(15) <= 14 }}
           icon: >
-            {%- set name = this.name -%}
             {%- set fixed_icons = {
                                     'Eerste date': 'mdi:heart-multiple',
                                     'Sinterklaas': 'mdi:gift-open'
                                   } %}
             {%- set random_icon = ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] | random %}
-            {{ fixed_icons[name] if name in fixed_icons else random_icon }}
+            {{ fixed_icons[this.name] | default(random_icon) }}
 
       - unique_id: sensor_anniversary_marleen
-        name: >
-          {{ "Dashboard Anniversary Marleen" if this.state == "unknown" else "Marleen" }}
+        name: Marleen
         attributes:
           source: sensor.anniversary_marleen
           text: *anniversary_text
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_pepijn
-        name: >
-          {{ "Dashboard Anniversary Pepijn" if this.state == "unknown" else "Pepijn" }}
+        name: Pepijn
         attributes:
           source: sensor.anniversary_pepijn
           text: *anniversary_text
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_floris
-        name: >
-          {{ "Dashboard Anniversary Floris" if this.state == "unknown" else "Floris" }}
+        name: Floris
         attributes:
           source: sensor.anniversary_floris
           text: *anniversary_text
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_eerste_date
-        name: >
-          {{ "Dashboard Anniversary Eerste date" if this.state == "unknown" else "Eerste date" }}
+        name: Eerste Date
         attributes:
           source: sensor.anniversary_eerste_date
           text: *anniversary_text
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_sinterklaas
-        name: >
-          {{ "Dashboard Anniversary Sinterklaas" if this.state == "unknown" else "Sinterklaas" }}
+        name: Sinterklaas
         attributes:
           source: sensor.anniversary_sinterklaas
           text: *anniversary_text
