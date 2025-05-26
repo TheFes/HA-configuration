@@ -3,23 +3,31 @@ substitutions:
   name: "Shelly Dimmer 2"
   lower_name: shelly-dimmer-2
   max_temp: "70" # °C
-  dim_lenght: "20s"
+  dim_lenght: "10s"
   restore_mode_light: "restore_default_off"
-  restore_mode_switch: "restore_default_on"
   min_brightness: "470"
   max_brightness: "1000"
   leading_edge: "false"
   gamma_correct: "0"
   light_icon: mdi:lightbulb
-  control_light_default: "true"
+  model: thefes.shelly-dimmer-2
 
 # ESPhome generic config
 esphome:
   name: ${lower_name}
   friendly_name: ${name}
   project:
-    name: thefes.shelly-dimmer-2
-    version: "1.1"
+    name: ${model}
+    version: "2.0"
+  on_boot:
+    - priority: -100
+      then:
+        - select.set:
+            id: light_type_select
+            option: ${connected_light_type}
+        - select.set:
+            id: long_press_scope_select
+            option: ${default_long_press_scope}
 
 esp8266:
   board: esp01_1m
@@ -29,12 +37,16 @@ esp8266:
 packages:
   minimal: !include ../0_general/minimal.yaml
   basic: !include ../0_general/basic.yaml
+  button_press_defaults: !include ../0_general/button_press_defaults.yaml
 
 # based on the config of pimw from community post https://community.home-assistant.io/t/shelly-2-dimmer/232324/18
 uart:
   tx_pin: 1
   rx_pin: 3
   baud_rate: 115200
+
+logger:
+  baud_rate: 0
 
 event:
   - platform: template
@@ -46,6 +58,7 @@ event:
       - "tripple_press"
       - "quintuple_press"
       - "long_press"
+      - "single_long_press"
       - "release"
 
 number:
@@ -166,10 +179,6 @@ globals:
     type: bool
     restore_value: true
     initial_value: "true"
-  - id: control_light
-    type: bool
-    restore_value: true
-    initial_value: ${control_light_default}
 
 # switches to determine light control and dim action
 switch:
@@ -186,21 +195,6 @@ switch:
           value: "false"
     lambda: |-
       return id(dim_down_bool);
-    entity_category: config
-  - platform: template
-    name: Control Light
-    id: control_light_active
-    restore_mode: ${restore_mode_switch}
-    turn_on_action:
-      - globals.set:
-          id: control_light
-          value: "true"
-    turn_off_action:
-      - globals.set:
-          id: control_light
-          value: "false"
-    lambda: |-
-      return id(control_light);
     entity_category: config
 
 script:
@@ -230,8 +224,8 @@ script:
             - light.dim_relative:
                 id: dimmer
                 relative_brightness: -0.5%
-                transition_length: 0.01s
-            - delay: 0.01s
+                transition_length: 0.05s
+            - delay: 0.05s
       - logger.log: "Dimming down stopped"
       - globals.set:
           id: dim_down_bool
@@ -250,8 +244,8 @@ script:
             - light.dim_relative:
                 id: dimmer
                 relative_brightness: 0.5%
-                transition_length: 0.01s
-            - delay: 0.01s
+                transition_length: 0.05s
+            - delay: 0.05s
       - logger.log: "Dimming up stopped"
       - globals.set:
           id: dim_down_bool
@@ -285,16 +279,35 @@ binary_sensor:
     internal: false
     on_multi_click:
       - timing:
-          - ON for at most 300ms
-          - OFF for at most 300ms
-          - ON for at most 300ms
-          - OFF for at least 300ms
-          - ON for at most 300ms
-          - OFF for at most 300ms
-          - ON for at most 300ms
-          - OFF for at least 300ms
-          - ON for at most 300ms
-          - OFF for at least 0.2s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
           - if:
               condition:
@@ -303,90 +316,70 @@ binary_sensor:
                 - event.trigger:
                     id: event_entity
                     event_type: "quintuple_press"
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: restart
-                      button: "1"
           - button.press: restart_button
       - timing:
-          - ON for at most 300ms
-          - OFF for at most 300ms
-          - ON for at most 300ms
-          - OFF for at most 300ms
-          - ON for at most 300ms
-          - OFF for at least 200ms
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: triple
           - event.trigger:
               id: event_entity
               event_type: "tripple_press"
-          - switch.toggle: control_light_active
       - timing:
-          - ON for at most 300ms
-          - OFF for at most 300ms
-          - ON for at most 300ms
-          - OFF for at least 200ms
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: double
           - event.trigger:
               id: event_entity
               event_type: "double_press"
           - if:
               condition:
-                or:
-                  - switch.is_on: control_light_active
-                  - not:
-                      - api.connected:
+                not:
+                  - api.connected:
               then:
                 - light.turn_on:
                     id: dimmer
                     brightness: 100%
       - timing:
-          - ON for at most 300ms
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: ${long_press}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: short
           - event.trigger:
               id: event_entity
-              event_type: "single_press"
+              event_type: "single_long_press"
           - if:
               condition:
-                or:
-                  - switch.is_on: control_light_active
-                  - not:
-                      - api.connected:
-              then:
-                - script.execute: script_turn_on_off
-      - timing:
-          - ON for at least 300ms
-        then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: long
-          - event.trigger:
-              id: event_entity
-              event_type: "long_press"
-          - if:
-              condition:
-                or:
-                  - switch.is_on: control_light_active
-                  - not:
-                      - api.connected:
+                not:
+                  - api.connected:
               then:
                 - if:
                     condition:
@@ -398,22 +391,42 @@ binary_sensor:
                     else:
                       - script.execute: script_dim_up_timer
                       - script.execute: script_dim_up
+      - timing:
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: ${press_wait}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "single_press"
+          - if:
+              condition:
+                not:
+                  - api.connected:
+              then:
+                - script.execute: script_turn_on_off
+      - timing:
+          - state: true
+            min_length: ${long_press}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "long_press"
+          - if:
+              condition:
+                not:
+                  - api.connected:
+              then:
+                - script.execute: script_turn_on_off
     on_release:
       then:
-        - homeassistant.event:
-            event: esphome.button_pressed
-            data:
-              device: ${name}
-              click_type: release
         - event.trigger:
             id: event_entity
             event_type: "release"
         - if:
             condition:
-              - or:
-                  - switch.is_on: control_light_active
-                  - not:
-                      - api.connected:
               - or:
                   - script.is_running: script_dim_up_timer
                   - script.is_running: script_dim_down_timer
@@ -442,3 +455,25 @@ button:
         - logger.log: "Stopping timer script"
         - script.stop: script_dim_down_timer
         - script.stop: script_dim_up_timer
+
+select:
+  - platform: template
+    name: Connected Light Type
+    id: light_type_select
+    entity_category: config
+    options:
+      - Main
+      - Support
+    optimistic: true
+    restore_value: true
+  - platform: template
+    name: Long Press Scope
+    id: long_press_scope_select
+    entity_category: config
+    options:
+      - Area
+      - Floor
+      - House
+      - Custom
+    optimistic: true
+    restore_value: true

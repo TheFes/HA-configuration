@@ -9,6 +9,12 @@ template:
           {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
+    action:
+      - action: number.set_value
+        target:
+          entity_id: number.shelly1_pepijn_start_brightness
+        data:
+          value: "{{ 30 if trigger.id == 'on' else 100 }}"
     binary_sensor:
       - unique_id: 2d748636-6ecd-4941-aef7-797d7cde1d5a
         name: Pepijn Sleeping
@@ -24,6 +30,12 @@ template:
           {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
+    action:
+      - action: number.set_value
+        target:
+          entity_id: number.sonoff_floris_start_brightness
+        data:
+          value: "{{ 30 if trigger.id == 'on' else 100 }}"
     binary_sensor:
       - unique_id: 7cbf7bc9-03cc-4a32-a56a-e0cfeda6828e
         name: Floris Sleeping
@@ -36,13 +48,23 @@ script:
     mode: restart
     alias: "Floris is going to sleep (Voice)"
     sequence:
-      - event: floris_sleeping
+      - if:
+          - condition: time
+            after: "18:00"
+        then:
+          - event: floris_sleeping
+          - action: number.set_value
+            target:
+              entity_id: number.sonoff_floris_start_brightness
+            data:
+              value: 30
       - alias: "Light on"
         action: light.turn_on
         target:
           entity_id:
             - light.floris_template
-            - light.floris_leeslamp
+            - light.bedlamp_floris
+            - light.planeet
       - action: light.turn_on
         target:
           entity_id: light.floris_leeslamp
@@ -64,7 +86,11 @@ script:
     alias: "Pepijn is going to sleep (Voice)"
     icon: mdi:bed
     sequence:
-      - event: pepijn_sleeping
+      - if:
+          - condition: time
+            after: "18:00"
+        then:
+          - event: pepijn_sleeping
       - alias: "Dim ceiling light"
         action: light.turn_on
         target:

@@ -2,7 +2,20 @@ substitutions:
   connected_light: light.some_light
   default_button_type: Detached
   restore_mode: restore_default_off
-  long_press: 2s
+
+packages:
+  button_press_defaults: !include ../0_general/button_press_defaults.yaml
+
+esphome:
+  on_boot:
+    - priority: -100
+      then:
+        - select.set:
+            id: light_type_select
+            option: ${connected_light_type}
+        - select.set:
+            id: long_press_scope_select
+            option: ${default_long_press_scope}
 
 event:
   - platform: template
@@ -14,6 +27,7 @@ event:
       - "triple_press"
       - "quintuple_press"
       - "long_press"
+      - "single_long_press"
       - "release"
 
 select:
@@ -33,20 +47,26 @@ select:
         - text_sensor.template.publish:
             id: button_type_state
             state: !lambda "return id(button_type_select).state;"
-
-number:
   - platform: template
-    name: "Start Brightness"
-    id: start_brightness
-    optimistic: true
-    min_value: 1
-    max_value: 100
-    step: 1
-    restore_value: true
-    initial_value: 100
+    name: Connected Light Type
+    id: light_type_select
     entity_category: config
-    icon: mdi:brightness-percent
-    unit_of_measurement: "%"
+    options:
+      - Main
+      - Support
+    optimistic: true
+    restore_value: true
+  - platform: template
+    name: Long Press Scope
+    id: long_press_scope_select
+    entity_category: config
+    options:
+      - Area
+      - Floor
+      - House
+      - Custom
+    optimistic: true
+    restore_value: true
 
 binary_sensor:
   - platform: gpio
@@ -64,37 +84,62 @@ binary_sensor:
             - switch.toggle: relay
     on_multi_click:
       - timing:
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at least 0.2s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
           - if:
               condition:
                 - api.connected:
               then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: restart
                 - event.trigger:
                     id: event_entity
                     event_type: "quintuple_press"
           - button.press: restart_button
       - timing:
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at least 0.2s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
           - if:
               condition:
@@ -103,26 +148,23 @@ binary_sensor:
                         id: button_type_state
                         state: "Toggle"
               then:
-                - homeassistant.event:
-                    event: esphome.button_pressed
-                    data:
-                      device: ${name}
-                      click_type: triple
                 - event.trigger:
                     id: event_entity
                     event_type: "triple_press"
                 - switch.toggle: relay
       - timing:
-          - ON for at most 1s
-          - OFF for at most 1s
-          - ON for at most 1s
-          - OFF for at least 0.2s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: double
           - event.trigger:
               id: event_entity
               event_type: "double_press"
@@ -151,37 +193,38 @@ binary_sensor:
                 - switch.toggle: relay
       - timing:
           - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
             min_length: ${long_press}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: long
           - event.trigger:
               id: event_entity
-              event_type: "long_press"
-          - if: *toggle_relay
+              event_type: "single_long_press"
       - timing:
-          - ON for at most 1s
-          - OFF for at least 0.25s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: ${press_wait}
         then:
-          - homeassistant.event:
-              event: esphome.button_pressed
-              data:
-                device: ${name}
-                click_type: short
           - event.trigger:
               id: event_entity
               event_type: "single_press"
           - if: *toggle_relay
+      - timing:
+          - state: true
+            min_length: ${long_press}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "long_press"
+          - if: *toggle_relay
     on_release:
       then:
-        - homeassistant.event:
-            event: esphome.button_pressed
-            data:
-              device: ${name}
-              click_type: release
         - event.trigger:
             id: event_entity
             event_type: "release"
@@ -196,3 +239,40 @@ text_sensor:
     id: button_type_state
     lambda: |-
       return id(button_type_select).state;
+
+# globals for dim action
+globals:
+  - id: dim_down_bool
+    type: bool
+    restore_value: true
+    initial_value: "true"
+
+switch:
+  - platform: template
+    name: Dim Down
+    id: dim_down_active
+    turn_on_action:
+      - globals.set:
+          id: dim_down_bool
+          value: "true"
+    turn_off_action:
+      - globals.set:
+          id: dim_down_bool
+          value: "false"
+    lambda: |-
+      return id(dim_down_bool);
+    entity_category: config
+
+number:
+  - platform: template
+    name: "Start Brightness"
+    id: start_brightness
+    optimistic: true
+    min_value: 1
+    max_value: 100
+    step: 1
+    restore_value: true
+    initial_value: 100
+    entity_category: config
+    icon: mdi:brightness-percent
+    unit_of_measurement: "%"

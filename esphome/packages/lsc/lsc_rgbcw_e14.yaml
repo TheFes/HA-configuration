@@ -1,3 +1,6 @@
+substitutions:
+  dim_lenght: "20s"
+
 esphome:
   friendly_name: ${name}
   name: ${lower_name}
@@ -40,6 +43,7 @@ output:
 
 light:
   - platform: rgbww
+    id: light_bulb
     name: ""
     cold_white: output_white
     warm_white: output_warmwhite
@@ -64,3 +68,72 @@ light:
       - random:
           transition_length: 100ms
           update_interval: 150ms
+
+# globals for dim action
+script:
+  - id: script_dim_down_timer
+    mode: restart
+    then:
+      - logger.log: "Dim-down timer script started"
+      - delay: ${dim_lenght}
+      - logger.log: "Dim-down timer script finished"
+  - id: script_dim_up_timer
+    mode: restart
+    then:
+      - logger.log: "Dim-up timer script started"
+      - delay: ${dim_lenght}
+      - logger.log: "Dim-up timer script finished"
+  - id: script_dim_down
+    mode: single
+    then:
+      - logger.log: "Start dimming down"
+      - while:
+          condition:
+            and:
+              - script.is_running: script_dim_down_timer
+              - light.is_on: light_bulb
+              - lambda: "return(id(light_bulb).remote_values.get_brightness() >= 0.01);"
+          then:
+            - light.dim_relative:
+                id: light_bulb
+                relative_brightness: -0.5%
+                transition_length: 0.05s
+            - delay: 0.05s
+      - logger.log: "Dimming down stopped"
+  - id: script_dim_up
+    mode: single
+    then:
+      - while:
+          condition:
+            and:
+              - script.is_running: script_dim_up_timer
+              - light.is_on: light_bulb
+              - lambda: "return(id(light_bulb).remote_values.get_brightness() <= 0.999);"
+          then:
+            - light.dim_relative:
+                id: light_bulb
+                relative_brightness: 0.5%
+                transition_length: 0.05s
+            - delay: 0.05s
+      - logger.log: "Dimming up stopped"
+
+button:
+  - platform: template
+    name: Dim Down
+    on_press:
+      then:
+        - script.execute: script_dim_down_timer
+        - script.execute: script_dim_down
+  - platform: template
+    name: Dim Up
+    on_press:
+      then:
+        - script.execute: script_dim_up_timer
+        - script.execute: script_dim_up
+  - platform: template
+    name: Dim Stop
+    on_press:
+      then:
+        - logger.log: "Stopping timer script"
+        - script.stop: script_dim_down_timer
+        - script.stop: script_dim_up_timer
