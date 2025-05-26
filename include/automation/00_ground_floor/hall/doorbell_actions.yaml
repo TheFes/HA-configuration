@@ -2,7 +2,7 @@ id: afcf34ca-7a3e-4f49-a332-9313d2a2eca5
 alias: "Actions based on doorbell"
 trigger:
   - platform: state
-    entity_id: binary_sensor.doorbell_button
+    entity_id: binary_sensor.smart_doorbell_button
     to: "on"
 mode: single
 max_exceeded: silent
@@ -58,7 +58,7 @@ action:
       - conditions:
           - alias: "Chime off?"
             condition: state
-            entity_id: switch.doorbell_chime_active
+            entity_id: switch.smart_doorbell_chime_active
             state: "off"
           - alias: "Someone home?"
             condition: state
@@ -89,7 +89,7 @@ action:
       - conditions:
           - alias: "Chime not active"
             condition: state
-            entity_id: switch.doorbell_chime_active
+            entity_id: switch.smart_doorbell_chime_active
             state: "off"
           - alias: "Nobobdy home?"
             condition: state
@@ -105,7 +105,7 @@ action:
       - conditions:
           - alias: "Chime active"
             condition: state
-            entity_id: switch.doorbell_chime_active
+            entity_id: switch.smart_doorbell_chime_active
             state: "on"
           - alias: "Someone home"
             condition: numeric_state

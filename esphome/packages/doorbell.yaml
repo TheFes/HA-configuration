@@ -1,69 +1,58 @@
 # ESPHome settings
 esphome:
-  friendly_name: ${name}
-  name: ${lower_name}
+  name: smart-doorbell
   project:
-    name: frenck.doorbell
+    name: zuidwijk.smart-doorbell
     version: "1.0"
 
-esp8266:
-  board: esp01_1m
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
 
 packages:
   minimal: !include 0_general/minimal.yaml
   basic: !include 0_general/basic.yaml
-  arduino: !include 0_general/arduino.yaml
+  btproxy: !include 0_general/bt_proxy.yaml
 
 # Global to store the on/off state of the chime
 globals:
   - id: chime
     type: bool
     restore_value: true
-    initial_value: "true"
+    initial_value: 'true'
 
-# expose switches
 switch:
-  # Switch to turn on/off the chime.
   - platform: gpio
-    id: relay
-    name: Chime
     pin:
-      inverted: true
-      number: GPIO0
-      mode:
-        output: true
-        open_drain: true
-
-  # Switch to turn on/off chime when
-  # doorbell button is pushed.
-  #
-  # It creates a "virtual" switch based
-  # on a global variable.
+      number: GPIO5
+      inverted: false
+    name: "Doorbell Relay"
+    id: relay
+    internal: true
+    icon: mdi:alarm-bell
   - platform: template
     name: Chime Active
     id: chime_active
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: disabled
     turn_on_action:
       - globals.set:
           id: chime
-          value: "true"
+          value: 'true'
     turn_off_action:
       - globals.set:
           id: chime
-          value: "false"
+          value: 'false'
     lambda: |-
       return id(chime);
-# Binary sensor representing the
-# Doorbell button push.
+
 binary_sensor:
   - platform: gpio
-    id: doorbell_press
-    name: Button
     pin:
-      # Connected to GPIO on the ESP-01S.
-      number: GPIO2
+      number: GPIO4
       mode: INPUT_PULLUP
       inverted: true
+    name: "Doorbell"
     filters:
       # Small filter, to debounce the button press.
       - delayed_on: 25ms
@@ -79,3 +68,4 @@ binary_sensor:
     on_release:
       # On release, turn of the chime.
       - switch.turn_off: relay
+
