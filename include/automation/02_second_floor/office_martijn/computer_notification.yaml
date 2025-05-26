@@ -2,21 +2,21 @@ id: 3d938c95-1b47-4ee3-93ca-56753feb6e94
 alias: "Computer Martijn notification actions"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: event
+triggers:
+  - trigger: event
     id: "computer_off"
     event_type: mobile_app_notification_action
     event_data:
       action: "computer_martijn_off"
-  - platform: event
+  - trigger: event
     id: "computer_on"
     event_type: mobile_app_notification_action
     event_data:
       action: "computer_martijn_on"
-  - platform: time
+  - trigger: time
     id: "alert_on"
     at: "08:00:00"
-action:
+actions:
   - alias: "Actions computer Martijn alert"
     choose:
       - conditions:

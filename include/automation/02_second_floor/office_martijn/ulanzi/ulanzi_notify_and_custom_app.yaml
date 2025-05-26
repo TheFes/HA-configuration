@@ -1,9 +1,9 @@
 id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
 alias: "Ulanzi notificatons and custom apps"
 mode: queued
-trigger:
+triggers:
   # apps - text
-  - platform: state
+  - trigger: state
     entity_id: weather.combined
     to: ~
     variables: &weather
@@ -11,12 +11,12 @@ trigger:
       text: "{{ state_attr('weather.combined', 'temperature') }} °C"
       icon: "{{ states('weather.combined') }}"
       update: "{{ state_attr('weather.combined', 'temperature') is not none }}"
-  - platform: state
+  - trigger: state
     entity_id: weather.combined
     attribute: temperature
     variables: *weather
 
-  - platform: state
+  - trigger: state
     entity_id:
       - sensor.werkkamer_martijn_temp
       - sensor.werkkamer_martijn_vocht
@@ -36,7 +36,7 @@ trigger:
         {% endif %}
 
   # notifications - text
-  - platform: state
+  - trigger: state
     entity_id: sensor.pixel_7_pro_last_notification
     to: ~
     variables:
@@ -58,7 +58,7 @@ trigger:
       repeat: 2
       textCase: 2
       pushIcon: 2
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.smart_doorbell_button
     to: "on"
     variables:
@@ -67,7 +67,7 @@ trigger:
       background: 4CBEFC
 
   # app - graph
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.raindata
     variables:
       update: "{{ trigger.to_state.state in ['on', 'off'] }}"
@@ -81,10 +81,10 @@ trigger:
       deactivate: "{{ trigger.to_state.state != 'on' }}"
 variables:
   plot_graph: "{{ graph_data is defined and graph_data is not string and graph_data is iterable }}"
-condition:
+conditions:
   - "{{ update | default(true) | bool(true) }}"
   - "{{ deactivate is defined or plot_graph is defined or text is defined }}"
-action:
+actions:
   - if: "{{ deactivate | default(false) }}"
     then:
       - alias: "Deactivate app"

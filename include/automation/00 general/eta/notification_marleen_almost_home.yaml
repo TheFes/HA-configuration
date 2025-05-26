@@ -2,11 +2,11 @@ id: 2068227c-13b2-4bc3-bc1b-50afe8da2deb
 alias: "Marleen is almost home"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: numeric_state
+triggers:
+  - trigger: numeric_state
     entity_id: sensor.thuis_marleen_distance
     below: 4000
-condition:
+conditions:
   - alias: "Richting huis?"
     condition: state
     entity_id: sensor.thuis_marleen_direction_of_travel
@@ -19,7 +19,7 @@ condition:
     condition: state
     entity_id: person.martijn
     state: "home"
-action:
+actions:
   - alias: "Message to phone Martijn"
     action: notify.mobile_app_pixel_7_pro
     data:

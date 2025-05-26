@@ -1,10 +1,10 @@
 id: 0b959006-4674-4343-b316-ebf1e124f826
 alias: "Update ulanzi Floris"
 mode: parallel
-trigger:
-  - platform: time_pattern
+triggers:
+  - trigger: time_pattern
     seconds: "0"
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.floris_sleeping
     from:
       - "on"
@@ -12,18 +12,18 @@ trigger:
     to:
       - "on"
       - "off"
-  - platform: state
+  - trigger: state
     entity_id: light.awtrix_floris_matrix
     from:
       - "unavailable"
-  - platform: state
+  - trigger: state
     entity_id:
       - weather.combined
       - input_number.correction_clock_floris
     to: ~
 variables:
   correction: "{{ states('input_number.correction_clock_floris') | float(0) }}"
-action:
+actions:
   - if: "{{ is_state('binary_sensor.floris_sleeping', 'on') }}"
     then:
       - if: "{{ not is_state('select.awtrix_floris_brightness_mode', 'Manual') }}"

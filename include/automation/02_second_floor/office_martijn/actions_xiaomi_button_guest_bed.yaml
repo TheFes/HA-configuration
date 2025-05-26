@@ -1,12 +1,12 @@
 id: b54906bf-51b0-4e0f-919a-ced9436588d6
 alias: "Xiaomi button Guest Bed"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: event.knop_logeerbed_action
     not_from: unavailable
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
-action:
+actions:
   - alias: "Which click type"
     choose:
       - conditions: "{{ event == 'single' }}"

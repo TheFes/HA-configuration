@@ -2,31 +2,31 @@ id: 6cdd3311-fb90-47ea-a796-f679091021f2
 alias: "Turn on holiday mode and send notification"
 mode: queued
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: zone.home
     to: "0"
     for: "12:00:00"
     id: boolean_on
-  - platform: event
+  - trigger: event
     id: holiday_on
     event_type: mobile_app_notification_action
     event_data:
       action: "vakantie"
-  - platform: state
+  - trigger: state
     id: holiday_house
     entity_id: sensor.house_mode
     to: "Vakantie"
-  - platform: event
+  - trigger: event
     id: no_holiday
     event_type: mobile_app_notification_action
     event_data:
       action: "no_holiday"
-  - platform: numeric_state
+  - trigger: numeric_state
     id: holiday_over
     entity_id: sensor.thuis_martijn_distance
     below: 10000
-action:
+actions:
   - alias: "Actions holiday mode"
     choose:
       - conditions:

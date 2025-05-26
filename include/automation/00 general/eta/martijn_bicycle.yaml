@@ -2,16 +2,16 @@ id: 6757b053-0f63-4c30-98bd-1038ab57700e
 alias: "Check if Martijn is on his bicycle for ETA calculation"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     id: "on_bike"
     entity_id: sensor.pixel_7_pro_detected_activity
     to: "on_bicycle"
-  - platform: state
+  - trigger: state
     id: "back_home"
     entity_id: person.martijn
     to: "home"
-action:
+actions:
   - alias: "🚲 of 🏡"
     choose:
       - conditions:

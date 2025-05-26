@@ -1,31 +1,31 @@
 id: 36123179-ef70-4a84-be1a-ea1eb11cfc97
 alias: "Open sunshade when needed"
 mode: restart
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.trend_woonkamer_temp
     to: "on"
-  - platform: state
+  - trigger: state
     entity_id: sun.sun
     to: above_horizon
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.weather_combined_max_temp_today
     above: 18
-  - platform: state
+  - trigger: state
     entity_id: weather.combined
     to:
       - sunny
       - partycloudy
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.rain
     to: "off"
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.woonkamer_multi_temperature
     above: 20
-  - platform: time
+  - trigger: time
     at: "16:00:00"
     id: "close"
-action:
+actions:
   - if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
     then:
       - alias: "No rain"

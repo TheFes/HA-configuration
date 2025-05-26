@@ -1,20 +1,20 @@
 id: 55509fd0-bdce-4cd2-86dc-2a8bee22b1b0
 alias: "Turn reading light orange or green just before wake time"
 mode: queued
-trigger:
-  - platform: template
+triggers:
+  - trigger: template
     value_template: >
       {% set end = today_at(states('input_datetime.pepijn_time_awake')) %}
       {% set start = end - timedelta(minutes=states('input_number.leestijd_pepijn')|int) %}
       {{ start < now() < end }}
     id: orange
-  - platform: time
+  - trigger: time
     at: input_datetime.pepijn_time_awake
     id: green
-  - platform: time
+  - trigger: time
     at: "21:00:00"
     id: time_check
-condition:
+conditions:
   - not:
       - alias: "Not on holiday"
         condition: state
@@ -28,7 +28,7 @@ condition:
     condition: state
     entity_id: input_boolean.pepijn_graafmachine
     state: "on"
-action:
+actions:
   - choose:
       - conditions: "{{ trigger is defined and trigger.get('id') == 'orange' }}"
         sequence:

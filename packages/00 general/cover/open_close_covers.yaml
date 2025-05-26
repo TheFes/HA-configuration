@@ -23,7 +23,7 @@ automation:
                   or as_local(as_datetime(states('sensor.sun_next_rising'))).time() > today_at('07:00').time()
                 )
           }}
-      trigger:
+      triggers:
         - alias: "closing time"
           platform: template
           value_template: >
@@ -66,7 +66,7 @@ automation:
           platform: template
           value_template: "{{ now() > today_at(open_time) }}"
           id: open
-      condition:
+      conditions:
         - condition: template
           value_template: "{{ 3 <= now().month <= 9 }}"
         - condition: or
@@ -125,7 +125,7 @@ automation:
                         manual is undefined
                         or not is_state(manual, 'on')
                     }}
-      action:
+      actions:
         - choose:
             - conditions:
                 - alias: "close trigger"
@@ -219,7 +219,7 @@ automation:
   - id: fa2ca8c5-675c-4d6a-928b-4e0477cfed3
     alias: Make sure cover is open for cleaning
     mode: restart
-    trigger:
+    triggers:
       - platform: state
         entity_id: cover.floris_links
         attribute: current_position
@@ -228,7 +228,7 @@ automation:
           minutes: 2
       - platform: time
         at: "08:30"
-    condition:
+    conditions:
       - alias: "Cleaning time"
         condition: time
         after: "08:30:00"
@@ -240,7 +240,7 @@ automation:
         entity_id: cover.floris_links
         attribute: current_position
         state: 0
-    action:
+    actions:
       - alias: "Set middle cover to 50%"
         action: cover.set_cover_position
         target:
@@ -251,7 +251,7 @@ automation:
   # Open all screens when it starts raining
   - id: 48718b8b-2768-4e79-9ac6-fa4f3a10cabe
     alias: "Screens up with upcoming rain"
-    trigger:
+    triggers:
       - platform: state
         entity_id: binary_sensor.rain
         to: "on"
@@ -281,7 +281,7 @@ automation:
             | map('state_attr', 'friendly_name')
             | list
         }}
-    condition:
+    conditions:
       - or:
           - alias: "Screens open?"
             condition: template
@@ -295,7 +295,7 @@ automation:
         state: "on"
         for:
           seconds: "{{ 0 if trigger.id == 'start' else 10 }}"
-    action:
+    actions:
       - alias: "Open screens"
         choose:
           - conditions: "{{ screens_down | count > 0 }}"

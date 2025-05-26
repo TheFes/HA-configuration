@@ -2,10 +2,10 @@ id: 2a73c7ac-123a-4d5b-99dd-9a0bec93e125
 alias: "Turn lights on/off when it is time to go to bed during holidays"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: time
+triggers:
+  - trigger: time
     at: "22:00"
-condition:
+conditions:
   - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.house_mode
@@ -14,7 +14,7 @@ condition:
     condition: state
     entity_id: input_boolean.gast
     state: "off"
-action:
+actions:
   - alias: "Random delay to turn light on"
     delay:
       minutes: "{{ range(0,30) | random }}"

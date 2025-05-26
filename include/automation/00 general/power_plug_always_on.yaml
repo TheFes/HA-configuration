@@ -1,9 +1,9 @@
 id: 1dc827cc-4287-48b1-8894-ad2e0202dd94
 alias: "Make sure entities which should not be turned off are always on"
-trigger:
-  - platform: template
+triggers:
+  - trigger: template
     value_template: "{{ label_entities('always_on') | select('is_state', 'off') | list | count > 0 }}"
-action:
+actions:
   - alias: "Turn entity on"
     action: homeassistant.turn_on
     target:

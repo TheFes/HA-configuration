@@ -1,6 +1,6 @@
 id: 012addf5-428e-45f9-9934-5cec9bc47f23
 alias: "Xiaomi button Graafmachine light Pepijn"
-trigger:
+triggers:
   - trigger: state
     entity_id: event.knop_pepijn_leeslamp_action
     not_from:
@@ -8,7 +8,7 @@ trigger:
       - unknown
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
-action:
+actions:
   - alias: "Which click type"
     choose:
       - alias: "Actions on short press"

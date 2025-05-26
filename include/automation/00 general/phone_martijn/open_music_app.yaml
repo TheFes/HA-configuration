@@ -1,8 +1,8 @@
 id: 35106a4b-1055-44db-958c-99b9d9cf721b
 alias: "Open music app on phone Martijn on BT connection"
 mode: restart
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: sensor.pixel_7_pro_bluetooth_connection
     attribute: connected_paired_devices
 variables:
@@ -18,7 +18,7 @@ variables:
     - 60:AB:D2:3C:85:66 (LE-Big Ears)
     - E0:67:81:01:F7:D3 (Haylou GT3)
     - E8:07:BF:13:99:AB (Soundcore Spirit X)
-action:
+actions:
   - if: "{{ bt_added in headphones }}"
     then:
       - alias: "Send notification to select right app"

@@ -1,7 +1,7 @@
 id: 06666ef4-abec-4f74-8282-1cf575c64c8f
 alias: Turn on light based on trapdoor attic
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.vlieringluik_contact
     from:
       - "on"
@@ -9,7 +9,7 @@ trigger:
     to:
       - "on"
       - "off"
-action:
+actions:
   - alias: "Turn on light"
     action: light.turn_{{ trigger.to_state.state }}
     target:

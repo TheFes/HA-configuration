@@ -2,14 +2,14 @@ id: d4fa325e-c2b5-4ec8-8c51-e574fa105eca
 alias: "Sunshade outside during holidays"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: time
+triggers:
+  - trigger: time
     id: screen_open
     at: "06:30"
-  - platform: time
+  - trigger: time
     id: screen_close
     at: "14:00"
-condition:
+conditions:
   - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.house_mode
@@ -18,7 +18,7 @@ condition:
     condition: state
     entity_id: input_boolean.gast
     state: "off"
-action:
+actions:
   - alias: "In of uit?"
     choose:
       - conditions:

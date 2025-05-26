@@ -1,13 +1,13 @@
 id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"
 alias: "Actions with Xiaomi Cube"
 mode: parallel
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: event.magic_cube_action
     not_from: unavailable
     variables:
       event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
-action:
+actions:
   - alias: "Which action"
     choose:
       - alias: "Actions with shake"

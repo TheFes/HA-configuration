@@ -1,7 +1,7 @@
 automation:
   - id: 3b350cdb-4a8e-4ce9-b239-fc2e329f931d
     alias: "Activate Guest Mode when Guest Wifi is used"
-    trigger:
+    triggers:
       - platform: state
         entity_id: sensor.guest_wifi_active
         to: ~
@@ -12,7 +12,7 @@ automation:
         for:
           hours: 2
         id: "off"
-    condition:
+    conditions:
       - >
         {{
           trigger.id == 'off'
@@ -23,7 +23,7 @@ automation:
               and trigger.to_state.state > trigger.from_state.state
             )
         }}
-    action:
+    actions:
       - action: input_boolean.turn_{{ trigger.id }}
         target:
           entity_id: input_boolean.gast

@@ -2,18 +2,18 @@ id: eb769e97-f6dd-471a-90ee-29d4666e0718
 alias: "Turn everything off when nobody is home"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: sensor.house_mode
     to: "Afwezig"
     for:
       seconds: 10
-condition:
+conditions:
   - alias: "Niemand thuis?"
     condition: state
     entity_id: sensor.house_mode
     state: "Afwezig"
-action:
+actions:
   - alias: "TV on"
     choose:
       - conditions: "{{ states('sensor.tv_meubel_power') | float(0) > 40 }}"

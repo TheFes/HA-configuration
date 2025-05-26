@@ -1,12 +1,12 @@
 id: f540e546-ae22-4535-958f-35693ba636e5
 alias: "Disable and eneable Christmas integrations"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: input_boolean.christmas_time
     to:
       - "on"
       - "off"
-action:
+actions:
   - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
     data:
       config_entry_id:

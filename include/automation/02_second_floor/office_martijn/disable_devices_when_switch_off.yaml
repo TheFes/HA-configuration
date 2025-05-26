@@ -7,11 +7,11 @@ variables:
     speaker_right: 78f57551aff64346b1855fd6b3816423
   integrations:
     atom_echo: 4607f8bcfc909a88891c550dc8c1d6c3
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: switch.shelly1pm_bureau_martijn_relay
     to: ~
-action:
+actions:
   - delay: "{{ 0 if trigger.to_state.state == 'off' else 30 }}"
   - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_device"
     data:

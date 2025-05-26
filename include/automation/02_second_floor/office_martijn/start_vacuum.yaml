@@ -1,17 +1,17 @@
 id: 43077f87-25be-4516-b241-0db9d1e4ff98
 alias: "Start vacuum cleaner on Tuesday"
-trigger:
+triggers:
   - id: vacuum
-    platform: time
+    trigger: time
     at:
       - "08:00:00"
       - "09:00:00"
-  - platform: event
+  - trigger: event
     event_type: mobile_app_notification_action
     event_data:
       action: "not_today"
     id: "not_today"
-condition:
+conditions:
   - alias: "Tuesday?"
     condition: time
     weekday:
@@ -27,7 +27,7 @@ condition:
         entity_id: sensor.house_mode
         state: "Vakantie"
   - "{{ not is_state('vacuum.valetudo_brokenachingdragonfly', ['unavailable', 'unknown']) }}"
-action:
+actions:
   - alias: "Action?"
     choose:
       - conditions: "{{ trigger.id == 'not_today' }}"

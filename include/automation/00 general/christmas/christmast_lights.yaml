@@ -1,8 +1,8 @@
 id: c9be7372-de6f-4763-b0d0-23665b7f1e9b
 alias: "Christmass lights"
 mode: parallel
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: light.tuinlampjes
     to:
       - "on"
@@ -11,11 +11,11 @@ trigger:
       - "on"
       - "off"
     id: icicles
-  - platform: state
+  - trigger: state
     entity_id: light.eettafel
     to: "on"
     id: tree_star
-  - platform: state
+  - trigger: state
     entity_id: light.tv_lamp
     to:
       - "on"
@@ -28,7 +28,7 @@ trigger:
     entity_id: event.shelly1_eettafel_shelly1_eettafel
     not_from: unavailable
     id: to_bed
-condition:
+conditions:
   - alias: "Check for long press event on Eettaffel button"
     condition: template
     value_template: "{{ trigger.id != to_bed or trigger.to_state.attributes.event_type == 'long_press' }}"
@@ -36,7 +36,7 @@ condition:
     condition: state
     entity_id: input_boolean.christmas_time
     state: "on"
-action:
+actions:
   - alias: "Which action?"
     choose:
       - conditions: "{{ trigger.id == 'icicles'}}"

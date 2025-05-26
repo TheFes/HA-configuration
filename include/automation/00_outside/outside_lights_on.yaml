@@ -2,19 +2,19 @@ id: 15bc9238-0a61-4448-92bc-854848521572
 alias: "Turn lights outside on and off"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: homeassistant
+triggers:
+  - trigger: homeassistant
     event: start
-  - platform: state
+  - trigger: state
     entity_id: sun.sun
     to:
       - "above_horizon"
       - "below_horizon"
-  - platform: time
+  - trigger: time
     at:
       - "00:00"
       - "06:30"
-action:
+actions:
   - alias: "Midnight, morning or evening?"
     choose:
       - conditions:

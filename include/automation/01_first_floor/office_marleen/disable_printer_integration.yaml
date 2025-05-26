@@ -1,12 +1,12 @@
 id: 782ed19b-f497-47b9-adb2-782d538e8e33
 alias: "Disable Printer ingegration"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.printer
     to:
       - "on"
       - "off"
-action:
+actions:
   - action: automation.turn_{{ trigger.to_state.state }}
     target:
       entity_id: automation.f2_status_messages_for_printer

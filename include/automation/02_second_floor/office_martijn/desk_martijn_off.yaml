@@ -1,7 +1,7 @@
 id: 012eb968-e871-4029-8096-a63044a42029
 alias: "Turn off desk Martijn switch"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id:
       - binary_sensor.computer_zolder
       - binary_sensor.laptop_werk_martijn_lan
@@ -11,7 +11,7 @@ trigger:
       - "idle"
       - "off"
     for: "00:30:00"
-condition:
+conditions:
   - alias: "Everyting off?"
     condition: state
     entity_id:
@@ -23,7 +23,7 @@ condition:
       - "idle"
       - "off"
     for: "00:30:00"
-action:
+actions:
   - alias: "Turn off plug"
     action: switch.turn_off
     target:

@@ -2,25 +2,25 @@ id: d826bab6-6791-425b-90b6-cae882317c5f
 alias: "Water kettle plug off"
 mode: restart
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: switch.waterkoker
     from: "off"
     to: "on"
-  - platform: homeassistant
+  - trigger: homeassistant
     event: start
-  - platform: event
+  - trigger: event
     event_type: automation_reloaded
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.waterkoker_power
     above: 25
     id: "active"
-condition:
+conditions:
   - alias: "Kettle on?"
     condition: state
     entity_id: switch.waterkoker
     state: "on"
-action:
+actions:
   - alias: "Trigger type"
     choose:
       - conditions:
@@ -29,7 +29,7 @@ action:
         sequence:
           - alias: "Kettle inactive for 10 minutes"
             wait_for_trigger:
-              - platform: numeric_state
+              - trigger: numeric_state
                 entity_id: sensor.waterkoker_power
                 below: 25
                 for: "00:10:00"

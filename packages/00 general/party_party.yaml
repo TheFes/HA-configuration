@@ -143,7 +143,7 @@ automation:
   - id: 767b2b4c-8dc6-4e42-b871-fad275273ebc
     alias: Party Time!
     mode: parallel
-    trigger:
+    triggers:
       - platform: state
         entity_id:
           - media_player.floris
@@ -181,7 +181,7 @@ automation:
         }}
       area_list: "{{ area_mapper[trigger.entity_id].area_list }}"
       exclude_lights: "{{ area_mapper[trigger.entity_id].get('exclude_lights', []) }}"
-    action:
+    actions:
       - delay: "{{ this.attributes.current * 0.5 }}"
       - repeat:
           for_each: "{{ area_list }}"

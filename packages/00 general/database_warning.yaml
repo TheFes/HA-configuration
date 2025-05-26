@@ -21,7 +21,7 @@ automation:
             'sensor.oldest_statistics_date' | has_value
             and states('sensor.oldest_statistics_date') != '2021-07-07'
           }}
-    action:
+    actions:
       # change the notification according to your preferences
       - alias: Send notification
         action: notify.mobile_app_pixel_7_pro

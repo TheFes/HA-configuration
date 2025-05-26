@@ -1,14 +1,14 @@
 id: 6d0dc8bd-d264-42b8-8488-10e2e44d9393
 alias: "Update device trackers for phone Martijn"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id:
       - sensor.location_phone_martijn_bt
       - sensor.pixel_7_pro_battery_level
     from: ~
-  - platform: homeassistant
+  - trigger: homeassistant
     event: start
-action:
+actions:
   - action: device_tracker.see
     data:
       dev_id: phone_martijn_bt

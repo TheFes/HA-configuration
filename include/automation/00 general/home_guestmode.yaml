@@ -1,16 +1,16 @@
 id: b5652fa9-d044-40b8-b53e-62886309dca8
 alias: "Arrive home with guest mode on"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: person.martijn
     from: "not_home"
     to: "home"
-condition:
+conditions:
   - alias: "Guest Mode on"
     condition: state
     entity_id: input_boolean.gast
     state: "on"
-action:
+actions:
   - action: notify.mobile_app_pixel_7_pro
     data:
       title: "🏡 Welkom thuis"
@@ -27,11 +27,11 @@ action:
           - action: "guest_mode_on"
             title: "Nope"
   - wait_for_trigger:
-      - platform: event
+      - trigger: event
         event_type: mobile_app_notification_action
         event_data:
           action: "guest_mode_off"
-      - platform: event
+      - trigger: event
         event_type: mobile_app_notification_action
         event_data:
           action: "guest_mode_on"

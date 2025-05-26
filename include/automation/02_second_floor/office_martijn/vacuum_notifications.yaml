@@ -2,25 +2,25 @@ id: 501645e8-f419-4349-9f0b-57a2f915b345
 alias: "Notifications vacuum cleaner"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: vacuum.valetudo_brokenachingdragonfly
     from: returning
     to: docked
     id: docked
-  - platform: state
+  - trigger: state
     entity_id: vacuum.valetudo_brokenachingdragonfly
     to: error
     id: error
-  - platform: time
+  - trigger: time
     at: "17:00:00"
     id: time
-  - platform: event
+  - trigger: event
     event_type: mobile_app_notification_action
     event_data:
       action: "empty_vacuum_bin"
     id: "empty"
-action:
+actions:
   - if: "{{ trigger.id == 'docked' }}"
     then:
       - alias: "Increase counter"

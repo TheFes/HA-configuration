@@ -1,6 +1,6 @@
 id: 8c6c0182-b227-47b8-a53b-c88075761b1a
 alias: "Awtrix button Floris"
-trigger:
+triggers:
   - trigger: event
     event_type: awtrix_button_event
     event_data:
@@ -8,7 +8,7 @@ trigger:
     variables:
       event: "{{ trigger.event.data.click }}"
       button: "{{ trigger.event.data.button }}"
-action:
+actions:
   - alias: "Which click type"
     choose:
       - conditions: "{{ event == 'single' }}"

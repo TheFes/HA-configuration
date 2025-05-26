@@ -2,12 +2,12 @@ id: 991bfa0a-ba49-462b-b78a-2aed72317903
 alias: "Notifications washing machine"
 mode: single
 max_exceeded: silent
-trigger:
+triggers:
   - entity_id: sensor.wasmachine_remain_time
-    platform: state
+    trigger: state
     from: 0:01:00
     to: 0:00:00
-action:
+actions:
   - alias: "Notification to phones"
     action: notify.all_phones
     data:

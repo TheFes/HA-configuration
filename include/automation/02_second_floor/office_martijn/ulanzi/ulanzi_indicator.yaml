@@ -1,31 +1,31 @@
 id: 52dd10e9-7bf6-4778-b4b7-a8967a4b5fb8
 alias: "Ulanzi indicators"
 mode: queued
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.whatsapp_notification_active
     to: ~
     variables:
       action: "{{ trigger.to_state.state }}"
       indicator: 1
       color_name: green
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.raindata
     to: ~
     variables:
       action: "{{ trigger.to_state.state }}"
       indicator: 2
       color_name: blue
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.net_power_consumption
     to: ~
     variables:
       action: "{{ trigger.to_state.state in ['on', 'off'] }}"
       indicator: 3
       color_name: "{{ 'yellow' if trigger.to_state.state == 'off' else 'purple' }}"
-condition:
+conditions:
   - "{{ update | default(true) | bool(true) }}"
-action:
+actions:
   - if: "{{ action | default(true) | bool(true) }}"
     then:
       - alias: Turn indicator on

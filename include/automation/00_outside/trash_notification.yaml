@@ -2,13 +2,13 @@ id: 690cc2c9-f014-4b38-90e8-51217659d49e
 alias: "Notifications for trash containers"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: time
+triggers:
+  - trigger: time
     at: "07:00:00"
     variables:
       when_en: today
       when_nl: Vandaag
-  - platform: time
+  - trigger: time
     at: "20:00:00"
     variables:
       when_en: tomorrow
@@ -23,11 +23,11 @@ variables:
   trash_pickup: >
     {%- set trash = states(sensor).split(', ') %}
     {{ trash_descr.items() | list | selectattr('0', 'in', trash) | map(attribute='1') | list }}
-condition:
+conditions:
   - alias: "Notification needed?"
     condition: template
     value_template: "{{ states(sensor) != 'geen' }}"
-action:
+actions:
   - alias: "Notification phones"
     action: notify.all_phones
     data:

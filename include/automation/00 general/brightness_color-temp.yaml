@@ -2,8 +2,8 @@ id: f0fc0c8c-662d-4477-9002-5ec4b49da7ba
 alias: "Change color temperature of lights based on brightness"
 mode: parallel
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id:
       - light.eettafel
       - light.pepijn
@@ -37,7 +37,7 @@ variables:
   br: "{{ state_attr(trigger.entity_id, 'brightness') }}"
   color_mode: "{{ state_attr(light, 'color_mode') | default('color_temp', true) }}"
 
-condition:
+conditions:
   - alias: "Light on?"
     condition: template
     value_template: "{{ trigger.to_state.state == 'on' and trigger.from_state.state == 'on' }}"
@@ -50,7 +50,7 @@ condition:
   - alias: "No transition active"
     condition: template
     value_template: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | select('search', light | replace('_template', '')) | list | count == 0 }}"
-action:
+actions:
   - alias: "Set color temperature based on brightness"
     action: light.turn_on
     target:

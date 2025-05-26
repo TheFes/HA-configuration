@@ -1,10 +1,10 @@
 id: efac28d0-19f8-42d7-928f-04e09d1191a5
 alias: "Send Digid code for kids to Marleen"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: sensor.pixel_7_pro_last_notification
     to: ~
-condition:
+conditions:
   - alias: "Notification from SMS app"
     condition: state
     entity_id: sensor.pixel_7_pro_last_notification
@@ -14,7 +14,7 @@ condition:
     condition: template
     value_template: >
       {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_7_pro_last_notification') }}
-action:
+actions:
   - alias: "Send notification to Marleen"
     action: notify.mobile_app_marleen_app
     data:

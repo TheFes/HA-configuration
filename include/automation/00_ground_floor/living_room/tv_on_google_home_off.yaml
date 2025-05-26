@@ -2,11 +2,11 @@ id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7d
 alias: "Assist Satellites off when TV turns on"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: media_player.nvidia_shield
     from: "off"
-action:
+actions:
   - variables:
       playing: >
         {{

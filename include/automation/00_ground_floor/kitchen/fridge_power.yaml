@@ -1,11 +1,11 @@
 alias: Power usage kitchen
 id: 0a454b0d-156e-4938-945e-d2bfb9b3cbd7
-trigger:
-  - platform: numeric_state
+triggers:
+  - trigger: numeric_state
     entity_id: sensor.koelkast_power
     above: 80
     for: "00:10:00"
-action:
+actions:
   - action: notify.mobile_app_pixel_7_pro
     data:
       title: "Stroomverbruik koelkast"

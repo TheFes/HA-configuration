@@ -2,11 +2,11 @@ id: f80d05dd-bdc4-49ec-b5c0-07c9bb3757a0
 alias: "Actions for garden sonoff"
 mode: parallel
 max_exceeded: silent
-trigger:
+triggers:
   - trigger: state
     entity_id: event.sonoff_tuin_sonoff_tuin
     not_from: unavailable
-action:
+actions:
   - alias: "Click type?"
     choose:
       - conditions:

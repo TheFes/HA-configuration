@@ -2,8 +2,8 @@ id: 5e74e69a-7e31-4769-ad6a-c438fce816dc
 alias: "Notifications for new HA version"
 mode: parallel
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id:
       - update.home_assistant_core_update
       - update.home_assistant_operating_system_update
@@ -26,7 +26,7 @@ trigger:
         {%- else %}
           https://github.com/home-assistant/core/releases/tag/{{ to }}
         {%- endif %}
-action:
+actions:
   - alias: "Set up variables for the actions"
     variables:
       action_update: "{{ 'UPDATE_' ~ context.id }}"
@@ -54,11 +54,11 @@ action:
             title: Update
   - alias: "Wait for a response"
     wait_for_trigger:
-      - platform: event
+      - trigger: event
         event_type: mobile_app_notification_action
         event_data:
           action: "{{ action_update }}"
-      - platform: event
+      - trigger: event
         event_type: mobile_app_notification_action
         event_data:
           action: "{{ action_skip }}"

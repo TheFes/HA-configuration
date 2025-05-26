@@ -1,10 +1,10 @@
 id: 1bb3f63c-c210-4299-a36e-14e70a2e6950
 alias: "Update ulanzi Pepijn"
 mode: parallel
-trigger:
-  - platform: time_pattern
+triggers:
+  - trigger: time_pattern
     seconds: "0"
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.pepijn_sleeping
     from:
       - "on"
@@ -12,18 +12,18 @@ trigger:
     to:
       - "on"
       - "off"
-  - platform: state
+  - trigger: state
     entity_id: light.awtrix_pepijn_matrix
     from:
       - "unavailable"
-  - platform: state
+  - trigger: state
     entity_id:
       - weather.combined
       - input_number.correction_clock_pepijn
     to: ~
 variables:
   correction: "{{ states('input_number.correction_clock_pepijn') | float(0) }}"
-action:
+actions:
   - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
     then:
       - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Manual') }}"

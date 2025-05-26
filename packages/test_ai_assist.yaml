@@ -26,7 +26,7 @@ conversation:
 intent_script:
   SendNotificationMartijn:
     description: "Sends a notification message to Martijn. Args: msg"
-    action:
+    actions:
       - action: notify.mobile_app_pixel_7_pro
         data:
           message: "{{ msg }}"
@@ -34,7 +34,7 @@ intent_script:
       text: "Done"
   SendNotificationMarleen:
     description: "Sends a notification message to Marleen. Args: msg"
-    action:
+    actions:
       - action: notify.mobile_app_marleen_app
         data:
           message: "{{ msg }}"

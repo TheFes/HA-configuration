@@ -2,32 +2,32 @@ id: 56046ae8-2eaa-47c0-b6ad-953cd4b5c641
 alias: "Lights on sunset and arrival home"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.light_inside
     from: "on"
     to: "off"
     id: dark
-  - platform: state
+  - trigger: state
     entity_id: sensor.house_mode
     from: "Afwezig"
     to: "Thuis"
     id: "home"
-  - platform: state
+  - trigger: state
     entity_id: media_player.nvidia_shield
     from: "off"
     not_to:
       - unavailable
       - unknown
     id: "dark"
-  - platform: state
+  - trigger: state
     entity_id:
       - person.martijn
       - person.marleen
     from: "not_home"
     to: "home"
     id: "home_while_sleeping"
-action:
+actions:
   - alias: "Arriving home"
     choose:
       - conditions:

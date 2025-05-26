@@ -2,16 +2,16 @@ id: 376b6b93-e8ed-43cf-89e3-1b915e5ff236
 alias: "Send notification when Martijn or Marleen leaves from work"
 mode: parallel
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: person.marleen
     from: !secret work_marleen
     to: "not_home"
-  - platform: state
+  - trigger: state
     entity_id: person.martijn
     from: !secret work_martijn
     to: "not_home"
-  - platform: state
+  - trigger: state
     entity_id:
       - person.martijn
       - person.marleen
@@ -20,14 +20,14 @@ trigger:
       - !secret work_marleen
       - !secret work_martijn
     id: "reset"
-  - platform: event
+  - trigger: event
     id: reset
     event_type: mobile_app_notification_action
     event_data:
       action: "cancel_eta_martijn"
     variables:
       name: martijn
-  - platform: event
+  - trigger: event
     id: reset
     event_type: mobile_app_notification_action
     event_data:
@@ -46,7 +46,7 @@ variables:
   work:
     martijn: !secret work_martijn
     marleen: !secret work_marleen
-action:
+actions:
   - if: "{{ trigger.id == 'reset' }}"
     then:
       - event: remove_variable
@@ -90,13 +90,13 @@ action:
                 - variables:
                     eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
                 - wait_for_trigger:
-                    - platform: template
+                    - trigger: template
                       value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
-                    - platform: event
+                    - trigger: event
                       event_type: mobile_app_notification_action
                       event_data:
                         action: "cancel_eta_{{ name }}"
-                    - platform: template
+                    - trigger: template
                       value_template: >
                         {{
                           (now() + timedelta(minutes=states(sensor) | float)) - as_datetime(eta) > timedelta(minutes=5)

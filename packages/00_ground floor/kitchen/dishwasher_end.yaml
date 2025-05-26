@@ -3,13 +3,13 @@ automation:
     alias: "Dishwasher notification"
     mode: single
     max_exceeded: silent
-    trigger:
+    triggers:
       - platform: state
         entity_id: binary_sensor.dishwasher_active
         from: "on"
         to: "off"
         id: "finished"
-    action:
+    actions:
       - action: input_select.select_option
         target:
           entity_id: input_select.dishwasher_program

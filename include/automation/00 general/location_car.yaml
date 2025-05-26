@@ -1,12 +1,12 @@
 id: 95757e21-9bcd-4379-a1c8-a7e2d502d2de
 alias: "Dude,  Where's my car"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: binary_sensor.pixel_7_pro_android_auto
     from: "on"
     to: "off"
     id: leave_car
-  - platform: homeassistant
+  - trigger: homeassistant
     event: start
     id: ha_start
 variables:
@@ -28,7 +28,7 @@ variables:
       if trigger.id == 'leave_car'
       else state_attr('sensor.variables', 'variables').get('car_location', {}).get('longitude')
     }}
-action:
+actions:
   - if:
       - condition: trigger
         id: leave_car

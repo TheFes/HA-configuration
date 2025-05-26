@@ -2,11 +2,11 @@ id: b776ef0d-e5f7-42d1-8bf8-744fe2b7127b
 alias: "Extractor hood back on in the morning"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: light.groep_beneden
     to: "on"
-condition:
+conditions:
   - alias: "Extractor hood off?"
     condition: state
     entity_id: switch.afzuigkap
@@ -15,7 +15,7 @@ condition:
     condition: time
     after: " 06:00:00"
     before: " 21:00:00"
-action:
+actions:
   - alias: "Turn plug back on"
     action: switch.turn_on
     target:

@@ -1,27 +1,27 @@
 id: fab3e0d1-1d3a-46ce-b1c1-5c56e788bf02
 alias: "Status messages for printer"
-trigger:
-  - platform: numeric_state
+triggers:
+  - trigger: numeric_state
     entity_id: sensor.dcp_l2530dw_black_toner_remaining
     below: 26
     id: toner
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dcp_l2530dw_drum_remaining_life
     below: 26
     id: drum
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dcp_l2530dw_black_toner_remaining
     below: 11
     id: toner
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dcp_l2530dw_drum_remaining_life
     below: 11
     id: drum
-condition:
+conditions:
   - alias: "Previous state is not unavailable or unkown"
     condition: template
     value_template: "{{ trigger.from_state.state not in ['unavailable', 'unknown'] }}"
-action:
+actions:
   - variables:
       message: >
         {%- if trigger.id == 'toner' %}

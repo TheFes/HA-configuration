@@ -10,7 +10,7 @@ conditions:
   - condition: state
     entity_id: select.sonoff_trapkast_button_type
     state: Detached
-action:
+actions:
   - if: "{{ 'light.trapkast' | has_value }}"
     then:
       - choose:

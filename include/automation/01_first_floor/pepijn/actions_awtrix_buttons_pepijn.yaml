@@ -2,7 +2,7 @@ id: dc9ec434-0886-4fd3-a504-006ca6e8ec40
 alias: "Xiaomi button Bed Pepijn"
 mode: parallel
 max_exceeded: silent
-trigger:
+triggers:
   - trigger: event
     event_type: awtrix_button_event
     event_data:
@@ -30,7 +30,7 @@ variables:
     {% else %}
       {{ 'red' if is_state('sensor.house_mode', 'Slapen') else 'deeppink' }}
     {% endif %}
-action:
+actions:
   - alias: "Which click type"
     choose:
       - alias: "Actions with short press"

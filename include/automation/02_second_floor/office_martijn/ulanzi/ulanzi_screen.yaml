@@ -1,8 +1,8 @@
 id: 964ca72d-0e82-488d-b6e8-0ac72a5eabc0
 alias: "Ulanzi turn screen on and off"
 mode: queued
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: sensor.house_mode
     to: ~
     variables:
@@ -22,14 +22,14 @@ trigger:
           if action == 'on'
           else true
         }}
-  - platform: state
+  - trigger: state
     entity_id: switch.shelly1pm_bureau_martijn_relay
     to: ~
     variables:
       action: >
         {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
       update: *update
-  - platform: time
+  - trigger: time
     at:
       - "07:00"
       - "22:00"
@@ -41,7 +41,7 @@ trigger:
           else 'on'
         }}
       update: *update
-  - platform: state
+  - trigger: state
     entity_id: person.martijn
     to: ~
     variables:
@@ -52,9 +52,9 @@ trigger:
           if action == 'on'
           else true
         }}
-condition:
+conditions:
   - "{{ update | default(true) | bool(true) }}"
-action:
+actions:
   - alias: "Turn matrix on or off"
     action: light.turn_{{ iif(action | default(true) | bool(true), 'on', 'off') }}
     target:

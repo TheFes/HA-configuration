@@ -2,10 +2,10 @@ id: 6d6452d1-f65e-49c5-9ed6-3c6c8754911a
 alias: "Turn on/off lights in the morning during holidays"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: time
+triggers:
+  - trigger: time
     at: "06:30"
-condition:
+conditions:
   - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.house_mode
@@ -14,7 +14,7 @@ condition:
     condition: state
     entity_id: input_boolean.gast
     state: "off"
-action:
+actions:
   - variables:
       light_list:
         - light.floris_template

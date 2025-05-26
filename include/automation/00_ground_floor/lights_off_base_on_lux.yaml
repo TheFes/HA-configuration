@@ -2,20 +2,20 @@ id: 5f532453-807b-4170-9a1c-eff2857f73e8
 alias: "Lights off based on lux sensor"
 mode: single
 max_exceeded: silent
-trigger:
-  - platform: numeric_state
+triggers:
+  - trigger: numeric_state
     entity_id: sensor.woonkamer_lux_illuminance_lux
     id: light
     above: 100
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.woonkamer_lux_illuminance_lux
     id: very_light
     above: 400
-condition:
+conditions:
   - condition: sun
     before: sunrise
     before_offset: "03:00:00"
-action:
+actions:
   - alias: "Light or very light?"
     choose:
       - conditions:

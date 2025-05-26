@@ -1,9 +1,9 @@
 id: 8a906376-bc15-443a-9932-381bab653331
 alias: "Toggle light washing machine area with attic light"
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: light.zolder
-action:
+actions:
   - alias: "On or off"
     choose:
       - conditions:

@@ -4,15 +4,15 @@ automation:
     variables:
       allowed_callers:
         - "**621"
-    trigger:
+    triggers:
       - platform: webhook
         webhook_id: sip_call_webhook_id
         local_only: true
-    condition:
+    conditions:
       - alias: Check if webhook is for incoming call
         condition: template
         value_template: "{{ trigger.json.event == 'incoming_call' }}"
-    action:
+    actions:
       - variables:
           number_calling: "{{ trigger.json.parsed_caller }}"
       - choose:

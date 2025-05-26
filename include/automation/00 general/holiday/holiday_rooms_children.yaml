@@ -2,14 +2,14 @@ id: b2977df5-1481-4b19-b56a-ae79bbf9659d
 alias: "Lights bedrooms children during holidays"
 mode: parallel
 max_exceeded: silent
-trigger:
-  - platform: time
+triggers:
+  - trigger: time
     id: floris_template
     at: "19:00"
-  - platform: time
+  - trigger: time
     id: pepijn_template
     at: "19:15"
-condition:
+conditions:
   - alias: "Holiday mode on?"
     condition: state
     entity_id: sensor.house_mode
@@ -18,7 +18,7 @@ condition:
     condition: state
     entity_id: input_boolean.gast
     state: "off"
-action:
+actions:
   - alias: "Random delay to turn light on"
     delay:
       minutes: "{{ range(0,30) | random }}"

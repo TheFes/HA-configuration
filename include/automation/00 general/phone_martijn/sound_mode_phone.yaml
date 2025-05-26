@@ -1,13 +1,13 @@
 id: e7e51e10-c152-4514-bfc7-393c6d16d468
 alias: "Turn on right sound mode phone Martijn based on home state"
 mode: queued
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: person.martijn
     to:
       - home
       - not_home
-action:
+actions:
   - alias: "Home or not?"
     if:
       - condition: state
