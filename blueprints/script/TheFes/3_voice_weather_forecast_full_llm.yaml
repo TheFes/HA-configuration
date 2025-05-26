@@ -2,7 +2,7 @@ blueprint:
   name: Voice - Weather Forecasts - Full LLM script
   author: TheFes
   source_url: https://github.com/TheFes/ha-blueprints/blob/main/weather/3_voice_weather_forecast_full_llm.yaml
-  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
 
     # Request the weather forecast by use of an LLM
 
@@ -14,10 +14,6 @@ blueprint:
 
     #### Optional
 
-    * Enabled calculate avarages. When disabled all relevant data entries are sent
-    to the LLM, when it's enabled only one summarized for the entire period
-    is sent. This can be usefull if your LLM just lists all items instead of description
-    over the entire period.
     * Adjust the prompts for each field used in the script. The descriptions guide
     the LLM to provide the correct input
 
@@ -59,7 +55,7 @@ blueprint:
 
     What''s the weather for this weekend
 
-    ```"
+    ```'
   domain: script
   homeassistant:
     min_version: 2024.10.0
@@ -89,7 +85,7 @@ blueprint:
             When disabled all data for each hour or day will be sent.'
           selector:
             boolean: {}
-          default: false
+          default: true
     prompt_settings:
       name: Prompt settings for the LLM
       icon: mdi:robot
@@ -168,7 +164,9 @@ mode: parallel
 max_exceeded: silent
 description: 'Gets the weather forecast for either a part of a day, or one or more
   full days. In case the weather for the weekend is requested, this means Saturday
-  and Sunday'
+  and Sunday
+
+  '
 fields:
   time_period_type:
     name: Time Period Type
@@ -201,8 +199,17 @@ fields:
     required: true
 sequence:
 - variables:
-    version: 20250128
+    version: 20250526
     weather_entity: !input weather_entity
+    supported: '{% set sf = state_attr(weather_entity, ''supported_features'') | default([],
+      true) %} {% set d = [''daily''] if sf in [1, 3, 5, 7] else [] %} {% set h =
+      [''hourly''] if sf in [2, 3, 6, 7] else [] %} {% set td = [''twice_daily'']
+      if sf in [4, 5, 6, 7] else [] %} {{ d + h + td }}
+
+      '
+    time_period_type: "{{\n  'twice_daily'\n    if time_period_type not in supported\n
+      \   and time_period_type == 'daily'\n    and  'twice_daily' in supported\n  else
+      time_period_type\n}}\n"
     start_date: '{{ start_date | as_datetime(default='''') }}'
     start_time: '{{ start_time | default(''00:00:00'') | as_timedelta | default(''00:00:00'',
       true) }}'
@@ -235,47 +242,58 @@ sequence:
     stop: Unable to determine the date for the weather forecast, or the date is in
       the past
     response_variable: response
-- action: weather.get_forecasts
-  data:
-    type: '{{ time_period_type }}'
-  target:
-    entity_id: !input weather_entity
-  response_variable: weather_response
-- variables:
-    calc_average: !input calc_average
-    selected_data:
-      forecast: '{% set ns = namespace(forecast=[]) %}
+- if: '{{ time_period_type not in supported }}'
+  then:
+  - alias: Set variable for eror message
+    variables:
+      response:
+        error: Unable to provide forecast because the weather provider doesn't provide
+          the {{ time_period_type }} forecast data
+  - alias: Stop the script
+    stop: Weather provider doesn't provide {{ time_period_type }} forecast data
+    response_variable: response
+  else:
+  - action: weather.get_forecasts
+    data:
+      type: '{{ time_period_type }}'
+    target:
+      entity_id: !input weather_entity
+    response_variable: weather_response
+  - variables:
+      calc_average: !input calc_average
+      selected_data:
+        forecast: '{% set ns = namespace(forecast=[]) %}
 
-        {% for item in weather_response[weather_entity].forecast %}
+          {% for item in weather_response[weather_entity].forecast %}
 
-        {% if start | as_datetime <= item.datetime | as_datetime | as_local < end
-        | as_datetime %}
+          {% if start | as_datetime <= item.datetime | as_datetime | as_local < end
+          | as_datetime %}
 
-        {% set ns.forecast = ns.forecast + [item] %}
+          {% set ns.forecast = ns.forecast + [item] %}
 
-        {% endif %}
+          {% endif %}
 
-        {% endfor %} {{ ns.forecast }}'
-    averaged:
-      averaged_weather_data_for_period: '{% set ns = namespace(combined={}) %}
+          {% endfor %} {{ ns.forecast }}'
+      averaged:
+        averaged_weather_data_for_period: '{% set ns = namespace(combined={}) %}
 
-        {% set weather_data = selected_data.forecast %}
+          {% set weather_data = selected_data.forecast %}
 
-        {% set forecast_keys = (weather_data[0] | default({})).keys() | reject(''eq'',
-        ''datetime'') %}
+          {% set forecast_keys = (weather_data[0] | default({})).keys() | reject(''eq'',
+          ''datetime'') %}
 
-        {% for item in forecast_keys %}
+          {% for item in forecast_keys %}
 
-        {% set combine = weather_data | map(attribute=item) | list %}
+          {% set combine = weather_data | map(attribute=item) | list %}
 
-        {% set combine = combine | statistical_mode if combine[0] is string else combine
-        | average | round %}
+          {% set combine = combine | statistical_mode if combine[0] is string else
+          combine | average | round %}
 
-        {% set ns.combined = dict(ns.combined, **{item: combine}) %}
+          {% set ns.combined = dict(ns.combined, **{item: combine}) %}
 
-        {% endfor %}
+          {% endfor %}
 
-        {{ dict(start_of_period=start, end_of_period=end, **ns.combined) }}'
-    response: '{{ averaged if calc_average else selected_data }}'
-- stop: ''
-  response_variable: response
+          {{ dict(start_of_period=start, end_of_period=end, **ns.combined) }}'
+      response: '{{ averaged if calc_average else selected_data }}'
+  - stop: ''
+    response_variable: response

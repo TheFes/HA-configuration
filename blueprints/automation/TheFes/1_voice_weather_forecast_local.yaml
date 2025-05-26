@@ -100,7 +100,7 @@ blueprint:
           - what('s| is) [this|next] ({phrase}[']s|the|this) weather [forecast]
           - what('s| is) the weather [forecast] [for] [this|next] ({phrase}|day)
           - what('ll| will) the weather [forecast] be [like] [[for] [[the] coming|this]
-            ({pharse}|day)]
+            ({phrase}|day)]
     daily_forecast_settings:
       name: Settings for the daily forecast.
       icon: mdi:chat
@@ -366,8 +366,8 @@ blueprint:
               min: 0.0
               max: 100.0
               unit_of_measurement: '%'
-              step: 1.0
               mode: slider
+              step: 1.0
           default: 10
         wind_phrases:
           name: 'Phrases to be used to describe the wind speed. Needs to be a yaml
@@ -380,7 +380,7 @@ blueprint:
             calm: 0
             a light air: 1
             a light breeze: 6
-            a gentrle breeze: 12
+            a gentle breeze: 12
             a moderate breeze: 20
             a fresh breeze: 29
             a strong breeze: 39
@@ -398,8 +398,8 @@ blueprint:
             number:
               min: 0.0
               max: 200.0
-              step: 1.0
               mode: slider
+              step: 1.0
           default: 12
         wind_joke_threshold:
           name: Wind joke threshold
@@ -409,8 +409,8 @@ blueprint:
             number:
               min: 0.0
               max: 200.0
-              step: 1.0
               mode: slider
+              step: 1.0
           default: 29
         wind_warning_threshold:
           name: Wind warning threshold
@@ -420,8 +420,8 @@ blueprint:
             number:
               min: 0.0
               max: 200.0
-              step: 1.0
               mode: slider
+              step: 1.0
           default: 62
         value_round:
           name: Value round
@@ -430,8 +430,8 @@ blueprint:
             number:
               min: 0.0
               max: 3.0
-              step: 1.0
               mode: slider
+              step: 1.0
           default: 0
         response_invalid_phrase:
           name: Response when the requested prhase could not be recognized
@@ -472,7 +472,7 @@ triggers:
 - trigger: conversation
   command: !input trigger
 variables:
-  version: 20250127
+  version: 20250526
   daily_mapping:
   - phrases: !input today
     delta: 0
@@ -517,6 +517,12 @@ variables:
   part_day: '{{ false if phrase is none else day_part_phrases | select(''contains'',
     phrase) | list | count > 0 }}'
   weather_entity: !input weather_entity
+  supported: '{% set sf = state_attr(weather_entity, ''supported_features'') | default([],
+    true) %} {% set d = [''daily''] if sf in [1, 3, 5, 7] else [] %} {% set h = [''hourly'']
+    if sf in [2, 3, 6, 7] else [] %} {% set td = [''twice_daily''] if sf in [4, 5,
+    6, 7] else [] %} {{ d + h + td }}
+
+    '
   translations:
     clear: !input clear
     clear-night: !input clear-night
@@ -537,14 +543,15 @@ variables:
   wind_phrases: !input wind_phrases
 actions:
 - choose:
-  - conditions: '{{ daily }}'
+  - conditions: '{{ daily and (''daily'' in supported or ''twice_daily'' in supported)
+      }}'
     sequence:
     - alias: Get the forecast data
       action: weather.get_forecasts
       target:
         entity_id: !input weather_entity
       data:
-        type: daily
+        type: '{{ ''daily'' if ''daily'' in supported else ''twice_daily'' }}'
       response_variable: weather
       continue_on_error: true
     - alias: Define variables to determine which part to use
@@ -555,9 +562,9 @@ actions:
         end: '{{ start | as_datetime + timedelta(days=1) }}'
         day_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast = weather[weather_entity].forecast
           if weather is defined else [] %} {% for item in forecast %}\n  {% if start
-          | as_datetime <= item.datetime | as_datetime < end | as_datetime %}\n    {%
-          set ns.forecast = ns.forecast + [item] %}\n  {% endif %}\n{% endfor %} {{
-          ns.forecast | first | default({}) }}\n"
+          | as_datetime <= item.datetime | as_datetime | as_local < end | as_datetime
+          %}\n    {% set ns.forecast = ns.forecast + [item] %}\n  {% endif %}\n{%
+          endfor %} {{ ns.forecast | first | default({}) }}\n"
     - if:
       - condition: template
         value_template: '{{ iif(day_forecast) }}'
@@ -595,7 +602,7 @@ actions:
           response_forecast: !input response_forecast
       - alias: Send back the response
         set_conversation_response: !input response_forecast
-  - conditions: '{{ part_day }}'
+  - conditions: '{{ part_day and ''hourly'' in supported }}'
     sequence:
     - alias: Get the forecast data
       action: weather.get_forecasts
@@ -608,12 +615,13 @@ actions:
     - alias: Define variables to determine which part to use
       variables:
         tomorrow: !input tomorrow
-        next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
-        delta: '{{ 1 if next_day else 0}}'
         start_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
           | map(attribute=''start'') | list | first }}'
         end_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
           | map(attribute=''end'') | list | first }}'
+        next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
+        skip_day: '{{ now() >= today_at(end_time) and not next_day }}'
+        delta: '{{ 1 if (next_day or skip_day) else 0 }}'
         start: '{{ today_at() + timedelta(days=delta) + as_timedelta(start_time) }}'
         end: '{{ today_at() + timedelta(days=delta) + as_timedelta(end_time) }}'
         day_part_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast
@@ -628,28 +636,38 @@ actions:
       - alias: Create variables for response
         variables:
           value_round: !input value_round
-          condition: '{{ day_part_forecast | map(attribute=''condition'') | list |
-            statistical_mode }}'
-          cloud_coverage: '{{ day_part_forecast | map(attribute=''cloud_coverage'')
-            | list | average | default(0) | round(value_round) }}'
-          temperature: '{{ day_part_forecast | map(attribute=''temperature'') | list
-            | max | default(0) | round(value_round) }}'
-          dew_point: '{{ day_part_forecast | map(attribute=''temperature'') | list
-            | max | default(0) | round(value_round) }}'
-          pressure: '{{ day_part_forecast | map(attribute=''temperature'') | list
-            | max | default(0) | round(value_round) }}'
-          humidity: '{{ day_part_forecast | map(attribute=''temperature'') | list
-            | max | default(0) | round(value_round) }}'
-          apparent_temperature: '{{ day_part_forecast | map(attribute=''temperature'')
-            | list | max | default(temperature) | round(value_round) }}'
-          uv_index: '{{ day_part_forecast | map(attribute=''uv_index'') | list | max
+          condition: '{{ day_part_forecast | selectattr(''condition'', ''defined'')
+            | map(attribute=''condition'') | list | statistical_mode }}'
+          cloud_coverage: '{{ day_part_forecast | selectattr(''cloud_coverage'', ''defined'')
+            | map(attribute=''cloud_coverage'') | list | average | default(0) | round(value_round)
+            }}'
+          temperature: '{{ day_part_forecast | selectattr(''temperature'', ''defined'')
+            | map(attribute=''temperature'') | list | max | default(0) | round(value_round)
+            }}'
+          dew_point: '{{ day_part_forecast | selectattr(''dew_point'', ''defined'')
+            | map(attribute=''temperature'') | list | max | default(0) | round(value_round)
+            }}'
+          pressure: '{{ day_part_forecast | selectattr(''pressure'', ''defined'')
+            | map(attribute=''temperature'') | list | max | default(0) | round(value_round)
+            }}'
+          humidity: '{{ day_part_forecast | selectattr(''humidity'', ''defined'')
+            | map(attribute=''temperature'') | list | max | default(0) | round(value_round)
+            }}'
+          apparent_temperature: '{{ day_part_forecast | selectattr(''apparent_temperature'',
+            ''defined'') | map(attribute=''apparent_temperature'') | list | max |
+            default(temperature) | round(value_round) }}'
+          uv_index: '{{ day_part_forecast | selectattr(''uv_index'', ''defined'')
+            | map(attribute=''uv_index'') | list | max | default(0) | round(value_round)
+            }}'
+          precipitation: '{{ day_part_forecast | selectattr(''precipitation'', ''defined'')
+            | map(attribute=''precipitation'') | list | sum | default(0) | round(value_round)
+            }}'
+          precipitation_probability: '{{ day_part_forecast | selectattr(''precipitation_probability'',
+            ''defined'') | map(attribute=''precipitation_probability'') | list | max
             | default(0) | round(value_round) }}'
-          precipitation: '{{ day_part_forecast | map(attribute=''precipitation'')
-            | list | sum | default(0) | round(value_round) }}'
-          precipitation_probability: '{{ day_part_forecast | map(attribute=''precipitation_probability'')
-            | list | max | default(0) | round(value_round) }}'
-          wind_speed: '{{ day_part_forecast | map(attribute=''wind_speed'') | list
-            | max | default(0) | round(value_round) }}'
+          wind_speed: '{{ day_part_forecast | selectattr(''wind_speed'', ''defined'')
+            | map(attribute=''wind_speed'') | list | max | default(0) | round(value_round)
+            }}'
           condition_translated: '{{ translations.get(condition) }}'
           rain_warning_threshold: !input rain_warning_threshold
           wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', wind_speed)
@@ -663,6 +681,10 @@ actions:
       else:
       - alias: Send back the response
         set_conversation_response: !input response_no_data
+  - conditions: '{{ part_day or daily }}'
+    sequence:
+    - alias: Send back the response
+      set_conversation_response: !input response_no_data
   default:
   - alias: Send back the response
     set_conversation_response: !input response_invalid_phrase
