@@ -7,6 +7,7 @@ trigger:
       area: slaapkamer_floris
     variables:
       event: "{{ trigger.event.data.click }}"
+      button: "{{ trigger.event.data.button }}"
 action:
   - alias: "Which click type"
     choose:
@@ -14,16 +15,25 @@ action:
         sequence:
           - action: light.toggle
             target:
-              entity_id: light.planeet
+              entity_id: >
+                {%
+                  set button_map = 
+                    {
+                      'left': 'light.bedlamp_floris',
+                      'select': 'light.planeet',
+                      'right': 'light.floris_leeslamp'
+                    }
+                %}
+                {{ button_map[button] }}
       - conditions: "{{ event == 'hold' }}"
         sequence:
           - alias: "Light off"
-            action: light.toggle
+            action: light.turn_off
             target:
               entity_id: >
                 {{
                   area_entities('slaapkamer_floris')
-                    | select('in', label_entities('lights_off_long_press'))
+                    | select('in', label_entities('off_long_press'))
                     | list
                 }}
       - conditions: "{{ event == 'double' }}"
