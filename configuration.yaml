@@ -1,1 +1,19 @@
-homeassistant: !include_dir_merge_named /config/include/homeassistant
+homeassistant:
+  allowlist_external_dirs:
+    - "/config"
+  auth_mfa_modules:
+    - type: totp
+  packages: !include_dir_named /config/packages
+
+# integration includes
+alert: !include_dir_merge_named /config/include/alert/
+automation: !include /config/automations.yaml
+automation dir: !include_dir_list /config/include/automation/
+binary_sensor: !include_dir_list /config/include/binary_sensor
+intent_script: !include_dir_merge_named /config/include/intent_script/
+media_player: !include_dir_list /config/include/media_player/
+scene: !include /config/scenes.yaml
+script: !include_dir_merge_named /config/include/script/
+script gui: !include /config/scripts.yaml
+template: !include_dir_merge_list /config/include/template/
+
