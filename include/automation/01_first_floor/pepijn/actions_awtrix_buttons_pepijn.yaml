@@ -9,94 +9,36 @@ triggers:
       area: slaapkamer_pepijn
     variables:
       event: "{{ trigger.event.data.click }}"
-variables:
-  pepijn: >
-    {% set sleep = today_at(states('input_datetime.pepijn_time_bed')) %}
-    {% set out = today_at(states('input_datetime.pepijn_time_awake')) %}
-    {% set awake = out - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
-    {% if now() > sleep or now() < awake %}
-      sleeping
-    {% elif awake < now() < out %}
-      awake
-    {% else %}
-      out
-    {% endif %}
-  sleep_color: >
-    {% set orange =
-      today_at(states('input_datetime.pepijn_time_awake'))
-      - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
-    {% if orange - timedelta(minutes=15) < now() < orange %}
-      blue
-    {% else %}
-      {{ 'red' if is_state('sensor.house_mode', 'Slapen') else 'deeppink' }}
-    {% endif %}
+      button: "{{ trigger.event.data.button }}"
 actions:
   - alias: "Which click type"
     choose:
-      - alias: "Actions with short press"
-        conditions: "{{ event == 'single' }}"
+      - conditions: "{{ event == 'single' }}"
         sequence:
-          - alias: "Perform right action"
-            choose:
-              # - conditions: >
-              #     {{
-              #       states('pepijn_lux_illuminance_lux') | float(0) < 10
-              #       and pepijn == 'sleeping'
-              #       and is_state('light.groep_bed_pepijn', 'off')
-              #     }}
-              #   sequence:
-              #     - action: light.turn_on
-              #       target:
-              #         entity_id: light.pepijn_leeslamp
-              #       data:
-              #         color_name: "{{ sleep_color }}"
-              #         brightness: 30
-              #     - delay: >
-              #         {% set next = today_at(states('input_datetime.pepijn_time_awake')) - timedelta(minutes=states('input_number.leestijd_pepijn')| int) %}
-              #         {% set next = next + timedelta(days=1) if now() > next else next %}
-              #         {{ [12, ((next - now()).seconds / 3600 * 12) | int + 1] | min }}
-              #     - action: light.turn_off
-              #       target:
-              #         entity_id: light.pepijn_leeslamp
-              - conditions:
-                  - condition: state
-                    entity_id: light.groep_bed_pepijn
-                    state: "off"
-                  - condition: state
-                    entity_id: binary_sensor.pepijn_sleeping
-                    state: "on"
-                sequence:
-                  - action: light.turn_on
-                    target:
-                      entity_id: light.pepijn_leeslamp
-                    data:
-                      color_temp_kelvin: 3000
-                      brightness_pct: 20
-                  - action: script.resume_transition_lights
-                    data:
-                      light: light.pepijn_leeslamp
-              - conditions:
-                  - condition: state
-                    entity_id: light.groep_bed_pepijn
-                    state: "off"
-                sequence:
-                  - action: light.turn_on
-                    target:
-                      entity_id: light.groep_bed_pepijn
-                    data:
-                      color_temp_kelvin: 3000
-                      brightness_pct: 20
-                  - action: script.resume_transition_lights
-                    data:
-                      light: light.pepijn_leeslamp
-            default:
-              - action: light.turn_off
-                target:
-                  entity_id: light.groep_bed_pepijn
-      - alias: "Actions with long press"
-        conditions: "{{ event == 'hold' }}"
+          - action: light.toggle
+            target:
+              entity_id: >
+                {%
+                  set button_map = 
+                    {
+                      'left': 'light.booglamp',
+                      'select': 'light.bed_pepijn',
+                      'right': 'light.pepijn_leeslamp'
+                    }
+                %}
+                {{ button_map[button] }}
+      - conditions: "{{ event == 'hold' }}"
         sequence:
-          - alias: "Turn all lights off"
+          - alias: "Light off"
             action: light.turn_off
             target:
-              entity_id: light.groep_pepijn
+              entity_id: >
+                {{
+                  area_entities('slaapkamer_pepijn')
+                    | select('in', label_entities('off_long_press'))
+                    | list
+                }}
+      - conditions: "{{ event == 'double' }}"
+        sequence: []
+      - conditions: "{{ event == 'release' }}"
+        sequence: []

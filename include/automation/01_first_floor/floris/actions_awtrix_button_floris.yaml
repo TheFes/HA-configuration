@@ -37,9 +37,6 @@ actions:
                     | list
                 }}
       - conditions: "{{ event == 'double' }}"
-        sequence:
-          - action: light.toggle
-            target:
-              entity_id: light.floris_leeslamp
+        sequence: []
       - conditions: "{{ event == 'release' }}"
         sequence: []
