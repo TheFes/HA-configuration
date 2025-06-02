@@ -51,7 +51,7 @@ actions:
             {% set awake_time = awake_time + timedelta(days=1) if n > awake_time else awake_time %}
             {% set qh = ((awake_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
             {% set progress = [100 - int((100/24 * qh)), 0] | max if n < awake_time or n > today_at('19:00') else 100 %}
-            {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
+            {% set icon = 'moon-up' if is_state('sensor.house_mode', 'Slapen') else 'moon-down' %}
             {{
               dict(
                     icon = icon,
