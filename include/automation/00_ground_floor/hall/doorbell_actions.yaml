@@ -158,22 +158,22 @@ actions:
               - alias: Turn soundbar on in case it wasn't already
                 action: media_player.turn_on
                 target:
-                  entity_id: media_player.soundbar_template
+                  entity_id: media_player.samsung_soundbar
               - alias: Make sure soundbar is on
-                wait_template: "{{ not 'media_player.soundbar_template' | has_value or state_attr('media_player.soundbar_template', 'volume_level') is not none }}"
+                wait_template: "{{ not 'media_player.samsung_soundbar' | has_value or state_attr('media_player.samsung_soundbar', 'volume_level') is not none }}"
               - alias: Set soundbar to the correct source
                 action: media_player.select_source
                 data:
                   source: aux
                 target:
-                  entity_id: media_player.soundbar_template
+                  entity_id: media_player.samsung_soundbar
               - alias: Store volume level
                 variables:
-                  sb_vol: "{{ state_attr('media_player.soundbar_template', 'volume_level') | default(0.5, true) }}"
+                  sb_vol: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') | default(0.5, true) }}"
               - alias: Set volume to at least 0.5
                 action: media_player.volume_set
                 target:
-                  entity_id: media_player.soundbar_template
+                  entity_id: media_player.samsung_soundbar
                 data:
                   volume_level: "{{ [0.5, sb_vol] | max }}"
           - alias: Send announcement
@@ -207,6 +207,6 @@ actions:
               - alias: Set soundbar back to original volume
                 action: media_player.volume_set
                 target:
-                  entity_id: media_player.soundbar_template
+                  entity_id: media_player.samsung_soundbar
                 data:
                   volume_level: "{{ sb_vol }}"
