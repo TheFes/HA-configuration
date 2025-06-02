@@ -373,7 +373,7 @@ automation:
                   sequence:
                     - action: number.set_value
                       target:
-                        entity_id: "{{ repeat.item.entity_id }}"
+                        entity_id: "{{ repeat.item.entity }}"
                       data:
                         value: "{{ repeat.item.percentage }}"
           - alias: Actions when house mode changes to Slapen
@@ -385,7 +385,7 @@ automation:
                   sequence:
                     - action: number.set_value
                       target:
-                        entity_id: "{{ repeat.item.entity_id }}"
+                        entity_id: "{{ repeat.item.entity }}"
                       data:
                         value: "{{ repeat.item.percentage }}"
 
