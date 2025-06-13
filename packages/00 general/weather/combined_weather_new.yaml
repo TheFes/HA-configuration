@@ -5,7 +5,7 @@
 
 template:
   # trigger based template weather entity which combines all forecasts
-  - trigger:
+  - triggers:
       - platform: time_pattern
         minutes: "0"
         seconds: "30"
@@ -13,7 +13,7 @@ template:
         event: start
       - platform: event
         event_type: update_combined_forecast
-    action:
+    actions:
       - alias: "Define weights for different weather integrations"
         variables:
           # set to true to get an persistent notification every time the weather is updated

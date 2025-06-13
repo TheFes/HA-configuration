@@ -3,7 +3,7 @@
 template:
   # template sensors for temperature and trend
   # probe 1
-  - trigger:
+  - triggers:
       - platform: state
         entity_id: sensor.xbbq_112c_temperature_probe_1
         from: ~
@@ -53,7 +53,7 @@ template:
               unknown
             {%- endif %}
   # probe 2
-  - trigger:
+  - triggers:
       - platform: state
         entity_id: sensor.xbbq_112c_temperature_probe_2
         from: ~

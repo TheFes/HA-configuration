@@ -1,4 +1,4 @@
-- trigger:
+- triggers:
     - platform: state
       entity_id:
         - input_boolean.test
@@ -16,7 +16,7 @@
         {% set new = {trigger.entity_id: as_local(trigger.to_state.last_changed).isoformat()} %}
         {{ dict(current, **new) }}
 
-- trigger:
+- triggers:
     - platform: state
       entity_id:
         - input_boolean.test

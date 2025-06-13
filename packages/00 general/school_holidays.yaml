@@ -20,12 +20,12 @@ rest_command:
 # Binary sensor which will be "on" in case it is currently a school holiday.
 # The attributes show the selected region, the current holiday and a the upcoming holidays for the current school year (next school year in case it's summer holiday)
 template:
-  - trigger:
+  - triggers:
       - platform: time
         at: "00:00"
       - platform: event
         event_type: update_school_holidays
-    action:
+    actions:
       - action: rest_command.school_holidays
         response_variable: holidays
       - variables:

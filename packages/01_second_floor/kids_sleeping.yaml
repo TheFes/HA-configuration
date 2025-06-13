@@ -1,5 +1,5 @@
 template:
-  - trigger:
+  - triggers:
       - platform: event
         event_type: pepijn_sleeping
         id: "on"
@@ -9,7 +9,7 @@ template:
           {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
-    action:
+    actions:
       - action: number.set_value
         target:
           entity_id: number.shelly1_pepijn_start_brightness
@@ -20,7 +20,7 @@ template:
         name: Pepijn Sleeping
         state: "{{ trigger.id | bool }}"
         icon: "{{ 'mdi:sleep' if trigger.id | bool else 'mdi:sleep-off' }}"
-  - trigger:
+  - triggers:
       - platform: event
         event_type: floris_sleeping
         id: "on"
@@ -30,7 +30,7 @@ template:
           {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
-    action:
+    actions:
       - action: number.set_value
         target:
           entity_id: number.sonoff_floris_start_brightness
@@ -152,4 +152,3 @@ automation:
             action: light.turn_on
             target:
               entity_id: light.planeet
-

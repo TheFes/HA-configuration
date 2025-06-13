@@ -1,4 +1,4 @@
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.afvalwijzer_restgft
       attribute: days_until_collection_date
@@ -24,7 +24,7 @@
           in_two_weeks: >
             {{ now().date() - as_datetime(trigger.to_state.state).date() <= timedelta(weeks=2) }}
 
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.afvalwijzer_dhm
       attribute: days_until_collection_date

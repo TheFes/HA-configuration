@@ -11,7 +11,7 @@
 # 2. Template Sensor
 #    The template sensor will be updated at 18:15 of the first 3 days of the month (in case a trigger was missed on the other days because the
 #    server was rebooting for example). You can also update it manually by issuing the "update_postcodeloterij_prizes" event in developer tools >
-#    events. 
+#    events.
 #    Make sure to update the "notify_action" variable on line 55 so notifications will be sent to the right device. The notify action is optmized
 #    for the companion app on an Android phone, you might want to adjuct the action data of the action in case you use an iPhone or other device
 #    A notification will only be sent if there are prizes won, and if the prizes for that particular month weren't already in the template sensor data
@@ -36,7 +36,7 @@ rest_command:
       User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
 
 template:
-  - trigger:
+  - triggers:
       # the sensor will be automatically updated on the first 3 days of the month, at 18:00
       - alias: trigger at 18:00
         trigger: time
@@ -46,11 +46,11 @@ template:
         trigger: event
         event_type: update_postcodeloterij_prizes
         id: manual
-    condition:
+    conditions:
       - alias: Check if it triggered on the manual event, or if it is the in the first 3 days of the month
         condition: template
         value_template: "{{ trigger.id == 'manual' or now().day in [1,2,3] }}"
-    action:
+    actions:
       - variables:
           notify_action: notify.mobile_app_pixel_7_pro
       - alias: Create variables for the month to use in the rest commands and messages
@@ -125,7 +125,7 @@ template:
           }}
         then:
           - alias: "Send notification"
-            action:  "{{ notify_action }}"
+            action: "{{ notify_action }}"
             data:
               title: "🎁 Winnen doe je bij..."
               message: "{{ prize_text_full }}"

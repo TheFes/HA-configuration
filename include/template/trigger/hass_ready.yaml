@@ -1,11 +1,11 @@
-- trigger:
+- triggers:
     - platform: homeassistant
       event: start
       id: "true"
     - platform: homeassistant
       event: shutdown
       id: "false"
-  action:
+  actions:
     - if: >
         {{
           trigger.id | bool

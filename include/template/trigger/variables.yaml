@@ -1,14 +1,14 @@
 # trigger based template sensor to store variables
 # for more info, see https://community.home-assistant.io/t/wth-cant-input-helpers-be-read-only-in-ui/467562/32
 
-- trigger:
+- triggers:
     - platform: event
       event_type: set_variable
     - platform: event
       event_type: remove_variable
     - platform: event
       event_type: clear_variables
-  condition:
+  conditions:
     - condition: template
       value_template: >
         {{
@@ -27,7 +27,7 @@
             or 
             trigger.event.event_type == 'clear_variables'
         }}
-  action:
+  actions:
     - if: "{{ trigger.event.data.get('log', state_attr('sensor.variables', 'log_events')) }}"
       then:
         - service: logbook.log

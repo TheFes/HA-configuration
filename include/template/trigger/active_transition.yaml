@@ -1,10 +1,10 @@
-- trigger:
+- triggers:
     - platform: event
       event_type: call_service
       event_data:
         domain: script
         service: turn_on
-  condition:
+  conditions:
     - condition: template
       value_template: "{{ trigger.event.data.service_data.entity_id == ['script.transition_lights_perform_transition'] }}"
   sensor:

@@ -329,7 +329,7 @@ automation:
 
 # binary template sensors to check if covers were manually changed
 template:
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.floris
@@ -343,7 +343,7 @@ template:
           state: "{{ true if this.state == 'on' else (has_value(trigger.entity_id) and states[trigger.entity_id].context.user_id is not none) }}"
           auto_off: "01:00:00"
 
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.pepijn_template
@@ -353,7 +353,7 @@ template:
         name: "Screen Pepijn manual"
         <<: *config_manual
 
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.werkkamer_marleen
@@ -362,7 +362,7 @@ template:
         name: "Screen Werkkamer Marleen manual"
         <<: *config_manual
 
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.slaapkamer_zolder
@@ -372,7 +372,7 @@ template:
         name: "Screen Slaapkamer manual"
         <<: *config_manual
 
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.overloop_zolder
@@ -382,7 +382,7 @@ template:
         name: "Screen Overloop zolder manual"
         <<: *config_manual
 
-  - trigger:
+  - triggers:
       - platform: state
         entity_id:
           - cover.veranda

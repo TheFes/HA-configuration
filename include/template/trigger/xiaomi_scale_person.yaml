@@ -1,4 +1,4 @@
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.mi_body_composition_scale_3496_impedance
       not_to: "unavailable"
@@ -23,7 +23,7 @@
             {% set name = 'no update' %}
           {%- endif %}
           {{ s if name in this.entity_id and s != 0 else this.state }}
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.mi_body_composition_scale_3496_impedance
       not_to: "unavailable"
@@ -32,7 +32,7 @@
       name: Weight Marleen
       <<: *config_weight
       <<: *config_general
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.mi_body_composition_scale_3496_impedance
       not_to: "unavailable"
@@ -43,7 +43,7 @@
         unit_of_measurement: ohm
         icon: mdi:omega
       <<: *config_general
-- trigger:
+- triggers:
     - platform: state
       entity_id: sensor.mi_body_composition_scale_3496_impedance
       not_to: "unavailable"

@@ -50,10 +50,10 @@
       icon: >
         {{ 'mdi:weather-sunny' if this.state is defined and this.state == 'off' else 'mdi:weather-rainy' }}
 
-- trigger:
+- triggers:
     - platform: time_pattern
       minutes: "30"
-  action:
+  actions:
     - service: weather.get_forecasts
       target:
         entity_id: weather.combined
