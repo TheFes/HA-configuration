@@ -1,18 +1,27 @@
 rest_command:
-  # rest command to get Signal messages
+  # rest command to retreive new Signal messages
   signal_get_messages:
+    # the url for your Signal API Server (I use the Add-on)
     url: !secret signal_receive_url
     timeout: 30
+
   # rest command to send Signal message
+  # you need to provide a message and recipients as data, although defaults are provided
   signal_send_message:
     url: "http://192.168.2.94:8080/v2/send"
     method: POST
     timeout: 30
     payload: >
-      {% set default_recipient = [state_attr('sensor.variables', 'variables').get('default_signal_number')] %}
-      {% set sender_number = state_attr('sensor.variables', 'variables').get('signal_sender') %}
-      {% set recip = recipients | default(default_recipient) %}
-      {% set recip = recip if recip is list else recip.split(',') | map('trim') | list %}
+      {#
+        add default recipient and sender number for messages here,
+        I use my variables sensor to not expose private phone numbers on GitHub
+      #}
+        {% set default_recipient = [state_attr('sensor.variables', 'variables').get('default_signal_number')] %}
+        {% set sender_number = state_attr('sensor.variables', 'variables').get('signal_sender') %}
+      {# ensure recipient is provided and ensure it is a list #}
+        {% set recip = recipients | default(default_recipient) %}
+        {% set recip = recip if recip is list else recip.split(',') | map('trim') | list %}
+      
       {{
         {
           "message": message | default(""),
@@ -23,6 +32,7 @@ rest_command:
       }}
 
 template:
+  # template sensor to retreive the new messages and store them in an attribute
   - triggers:
       - alias: Time pattern trigger to fetch messages
         trigger: time_pattern
@@ -51,8 +61,9 @@ template:
     sensor:
       - unique_id: e03f4dae-0e7d-4a78-9e34-80e050743332
         name: Signal messages
+        # the state of the sensor will be the date and time of the latest message
         state: "{{ messages | map(attribute='received') | max if messages | count > 0 else this.state }}"
         attributes:
           messages: >
             {% set current = this.attributes.get('messages', []) %}
-            {{ (messages + current)[:5] if messages | count <= 10 else messages }}
+            {{ (messages + current)[:5] if messages | count <= 5 else messages }}
