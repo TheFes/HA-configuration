@@ -1,0 +1,58 @@
+rest_command:
+  # rest command to get Signal messages
+  signal_get_messages:
+    url: !secret signal_receive_url
+    timeout: 30
+  # rest command to send Signal message
+  signal_send_message:
+    url: "http://192.168.2.94:8080/v2/send"
+    method: POST
+    timeout: 30
+    payload: >
+      {% set default_recipient = [state_attr('sensor.variables', 'variables').get('default_signal_number')] %}
+      {% set sender_number = state_attr('sensor.variables', 'variables').get('signal_sender') %}
+      {% set recip = recipients | default(default_recipient) %}
+      {% set recip = recip if recip is list else recip.split(',') | map('trim') | list %}
+      {{
+        {
+          "message": message | default(""),
+          "number": sender_number,
+          "recipients": recip,
+          "text_mode": text_mode | default("normal")
+        } | to_json
+      }}
+
+template:
+  - triggers:
+      - alias: Time pattern trigger to fetch messages
+        trigger: time_pattern
+        minutes: "/1"
+    actions:
+      - alias: Fetch messages
+        action: rest_command.signal_get_messages
+        response_variable: rest_messages
+      - variables:
+          messages: >
+            {% set ns = namespace(data=[]) %}
+            {% for e in rest_messages.content | from_json if e.envelope.dataMessage is defined %}
+              {% set d = e.envelope %}
+              {% set ns.data = ns.data + 
+                [
+                  dict(
+                    source=d.source,
+                    name=d.sourceName,
+                    received=(d.timestamp | int | multiply(0.001) | as_datetime | as_local).isoformat(),
+                    message=d.dataMessage.message
+                  )
+                ]
+              %}
+            {% endfor %}
+            {{ ns.data }}
+    sensor:
+      - unique_id: e03f4dae-0e7d-4a78-9e34-80e050743332
+        name: Signal messages
+        state: "{{ messages | map(attribute='received') | max if messages | count > 0 else this.state }}"
+        attributes:
+          messages: >
+            {% set current = this.attributes.get('messages', []) %}
+            {{ (messages + current)[:5] if messages | count <= 10 else messages }}
