@@ -127,7 +127,7 @@ actions:
               name: "{{ name_a or name_c }}"
               sound: "{{ 'roltong.mp3' if birthday_today else 'dingdong.mp3' }}"
               message: >
-                Er staat iemand aan de deur! {{ ('Misschien is het wel visite voor ' ~ name ~ '!') if birthday_today }}
+                {{ ('Is dit misschien visite voor ' ~ name ~ '?!') if birthday_today else ' ' }}
               sat_id: >
                 {% set reject_list = ['assist_satellite.m5stack_atom_echo_d4e7f8_assist_satellite', 'assist_satellite.grandstream'] %}
                 {% set reject_list = (reject_list + ['assist_satellite.pepijn']) if is_state('binary_sensor.pepijn_sleeping', 'on') else reject_list %}
@@ -138,20 +138,6 @@ actions:
                     | reject('in', reject_list)
                     | list
                 }}
-              vol: >
-                {% set id = sat_id | map('device_id') | map('device_entities') | flatten | select('match', 'media_player.') | select('has_value') | list %}
-                {% set vol = id | map('state_attr', 'volume_level') | map('round', 2) | list %}
-                {{ zip(id, vol) | list}}
-          - alias: Set all players to at least 80%
-            repeat:
-              for_each: "{{ vol }}"
-              sequence:
-                - alias: Set all player to at least 80%
-                  action: media_player.volume_set
-                  target:
-                    entity_id: "{{ repeat.item[0] }}"
-                  data:
-                    volume_level: "{{ [0.8, repeat.item[1]] | max }}"
           - alias: Make sure soundbar is ready
             if: "{{ 'assist_satellite.woonkamer' in sat_id }}"
             then:
@@ -176,31 +162,19 @@ actions:
                   entity_id: media_player.samsung_soundbar
                 data:
                   volume_level: "{{ [0.5, sb_vol] | max }}"
-          - alias: Send announcement
-            action: assist_satellite.announce
-            data:
-              preannounce_media_id: media-source://media_source/local/misc/{{ sound }}
-              message: "{{ message }}"
-            target:
-              entity_id: "{{ sat_id }}"
-          - alias: Wait until at least one satellite is responding
-            wait_template: "{{ sat_id | select('is_state', 'responding') | list | count > 0 }}"
-            timeout: "00:00:01"
-            continue_on_timeout: true
-          - alias: Wait until no satellite is responding
-            wait_template: "{{ sat_id | select('is_state', 'responding') | list | count == 0 }}"
-            timeout: "00:00:10"
-            continue_on_timeout: true
-          - alias: Set all players to orignal volume
-            repeat:
-              for_each: "{{ vol }}"
+          - repeat:
+              for_each: "{{ sat_id }}"
               sequence:
-                - alias: Set all player to original volume
-                  action: media_player.volume_set
+                - alias: Use announcement script
+                  action: script.turn_on
                   target:
-                    entity_id: "{{ repeat.item[0] }}"
+                    entity_id: script.send_announcement_with_volume_setting
                   data:
-                    volume_level: "{{ repeat.item[1] }}"
+                    variables:
+                      satellite: "{{ repeat.item }}"
+                      message: "{{ message }}"
+                      pre_announce_sound: media-source://media_source/local/misc/{{ sound }}
+                      volume: 0.6
           - alias: Restore volume soundbar
             if: "{{ 'assist_satellite.woonkamer' in sat_id }}"
             then:
