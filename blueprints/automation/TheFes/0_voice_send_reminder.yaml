@@ -52,7 +52,7 @@ blueprint:
     Nothing from your side is needed, the automation will check every minute if there
     are todo items due, and perform the actions if this is the case.'
   homeassistant:
-    min_version: 2024.3.999
+    min_version: 2025.4.0
   input:
     general_settings:
       name: General settings
@@ -77,6 +77,18 @@ blueprint:
               filter:
               - domain:
                 - todo
+        after_notification:
+          name: After notification
+          description: What to do with the to-do entry after the notification is sent
+          selector:
+            select:
+              options:
+              - Delete item
+              - Mark as completed
+              sort: false
+              custom_value: false
+              multiple: false
+          default: Delete item
         recipients:
           name: Notification recipients
           description: Provide the recipients for the reminders
@@ -148,7 +160,9 @@ blueprint:
             this is used for further processing in actions. '
 triggers: !input triggers
 variables:
+  version: 2025.6.3
   todo_entity: !input todo_entity
+  after_notification: !input after_notification
   recipients: !input recipients
   recipient_data: "{% set ns = namespace(recipient_data=[]) %} {% for item in recipients
     %}\n  {% set ns.recipient_data = ns.recipient_data + [dict(name=item.name, description=item.description)]
@@ -161,9 +175,10 @@ actions:
   response_variable: todo_data
 - alias: Set new variable
   variables:
-    items: '{{ todo_data[todo_entity][''items''] | selectattr(''due'', ''<'', (now()+timedelta(seconds=30)).isoformat())
+    items: '{{ todo_data[todo_entity][''items''] | selectattr(''status'', ''eq'',
+      ''needs_action'') | selectattr(''due'', ''<'', (now()+timedelta(seconds=30)).isoformat())
       | list }}'
-- alias: Repeat sending the notifications for eacht event
+- alias: Repeat sending the notifications for each event
   repeat:
     for_each: '{{ items }}'
     sequence:
@@ -179,7 +194,11 @@ actions:
         text: !input recipient_prompt
       response_variable: recipient_llm_raw
     - variables:
-        recipients_llm: '{{ recipient_llm_raw.response.speech.plain.speech }}'
+        recipients_raw: '{{ recipient_llm_raw.response.speech.plain.speech }}'
+        recipients_llm: "{% set r = recipients_raw %} {% if r is list %}\n  {{ r }}\n{%
+          elif r is string and r is search('\\[*\\]') %}\n  {{ r[r.index('['):r.index(']')+1]
+          }}\n{% elif r is string %}\n  {{ r.split(',') | map('trim') | list }}\n{%
+          endif %}\n"
     - alias: Repeat sending the notification for each recipient
       repeat:
         for_each: '{{ recipients_llm }}'
@@ -205,9 +224,20 @@ actions:
                   notifiers_used: '{{ notifiers_used + 1 }}'
     - if: '{{ notifiers_used > 0}}'
       then:
-      - alias: remove item from list
-        action: todo.remove_item
-        target:
-          entity_id: !input todo_entity
-        data:
-          item: '{{ text }}'
+      - if: '{{ after_notification | default(''Delete item'', true) == ''Delete item''
+          }}'
+        then:
+        - alias: remove item from list
+          action: todo.remove_item
+          target:
+            entity_id: !input todo_entity
+          data:
+            item: '{{ text }}'
+        else:
+        - alias: mark item as completed
+          action: todo.update_item
+          target:
+            entity_id: !input todo_entity
+          data:
+            status: completed
+            item: '{{ text }}'
