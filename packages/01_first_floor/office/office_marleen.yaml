@@ -1,0 +1,122 @@
+# =============================================================================
+# PACKAGE: Marleen's Office Automation
+# PURPOSE: Printer integration management and status monitoring
+# LOCATION: First Floor - Office (Marleen)
+# DEPENDENCIES: Brother printer integration, Mobile app notifications
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# Manages printer integration states and provides status monitoring for toner
+# and drum levels. Automatically enables/disables printer integration based on
+# printer connectivity and sends notifications when supplies are low.
+
+# ENTITIES CREATED:
+# Automations:
+# - automation.disable_printer_ingegration - Auto enable/disable printer integration
+# - automation.status_messages_for_printer - Toner and drum level notifications
+
+# EXTERNAL DEPENDENCIES:
+# - Integration: Brother Printer (DCP-L2530DW) - Two config entries
+# - Entity: binary_sensor.printer - Printer connectivity status
+# - Entity: sensor.dcp_l2530dw_black_toner_remaining - Toner level (%)
+# - Entity: sensor.dcp_l2530dw_drum_remaining_life - Drum life remaining (%)
+# - Entity: automation.f2_status_messages_for_printer - Status automation reference
+# - Service: notify.mobile_app_pixel_7_pro - Mobile notifications
+
+# PRINTER INTEGRATION MANAGEMENT:
+# - Automatically enables integration when printer is online
+# - Disables integration when printer is offline to prevent errors
+# - Manages two config entries for complete printer integration control
+
+# NOTIFICATION SYSTEM:
+# - Toner alerts: When remaining < 26% and < 11%
+# - Drum alerts: When remaining life < 26% and < 11%
+# - High priority notifications with printer icon
+# - Dutch language notifications
+
+# CONFIGURATION NOTES:
+# Lines 32-33: Printer integration config entry IDs - update if integration changes
+# Lines 44-67: Toner and drum thresholds (26% and 11%) - adjust as needed
+# Line 81: Mobile app entity - update to match your device
+
+# =============================================================================
+# PRINTER INTEGRATION CONTROL
+# =============================================================================
+automation:
+  - id: 782ed19b-f497-47b9-adb2-782d538e8e33
+    alias: "Disable Printer ingegration"
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.printer
+        to:
+          - "on"
+          - "off"
+    actions:
+      - action: automation.turn_{{ trigger.to_state.state }}
+        target:
+          entity_id: automation.f2_status_messages_for_printer
+      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+        data:
+          config_entry_id:
+            - ca207fdeedd4443f3ffd84b518b1edae
+            - 032578ad1a4457ef750d888d0ec9cb47
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Printer Status Monitoring
+  # PURPOSE: Monitor toner and drum levels, send notifications when low
+  # TRIGGERS: Toner <26%/11%, Drum life <26%/11%
+  # ---------------------------------------------------------------------------
+  - id: fab3e0d1-1d3a-46ce-b1c1-5c56e788bf02
+    alias: "Status messages for printer"
+    triggers:
+      - trigger: template
+        value_template: >
+          {{
+            'sensor.dcp_l2530dw_black_toner_remaining' | has_value
+            and states('sensor.dcp_l2530dw_black_toner_remaining') | float < 26
+          }}
+        id: toner
+      - trigger: template
+        value_template: >
+          {{
+            'sensor.dcp_l2530dw_black_toner_remaining' | has_value
+            and states('sensor.dcp_l2530dw_black_toner_remaining') | float < 11
+          }}
+        id: toner
+      - trigger: template
+        value_template: >
+          {{
+            'sensor.dcp_l2530dw_drum_remaining_life' | has_value
+            and states('sensor.dcp_l2530dw_drum_remaining_life') | float < 26
+          }}
+        id: drum
+      - trigger: template
+        value_template: >
+          {{
+            'sensor.dcp_l2530dw_drum_remaining_life' | has_value
+            and states('sensor.dcp_l2530dw_drum_remaining_life') | float < 11
+          }}
+        id: drum
+    conditions:
+      - alias: "Previous state is not unavailable or unkown"
+        condition: template
+        value_template: "{{ trigger.from_state.state not in ['unavailable', 'unknown'] }}"
+    actions:
+      - variables:
+          message: >
+            {%- if trigger.id == 'toner' %}
+              "De toner is nog maar voor {{ states('sensor.dcp_l2530dw_black_toner_remaining') }}% vol"
+            {%- else %}
+              "De levensduur van de drum is nog maar {{ states('sensor.dcp_l2530dw_drum_remaining_life') }}"
+            {%- endif %}
+      - alias: "Notificatie naar telefoon Martijn"
+        action: notify.mobile_app_pixel_7_pro
+        data:
+          title: "Printer {{ trigger.id }} status"
+          message: "{{ message }}"
+          data:
+            channel: Printer
+            ttl: 0
+            priority: high
+            notification_icon: mdi:printer

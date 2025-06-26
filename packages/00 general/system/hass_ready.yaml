@@ -1,0 +1,36 @@
+template:
+  - triggers:
+      - platform: homeassistant
+        event: start
+        id: "true"
+      - platform: homeassistant
+        event: shutdown
+        id: "false"
+    actions:
+      - if: >
+          {{
+            trigger.id | bool
+            and (state_attr('sensor.variables', 'variables') | default(dict(reboot_from_notification=false))).reboot_from_notification
+          }}
+        then:
+          - alias: "Send notification to phone"
+            service: notify.mobile_app_pixel_7_pro
+            data:
+              title: Home Assistant is weer opgestart
+              message: Update is succesvol uitgevoerd
+              data:
+                tag: "ha_update"
+                channel: Home Assistant
+                ttl: 0
+                priority: high
+          - alias: "Write variables to variables template sensor"
+            event: set_variable
+            event_data:
+              key: "reboot_from_notification"
+              value: false
+              set_timestamp: false
+    binary_sensor:
+      - unique_id: binary_sensor_ha_started
+        name: HA started
+        state: "{{ trigger.id | bool }}"
+        device_class: running

@@ -1,0 +1,235 @@
+# From rain.yaml
+template:
+  - triggers:
+      - trigger: state
+        entity_id: binary_sensor.regensensor_water_leak
+        to: unavailable
+        for:
+          seconds: 30
+      - trigger: state
+        entity_id:
+          - binary_sensor.regensensor_water_leak
+          - binary_sensor.rain_from_weather_integrations
+          - binary_sensor.around_sunrise
+        to:
+          - "on"
+          - "off"
+    binary_sensor:
+      - unique_id: e1a060ac-8130-465f-938c-1dc25dbe6eff
+        name: "Rain"
+        state: >
+          {% set around_sunrise = is_state('binary_sensor.around_sunrise', 'on') %}
+          {% set use_rain_sensor =
+            'binary_sensor.regensensor_water_leak' | has_value 
+            and
+              (
+                not is_state('binary_sensor.around_sunrise', 'on')
+                or is_state('binary_sensor.regensensor_water_leak', 'off')
+              )
+          %}
+          {{
+            states('binary_sensor.regensensor_water_leak') | bool
+            if use_rain_sensor
+            else states('binary_sensor.rain_from_weather_integrations') | bool
+          }}
+        availability: >
+          {{ 
+            (
+              'binary_sensor.regensensor_water_leak' | has_value
+              and not is_state('binary_sensor.around_sunrise', 'on')
+            )
+            or'binary_sensor.rain_from_weather_integrations' | has_value
+          }}
+        icon: >
+          {{ 'mdi:weather-sunny' if this.state == 'off' else 'mdi:weather-rainy' }}
+  - binary_sensor:
+      - unique_id: 6f4263c2-b7ae-41fe-b868-a5ebf88658ab
+        name: "Rain from weather integrations"
+        state: >
+          {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
+          {%- set p1 = p1.precip[:4] | reject('eq', 77) | list | sum if p1 else 'na' %}
+          {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('na') %}
+          {%- set p3 = states('sensor.br_precipitation') | float('na') %}
+          {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+          {%- if p4 %}
+            {%- set ns = namespace(p=[]) %}
+            {%- for item in p4.split(' ')[:4] %}
+              {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
+            {%- endfor %}
+            {%- set p4 =  ns.p | sum %}
+          {%- else %}
+            {%- set p4 = 'na' %}
+          {%- endif %}
+          {{ [p1, p2, p3, p4] | select('is_number') | max | default(0) }}
+        availability: >
+          {%- set p1 = 'sensor.neerslag_buienalarm_regen_data' %}
+          {%- set p2 = 'sensor.pirateweather_precip_intensity' %}
+          {%- set p3 = 'sensor.br_precipitation' %}
+          {%- set p4 = 'sensor.neerslag_buienradar_regen_data' %}
+          {{ [ p1, p2, p3, p4 ] | select('has_value') | list | count > 0 }}
+        icon: >
+          {{ 'mdi:weather-sunny' if this.state == 'off' else 'mdi:weather-rainy' }}
+  - triggers:
+      - trigger: sun
+        event: sunrise
+        offset: "-00:15:00"
+        id: "on"
+      - trigger: sun
+        event: sunrise
+        offset: "01:00:00"
+        id: "off"
+    binary_sensor:
+      - unique_id: 59785817-f055-49ca-bcbb-499de6a776ba
+        name: Around sunrise
+        state: "{{ trigger.id }}"
+        icon: "{{ 'mdi:weather-sunset-up' if this.state == 'on' else 'mdi:weather-sunset-down' }}"
+  
+  - triggers:
+      - trigger: time_pattern
+        minutes: "30"
+    actions:
+      - service: weather.get_forecasts
+        target:
+          entity_id: weather.combined
+        data:
+          type: hourly
+        response_variable: hourly
+    binary_sensor:
+      - unique_id: b42aac64-7a0d-4409-b26c-44c803b7e033
+        name: "Rain until afternoon"
+        state: >-
+          {%- set end = today_at('13:00') %}
+          {%- set end = end + timedelta(days=1) if now() > end else end %}
+          {{ hourly['weather.combined'].forecast
+                | selectattr('datetime', '<=', end.isoformat())
+                | map(attribute='precipitation')
+                | sum
+          }}
+        <<: &other_config
+          icon: "{{ 'mdi:weather-pouring' if this.state == 'on' else 'mdi:weather-sunny' }}"
+          availability: >
+            {{
+              hourly is defined
+              and hourly['weather.combined'] is defined
+              and hourly['weather.combined'].forecast is defined
+              and hourly['weather.combined'].forecast is list
+              and hourly['weather.combined'].forecast | count > 0
+            }}
+  
+      - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
+        name: "Rain until morning"
+        state: >-
+          {%- set end = today_at('8:00') %}
+          {%- set end = end + timedelta(days=1) if now() > end else end %}
+          {{ hourly['weather.combined'].forecast
+                | selectattr('datetime', '<=', end.isoformat())
+                | map(attribute='precipitation')
+                | sum
+          }}
+        <<: *other_config
+
+# From raindata.yaml
+  - binary_sensor:
+      - unique_id: d2920d48-13b8-47db-8518-6a7a1eb92851
+        name: Raindata
+        state: "{{ this.attributes.get('raindata', dict(source='none', data=[0]*12)).data | max > 0 }}"
+        attributes:
+          raindata: >
+            {% set radar = state_attr("sensor.neerslag_buienradar_regen_data","data") %}
+            {% set alarm = state_attr("sensor.neerslag_buienalarm_regen_data","data") %}
+            {% if radar %}
+              {% set raindata = (radar | replace('|', ' ')).split(' ') | reject('contains', ':') | select() | map('int') | list %}
+              {% set ns = namespace(raindata=[]) %}
+              {%- for rain in raindata %}
+                {%- set rainintensity = (10**((0-109)/32)) | round(2) %}
+                {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
+                {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
+              {%- endfor %}
+              {{ dict(source='buienradar', data=ns.raindata[:11]) }}
+            {% elif alarm %}
+              {%- set raindata = alarm.precip %}
+              {% set ns = namespace(raindata=[]) %}
+              {%- for rainintensity in raindata %}
+                {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
+                {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
+              {%- endfor %}
+              {{ dict(source='buienalarm', data=ns.raindata[:11]) }}
+            {% else %}
+              {{ dict(source='none', data=[0]*12) }}
+            {% endif %}
+
+# From temp_window_open.yaml
+  - binary_sensor:
+      - unique_id: 89607e16-e3fe-41aa-ade9-4b3d3ece55f5
+        name: "Temperature Bedroom"
+        device_class: heat
+        state: >-
+          {{ 
+            states('sensor.awair_slaapkamer_temperature') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.awair_slaapkamer_temperature') | float(0.0) > 21
+          }}
+        delay_on: "00:05:00"
+        delay_off: "00:05:00"
+  
+      - unique_id: 110ecf9a-de85-4976-a49a-6ec6c54ab5a6
+        name: "Temperature Pepijn"
+        device_class: heat
+        state: >-
+          {{ 
+            states('sensor.pepijn_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.pepijn_temp') | float(0.0) > 21
+          }}
+        delay_on: "00:05:00"
+        delay_off: "00:05:00"
+  
+      - unique_id: 1676e0c4-f873-406f-8223-c0c0565f0039
+        name: "Temperature Livingroom"
+        device_class: heat
+        state: >-
+          {{ 
+            states('sensor.woonkamer_multi_temperature') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.woonkamer_multi_temperature') | float(0.0) > 21
+          }}
+        delay_on: "00:05:00"
+        delay_off: "00:05:00"
+  
+      - unique_id: b998425b-81e2-41da-bb0c-4e9564035e68
+        name: "Temperature Floris"
+        device_class: heat
+        state: >-
+          {{ 
+            states('sensor.floris_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.floris_temp') | float(0.0) > 21
+          }}
+        delay_on: "00:05:00"
+        delay_off: "00:05:00"
+
+# From night.yaml
+binary_sensor:
+  - platform: tod
+    name: Night
+    after: sunset
+    before: sunrise
+
+# From trend.yaml
+  - platform: trend
+    sensors:
+      trend_werkkamer_marleen_temp:
+        entity_id: sensor.werkkamer_marleen_temp
+        device_class: heat
+  
+      trend_pepijn_temp:
+        entity_id: sensor.pepijn_temp
+        device_class: heat
+  
+      trend_floris_temp:
+        entity_id: sensor.floris_temp
+        device_class: heat
+  
+      trend_slaapkamer_temp:
+        entity_id: sensor.awair_slaapkamer_temperature
+        device_class: heat
+  
+      trend_woonkamer_temp:
+        entity_id: sensor.woonkamer_multi_temperature
+        device_class: heat

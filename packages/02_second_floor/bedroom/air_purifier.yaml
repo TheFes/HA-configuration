@@ -1,0 +1,108 @@
+automation:
+  - id: "1718219154509"
+    alias: Luchtreiniger Slaapkamer
+    triggers:
+      - trigger: time
+        at: "21:30:00"
+        id: time
+      - trigger: state
+        entity_id:
+          - sensor.house_mode
+        to: Slapen
+        id: sleep_time
+      - trigger: state
+        entity_id:
+          - sensor.house_mode
+        from: Slapen
+        id: no_more_sleep_time
+      - trigger: state
+        entity_id:
+          - sensor.luchtreiniger_slaapkamer_air_quality
+        not_to:
+          - excellent
+          - unknown
+        id: air_quality
+      - trigger: state
+        entity_id:
+          - sensor.luchtreiniger_slaapkamer_air_quality
+        to: excellent
+        id: air_quality
+        for:
+          minutes: 5
+      - trigger: time_pattern
+        hours: /1
+        id: quality_check
+    actions:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id:
+                  - air_quality
+                  - sleep_time
+                  - quality_check
+              - condition: state
+                entity_id: sensor.house_mode
+                state: Slapen
+              - condition: not
+                conditions:
+                  - condition: state
+                    entity_id: sensor.luchtreiniger_slaapkamer_air_quality
+                    state: excellent
+            sequence:
+              - action: fan.turn_on
+                data:
+                  percentage: 11
+                target:
+                  entity_id: fan.luchtreiniger_slaapkamer
+              - action: switch.turn_off
+                target:
+                  entity_id: switch.luchtreiniger_slaapkamer_led_enable
+          - conditions:
+              - condition: trigger
+                id:
+                  - time
+                  - air_quality
+              - condition: time
+                after: "21:30"
+              - condition: not
+                conditions:
+                  - condition: state
+                    entity_id: sensor.luchtreiniger_slaapkamer_air_quality
+                    state: excellent
+              - condition: numeric_state
+                entity_id: zone.home
+                above: 0
+            sequence:
+              - action: fan.turn_on
+                data:
+                  preset_mode: auto
+                target:
+                  entity_id: fan.luchtreiniger_slaapkamer
+          - conditions:
+              - condition: trigger
+                id:
+                  - air_quality
+                  - sleep_time
+                  - no_more_sleep_time
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id:
+                      - no_more_sleep_time
+                  - condition: and
+                    conditions:
+                      - condition: state
+                        entity_id: sensor.house_mode
+                        state: Slapen
+                      - condition: state
+                        entity_id: sensor.luchtreiniger_slaapkamer_air_quality
+                        state: excellent
+                        for:
+                          minutes: 5
+            sequence:
+              - action: fan.turn_off
+                target:
+                  entity_id: fan.luchtreiniger_slaapkamer
+              - action: switch.turn_on
+                target:
+                  entity_id: switch.luchtreiniger_slaapkamer_led_enable

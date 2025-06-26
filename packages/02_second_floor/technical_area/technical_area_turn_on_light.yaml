@@ -1,0 +1,17 @@
+automation:
+  - id: 8034c218-8019-4f21-8921-fabfd38043a8
+    alias: "Turn on light technical area based on door sensor"
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.technische_ruimte_contact
+        from:
+          - "on"
+          - "off"
+        to:
+          - "on"
+          - "off"
+    actions:
+      - alias: "Turn on light"
+        action: light.turn_{{ trigger.to_state.state }}
+        target:
+          entity_id: light.technische_ruimte

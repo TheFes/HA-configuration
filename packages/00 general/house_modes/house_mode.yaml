@@ -1,0 +1,111 @@
+# =============================================================================
+# PACKAGE: House Mode Management
+# PURPOSE: Central house mode detection and management based on occupancy and state
+# DEPENDENCIES: Zone.home, Input booleans, Light groups, Time inputs
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# This package manages the central house mode sensor that determines the current
+# state of the house based on occupancy (home/away), guest mode, holiday mode,
+# and sleep patterns. The house mode is used throughout the system for automation
+# context and appropriate responses.
+
+# ENTITIES CREATED:
+# - sensor.house_mode - Main house mode sensor with states:
+#   * "Thuis" (Home) - Normal occupancy
+#   * "Afwezig" (Away) - No one home
+#   * "Gast" (Guest) - Guest mode active
+#   * "Vakantie" (Holiday) - Holiday mode active  
+#   * "Slapen" (Sleep) - Sleep mode active
+#   * "Tandenpoetsen" (Brushing teeth) - Transition to sleep
+
+# EXTERNAL DEPENDENCIES:
+# - Entity: zone.home - Home zone occupancy count
+# - Entity: input_boolean.vakantie - Holiday mode toggle
+# - Entity: input_boolean.gast - Guest mode toggle
+# - Entity: light.groep_zolder - Attic light group (sleep detection)
+# - Entity: input_datetime.pepijn_time_awake - Pepijn's wake time
+# - Event: set_house_mode - Manual house mode override events
+
+# HOUSE MODE LOGIC:
+# 1. Manual override via set_house_mode event takes precedence
+# 2. If home occupied and currently in sleep/brushing mode, maintain sleep
+# 3. If home occupied (zone.home > 0), set to "Thuis"
+# 4. If away and guest mode active, set to "Gast"
+# 5. If away and holiday mode active, set to "Vakantie"
+# 6. If away and no special modes, set to "Afwezig"
+# 7. Automatic transition from "Tandenpoetsen" to "Slapen" after 30 minutes
+# 8. Wake up transition at Pepijn's configured wake time
+
+# TRIGGERS:
+# - set_house_mode events (manual override)
+# - Zone.home state changes (occupancy)
+# - Input boolean changes (guest/holiday modes)
+# - Attic light group turning off (sleep detection)
+# - 30-minute timeout from "Tandenpoetsen" mode
+# - Pepijn's wake time (input_datetime.pepijn_time_awake)
+
+# CONFIGURATION NOTES:
+# Lines 63-74: House mode icons - customize per your preference
+# Lines 14-42: Mode determination logic - adjust priority as needed
+# Line 51: 30-minute timeout for teeth brushing mode
+
+template:
+  - triggers:
+      - trigger: event
+        event_type: set_house_mode
+        id: event
+        variables:
+          mode: "{{ trigger.event.data.mode }}"
+      - trigger: state
+        entity_id:
+          - input_boolean.vakantie
+          - input_boolean.gast
+          - zone.home
+        variables:
+          mode: &mode_template >
+            {% set home = states('zone.home') | int(0) > 0 %}
+            {% set guest = is_state('input_boolean.gast', 'on') %}
+            {% set holiday = is_state('input_boolean.vakantie', 'on') %}
+            {% if home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
+              Slapen
+            {% elif home %}
+              Thuis
+            {% elif guest %}
+              Gast
+            {% elif holiday %}
+              Vakantie
+            {% else %}
+              Afwezig
+            {% endif %}
+      - trigger: state
+        entity_id: light.groep_zolder
+        to: "off"
+        variables:
+          mode: *mode_template
+      - trigger: state
+        entity_id: sensor.house_mode
+        to: "Tandenpoetsen"
+        for:
+          minutes: 30
+        variables:
+          mode: *mode_template
+      - trigger: time
+        at: input_datetime.pepijn_time_awake
+        variables:
+          mode: *mode_template
+    sensor:
+      - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
+        name: House Mode
+        state: "{{ mode }}"
+        icon: >-
+          {% set mapping =  {
+                              'Gast': 'mdi:account',
+                              'Afwezig': 'mdi:home-outline',
+                              'Vakantie': 'mdi:bag-suitcase',
+                              'Tandenpoetsen': 'mdi:toothbrush', 
+                              'Slapen': 'mdi:bed'
+                            }
+          %}
+          {{ mapping[mode] | default('mdi:home') }}

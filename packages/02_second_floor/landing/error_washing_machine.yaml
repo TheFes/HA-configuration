@@ -1,0 +1,19 @@
+alert:
+  wasmachine_error:
+    name: "Error Washiing Machine"
+    title: "🚨 Probleem met wasmachine"
+    message: "Er is een probleem met de wasmachine, de melding is: {{ state_attr('sensor.wasmachine', 'error_message') }}"
+    entity_id: binary_sensor.wasmachine_error_state
+    state: "on"
+    repeat: 30
+    can_acknowledge: true
+    skip_first: false
+    notifiers:
+      - all_phones
+    data:
+      tag: washing_machine_alert
+      channel: Washing machine
+      ttl: 0
+      priority: high
+      notification_icon: mdi:washing-machine-alert
+    done_message: "clear_notification"

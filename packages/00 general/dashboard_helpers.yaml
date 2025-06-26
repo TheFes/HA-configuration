@@ -685,6 +685,12 @@ template:
 
       - unique_id: sensor_anniversary_martijn
         name: Martijn
+        <<: &anniversary_config
+          state: &state_template >
+            {%- set source = this.attributes.get('source', 'not ready') %}
+            {{ states(source) | int(15) <= 14 }}
+          icon: >
+            {{ ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] | random }}
         attributes:
           source: sensor.anniversary_martijn
           text: &anniversary_text >
@@ -701,17 +707,6 @@ template:
                 {%- set days = ' Over ' ~ d ~ ' dagen' %}
             {%- endif %}
             {{ days }} {{ ('(' ~ y ~ ' jaar)') if y }}
-        <<: &anniversary_config
-          state: >
-            {%- set source = this.attributes.get('source', 'not ready') %}
-            {{ states(source) | int(15) <= 14 }}
-          icon: >
-            {%- set fixed_icons = {
-                                    'Eerste date': 'mdi:heart-multiple',
-                                    'Sinterklaas': 'mdi:gift-open'
-                                  } %}
-            {%- set random_icon = ['mdi:cake', 'mdi:balloon', 'mdi:party-popper', 'mdi:gift'] | random %}
-            {{ fixed_icons[this.name] | default(random_icon) }}
 
       - unique_id: sensor_anniversary_marleen
         name: Marleen
@@ -736,17 +731,19 @@ template:
 
       - unique_id: sensor_anniversary_eerste_date
         name: Eerste Date
+        state: *state_template
+        icon: mdi:heart-multiple
         attributes:
           source: sensor.anniversary_eerste_date
           text: *anniversary_text
-        <<: *anniversary_config
 
       - unique_id: sensor_anniversary_sinterklaas
         name: Sinterklaas
+        state: *state_template
+        icon: mdi:gift-open
         attributes:
           source: sensor.anniversary_sinterklaas
           text: *anniversary_text
-        <<: *anniversary_config
 
       - unique_id: ebdb8afc-4d13-4469-a353-8ba6b49c5618
         name: Dashboard Werkkamer Martijn Satellite Available

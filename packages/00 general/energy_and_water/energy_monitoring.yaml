@@ -1,0 +1,262 @@
+# =============================================================================
+# PACKAGE: Energy Monitoring and Costs
+# PURPOSE: Comprehensive energy consumption tracking, cost calculation, and tariff management
+# DEPENDENCIES: P1 Smart Meter integration, Water meter sensor
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# This package consolidates energy-related sensors for monitoring electricity and gas
+# consumption, calculating costs based on dynamic tariffs, and providing daily/total
+# consumption tracking for the Home Assistant Energy Dashboard.
+
+# ENTITIES CREATED:
+# - sensor.energy_daily_tariff - Current daily energy tariff (€/kWh)
+# - sensor.gas_daily_tariff - Current daily gas tariff (€/m³)
+# - sensor.energy_daily - Daily energy consumption reset sensor
+# - sensor.gas_daily - Daily gas consumption reset sensor
+# - sensor.energy_high_tariff - High tariff energy rate (€/kWh)
+# - sensor.energy_low_tariff - Low tariff energy rate (€/kWh)
+# - sensor.gas_tariff - Gas tariff rate (€/m³)
+# - sensor.energy_costs_total - Total energy costs (electricity + gas, €)
+# - sensor.utility_costs_total - Total utility costs (energy + water, €)
+# - sensor.net_power - Current net power consumption/production (W)
+# - binary_sensor.net_power_consumption - Whether currently consuming net power
+
+# EXTERNAL DEPENDENCIES:
+# - Integration: P1 Smart Meter - For electricity and gas consumption data
+# - Sensor: sensor.electricity_meter_* - Raw meter readings from P1
+# - Sensor: sensor.watermeter_total_consumption_cost - Water cost calculation
+# - Sensor: sensor.power_consumption - Current power consumption
+# - Sensor: sensor.electricity_meter_power_production - Solar production
+
+# CONFIGURATION NOTES:
+# Lines 35-38: Daily tariff rates - update to match your energy supplier
+# Lines 105-119: High/low tariff rates - customize delivery and tax rates
+# Lines 125-139: Gas tariff - adjust delivery and tax rates
+# Entity names (lines 136-142, 207-208): Update to match your P1 meter entities
+
+# TARIFF CALCULATION:
+# Daily tariffs include delivery cost + capacity cost + tax (can be negative)  
+# High/low tariffs include delivery cost + tax only
+# Gas tariff includes delivery cost + tax
+
+# =============================================================================
+# ORIGINAL SOURCE FILES CONSOLIDATED:
+# - daily_costs_energy.yaml - Daily tariff calculations
+# - energy_tariff.yaml - High/low/gas tariff rates  
+# - energy_total_cost.yaml - Total cost calculations
+# - net_power.yaml - Net power consumption/production
+# - net_power_usage.yaml - Binary sensor for consumption state
+# =============================================================================
+# =============================================================================
+# DAILY TARIFF CALCULATIONS
+# =============================================================================
+template:
+  - triggers:
+      - platform: time
+        at: "00:00"
+        variables:
+          factor: 1
+      - platform: time
+        at: "00:02"
+        variables:
+          factor: 0
+    sensor:
+      # Energy daily
+      - name: Energy daily tariff
+        unique_id: aa1c3151-659f-4f44-bb1b-5370f727fb7a
+        state: >
+          {% set delivery = 0.35705 %}
+          {% set capacity = 0.73338 %}
+          {% set tax_free = -1.63075 %}
+          {{ (delivery + capacity + tax_free) * factor }}
+        icon: mdi:cash
+        unit_of_measurement: "€/kWh"
+      # Gas daily
+      - name: Gas daily tariff
+        unique_id: 69d9ebeb-487a-4a06-8054-09de54151c7c
+        state: >
+          {% set delivery = 0.35705 %}
+          {% set capacity = 0.51110 %}
+          {{ (delivery + capacity) * factor }}
+        icon: mdi:cash
+        unit_of_measurement: "€/m³"
+  
+  - triggers:
+      - platform: time
+        at: "00:01"
+        variables:
+          factor: 1
+      - platform: time
+        at: "00:03"
+        variables:
+          factor: 0
+    sensor:
+      # Energy daily
+      - name: Energy daily
+        unique_id: 750be2ff-3d2d-44bc-ae7c-cb13436b1a13
+        state: &state >
+          {% set date_created = '2024-01-02' %}
+          {% set date_check = as_datetime(date_created).date() + timedelta(days=1) == now().date() %}
+          {{
+            factor * now().strftime('%j') | int
+            if date_check
+            else factor
+          }}
+        icon: mdi:lightning-bolt
+        unit_of_measurement: "kWh"
+        device_class: energy
+        <<: &extra_attr
+          state_class: total
+          attributes:
+            last_reset: "1970-01-01T00:00:00+00:00"
+  
+      # Gas daily
+      - name: Gas daily
+        unique_id: afb8e550-7b32-4278-bd1c-ed69d7dc4269
+        state: *state
+        icon: mdi:gas-burner
+        unit_of_measurement: "m³"
+        device_class: gas
+        <<: *extra_attr
+
+# =============================================================================
+# HIGH/LOW/GAS TARIFF RATES
+# =============================================================================
+  - sensor:
+      # Energy High
+      - name: Energy high tariff
+        unique_id: 271b931a-9454-40f8-aa54-0af52b1077cb
+        state: &tariff_state >
+          {{
+            [
+              state_attr(this.entity_id, 'delivery'),
+              state_attr(this.entity_id, 'tax')
+            ] | map('float', 0) | sum
+          }}
+        icon: mdi:cash
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        attributes:
+          delivery: 0.09595
+          tax: 0.13165
+  
+      # Energy Low
+      - name: Energy low tariff
+        unique_id: a89ba420-ee99-40df-8031-41986897b169
+        state: *tariff_state
+        icon: mdi:cash
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        attributes:
+          delivery: 0.08978
+          tax: 0.13165
+  
+      # Gas
+      - name: Gas tariff
+        unique_id: e8e5e0e0-652e-4cca-9cc4-20b491ec585b
+        state: *tariff_state
+        icon: mdi:cash
+        unit_of_measurement: "€/m³"
+        state_class: measurement
+        attributes:
+          delivery: 0.35396
+          tax: 0.70544
+
+# =============================================================================
+# TOTAL COST CALCULATIONS  
+# =============================================================================
+  - sensor:
+      # only electricity and gas
+      - unique_id: 414d57af-ebbe-41d2-84de-913542306181
+        name: Energy Costs Total
+        state: >
+          {% set entities = [
+                              'sensor.energy_consumption_tarif_1_cost',
+                              'sensor.energy_consumption_tarif_2_cost',
+                              'sensor.energy_production_tarif_1_compensation',
+                              'sensor.energy_production_tarif_1_compensation',
+                              'sensor.gas_consumption_cost'
+                            ]
+          %}
+          {% set costs = entities | select('search', '.cost$') | map('states') | map('float') | sum %}
+          {% set comp = entities | select('search', '.compensation$') | map('states') | map('float') | sum %}
+          {{ costs - comp }}
+        state_class: total
+        unit_of_measurement: €
+        device_class: monetary
+        availability: >
+          {% set entities = [
+                              'sensor.energy_consumption_tarif_1_cost',
+                              'sensor.energy_consumption_tarif_2_cost',
+                              'sensor.energy_production_tarif_1_compensation',
+                              'sensor.energy_production_tarif_1_compensation',
+                              'sensor.gas_consumption_cost'
+                            ]
+          %}
+          {{ entities | map('states') | reject('is_number') | list | count == 0 }}
+        attributes:
+          last_reset: >
+            {% set entities = [
+                                'sensor.energy_consumption_tarif_1_cost',
+                                'sensor.energy_consumption_tarif_2_cost',
+                                'sensor.energy_production_tarif_1_compensation',
+                                'sensor.energy_production_tarif_1_compensation',
+                                'sensor.gas_consumption_cost'
+                              ]
+            %}
+            {{ entities | map('state_attr', 'last_reset') | max }}
+      # electricity, gas and water (using the sensor above)
+      - unique_id: d1f2e0f6-6b79-4b7a-bfb7-a380e5671eb9
+        name: Utility Costs Total
+        state: >
+          {{ states('sensor.energy_costs_total') | float + states('sensor.watermeter_total_consumption_cost') | float }}
+        state_class: total
+        unit_of_measurement: €
+        device_class: monetary
+        availability: >
+          {{ states('sensor.energy_costs_total') | is_number and states('sensor.watermeter_total_consumption_cost') | is_number }}
+        attributes:
+          last_reset: >
+            {% set entities = [
+                                'sensor.energy_costs_total',
+                                'sensor.watermeter_total_consumption_cost'
+                              ]
+            %}
+            {{ entities | map('state_attr', 'last_reset') | max }}
+
+# =============================================================================
+# NET POWER CONSUMPTION/PRODUCTION
+# =============================================================================
+  - sensor:
+      - name: Net Power
+        unique_id: 199c6be9-6258-40a3-b3b7-6d8123d2464d
+        state: >
+          {%- set p = states('sensor.electricity_meter_energieproductie')
+                        | float
+                        | multiply(1000)
+          %}
+          {%- set c = states('sensor.electricity_meter_energieverbruik')
+                        | float
+                        | multiply(1000)
+          %}
+          {{ (c - p) | round(0) }}
+        icon: mdi:flash
+        unit_of_measurement: "W"
+        availability: >
+          {{
+              'sensor.electricity_meter_energieverbruik' | has_value
+              and 'sensor.electricity_meter_energieproductie' | has_value
+          }}
+
+# =============================================================================
+# NET POWER CONSUMPTION STATE
+# =============================================================================
+  - binary_sensor:
+      - unique_id: 89453b1c-c0a9-474d-971a-673ec54595c2
+        name: Net Power Consumption
+        state: >
+          {{ (states('sensor.power_consumption') | float - states('sensor.electricity_meter_power_production') | float) > 0 }}
+        availability: >
+          {{ states('sensor.power_consumption') | is_number and states('sensor.electricity_meter_power_production') | is_number }}

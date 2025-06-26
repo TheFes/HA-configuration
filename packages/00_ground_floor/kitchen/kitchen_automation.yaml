@@ -1,0 +1,287 @@
+# =============================================================================
+# PACKAGE: Kitchen Automation
+# PURPOSE: Automated control of kitchen appliances, lighting, and safety systems
+# LOCATION: Ground Floor - Kitchen
+# DEPENDENCIES: Zigbee devices, Smart plugs, Power monitoring sensors
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# Manages kitchen appliances including espresso machine auto-off, extractor hood
+# control, water kettle safety shutoff, dishwasher status monitoring, and Xiaomi
+# button controls for kitchen lighting. Includes safety features and notifications.
+
+# ENTITIES CREATED:
+# Automations:
+# - automation.xiaomi_button_kitchen - Kitchen button light controls
+# - automation.espresso_machine_plug_off - Auto-off after 31 minutes of inactivity  
+# - automation.extractor_hood_back_on_in_the_morning - Morning restore after overnight off
+# - automation.power_usage_kitchen - Fridge power monitoring alert (>80W for 10min)
+# - automation.water_kettle_plug_off - Auto-off after 10 minutes of inactivity
+#
+# Sensors:
+# - sensor.extractor_hood_status - Current hood state (Off/Light/Extracting)
+#
+# Binary Sensors:
+# - binary_sensor.dishwasher_active - Running state detection based on power
+
+# EXTERNAL DEPENDENCIES:
+# - Integration: Zigbee2MQTT - For Xiaomi button and device control
+# - Device: switch.espresso - Espresso machine smart plug
+# - Device: switch.afzuigkap - Extractor hood smart plug  
+# - Device: switch.waterkoker - Water kettle smart plug
+# - Entity: sensor.espresso_power - Espresso machine power consumption
+# - Entity: sensor.afzuigkap_power - Extractor hood power consumption
+# - Entity: sensor.waterkoker_power - Water kettle power consumption
+# - Entity: sensor.koelkast_power - Fridge power consumption
+# - Entity: sensor.vaatwasser_power - Dishwasher power consumption
+# - Entity: event.knop_keuken_action - Xiaomi kitchen button events
+# - Entity: light.groep_beneden - Ground floor light group (trigger for hood restore)
+
+# SAFETY FEATURES:
+# - Espresso machine: Auto-off after 31 minutes of inactivity (<25W)
+# - Water kettle: Auto-off after 10 minutes of inactivity (<25W)
+# - Fridge monitoring: Alert if power consumption >80W for 10 minutes
+# - Extractor hood: Auto-restore when downstairs lights turn on (6AM-9PM)
+
+# BUTTON CONTROLS (Xiaomi Kitchen Button):
+# - Single click: Toggle kitchen spots (light.keukenspotjes)
+# - Double click: Toggle main kitchen light (light.keuken)  
+# - Hold/Release: No action configured
+
+# APPLIANCE STATUS DETECTION:
+# - Extractor hood: "Afzuigen" (>5W), "Licht aan" (0.5-5W), "Inactief" (on but <0.5W), "Plug uit" (off)
+# - Dishwasher: Active when power >0W with 10min delay on, 2min delay off
+
+# =============================================================================
+# ORIGINAL SOURCE FILES CONSOLIDATED:
+# - actions_xiaomi_button_kitchen.yaml - Kitchen button controls
+# - espressomachine_plug_off.yaml - Espresso auto-off safety
+# - extracor_hood_plug_on.yaml - Hood morning restore
+# - fridge_power.yaml - Fridge power monitoring alert
+# - water_kettly_off.yaml - Kettle auto-off safety
+# - extractor_hood.yaml - Hood status sensor
+# - dishwasher_active.yaml - Dishwasher activity detection
+# =============================================================================
+
+# =============================================================================
+# KITCHEN LIGHTING AND CONTROLS
+# =============================================================================
+automation:
+  - id: e03d310f-0611-4d9c-9781-0487993c4976
+    alias: "Xiaomi button kitchen"
+    triggers:
+      - trigger: state
+        entity_id: event.knop_keuken_action
+        not_from: unavailable
+        variables:
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+    actions:
+      - alias: "Which click type"
+        choose:
+          - conditions: "{{ event == 'single' }}"
+            sequence:
+              - action: light.toggle
+                data:
+                  entity_id: light.keukenspotjes
+          - conditions: "{{ event == 'double' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: light.keuken
+          - conditions: "{{ event == 'hold' }}"
+            sequence: []
+          - conditions: "{{ event == 'release' }}"
+            sequence: []
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Espresso Machine Safety Auto-Off
+  # PURPOSE: Automatically turn off espresso machine after 31 minutes of inactivity
+  # TRIGGERS: Switch on, HA start, power >25W, automation reload
+  # ---------------------------------------------------------------------------
+  - id: fe09f19c-86eb-4bd8-be3f-096bed6308f1
+    alias: "Espresso machine plug off"
+    mode: restart
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: switch.espresso
+        from: "off"
+        to: "on"
+      - trigger: homeassistant
+        event: start
+      - trigger: event
+        event_type: automation_reloaded
+      - trigger: numeric_state
+        entity_id: sensor.espresso_power
+        above: 25
+        id: "active"
+    conditions:
+      - alias: "Espressomachine on?"
+        condition: state
+        entity_id: switch.espresso
+        state: "on"
+    actions:
+      - alias: "Trigger type"
+        choose:
+          - conditions:
+              - condition: trigger
+                id: "active"
+            sequence:
+              - alias: "Espresso machine inactive for 31 minutes"
+                wait_for_trigger:
+                  - trigger: numeric_state
+                    entity_id: sensor.espresso_power
+                    below: 25
+                    for: "00:31:00"
+        default:
+          - delay:
+              minutes: 31
+      - alias: "Turn plug off"
+        action: switch.turn_off
+        target:
+          entity_id: switch.espresso
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Extractor Hood Morning Restore
+  # PURPOSE: Turn extractor hood back on when downstairs lights activate (6AM-9PM)
+  # TRIGGERS: Ground floor light group turns on
+  # ---------------------------------------------------------------------------
+  - id: b776ef0d-e5f7-42d1-8bf8-744fe2b7127b
+    alias: "Extractor hood back on in the morning"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: light.groep_beneden
+        to: "on"
+    conditions:
+      - alias: "Extractor hood off?"
+        condition: state
+        entity_id: switch.afzuigkap
+        state: "off"
+      - alias: "Daytime"
+        condition: time
+        after: " 06:00:00"
+        before: " 21:00:00"
+    actions:
+      - alias: "Turn plug back on"
+        action: switch.turn_on
+        target:
+          entity_id: switch.afzuigkap
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Fridge Power Monitoring Alert
+  # PURPOSE: Alert when fridge consumes >80W for 10+ minutes (door open warning)
+  # TRIGGERS: Fridge power >80W for 10 minutes
+  # ---------------------------------------------------------------------------
+  - alias: Power usage kitchen
+    id: 0a454b0d-156e-4938-945e-d2bfb9b3cbd7
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.koelkast_power
+        above: 80
+        for: "00:10:00"
+    actions:
+      - action: notify.mobile_app_pixel_7_pro
+        data:
+          title: "Stroomverbruik koelkast"
+          message: "De koelkast verbruikt verdacht veel stroom, check of hij niet open staat"
+          data:
+            channel: Fridge
+            ttl: 0
+            priority: high
+            notification_icon: mdi:fridge-alert
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Water Kettle Safety Auto-Off
+  # PURPOSE: Automatically turn off water kettle after 10 minutes of inactivity
+  # TRIGGERS: Switch on, HA start, power >25W, automation reload
+  # ---------------------------------------------------------------------------
+  - id: d826bab6-6791-425b-90b6-cae882317c5f
+    alias: "Water kettle plug off"
+    mode: restart
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: switch.waterkoker
+        from: "off"
+        to: "on"
+      - trigger: homeassistant
+        event: start
+      - trigger: event
+        event_type: automation_reloaded
+      - trigger: numeric_state
+        entity_id: sensor.waterkoker_power
+        above: 25
+        id: "active"
+    conditions:
+      - alias: "Kettle on?"
+        condition: state
+        entity_id: switch.waterkoker
+        state: "on"
+    actions:
+      - alias: "Trigger type"
+        choose:
+          - conditions:
+              - condition: trigger
+                id: "active"
+            sequence:
+              - alias: "Kettle inactive for 10 minutes"
+                wait_for_trigger:
+                  - trigger: numeric_state
+                    entity_id: sensor.waterkoker_power
+                    below: 25
+                    for: "00:10:00"
+        default:
+          - delay:
+              minutes: 30
+      - alias: "Turn plug off"
+        action: switch.turn_off
+        target:
+          entity_id: switch.waterkoker
+
+# =============================================================================
+# KITCHEN SENSORS AND STATUS
+# =============================================================================
+template:
+  - sensor:
+      - unique_id: c7a36aee-99af-446b-bef9-6491f07d3956
+        name: Extractor hood status
+        state: >-
+          {%- if is_state('switch.afzuigkap', 'on') 
+              and states('sensor.afzuigkap_power') | float > 5 %}
+            Afzuigen
+          {%- elif is_state('switch.afzuigkap', 'on') 
+              and states('sensor.afzuigkap_power') | float > 0.5 %}
+            Licht aan
+          {%- elif is_state('switch.afzuigkap', 'on') %}
+            Inactief
+          {%- else %}
+            Plug uit
+          {%- endif %}
+        icon: >-
+          {%- if is_state('sensor.extractor_hood_status', 'Licht aan') %}
+            mdi:pot-steam-outline
+          {%- elif is_state('sensor.extractor_hood_status', 'Afzuigen') %}
+            mdi:pot-steam
+          {%- elif is_state('sensor.extractor_hood_status', 'Inactief') %}
+            mdi:pot-steam-outline
+          {%- elif is_state('sensor.extractor_hood_status', 'Plug uit') %}
+            mdi:power-plug-off-outline
+          {%- endif %}
+        availability: "{{ 'switch.afzuigkap' | has_value }}"
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Dishwasher Activity Detection
+  # PURPOSE: Detect when dishwasher is running based on power consumption
+  # DEPENDENCIES: sensor.vaatwasser_power
+  # ---------------------------------------------------------------------------
+  - binary_sensor:
+      - unique_id: 34f17b8a-dd3e-4b19-b0d9-5b00d80d0ad0
+        name: "Dishwasher active"
+        device_class: running
+        state: >-
+          {{ states('sensor.vaatwasser_power') | float(0) > 0 }}
+        delay_on: "00:10:00"
+        delay_off: "00:02:00"

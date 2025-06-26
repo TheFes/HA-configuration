@@ -1,6 +1,55 @@
-# Package to create the entities needed for the Dutch School Holiday binary sensor using the API provided
-# by the Rijksoverheid
-# API information: https://www.rijksoverheid.nl/opendata/schoolvakanties
+# =============================================================================
+# PACKAGE: Dutch School Holidays
+# PURPOSE: Track Dutch school holidays using official government API
+# DEPENDENCIES: Rijksoverheid school holidays API, Region input select
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# This package fetches and tracks Dutch school holidays using the official
+# Rijksoverheid API. It provides a binary sensor that indicates when it's
+# currently a school holiday and shows upcoming holidays for the school year.
+
+# ENTITIES CREATED:
+# Input Selects:
+# - input_select.region - Region selection (Noord, Midden, Zuid)
+#
+# Rest Commands:
+# - rest_command.school_holidays - API data fetcher
+#
+# Binary Sensors:
+# - binary_sensor.schoolvakantie - Current holiday status
+#
+# Attributes Available:
+# - regio: Selected region
+# - nu: Current holiday type or "Geen vakantie"
+# - vakanties: List of upcoming holidays for current school year
+
+# EXTERNAL DEPENDENCIES:
+# - API: https://opendata.rijksoverheid.nl/v1/infotypes/schoolholidays
+# - Event: update_school_holidays - Manual update trigger
+
+# SCHOOL REGIONS:
+# - Noord (North): Northern Netherlands
+# - Midden (Middle): Central Netherlands  
+# - Zuid (South): Southern Netherlands
+
+# HOLIDAY TYPES:
+# Common holidays include Zomervakantie, Kerstvakantie, Voorjaarsvakantie,
+# Meivakantie, Herfstvakantie, and various other regional holidays.
+
+# UPDATE SCHEDULE:
+# - Daily at midnight (00:00) - Automatic refresh
+# - Manual: Fire update_school_holidays event
+
+# CONFIGURATION NOTES:
+# Line 38: Default region selection - update input_select.region as needed
+# Lines 61-89: Holiday processing logic - handles compulsory vs optional dates
+# API returns data for entire calendar year with regional variations
+
+# =============================================================================
+# REGION SELECTION AND API CONFIGURATION
+# =============================================================================
 
 # input_select to select the correct region (North, Middle or South)
 input_select:
@@ -12,11 +61,17 @@ input_select:
       - Zuid
     icon: mdi:map-marker
 
+# =============================================================================
+# API DATA FETCHING
+# =============================================================================
 # Rest Command to get the data from the endpoint
 rest_command:
   school_holidays:
     url: https://opendata.rijksoverheid.nl/v1/infotypes/schoolholidays?output=json
 
+# =============================================================================
+# SCHOOL HOLIDAY DETECTION
+# =============================================================================
 # Binary sensor which will be "on" in case it is currently a school holiday.
 # The attributes show the selected region, the current holiday and a the upcoming holidays for the current school year (next school year in case it's summer holiday)
 template:

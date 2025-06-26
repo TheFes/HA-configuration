@@ -1,0 +1,18 @@
+template:
+  - triggers:
+      - platform: state
+        entity_id: sensor.pixel_7_pro_last_removed_notification
+        id: "off"
+      - platform: state
+        entity_id: sensor.pixel_7_pro_last_notification
+        id: "on"
+    binary_sensor:
+      - unique_id: b5116d3f-6ed5-43d6-a49c-f46a5076cce5
+        name: Whatsapp notification active
+        state: >
+          {% if trigger.to_state.attributes.package == 'com.whatsapp' %}
+            {{ trigger.id | bool(false) }}
+          {% else %}
+            {{ this.state }}
+          {% endif %}
+        icon: mdi:whatsapp

@@ -1,0 +1,360 @@
+# From actions_xiaomi_button_guest_bed.yaml
+automation:
+  - id: b54906bf-51b0-4e0f-919a-ced9436588d6
+    alias: "Xiaomi button Guest Bed"
+    triggers:
+      - trigger: state
+        entity_id: event.knop_logeerbed_action
+        not_from: unavailable
+        variables:
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+    actions:
+      - alias: "Which click type"
+        choose:
+          - conditions: "{{ event == 'single' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  brightness: 10
+                  color_temp_kelvin: 2000
+          - conditions: "{{ event == 'hold' }}"
+            sequence:
+              - if: "{{ is_state('light.awtrix_martijn_matrix', 'off') }}"
+                then:
+                  - action: light.turn_on
+                    target:
+                      entity_id: light.awtrix_martijn_matrix
+                    data:
+                      brightness: 10
+                  - delay: 10
+              - action: light.turn_off
+                target:
+                  entity_id: light.awtrix_martijn_matrix
+          - conditions: "{{ event == 'double' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: light.werkkamer_martijn_plafond
+                data:
+                  brightness: 255
+                  color_temp_kelvin: 6535
+          - conditions: "{{ event == 'release' }}"
+            sequence: []
+
+  # From desk_martijn_off.yaml
+  - id: 012eb968-e871-4029-8096-a63044a42029
+    alias: "Turn off desk Martijn switch"
+    triggers:
+      - trigger: state
+        entity_id:
+          - binary_sensor.computer_zolder
+          - binary_sensor.laptop_werk_martijn_lan
+          - binary_sensor.laptop_werk_martijn_wifi
+          - media_player.martijn
+        to:
+          - "idle"
+          - "off"
+        for: "00:30:00"
+    conditions:
+      - alias: "Everyting off?"
+        condition: state
+        entity_id:
+          - binary_sensor.computer_zolder
+          - binary_sensor.laptop_werk_martijn_lan
+          - binary_sensor.laptop_werk_martijn_wifi
+          - media_player.martijn
+        state:
+          - "idle"
+          - "off"
+        for: "00:30:00"
+    actions:
+      - alias: "Turn off plug"
+        action: switch.turn_off
+        target:
+          entity_id: switch.shelly1pm_bureau_martijn_relay
+
+  # From disable_devices_when_switch_off.yaml
+  - id: 97a7df0c-a762-40b7-965e-0c311d544a90
+    alias: Toggle devices when desk switch toggles using Spook
+    variables:
+      devices:
+        stereo_pair: 81a9131adcc946d57099e08292804fae
+        speaker_left: 9d674f5e418c56e488e1e285d1d79e58
+        speaker_right: 78f57551aff64346b1855fd6b3816423
+      integrations:
+        atom_echo: 4607f8bcfc909a88891c550dc8c1d6c3
+    triggers:
+      - trigger: state
+        entity_id: switch.shelly1pm_bureau_martijn_relay
+        to: ~
+    actions:
+      - delay: "{{ 0 if trigger.to_state.state == 'off' else 30 }}"
+      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_device"
+        data:
+          device_id: "{{ devices.values() | list }}"
+      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+        data:
+          config_entry_id: "{{ integrations.values() | list }}"
+
+  # From start_vacuum.yaml
+  - id: 43077f87-25be-4516-b241-0db9d1e4ff98
+    alias: "Start vacuum cleaner on Tuesday"
+    triggers:
+      - id: vacuum
+        trigger: time
+        at:
+          - "08:00:00"
+          - "09:00:00"
+      - trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "not_today"
+        id: "not_today"
+    conditions:
+      - alias: "Tuesday?"
+        condition: time
+        weekday:
+          - "tue"
+      - alias: "Vacuum working"
+        condition: state
+        entity_id: binary_sensor.vacuum
+        state: "on"
+      - condition: not
+        conditions:
+          - alias: "Not on holiday"
+            condition: state
+            entity_id: sensor.house_mode
+            state: "Vakantie"
+      - "{{ not is_state('vacuum.valetudo_brokenachingdragonfly', ['unavailable', 'unknown']) }}"
+    actions:
+      - alias: "Action?"
+        choose:
+          - conditions: "{{ trigger.id == 'not_today' }}"
+            sequence:
+              - alias: "Turn on input boolean"
+                action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.no_vacuum_today
+          - conditions:
+              - alias: "Na 9u?"
+                condition: time
+                after: "09:00:00"
+            sequence:
+              - if:
+                  - alias: "Input Boolean off"
+                    condition: state
+                    entity_id: input_boolean.no_vacuum_today
+                    state: "off"
+                then:
+                  - action: vacuum.start
+                    target:
+                      entity_id: vacuum.valetudo_brokenachingdragonfly
+                else:
+                  - alias: "Turn off input boolean"
+                    action: input_boolean.turn_off
+                    target:
+                      entity_id: input_boolean.no_vacuum_today
+        default:
+          - alias: "Notification to phones"
+            action: notify.all_phones
+            data:
+              message: "Is alles van de grond?"
+              title: "De stofzuiger begint om 09:00"
+              data:
+                channel: Vacuum
+                ttl: 0
+                priority: high
+                notification_icon: mdi:robot-vacuum
+                actions:
+                  - action: "not_today"
+                    title: "Vandaag niet"
+
+  # From vacuum_notifications.yaml
+  - id: 501645e8-f419-4349-9f0b-57a2f915b345
+    alias: "Notifications vacuum cleaner"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: vacuum.valetudo_brokenachingdragonfly
+        from: returning
+        to: docked
+        id: docked
+      - trigger: state
+        entity_id: vacuum.valetudo_brokenachingdragonfly
+        to: error
+        id: error
+      - trigger: time
+        at: "17:00:00"
+        id: time
+      - trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "empty_vacuum_bin"
+        id: "empty"
+    actions:
+      - if: "{{ trigger.id == 'docked' }}"
+        then:
+          - alias: "Increase counter"
+            action: counter.increment
+            target:
+              entity_id: counter.vacuum_dust_bin
+      - choose:
+          - conditions: "{{ trigger.id in ['docked', 'error'] }}"
+            sequence:
+              - variables:
+                  title: >
+                    {%- if trigger.id == 'docked' %}
+                      Stofzuiger is klaar
+                    {%- else %}
+                      Probleem met stofzuiger
+                    {%- endif %}
+                  message: >
+                    {%- if trigger.id == 'docked' %}
+                      De stofzuiger is klaar en staat weer op z'n plek. Hij heeft nu {{ states('counter.vacuum_dust_bin') }} ladingen in z'n bakkie.
+                    {%- else %}
+                      Er is iets mis met de stofzuiger. De melding is: {{ states('sensor.valetudo_brokenachingdragonfly_error') }}
+                    {%- endif %}
+              - alias: "Notification to phones"
+                action: notify.all_phones
+                data:
+                  title: "{{ title }}"
+                  message: "{{ message }}"
+                  data:
+                    channel: Vacuum
+                    ttl: 0
+                    priority: high
+                    tag: vacuum_error
+                    notification_icon: mdi:robot-vacuum
+          - conditions:
+              - condition: trigger
+                id: time
+              - alias: "Bin full"
+                condition: numeric_state
+                entity_id: counter.vacuum_dust_bin
+                above: 2
+              - alias: "At home"
+                condition: state
+                entity_id: person.martijn
+                state: "home"
+              - alias: "Workday"
+                condition: state
+                entity_id: binary_sensor.workday_sensor
+                state: "on"
+            sequence:
+              - alias: "Notification to Martijn"
+                action: notify.mobile_app_pixel_7_pro
+                data:
+                  title: Bakje vol
+                  message: Maak het bakje van de stofzuiger leeg!
+                  data:
+                    channel: Vacuum
+                    ttl: 0
+                    priority: high
+                    notification_icon: mdi:robot-vacuum
+                    actions:
+                      - action: "empty_vacuum_bin"
+                        title: "Done!"
+          - conditions: "{{ trigger.id == 'empty' }}"
+            sequence:
+              - alias: "Reset counter"
+                action: counter.reset
+                target:
+                  entity_id: counter.vacuum_dust_bin
+
+  # From xiaomi_cube.yaml
+  - id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"
+    alias: "Actions with Xiaomi Cube"
+    mode: parallel
+    triggers:
+      - trigger: state
+        entity_id: event.magic_cube_action
+        not_from: unavailable
+        variables:
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+    actions:
+      - alias: "Which action"
+        choose:
+          - alias: "Actions with shake"
+            conditions: "{{ event == 'shake' }}"
+            sequence:
+              - action: switch.turn_on
+                target:
+                  entity_id: switch.shelly1pm_bureau_martijn_relay
+              - alias: "Turn on radio if morning on workday"
+                choose:
+                  - conditions:
+                      - alias: "Morning"
+                        condition: time
+                        before: "11:00:00"
+                      - alias: "Workday"
+                        condition: state
+                        entity_id: binary_sensor.workday_sensor
+                        state: "on"
+                    sequence:
+                      - wait_template: "{{ 'media_player.martijn' | has_value }}"
+                        timeout:
+                          minutes: 3
+                        continue_on_timeout: false
+                      - alias: "Set volume"
+                        action: media_player.volume_set
+                        target:
+                          entity_id: media_player.martijn
+                        data:
+                          volume_level: 0.5
+                      - alias: "Turn on Studio Brussel"
+                        action: music_assistant.play_media
+                        target:
+                          entity_id: media_player.martijn
+                        data:
+                          media_id: Studio Brussel
+                          media_type: radio
+          - alias: "Actions with rotate"
+            conditions: "{{ 'rotate' in event }}"
+            sequence:
+              - variables:
+                  volume: "{{ state_attr('media_player.martijn', 'volume_level') }}"
+              - if: "{{ volume is not none }}"
+                then:
+                  - action: media_player.volume_set
+                    target:
+                      entity_id: media_player.martijn
+                    data:
+                      volume_level: >
+                        {% set c = 0.05 if event == 'rotate_right' else -0.05 %}
+                        {{ ([ 0, volume + c, 1] | sort)[1] | round(2) }}
+
+# From bureau_martijn.yaml
+template:
+  - switch:
+      - unique_id: 3eafb3f9-f884-40cb-9095-5a5da3476cb4
+        name: Bureau Martijn Template
+        state: "{{ is_state('switch.shelly1pm_bureau_martijn_relay', 'on') }}"
+        turn_on:
+          - service: switch.turn_on
+            target:
+              entity_id: switch.shelly1pm_bureau_martijn_relay
+        turn_off:
+          - service: script.computer_martijn_off
+          - service: switch.turn_off
+            target:
+              entity_id: switch.shelly1pm_bureau_martijn_relay
+
+# From desk_martijn_switch.yaml
+script:
+  computer_martijn_off:
+    alias: "Turn desk Martijn off"
+    icon: mdi:human-male
+    sequence:
+      - variables:
+          pc_on: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
+      - if: "{{ pc_on }}"
+        then:
+          - action: hassio.addon_stdin
+            data:
+              addon: core_rpc_shutdown
+              input: computer_zolder
+          - wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
+          - delay: 10

@@ -1,0 +1,30 @@
+automation:
+  - id: a86036e6-5023-4298-b809-defcbb4d6df9
+    alias: "LIDL button play area"
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: event.knop_speelhoek_action
+        not_from: unavailable
+        variables:
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+    actions:
+      - alias: "Which click type"
+        choose:
+          - conditions:
+              - alias: "Short"
+                condition: template
+                value_template: "{{ event == 'on' }}"
+            sequence:
+              - alias: toggle light
+                action: light.toggle
+                target:
+                  entity_id: light.groep_speelhoek
+          - conditions:
+              - alias: "Double"
+                condition: template
+                value_template: "{{ event == 'off' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: light.boekenkast

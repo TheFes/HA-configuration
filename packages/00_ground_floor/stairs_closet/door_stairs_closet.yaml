@@ -1,0 +1,37 @@
+automation:
+  - id: 3e12aad4-2ddb-46ce-af36-1dbcc14129d9
+    alias: "Turn light stairs closet off and on"
+    mode: restart
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.deur_trapkast_contact
+    actions:
+      - alias: "Open or closed?"
+        choose:
+          - conditions:
+              - alias: "Door open?"
+                condition: state
+                entity_id: binary_sensor.deur_trapkast_contact
+                state: "on"
+            sequence:
+              - alias: "Light on"
+                action: light.turn_on
+                target:
+                  entity_id: light.trapkast_template
+              - delay:
+                  minutes: 5
+              - alias: "Light off"
+                action: light.turn_off
+                target:
+                  entity_id: light.trapkast_template
+          - conditions:
+              - alias: "Door closed?"
+                condition: state
+                entity_id: binary_sensor.deur_trapkast_contact
+                state: "off"
+            sequence:
+              - alias: "Light off"
+                action: light.turn_off
+                target:
+                  entity_id: light.trapkast_template

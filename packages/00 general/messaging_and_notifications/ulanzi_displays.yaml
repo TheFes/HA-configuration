@@ -1,0 +1,612 @@
+automation:
+  # From: ulanzi_app_activate_remove.yaml
+  - id: 98e424f3-e458-4061-8562-c9e2700e0c3a
+    alias: "Ulanzi activate or deactivate app"
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: sensor.awtrix_martijn_battery
+        to: ~
+        variables:
+          show: "{{ trigger.to_state.state != '100' }}"
+          app: bat
+    conditions:
+      - "{{ app is defined and app is not none }}"
+      - "{{ update | default(true) | bool(true) }}"
+    actions:
+      - alias: "Activate or deactivate app"
+        action: mqtt.publish
+        data:
+          qos: 0
+          retain: false
+          topic: awtrix_martijn/apps
+          payload: >
+            {{
+              [
+                dict(
+                    name = app,
+                    show = show | default(true) | bool(true)
+                  )
+              ] | to_json
+            }}
+
+  # From: ulanzi_indicator.yaml
+  - id: 52dd10e9-7bf6-4778-b4b7-a8967a4b5fb8
+    alias: "Ulanzi indicators"
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.whatsapp_notification_active
+        to: ~
+        variables:
+          action: "{{ trigger.to_state.state }}"
+          indicator: 1
+          color_name: green
+      - trigger: state
+        entity_id: binary_sensor.raindata
+        to: ~
+        variables:
+          action: "{{ trigger.to_state.state }}"
+          indicator: 2
+          color_name: blue
+      - trigger: state
+        entity_id: binary_sensor.net_power_consumption
+        to: ~
+        variables:
+          action: "{{ trigger.to_state.state in ['on', 'off'] }}"
+          indicator: 3
+          color_name: "{{ 'yellow' if trigger.to_state.state == 'off' else 'purple' }}"
+    conditions:
+      - "{{ update | default(true) | bool(true) }}"
+    actions:
+      - if: "{{ action | default(true) | bool(true) }}"
+        then:
+          - alias: Turn indicator on
+            action: light.turn_on
+            target:
+              entity_id: light.awtrix_martijn_indicator_{{ indicator | default(1) | int(1) }}
+            data:
+              brightness: "{{ brightness | default(state_attr('light.matrix', 'brightness')) | int(255) }}"
+              color_name: "{{ color_name | default('white') }}"
+        else:
+          - alias: Turn indicator off
+            action: light.turn_off
+            target:
+              entity_id: light.awtrix_martijn_indicator_{{ indicator }}
+
+  # From: ulanzi_notify_and_custom_app.yaml
+  - id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
+    alias: "Ulanzi notificatons and custom apps"
+    mode: queued
+    triggers:
+      # apps - text
+      - trigger: state
+        entity_id: weather.combined
+        to: ~
+        variables: &weather
+          app: weather
+          text: "{{ state_attr('weather.combined', 'temperature') }} °C"
+          icon: "{{ states('weather.combined') }}"
+          update: "{{ state_attr('weather.combined', 'temperature') is not none }}"
+      - trigger: state
+        entity_id: weather.combined
+        attribute: temperature
+        variables: *weather
+    
+      - trigger: state
+        entity_id:
+          - sensor.werkkamer_martijn_temp
+          - sensor.werkkamer_martijn_vocht
+        not_to: unavailable
+        variables:
+          app: "{{ trigger.to_state.attributes.device_class }}"
+          text: "{{ states(trigger.entity_id, with_unit=true) }}"
+          icon: >
+            {% if app == 'humidity' %}
+              humidity
+            {% elif trigger.to_state.state | float >= 25 %}
+              temp-hot
+            {% elif trigger.to_state.state | float <= 18 %}
+              temp-cold
+            {% else %}
+              temp-normal
+            {% endif %}
+    
+      # notifications - text
+      - trigger: state
+        entity_id: sensor.pixel_7_pro_last_notification
+        to: ~
+        variables:
+          sender_name: !secret name_gf
+          update: >
+            {{
+              trigger.to_state.attributes['package'] is defined
+              and trigger.to_state.attributes['package'] == 'com.whatsapp'
+              and trigger.to_state.attributes['android.title'] == sender_name
+              and is_state('person.martijn', 'home')
+            }}
+          icon: whatsapp
+          text: >
+            {%- if trigger.to_state.attributes['android.textLines'] is defined %}
+              {{ trigger.to_state.attributes['android.textLines'] | last }}
+            {%- else %}
+              {{ trigger.to_state.attributes['android.text'] }}
+            {%- endif %}
+          repeat: 2
+          textCase: 2
+          pushIcon: 2
+      - trigger: state
+        entity_id: binary_sensor.smart_doorbell_button
+        to: "on"
+        variables:
+          icon: dingdong
+          text: Ding Dong!
+          background: 4CBEFC
+    
+      # app - graph
+      - trigger: state
+        entity_id: binary_sensor.raindata
+        variables:
+          update: "{{ trigger.to_state.state in ['on', 'off'] }}"
+          icon: rainy
+          graph_max: 8
+          graph_data: "{{ trigger.to_state.attributes.raindata.data if trigger.to_state.state == 'on' else none }}"
+          graph_type: bar
+          graph_color: [0, 0, 255]
+          graph_round: ceil
+          app: rain
+          deactivate: "{{ trigger.to_state.state != 'on' }}"
+    variables:
+      plot_graph: "{{ graph_data is defined and graph_data is not string and graph_data is iterable }}"
+    conditions:
+      - "{{ update | default(true) | bool(true) }}"
+      - "{{ deactivate is defined or plot_graph is defined or text is defined }}"
+    actions:
+      - if: "{{ deactivate | default(false) }}"
+        then:
+          - alias: "Deactivate app"
+            action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_martijn/custom/{{ app }}
+              payload: ""
+        else:
+          - alias: "Update custom app or send notification"
+            action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_martijn/{{ 'notify' if app | default('notify') == 'notify' else ('custom/' ~ app) }}
+              payload: >
+                {%- set graph_type = graph_type | default('bar') %}
+                {%- set graph_round = graph_round | default('common') %}
+                {%- set grap_round = graph_round if graph_round in [ 'common', 'ceil', 'floor'] else 'common' %}
+                {%- set autoscale = not iif(graph_max | default(none)) if plot_graph else none %}
+                {%- set icon = icon | default() %}
+                {%- set color = graph_color | default(none) if plot_graph else text_color | default(none) %}
+                {%- set data = (graph_data[:11] if icon else graph_data[:16]) if plot_graph else [] %}
+                {%- set data = data
+                                | select('is_number')
+                                | map('multiply', 8/graph_max | default(8))
+                                | map('round', 0, graph_round)
+                                | map('int')
+                                | list
+                %}
+                {%- set graph_data = { graph_type: (data[:11] if icon else data[:16]) if plot_graph else none }%}
+                {%- set data = dict(
+                                  graph_data,
+                                  autoscale = autoscale,
+                                  text = text if not plot_graph else none,
+                                  repeat = repeat | default(none),
+                                  rainbow = rainbow | default(none),
+                                  icon = icon | default(none),
+                                  pushIcon = pushIcon | default(none),
+                                  textCase = textCase | default(none),
+                                  color = color | default(none),
+                                  background = background | default(none)
+                                  )
+                %}
+                {%- set data = dict(data.items() | rejectattr('1', 'none')) %}
+                {{ data | to_json }}
+
+  # From: ulanzi_screen.yaml
+  - id: 964ca72d-0e82-488d-b6e8-0ac72a5eabc0
+    alias: "Ulanzi turn screen on and off"
+    mode: queued
+    triggers:
+      - trigger: state
+        entity_id: sensor.house_mode
+        to: ~
+        variables:
+          action: >
+            {{
+              'off'
+              if is_state('sensor.house_mode', 'Slapen')
+              or now() > today_at('22:00')
+              or now() < today_at('07:00')
+              else 'on'
+            }}
+          update: &update >
+            {{
+              is_state('person.martijn', 'home')
+              and is_state('switch.shelly1pm_bureau_martijn_relay', 'on')
+              and is_state('script.computer_martijn_off', 'off')
+              if action == 'on'
+              else true
+            }}
+      - trigger: state
+        entity_id: switch.shelly1pm_bureau_martijn_relay
+        to: ~
+        variables:
+          action: >
+            {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
+          update: *update
+      - trigger: time
+        at:
+          - "07:00"
+          - "22:00"
+        variables:
+          action: >
+            {{
+              'off'
+              if states('sensor.house_mode') == 'Slapen' or not is_state('person.martijn', 'home')
+              else 'on'
+            }}
+          update: *update
+      - trigger: state
+        entity_id: person.martijn
+        to: ~
+        variables:
+          action: "{{ is_state('person.martijn', 'home') }}"
+          update: >
+            {{
+              (is_state('switch.shelly1pm_bureau_martijn_relay', 'on') and not is_state('sensor.house_mode', 'Slapen'))
+              if action == 'on'
+              else true
+            }}
+    conditions:
+      - "{{ update | default(true) | bool(true) }}"
+    actions:
+      - alias: "Turn matrix on or off"
+        action: light.turn_{{ iif(action | default(true) | bool(true), 'on', 'off') }}
+        target:
+          entity_id: light.awtrix_martijn_matrix
+
+  # From: actions_awtrix_button_floris.yaml
+  - id: 8c6c0182-b227-47b8-a53b-c88075761b1a
+    alias: "Awtrix button Floris"
+    triggers:
+      - trigger: event
+        event_type: awtrix_button_event
+        event_data:
+          area: slaapkamer_floris
+        variables:
+          event: "{{ trigger.event.data.click }}"
+          button: "{{ trigger.event.data.button }}"
+    actions:
+      - alias: "Which click type"
+        choose:
+          - conditions: "{{ event == 'single' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: >
+                    {%
+                      set button_map = 
+                        {
+                          'left': 'light.bedlamp_floris',
+                          'select': 'light.planeet',
+                          'right': 'light.floris_leeslamp'
+                        }
+                    %}
+                    {{ button_map[button] }}
+          - conditions: "{{ event == 'hold' }}"
+            sequence:
+              - alias: "Light off"
+                action: light.turn_off
+                target:
+                  entity_id: >
+                    {{
+                      area_entities('slaapkamer_floris')
+                        | select('in', label_entities('off_long_press'))
+                        | list
+                    }}
+          - conditions: "{{ event == 'double' }}"
+            sequence: []
+          - conditions: "{{ event == 'release' }}"
+            sequence: []
+
+  # From: actions_awtrix_buttons_pepijn.yaml
+  - id: dc9ec434-0886-4fd3-a504-006ca6e8ec40
+    alias: "Xiaomi button Bed Pepijn"
+    mode: parallel
+    max_exceeded: silent
+    triggers:
+      - trigger: event
+        event_type: awtrix_button_event
+        event_data:
+          area: slaapkamer_pepijn
+        variables:
+          event: "{{ trigger.event.data.click }}"
+          button: "{{ trigger.event.data.button }}"
+    actions:
+      - alias: "Which click type"
+        choose:
+          - conditions: "{{ event == 'single' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: >
+                    {%
+                      set button_map = 
+                        {
+                          'left': 'light.booglamp',
+                          'select': 'light.bed_pepijn',
+                          'right': 'light.pepijn_leeslamp'
+                        }
+                    %}
+                    {{ button_map[button] }}
+          - conditions: "{{ event == 'hold' }}"
+            sequence:
+              - alias: "Light off"
+                action: light.turn_off
+                target:
+                  entity_id: >
+                    {{
+                      area_entities('slaapkamer_pepijn')
+                        | select('in', label_entities('off_long_press'))
+                        | list
+                    }}
+          - conditions: "{{ event == 'double' }}"
+            sequence: []
+          - conditions: "{{ event == 'release' }}"
+            sequence: []
+
+  # From: awtrix_button_press.yaml
+  - id: 630ae4fd-f5fd-41f9-8d83-837e991a08c8
+    alias: Run actions on Awtrix button press
+    triggers:
+    - trigger: state
+      entity_id:
+      - binary_sensor.awtrix_martijn_button_left
+      - binary_sensor.awtrix_martijn_button_select
+      - binary_sensor.awtrix_martijn_button_right
+      - binary_sensor.awtrix_floris_button_left
+      - binary_sensor.awtrix_floris_button_select
+      - binary_sensor.awtrix_floris_button_right
+      - binary_sensor.awtrix_pepijn_button_left
+      - binary_sensor.awtrix_pepijn_button_select
+      - binary_sensor.awtrix_pepijn_button_right
+      from: 'off'
+      to: 'on'
+    actions:
+    - alias: Wait 2 seconds for release
+      wait_for_trigger:
+      - trigger: template
+        value_template: "{{ is_state(trigger.entity_id, 'off') }}"
+      timeout:
+        seconds: 2
+    - alias: Check for long press
+      if: "{{ wait.trigger is none }}"
+      then:
+      - alias: Send hold event
+        event: awtrix_button_event
+        event_data:
+          area: "{{ area_id(trigger.entity_id) }}"
+          button: "{{ trigger.entity_id.split('_')[-1] }}"
+          click: hold
+      else:
+      - alias: Send event for short presses
+        repeat:
+          sequence:
+          - alias: wait for new click trigger
+            wait_for_trigger:
+            - trigger: template
+              value_template: "{{ is_state(trigger.entity_id, 'on') }}"
+            timeout:
+              seconds: 0.5
+          - alias: Send event in case there were no new presses
+            if: "{{ wait.trigger is none }}"
+            then:
+            - alias: Send event
+              event: awtrix_button_event
+              event_data:
+                area: "{{ area_id(trigger.entity_id) }}"
+                button: "{{ trigger.entity_id.split('_')[-1] }}"
+                click: "{{ 'single' if repeat.index == 1 else 'multiple' }}"
+                count: "{{ repeat.index }}"
+          until: "{{ wait.trigger is none }}"
+
+  # From: update_ulanzi.yaml (Floris)
+  - id: 0b959006-4674-4343-b316-ebf1e124f826
+    alias: "Update ulanzi Floris"
+    mode: parallel
+    triggers:
+      - trigger: time_pattern
+        seconds: "0"
+      - trigger: state
+        entity_id: binary_sensor.floris_sleeping
+        from:
+          - "on"
+          - "off"
+        to:
+          - "on"
+          - "off"
+      - trigger: state
+        entity_id: light.awtrix_floris_matrix
+        from:
+          - "unavailable"
+      - trigger: state
+        entity_id:
+          - weather.combined
+          - input_number.correction_clock_floris
+        to: ~
+    variables:
+      correction: "{{ states('input_number.correction_clock_floris') | float(0) }}"
+    actions:
+      - if: "{{ is_state('binary_sensor.floris_sleeping', 'on') }}"
+        then:
+          - if: "{{ not is_state('select.awtrix_floris_brightness_mode', 'Manual') }}"
+            then:
+              - action: select.select_option
+                data:
+                  option: Manual
+                target:
+                  entity_id: select.awtrix_floris_brightness_mode
+          - if: "{{ not is_state_attr('light.awtrix_floris_matrix', 'brightness', 2) }}"
+            then:
+              - action: light.turn_on
+                target:
+                  entity_id: light.awtrix_floris_matrix
+                data:
+                  brightness: 2
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_floris/custom/sleep_clock
+              payload: >
+                {% set n = now() + timedelta(hours=correction) %}
+                {% set awake_time = today_at(states('input_datetime.floris_time_awake')) %}
+                {% set awake_time = awake_time + timedelta(days=1) if n > awake_time else awake_time %}
+                {% set qh = ((awake_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
+                {% set progress = [100 - int((100/24 * qh)), 0] | max if n < awake_time or n > today_at('19:00') else 100 %}
+                {% set icon = 'moon-up' if is_state('sensor.house_mode', 'Slapen') else 'moon-down' %}
+                {{
+                  dict(
+                        icon = icon,
+                        text = n.strftime('%-I:%M'),
+                        color = [160,0,0],
+                        progress = progress,
+                        progressC = [0,0,0],
+                        progressBC = [160,0,0]
+                      )
+                }}
+        else:
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_floris/custom/sleep_clock
+              payload: >
+                {{
+                  dict(
+                        icon = states('weather.combined'),
+                        text = (now() + timedelta(hours=correction)).strftime('%-I:%M')
+                      )
+                }}
+          - if: "{{ not is_state('select.awtrix_floris_brightness_mode', 'Auto') }}"
+            then:
+              - action: select.select_option
+                data:
+                  option: Auto
+                target:
+                  entity_id: select.awtrix_floris_brightness_mode
+      - if: "{{ not is_state('sensor.awtrix_floris_current_app', 'sleep_clock') }}"
+        then:
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_floris/switch
+              payload: "{{ dict(name = 'sleep_clock') }}"
+
+  # From: update_ulanzi.yaml (Pepijn)
+  - id: 1bb3f63c-c210-4299-a36e-14e70a2e6950
+    alias: "Update ulanzi Pepijn"
+    mode: parallel
+    triggers:
+      - trigger: time_pattern
+        seconds: "0"
+      - trigger: state
+        entity_id: binary_sensor.pepijn_sleeping
+        from:
+          - "on"
+          - "off"
+        to:
+          - "on"
+          - "off"
+      - trigger: state
+        entity_id: light.awtrix_pepijn_matrix
+        from:
+          - "unavailable"
+      - trigger: state
+        entity_id:
+          - weather.combined
+          - input_number.correction_clock_pepijn
+        to: ~
+    variables:
+      correction: "{{ states('input_number.correction_clock_pepijn') | float(0) }}"
+    actions:
+      - if: "{{ is_state('binary_sensor.pepijn_sleeping', 'on') }}"
+        then:
+          - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Manual') }}"
+            then:
+              - action: select.select_option
+                data:
+                  option: Manual
+                target:
+                  entity_id: select.awtrix_pepijn_brightness_mode
+          - if: "{{ not is_state_attr('light.awtrix_pepijn_matrix', 'brightness', 2) }}"
+            then:
+              - action: light.turn_on
+                target:
+                  entity_id: light.awtrix_pepijn_matrix
+                data:
+                  brightness: 2
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_pepijn/custom/sleep_clock
+              payload: >
+                {% set n = now() + timedelta(hours=correction) %}
+                {% set awake_time = today_at(states('input_datetime.pepijn_time_awake')) %}
+                {% set awake_time = awake_time + timedelta(days=1) if n > awake_time else awake_time %}
+                {% set read_time = awake_time - timedelta(minutes=states('input_number.leestijd_pepijn') | int) %}
+                {% set qh = ((read_time - n).total_seconds() / 60 / 15) | round(0, 'ceil') %}
+                {% set progress = [100 - int((100/24 * qh)), 0] | max if n < read_time or n > today_at('19:00') else 100 %}
+                {% if read_time < n < awake_time %}
+                  {% set icon = 'book' %}
+                {% else %}
+                  {% set icon = 'bed-up' if is_state('sensor.house_mode', 'Slapen') else 'bed-down' %}
+                {% endif %}
+                {{
+                  dict(
+                        icon = icon,
+                        text = n.strftime('%-I:%M'),
+                        color = [160,0,0],
+                        progress = progress,
+                        progressC = [0,0,0],
+                        progressBC = [160,0,0]
+                      )
+                }}
+        else:
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_pepijn/custom/sleep_clock
+              payload: >
+                {{
+                  dict(
+                        icon = states('weather.combined'),
+                        text = (now() + timedelta(hours=correction)).strftime('%-I:%M')
+                      )
+                }}
+          - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Auto') }}"
+            then:
+              - action: select.select_option
+                data:
+                  option: Auto
+                target:
+                  entity_id: select.awtrix_pepijn_brightness_mode
+      - if: "{{ not is_state('sensor.awtrix_pepijn_current_app', 'sleep_clock') }}"
+        then:
+          - action: mqtt.publish
+            data:
+              qos: 0
+              retain: false
+              topic: awtrix_pepijn/switch
+              payload: "{{ dict(name = 'sleep_clock') }}"

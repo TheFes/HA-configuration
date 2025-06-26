@@ -1,0 +1,54 @@
+# wasmachine_notificaties.yaml
+automation:
+  - id: 991bfa0a-ba49-462b-b78a-2aed72317903
+    alias: "Notifications washing machine"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - entity_id: sensor.wasmachine_remain_time
+        trigger: state
+        from: 0:01:00
+        to: 0:00:00
+    actions:
+      - alias: "Notification to phones"
+        action: notify.all_phones
+        data:
+          title: "💦 Wasmachine is klaar"
+          message: "Haal snel de was er uit voordat het allemaal kreukt."
+          data:
+            channel: Washing machine
+            ttl: 0
+            priority: high
+            notification_icon: mdi:washing-machine
+
+  # wasmachinelamp.yaml
+  - id: 8a906376-bc15-443a-9932-381bab653331
+    alias: "Toggle light washing machine area with attic light"
+    triggers:
+      - trigger: state
+        entity_id: light.zolder
+    actions:
+      - alias: "On or off"
+        choose:
+          - conditions:
+              - alias: "Light off?"
+                condition: state
+                entity_id: light.zolder
+                state: "off"
+            sequence:
+              - alias: "Turn off washing machine light and desk light"
+                action: light.turn_off
+                target:
+                  entity_id: light.wasmachinehoek
+          - conditions:
+              - alias: "Light on?"
+                condition: state
+                entity_id: light.zolder
+                state: "on"
+            sequence:
+              - alias: "Turn on washing machine light with matching brightness"
+                action: light.turn_on
+                target:
+                  entity_id: light.wasmachinehoek
+                data:
+                  brightness: "{{ state_attr('light.zolder' ,'brightness') }}"

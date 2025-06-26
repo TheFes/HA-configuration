@@ -1,0 +1,185 @@
+# =============================================================================
+# PACKAGE: Trash Collection Management
+# PURPOSE: Automated trash collection notifications and status tracking
+# LOCATION: Outside - Municipal collection
+# DEPENDENCIES: Afvalwijzer integration, Mobile notifications, Jinja helpers
+# LAST UPDATED: 2024-06-26
+# =============================================================================
+
+# OVERVIEW:
+# This package manages trash collection notifications and provides formatted
+# status sensors for different waste types. It sends timely notifications
+# and tracks upcoming collection dates with user-friendly formatting.
+
+# ENTITIES CREATED:
+# Automations:
+# - automation.notifications_for_trash_containers - Morning and evening notifications
+#
+# Sensors:
+# - sensor.afval_rest_en_gft - Rest & GFT waste formatted sensor
+# - sensor.afval_papier_en_pmd - Paper & PMD waste formatted sensor  
+# - sensor.first_trash - Next trash collection info with color coding
+# - sensor.second_trash - Following trash collection info
+
+# EXTERNAL DEPENDENCIES:
+# - Integration: Afvalwijzer - Dutch waste collection data
+# - Entity: sensor.afvalwijzer_today - Today's collections
+# - Entity: sensor.afvalwijzer_tomorrow - Tomorrow's collections
+# - Entity: sensor.afvalwijzer_restgft - Rest/GFT collection dates
+# - Entity: sensor.afvalwijzer_dhm - Paper/PMD collection dates
+# - Entity: sensor.afvalwijzer_kerstbomen - Christmas tree collection
+# - Service: notify.all_phones - Mobile notifications
+# - Macro: helpers.jinja date_week - Date formatting helper
+
+# NOTIFICATION SCHEDULE:
+# - 07:00: Today's collection reminder
+# - 20:00: Tomorrow's collection reminder
+# - Only when collections are scheduled (not "geen")
+
+# WASTE TYPES HANDLED:
+# - restgft: "rest- en GFT-bak" (General & organic waste)
+# - dhm/papier: "papier- en PMD-bak" (Paper & plastic/metal/drink cartons)
+# - kerstbomen: "kerstboom" (Christmas trees)
+
+# SENSOR FEATURES:
+# - Human-readable date formatting (e.g., "Deze week woensdag")
+# - Color coding: red (today), orange (tomorrow), default (later)
+# - Christmas tree emoji for special collections
+# - Collection date tracking and "in two weeks" indicators
+
+# CONFIGURATION NOTES:
+# Lines 65-74: Notification times (07:00, 20:00) - adjust as needed
+# Lines 75-79: Waste type descriptions - customize Dutch translations
+# Lines 155-161: Date formatting uses helpers.jinja macro
+
+# =============================================================================
+# ORIGINAL SOURCE FILES CONSOLIDATED:
+# - trash_notification.yaml - Notification automation
+# - trash_formatted_date.yaml - Formatted date sensors
+# =============================================================================
+
+# =============================================================================
+# TRASH COLLECTION NOTIFICATIONS
+# =============================================================================
+automation:
+  - id: 690cc2c9-f014-4b38-90e8-51217659d49e
+    alias: "Notifications for trash containers"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: time
+        at: "07:00:00"
+        variables:
+          when_en: today
+          when_nl: Vandaag
+      - trigger: time
+        at: "20:00:00"
+        variables:
+          when_en: tomorrow
+          when_nl: Morgen
+    variables:
+      sensor: "sensor.afvalwijzer_{{ when_en }}"
+      trash_descr:
+        restgft: "rest- en GFT-bak"
+        dhm: "papier- en PMD-bak"
+        papier: "papier- en PMD-bak"
+        kerstbomen: "kerstboom"
+      trash_pickup: >
+        {%- set trash = states(sensor).split(', ') %}
+        {{ trash_descr.items() | list | selectattr('0', 'in', trash) | map(attribute='1') | list }}
+    conditions:
+      - alias: "Notification needed?"
+        condition: template
+        value_template: "{{ states(sensor) != 'geen' }}"
+    actions:
+      - alias: "Notification phones"
+        action: notify.all_phones
+        data:
+          title: >
+            {%- if trash_pickup | length > 1 %}
+              Denk aan de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }}!
+            {%- else %}
+              Denk aan de {{ trash_pickup[0] }}!
+            {%- endif %}
+          message: >
+            {%- if trash_pickup | length > 1 %}
+              {{ when_nl }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
+            {%- else %}
+              {{ when_nl }} moet de {{ trash_pickup[0] }} buiten.
+            {%- endif %}
+          data:
+            channel: Trash
+            ttl: 0
+            priority: high
+            notification_icon: mdi:trash-can-outline
+
+# =============================================================================
+# TRASH COLLECTION STATUS SENSORS
+# =============================================================================
+template:
+  - triggers:
+      - platform: state
+        entity_id: sensor.afvalwijzer_restgft
+        attribute: days_until_collection_date
+        not_to: none
+    sensor:
+      - unique_id: 9d6b50c5-6059-4d91-ae4e-43dcd095987c
+        name: "Rest & GFT"
+        icon: mdi:trash-can
+        <<: &config
+          state: >-
+            {%- from 'helpers.jinja' import date_week -%}
+            {{ date_week(trigger.to_state.state) }}
+          availability: "{{ trigger.entity_id | has_value }}"
+          attributes:
+            waste_type: >
+              {% set name = this.attributes.friendly_name %}
+              {{
+                name if trigger.to_state.state != states('sensor.afvalwijzer_kerstbomen')
+                else name | replace(' & ', ', ') ~ ' & 🌲'
+              }}
+            collection_date: >
+              {{ trigger.to_state.state }}
+            in_two_weeks: >
+              {{ now().date() - as_datetime(trigger.to_state.state).date() <= timedelta(weeks=2) }}
+  
+  - triggers:
+      - platform: state
+        entity_id: sensor.afvalwijzer_dhm
+        attribute: days_until_collection_date
+        not_to: none
+    sensor:
+      - unique_id: 821b207c-5c06-4da4-9e8c-a5790e6e4c8c
+        name: "Papier & PMD"
+        icon: mdi:trash-can-outline
+        <<: *config
+  
+  - sensor:
+      - unique_id: 3f09522f-f034-401c-aa0a-efc438e80598
+        name: >
+          {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+          {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+          {{ 'First Trash' if this.state == 'unknown' or sorted | count < 2 else state_attr(sorted | first, 'waste_type') }}
+        state: >
+          {% set pickup = this.attributes.get('pickup', 'onbekend') %}
+          {{ 'red' if pickup == 'Vandaag' else 'orange' if pickup == 'Morgen' else 'default' }}
+        icon: mdi:trash-can
+        attributes:
+          pickup: >
+            {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+            {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+            {{ 'Onbekend' if sorted | count < 2 else states(sorted | first) }}
+      - unique_id: e93d478f-20db-49ac-8858-e9b4780664fe
+        name: >
+          {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+          {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+          {{ 'Second Trash' if this.state == 'unknown' or sorted | count < 2 else state_attr(sorted | last, 'waste_type') }}
+        state: >
+          {% set pickup = this.attributes.get('pickup', 'onbekend') %}
+          {{ 'red' if pickup == 'Vandaag' else 'orange' if pickup == 'Morgen' else 'default' }}
+        icon: mdi:trash-can-outline
+        attributes:
+          pickup: >
+            {% set sensors = ['sensor.afval_rest_en_gft', 'sensor.afval_papier_en_pmd'] | select('has_value') | list %}
+            {% set sorted = sensors | expand | sort(attribute='attributes.collection_date') | map(attribute='entity_id') | list %}
+            {{ 'Onbekend' if sorted | count < 2 else states(sorted | last) }}

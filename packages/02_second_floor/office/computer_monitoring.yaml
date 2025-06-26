@@ -1,0 +1,95 @@
+alert:
+  computer_martijn:
+    name: "Turn off computer Martijn"
+    title: "Computer zolder"
+    message: "De computer op zolder staat nog aan, mag die uit?"
+    entity_id: binary_sensor.computer_martijn_alert
+    state: "on"
+    repeat: 30
+    can_acknowledge: true
+    skip_first: false
+    notifiers:
+      - mobile_app_pixel_7_pro
+    data:
+      tag: office_martijn_alert
+      channel: Zolder
+      ttl: 0
+      priority: high
+      notification_icon: mdi:desktop-classic
+      actions:
+        - action: "computer_martijn_off"
+          title: "Yep"
+        - action: "computer_martijn_on"
+          title: "Nope"
+    done_message: "clear_notification"
+
+template:
+  - binary_sensor:
+      - unique_id: 3a1cb83c-088a-43d3-b68c-d15fa73bcd1f
+        name: "Computer Martijn alert"
+        device_class: problem
+        state: >-
+          {{ 
+            is_state('switch.computer_zolder', 'on') 
+            and (today_at('20:00') < now() or now() < today_at('08:00'))
+            and (is_state('light.zolder', 'off') and is_state('light.zolder_bol_template', 'off'))
+            and is_state('input_boolean.bureau_martijn_override', 'off')
+          }}
+
+  - switch:
+      - unique_id: 622e113d-67c2-4f96-8a6e-5e97cf28ce7c
+        name: Computer Zolder
+        state: "{{ is_state('device_tracker.martijn_desktop', 'home') }}"
+        turn_on:
+          service: wake_on_lan.send_magic_packet
+          data:
+            mac: BC:5F:F4:8B:73:17
+        turn_off:
+          service: hassio.addon_stdin
+          data:
+            addon: core_rpc_shutdown
+            input: computer_zolder
+
+automation:
+  - id: 3d938c95-1b47-4ee3-93ca-56753feb6e94
+    alias: "Computer Martijn notification actions"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: event
+        id: "computer_off"
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "computer_martijn_off"
+      - trigger: event
+        id: "computer_on"
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "computer_martijn_on"
+      - trigger: time
+        id: "alert_on"
+        at: "08:00:00"
+    actions:
+      - alias: "Actions computer Martijn alert"
+        choose:
+          - conditions:
+              condition: trigger
+              id: "computer_off"
+            sequence:
+              - action: switch.turn_off
+                target:
+                  entity_id: switch.computer_zolder
+          - conditions:
+              condition: trigger
+              id: "computer_on"
+            sequence:
+              - action: alert.turn_off
+                target:
+                  entity_id: alert.computer_martijn
+          - conditions:
+              condition: trigger
+              id: "alert_on"
+            sequence:
+              - action: alert.turn_on
+                target:
+                  entity_id: alert.computer_martijn

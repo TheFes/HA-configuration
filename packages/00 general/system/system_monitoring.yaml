@@ -1,0 +1,187 @@
+# updates_available.yaml
+template:
+  - binary_sensor:
+      - unique_id: f4a8205d-38af-4c0f-a704-ae89ae89a0f9
+        name: "Updates availalbe"
+        device_class: update
+        state: >-
+          {{ states.update | selectattr('state', 'eq', 'on') | list | count > 0 }}
+        icon: >
+          {%- set n = states.update | selectattr('state', 'eq', 'on') | list | count %} 
+          {{ 'mdi:numeric-' ~ n ~ '-box' if n < 10 else 'mdi:numeric-9-plus-box' }}
+
+# esphome_updates_available.yaml
+  - binary_sensor:
+      - unique_id: 81bb0ebc-32d0-4745-b14a-10496801ca40
+        name: "ESPHome Updates available"
+        device_class: update
+        state: >-
+          {{
+            states.update
+              | selectattr('entity_id', 'in', integration_entities('esphome'))
+              | selectattr('state', 'eq', 'on')
+              | map(attribute='entity_id')
+              | list
+              | count > 0
+          }}
+
+# shelly_firmware.yaml
+  - binary_sensor:
+      - unique_id: 9aec0333-a840-46a4-807f-01f5e9a231e4
+        name: "Shelly Firmware"
+        device_class: problem
+        state: >-
+          {{
+            expand(integration_entities('shelly'))
+              | selectattr('state', 'eq', 'on')
+              | map(attribute='entity_id')
+              | select('search', 'over')
+              | list
+              | count > 0
+          }}
+
+# shelly_issue.yaml
+  - binary_sensor:
+      - unique_id: e30ef290-3bb8-4187-9bed-63c7bdb583ae
+        name: "Shelly Issue"
+        device_class: problem
+        state: >-
+          {{
+            expand(integration_entities('shelly'))
+              | selectattr('state', 'eq', 'on')
+              | map(attribute='entity_id')
+              | select('search', 'firmware_update')
+              | list
+              | count > 0
+          }}
+
+# hacs_updates.yaml
+  - sensor:
+      - unique_id: 61cbbd80-1ede-4d9e-92ad-b4dfecb4612b
+        name: HACS Updates
+        state: >
+          {{
+            integration_entities('hacs')
+              | select('search', '^update.')
+              | select('is_state', 'on')
+              | list
+              | count
+          }}
+        icon: mdi:update
+        state_class: measurement
+        unit_of_measurement: "updates"
+        attributes:
+          entity_id: >
+            {{
+              integration_entities('hacs')
+                | select('search', '^update.')
+                | select('is_state', 'on')
+                | list
+            }}
+
+# update_all.yaml
+  - button:
+      - name: Update alles
+        unique_id: ee67de73-5c72-40d5-a7f1-dd68b23fc5f8
+        device_class: update
+        press:
+          - repeat:
+              for_each: >
+                {% set last = ['update.home_assistant_operating_system_update', 'update.home_assistant_operating_system_update'] %}
+                {% set first = states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | reject('in', last) | list %}
+                {{ first + last | select('is_state', 'on') | list }}
+              sequence:
+                - service: update.install
+                  target:
+                    entity_id: "{{ repeat.item }}"
+                - wait_template: "{{ is_state(repeat.item, 'off') }}"
+
+# skip_esphome_updates.yaml
+  - button:
+      - name: Skip ESPHome Updates
+        unique_id: 0ad105f3-3128-481b-b14e-641bfcd1bdd7
+        device_class: update
+        press:
+          - service: update.skip
+            target:
+              entity_id: >
+                {{ integration_entities('esphome') | select('search', '^update.') | select('is_state', 'on') | list }}
+
+# notification_ha_version.yaml
+automation:
+  - id: 5e74e69a-7e31-4769-ad6a-c438fce816dc
+    alias: "Notifications for new HA version"
+    mode: parallel
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id:
+          - update.home_assistant_core_update
+          - update.home_assistant_operating_system_update
+        to: "on"
+        variables:
+          what: "{{ trigger.to_state.attributes.title }}"
+          from: "{{ trigger.to_state.attributes.installed_version }}"
+          to: "{{ trigger.to_state.attributes.latest_version }}"
+          url: >
+            {%- 
+              if what == 'Home Assistant Operating System'
+              or
+                (
+                  (not version(to).beta and version(to).patch == '0' )
+                  or
+                  (version(to).beta and version.modifier == 'b0')
+                )
+            %}
+              {{ 'url' }}
+            {%- else %}
+              https://github.com/home-assistant/core/releases/tag/{{ to }}
+            {%- endif %}
+    actions:
+      - alias: "Set up variables for the actions"
+        variables:
+          action_update: "{{ 'UPDATE_' ~ context.id }}"
+          action_skip: "{{ 'SKIP_' ~ context.id }}"
+      - alias: "Send notification to phone"
+        action: notify.mobile_app_pixel_7_pro
+        data:
+          title: >
+            Update: {{ what }}
+          message: >-
+            Versie {{ to }} is nu beschikbaar. Je zit nu op {{ from }}.
+          data:
+            tag: "ha_update_{{ what | slugify }}"
+            channel: Home Assistant
+            ttl: 0
+            priority: high
+            clickAction: "/config/dashboard"
+            actions:
+              - action: "URI"
+                title: "Changelog"
+                uri: "{{ url }}"
+              - action: "{{ action_skip }}"
+                title: Skip
+              - action: "{{ action_update }}"
+                title: Update
+      - alias: "Wait for a response"
+        wait_for_trigger:
+          - trigger: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "{{ action_update }}"
+          - trigger: event
+            event_type: mobile_app_notification_action
+            event_data:
+              action: "{{ action_skip }}"
+      - alias: "Update or skip"
+        action: update.{{ 'install' if 'UPDATE' in wait.trigger.event.data.action else 'skip' }}
+        target:
+          entity_id: "{{ trigger.entity_id }}"
+      - if: "{{ wait.trigger.event.data.action == action_update }}"
+        then:
+          - alias: "Write variables to variables template sensor"
+            event: set_variable
+            event_data:
+              key: "reboot_from_notification"
+              value: true
+              set_timestamp: false

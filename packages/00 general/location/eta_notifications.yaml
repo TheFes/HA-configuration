@@ -1,0 +1,220 @@
+# Combined ETA automations from /config/packages/include/automation/00 general/eta/
+
+# From: eta_m_en_m_from_work.yaml
+automation:
+  - id: 376b6b93-e8ed-43cf-89e3-1b915e5ff236
+    alias: "Send notification when Martijn or Marleen leaves from work"
+    mode: parallel
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: person.marleen
+        from: !secret work_marleen
+        to: "not_home"
+      - trigger: state
+        entity_id: person.martijn
+        from: !secret work_martijn
+        to: "not_home"
+      - trigger: state
+        entity_id:
+          - person.martijn
+          - person.marleen
+        to:
+          - "home"
+          - !secret work_marleen
+          - !secret work_martijn
+        id: "reset"
+      - trigger: event
+        id: reset
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "cancel_eta_martijn"
+        variables:
+          name: martijn
+      - trigger: event
+        id: reset
+        event_type: mobile_app_notification_action
+        event_data:
+          action: "cancel_eta_marleen"
+        variables:
+          name: marleen
+    variables:
+      name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
+      notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
+      gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
+      sensor: "sensor.{{ name }}_naar_huis"
+      vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_7_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
+      eta: >
+        {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
+        {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
+      work:
+        martijn: !secret work_martijn
+        marleen: !secret work_marleen
+    actions:
+      - if: "{{ trigger.id == 'reset' }}"
+        then:
+          - event: remove_variable
+            event_data:
+              key: "eta_{{ name }}"
+        else:
+          - action: homeassistant.update_entity
+            target:
+              entity_id: "{{ sensor }}"
+          - alias: "Send notification to phone"
+            action: "{{ notify }}"
+            data:
+              title: "{{ name | capitalize }} is onderweg {{ (' met de ' ~ vehicle) if name == 'martijn' else ''}}"
+              message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
+              data:
+                channel: ETA
+                tag: eta_{{ name }}
+                ttl: 0
+                priority: high
+                notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
+                actions:
+                  - action: "cancel_eta_{{ name }}"
+                    title: "Stop updates"
+          - event: set_variable
+            event_data:
+              key: "eta_{{ name }}"
+              value: "{{ eta }}"
+              set_timestamp: false
+          - if: "{{ vehicle == 'auto' }}"
+            then:
+              - repeat:
+                  until: >
+                    {{
+                      is_state(trigger.entity_id, [work[name], 'home'])
+                      or (state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_'~name, none) is none
+                    }}
+                  sequence:
+                    - action: homeassistant.update_entity
+                      target:
+                        entity_id: "{{ sensor }}"
+                    - variables:
+                        eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
+                    - wait_for_trigger:
+                        - trigger: template
+                          value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
+                        - trigger: event
+                          event_type: mobile_app_notification_action
+                          event_data:
+                            action: "cancel_eta_{{ name }}"
+                        - trigger: template
+                          value_template: >
+                            {{
+                              (now() + timedelta(minutes=states(sensor) | float)) - as_datetime(eta) > timedelta(minutes=5)
+                            }}
+                          id: delay
+                    - if: "{{ wait.trigger.id == 'delay' }}"
+                      then:
+                        - variables:
+                            eta: "{{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }}"
+                        - event: set_variable
+                          event_data:
+                            key: "eta_{{ name }}"
+                            value: "{{ eta }}"
+                        - alias: "Send notification to phone"
+                          action: "{{ notify }}"
+                          data:
+                            title: "{{ name | capitalize }} is vertraagd"
+                            message: "{{ gender | capitalize }} zou er nu rond {{ eta }} moeten zijn"
+                            data:
+                              channel: ETA
+                              tag: eta_{{ name }}
+                              ttl: 0
+                              priority: high
+                              notification_icon: mdi:car
+                              actions:
+                                - action: "cancel_eta_{{ name }}"
+                                  title: "Stop updates"
+
+  # From: martijn_bicycle.yaml
+  - id: 6757b053-0f63-4c30-98bd-1038ab57700e
+    alias: "Check if Martijn is on his bicycle for ETA calculation"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        id: "on_bike"
+        entity_id: sensor.pixel_7_pro_detected_activity
+        to: "on_bicycle"
+      - trigger: state
+        id: "back_home"
+        entity_id: person.martijn
+        to: "home"
+    actions:
+      - alias: "🚲 of 🏡"
+        choose:
+          - conditions:
+              - alias: "🚲"
+                condition: trigger
+                id: "on_bike"
+            sequence:
+              - alias: "Turn on input_boolean"
+                action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.martijn_fiets
+          - conditions:
+              - alias: "Martijn was on 🚲?"
+                condition: state
+                entity_id: input_boolean.martijn_fiets
+                state: "on"
+              - alias: "Back 🏡"
+                condition: trigger
+                id: "back_home"
+            sequence:
+              - alias: "Turn off input_boolean"
+                action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.martijn_fiets
+
+  # From: notification_marleen_almost_home.yaml
+  - id: 2068227c-13b2-4bc3-bc1b-50afe8da2deb
+    alias: "Marleen is almost home"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.thuis_marleen_distance
+        below: 4000
+    conditions:
+      - alias: "Richting huis?"
+        condition: state
+        entity_id: sensor.thuis_marleen_direction_of_travel
+        state: "towards"
+      - alias: "Marleen niet thuis?"
+        condition: state
+        entity_id: person.marleen
+        state: "not_home"
+      - alias: "Martijn wel thuis?"
+        condition: state
+        entity_id: person.martijn
+        state: "home"
+    actions:
+      - alias: "Message to phone Martijn"
+        action: notify.mobile_app_pixel_7_pro
+        data:
+          title: "Hoera!"
+          message: "Marleen is bijna thuis"
+          data:
+            channel: ETA
+            ttl: 0
+            priority: high
+            notification_icon: mdi:party-popper
+      - variables:
+          target: >
+            {%- 
+              if is_state('media_player.martijn', 'playing')
+              or is_state('sensor.location_phone_martijn', 'Zolder') 
+            %}
+              [ 'assist_satellite.keuken', 'assist_satellite.martijn' ]
+            {%- else %}
+              [ 'assist_satellite.keuken' ]
+            {%- endif %}
+      - alias: "Send TTS"
+        action: assist_satellite.announce
+        target:
+          entity_id: "{{ target }}"
+        data:
+          message: "Hoera! Marleen is bijna thuis!"
