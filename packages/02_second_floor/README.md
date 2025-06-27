@@ -5,7 +5,7 @@ This directory contains automations and controls specific to second floor rooms.
 ## Room-Specific Configurations
 
 ### [bedroom/](./bedroom/)
-Master bedroom climate, air quality, and health monitoring (4 files)
+Master bedroom climate, air quality, and health monitoring (3 files)
 
 ### [landing/](./landing/)
 Second floor landing and laundry area automation (3 files)

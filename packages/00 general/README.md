@@ -26,7 +26,7 @@ Energy monitoring and water management (4 files)
 House-wide mode management and automation (5 files)
 
 ### [light/](./light/)
-Lighting control and automation systems (6 files)
+Lighting control and automation systems (7 files)
 
 ### [location/](./location/)
 Location tracking and presence detection (7 files)

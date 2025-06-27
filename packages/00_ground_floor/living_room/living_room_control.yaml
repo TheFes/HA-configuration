@@ -83,13 +83,7 @@ automation:
                 condition: time
                 after: "06:00"
                 before: "22:00:00"
-              - alias: "Google Home Event script"
-                action: script.google_home_event
-                data:
-                  resume_id: away
-                  resume: true
-                  ignore:
-                    entity_id: media_player.shield
+
       - choose:
           - conditions:
               - condition: trigger
@@ -148,7 +142,7 @@ automation:
                         data:
                           brightness: 100
 
-  # From: tv_on_google_home_off.yaml
+  # From: tv_on_music_home_off.yaml
   - id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7d
     alias: "Assist Satellites off when TV turns on"
     mode: single

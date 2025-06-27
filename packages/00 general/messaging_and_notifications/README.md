@@ -6,4 +6,4 @@ This directory contains configurations for various communication and notificatio
 
 - **[last_changed.yaml](./last_changed.yaml)** - Tracks and reports last changed states of entities
 - **[signal.yaml](./signal.yaml)** - Signal messenger integration and automation
-- **[ulanzi_displays.yaml](./ulanzi_displays.yaml)** - Ulanzi display device control and messaging
+- **[ulanzi_displays.yaml](./ulanzi_displays.yaml)** - Ulanzi display device control and messaging (Martijn's display only)

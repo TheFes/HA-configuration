@@ -1,0 +1,618 @@
+# =============================================================================
+# PACKAGE: Light Transition System
+# PURPOSE: Advanced light transition management with smooth brightness, color temperature, and RGB transitions
+# DEPENDENCIES: Light entities, Group integration, Transition tracking
+# LAST UPDATED: 2024-06-27
+# =============================================================================
+
+# OVERVIEW:
+# This package provides advanced light transition capabilities including smooth
+# brightness, color temperature, and RGB transitions with conflict detection,
+# parallel execution, and resume functionality for interrupted transitions.
+
+# ENTITIES CREATED:
+# Sensors:
+# - sensor.active_transition - Tracks active light transitions
+#
+# Scripts:
+# - script.transition_lights - Main transition control script
+# - script.transition_lights_perform_transition - Transition execution helper
+# - script.resume_transition_lights - Resume interrupted transitions
+
+# EXTERNAL DEPENDENCIES:
+# - Group: group.transition_active - Tracks lights with active transitions
+# - Light entities - Target lights for transitions
+
+# CONFIGURATION NOTES:
+# Lines 37-65: Active transition tracking - monitors transition events and timing
+# Lines 67-431: Main transition script - extensive customization options for transitions
+# Lines 433-719: Transition execution - core transition logic with safety checks
+# Lines 721-768: Resume functionality - restore interrupted transitions
+
+# FEATURES:
+# - Advanced transitions: Smooth brightness, color temp, and RGB transitions
+# - Transition management: Parallel, queued, or single mode transitions
+# - Resume capability: Can resume interrupted transitions
+# - Safety checks: Prevents conflicts and unexpected behavior
+# - Extensive customization: Duration, steps, delays, start/end values
+
+# =============================================================================
+# ACTIVE TRANSITION TRACKING
+# =============================================================================
+template:
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Active Transition Tracking
+  # PURPOSE: Monitor and track active light transitions for coordination
+  # DEPENDENCIES: script.transition_lights_perform_transition events
+  # ---------------------------------------------------------------------------
+  - triggers:
+      - platform: event
+        event_type: call_service
+        event_data:
+          domain: script
+          service: turn_on
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.event.data.service_data.entity_id == ['script.transition_lights_perform_transition'] }}"
+    sensor:
+      unique_id: 3bfe40b0-2f2d-4090-8740-446be10ef756
+      name: "Active Transition"
+      state: "{{ state_attr(this.entity_id, 'transition_data') | default([], true) | count }}"
+      unit_of_measurement: "transitions"
+      state_class: measurement
+      attributes:
+        transition_data: >
+          {% set end_time = (now() + timedelta(seconds=trigger.event.data.service_data.variables.duration)).isoformat() %}
+          {% set v = dict(trigger.event.data.service_data.variables.items() | selectattr('1', 'defined') | selectattr('1') | rejectattr('0', 'eq', 'duration') | list) %}
+          {% set v = dict(v, **dict(end_time=end_time)) %}
+          {{ this.get('attributes', {}).get('transition_data', []) | rejectattr('end_time', '<', now().isoformat()) | rejectattr('light', 'eq', v.light) | list + [v]}}
+
+# =============================================================================
+# LIGHT TRANSITION SCRIPTS
+# =============================================================================
+script:
+  transition_lights:
+    alias: "Start transition light brightness, color temperature and/or RGB values"
+    icon: mdi:brightness-percent
+    mode: parallel
+    max: 20
+    max_exceeded: silent
+    fields:
+      lights:
+        description: "Select the light(s)"
+        name: Lights
+        example: light.livingroom
+        required: true
+        selector:
+          entity:
+            domain: light
+            multiple: true
+      duration:
+        description: "Transition duration in seconds"
+        name: Duration
+        example: 120
+        required: true
+        selector:
+          number:
+            min: 1
+            max: 3600
+            unit_of_measurement: sec
+      use_br:
+        description: "Use brightness for the transition"
+        name: Use brightness
+        default: true
+        required: false
+        selector:
+          boolean:
+      br_start:
+        description: "Start brightness of the transition (0-255) - Default is current value of the light - Use either value or percentage, not both"
+        name: Brightness start value
+        example: 25
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 255
+      br_start_pct:
+        description: "Start brightness percentage of the transition (0 - 100%) - Default is current value of the light - Use either value or percentage, not both"
+        name: Brightness start percentage
+        example: 10
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 100
+            unit_of_measurement: "%"
+      br_end:
+        description: "End brightness of the transition (0-255) - Using 0 will turn the light off, use either value or percentage, not both"
+        name: Brightness end value
+        example: 230
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 255
+      br_end_pct:
+        description: "End brightness percentage of the transition (0 - 100%) - Using 0 will turn the light off, use either value or percentage, not both"
+        name: Brightness end percentage
+        default: 100
+        example: 90
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 100
+            unit_of_measurement: "%"
+      use_ct:
+        description: "Use color temperature for the transition (if the light supports it)"
+        name: Use color temperature
+        default: true
+        required: false
+        selector:
+          boolean:
+      ct_start:
+        description: "Start color_temp in Kelvin of the transition - Default is current value of the light"
+        name: Color temperature start
+        example: 500
+        required: false
+        selector:
+          number:
+            min: 2000
+            max: 10000
+            step: 50
+            unit_of_measurement: "Kelvin"
+      ct_end:
+        description: "End color_temp in Kelvin of the transition - Default is max value (coldest light)"
+        name: Color temparature end
+        example: 6500
+        required: false
+        selector:
+          number:
+            min: 2000
+            max: 10000
+            step: 50
+            unit_of_measurement: "Kelvin"
+      ct_start_pct:
+        description: "Start color_temp of the transition in % (0% is warmes, 100% is coldest) - Default is current value of the light"
+        name: Color temperature start percentage
+        example: 90
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 100
+            unit_of_measurement: "%"
+      ct_end_pct:
+        description: "End color_temp of the transition in % (0% is warmest, 100% is coldest)"
+        name: Color temparature end percentage
+        default: 100
+        example: 10
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 100
+            unit_of_measurement: "%"
+      rgb_start:
+        description: "Start RGB values of the light, defaults are the current values"
+        name: RGB start values
+        required: false
+        selector:
+          color_rgb:
+      rgb_end:
+        description: "End RGB values of the light, required in case RGB should be used"
+        name: RGB end values
+        required: false
+        selector:
+          color_rgb:
+      min_delay:
+        description: "Minimal delay in seconds between the transition steps, if set too low changes might not be processed correct"
+        name: Minimal delay
+        default: 0.5
+        example: 1
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 10
+            step: 0.1
+            unit_of_measurement: "sec"
+      max_steps:
+        description: "Maximum number of steps to be used, will be calculated based on the changes in the transition and minimal delay if ommited"
+        name: Max steps
+        example: 50
+        required: false
+        selector:
+          number:
+            min: 0
+            max: 500
+            step: 1
+            unit_of_measurement: "step"
+      mode:
+        description: "What to do if there is already a transition active for the light, possible options are single, parallel and queued, default is single"
+        name: Tansition mode
+        default: single
+        selector:
+          select:
+            options:
+              - single
+              - parallel
+              - queued
+      split_service:
+        description: "split changes of eg brightness and color temperarture into seperate service calls"
+        name: Split service calls
+        default: false
+        required: false
+        selector:
+          boolean:
+    sequence:
+      - alias: Convert lights input to lists if it is a string
+        variables:
+          lights: "{{ (lights | replace(' ','')).split(',') if lights is string else lights }}"
+      - alias: "Start script to perform transition"
+        repeat:
+          for_each: "{{ lights }}"
+          sequence:
+            - action: script.turn_on
+              target:
+                entity_id: script.transition_lights_perform_transition
+              data:
+                variables:
+                  light: "{{ repeat.item }}"
+                  duration: "{{ duration }}"
+                  br_start: "{{ (255 * br_start_pct / 100) | round(0) if br_start_pct is defined and br_start_pct | is_number else br_start | default(none) | int(none) }}"
+                  br_end: "{{ (255 * br_end_pct / 100) | round(0) if br_end_pct is defined and br_end_pct | is_number else br_end | default(none) | int(none) }}"
+                  ct_start: "{{ ct_start | default(none) | int(none) }}"
+                  ct_end: "{{ ct_end | default(none) | int(none) }}"
+                  ct_start_pct: "{{ ct_start_pct | default(none) | int(none) }}"
+                  ct_end_pct: "{{ ct_end_pct | default(none) | int(none) }}"
+                  rgb_start: "{{ rgb_start if rgb_start is defined and rgb_start is not string else [] }}"
+                  rgb_end: "{{ rgb_end if rgb_end is defined and rgb_start is not string else [] }}"
+                  min_delay: "{{ min_delay | default(0.5) }}"
+                  use_br: "{{ use_br | default(true) }}"
+                  use_ct: "{{ use_ct | default(true) }}"
+                  max_steps: "{{ max_steps | default(none) }}"
+                  mode: "{{ mode | default('single') }}"
+                  split_service: "{{ split_service | default(false) }}"
+  
+  transition_lights_perform_transition:
+    alias: "Perform transition light brightness, color temperature and/or RGB values (helper script)"
+    icon: mdi:brightness-percent
+    mode: parallel
+    max: 20
+    max_exceeded: silent
+    sequence:
+      - alias: "Remove group if this is the only instance of the script active"
+        if: "{{ state_attr(this.entity_id, 'current') == 1 and states.group.transition_active is not none }}"
+        then:
+          - alias: "Remove group"
+            action: group.remove
+            data:
+              object_id: transition_active
+      - alias: "Check if transition for this light is not already active"
+        if: >
+          {{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) or mode != 'single' }}
+        then:
+          - delay: "{{ 0.1 * (state_attr(this.entity_id, 'current') -1) }}"
+          - if: "{{ mode == 'queued' }}"
+            then:
+              - alias: "Wait until current transition is finished"
+                wait_template: "{{ not light in state_attr('group.transition_active', 'entity_id') | default([], true) }}"
+          - alias: "Add light to group"
+            action: group.set
+            data:
+              object_id: transition_active
+              name: Lights with transition active
+              icon: mdi:lightbulb
+              entities: "{{ (state_attr('group.transition_active', 'entity_id') | default([], true) | list + [light]) | unique | list }}"
+          - alias: "Apply default settings if needed"
+            variables:
+              br_start_set: "{{ br_start is not none }}"
+              br_start: "{{ br_start if br_start_set else 0 }}"
+              br_end: "{{ 255 if br_end is none else br_end }}"
+              ct_start_set: "{{ ct_start is not none or ct_start_pct is not none }}"
+              ct_min: "{{ state_attr(light, 'min_color_temp_kelvin') | default(0, true) }}"
+              ct_max: "{{ state_attr(light, 'max_color_temp_kelvin') | default(0, true) }}"
+              ct_diff: " {{ ct_max - ct_min }}"
+              ct_start: "{{ [ct_min, ct_start] | max if ct_start is not none else (ct_min + (ct_start_pct | default(0, true)) / 100 * ct_diff) | round(0) }}"
+          - if: "{{ split_service }}"
+            then:
+              - if: "{{ br_start_set }}"
+                then:
+                  - alias: "Set start brigthness"
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data:
+                      brightness: "{{ [br_start, 1] | max }}"
+              - if: "{{ ct_start_set }}"
+                then:
+                  - alias: "Set start color temperature"
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data:
+                      color_temperature_kelvin: "{{ ct_start }}"
+              - if: "{{ iif(rgb_start) }}"
+                then:
+                  - alias: "Set start RGB values"
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+                    data:
+                      rgb_color: "{{ rgb_start }}"
+              - if: "{{ not (br_start_set or ct_start_set or iif(rgb_start)) }}"
+                then:
+                  - alias: "Set start RGB values"
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ light }}"
+            else:
+              - alias: "Turn on light with start settings"
+                action: light.turn_on
+                target:
+                  entity_id: "{{ light }}"
+                data: >
+                  {%- set br = dict(brightness=[br_start, 1] | max) if br_start_set else {} %}
+                  {%- set ct = dict(color_temp_kelvin=ct_start) if ct_start_set else {} %}
+                  {%- set rgb = dict(rgb_color=rgb_start) if iif(rgb_start) else {} %}
+                  {{ dict(dict(br, **ct), **rgb) }}
+          - alias: "Wait until light is on"
+            wait_template: "{{ is_state(light, 'on') }}"
+          - if: "{{ split_service }}"
+            then:
+              - delay: 0.5
+          - alias: "Set variables for repeat and apply defaults if needed"
+            variables:
+              br: "{{ state_attr(light, 'brightness') }}"
+              rgb_start: >
+                {{ state_attr(light, 'rgb_color') | default([]) }}
+              rgb_end: >
+                {{ rgb_end if rgb_start else [] }}
+              use_rgb: "{{ iif(rgb_start) and iif(rgb_end) }}"
+              br_start: "{{ br or 0 }}"
+              br_end: "{{ 0 if br is none else br_end }}"
+              ct_start: "{{ state_attr(light, 'color_temp_kelvin') or 0 }}"
+              ct_end: >
+                {%- set ct_end_set = ct_end is not none or ct_end_pct is not none %}
+                {%- set ct_end = ct_max if not ct_end_set else ct_end %}
+                {{ [ct_end, ct_max] | min if ct_end is not none else (ct_min + ct_end_pct / 100 * ct_diff) | round(0) }}
+              min_delay: "{{ min_delay if min_delay is not none else 0.5 }}"
+              max_steps: "{{ [max_steps | default((duration / min_delay) | round(0), true), (duration / min_delay) | round(0)] | min }}"
+              br_change: "{{ br_end - br_start }}"
+              ct_change: "{{ ct_end - ct_start if ct_end and ct_start else 0 }}"
+              rgb_change: "{{ [rgb_end[0] - rgb_start[0], rgb_end[1] - rgb_start[1], rgb_end[2] - rgb_start[2]] | map('abs') | max if use_rgb else 0 }}"
+              steps: "{{ [[br_change | abs, (ct_change / 100) | abs, rgb_change, 1] | max, max_steps] | min }}"
+              br_step: "{{ (br_change / steps) }}"
+              ct_step: "{{ (ct_change / steps) }}"
+              rgb_step: >
+                {%- if use_rgb %}
+                  {%- set rs, gs, bs = rgb_start %}
+                  {%- set re, ge, be = rgb_end %}
+                  {{ [(re - rs) / steps, (ge - gs) / steps, (be - bs) / steps] }}
+                {%- else %}
+                  {{ [0, 0, 0] }}
+                {%- endif %}
+              end_time: "{{ now() + timedelta(seconds=duration) }}"
+          - alias: "Repeat until settings are reached"
+            repeat:
+              while:
+                - alias: "Only continue when light is still on"
+                  condition: template
+                  value_template: "{{ is_state(light, 'on') }}"
+                - alias: "Stop when number of steps is reached"
+                  condition: template
+                  value_template: "{{ repeat.index <= steps }}"
+                - alias: "Check for unexepcted brightness change"
+                  condition: template
+                  value_template: >
+                    {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
+                    {{
+                      state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 5) | int, (br + br_step | abs * 5) | int + 1) if br else true
+                    }}
+                - alias: "Check for unexepcted color temperature change"
+                  condition: template
+                  value_template: >
+                    {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
+                    {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                    {{
+                      state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 5) | int, (ct + ct_step | abs * 5) | int + 1) if ct else true
+                    }}
+                - alias: "Check for unexepcted color RGB change"
+                  condition: template
+                  value_template: >
+                    {%- if use_rgb %}
+                        {%- set r, g, b = rgb_start %}
+                        {%- set rgb =
+                          [
+                            [255, [0, r + ((repeat.index - 1) * rgb_step[0]) | round(0)] | max] | min,
+                            [255, [0, g + ((repeat.index - 1) * rgb_step[1]) | round(0)] | max] | min,
+                            [255, [0, b + ((repeat.index - 1) * rgb_step[2]) | round(0)] | max] | min,
+                          ]
+                        %}
+                    {%- else %}
+                      {%- set rgb = false %}
+                    {%- endif %}
+                    {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                    {{
+                      (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 5) | int, (rgb[0] + rgb_step[0] | abs * 5) | int + 1) if rgb else true)
+                      and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 5) | int, (rgb[1] + rgb_step[1] | abs * 5) | int + 1) if rgb else true)
+                      and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 5) | int, (rgb[2] + rgb_step[2] | abs * 5) | int + 1) if rgb else true)
+                    }}
+              sequence:
+                - variables:
+                    last_step: >
+                      {{
+                        repeat.index == steps
+                        or now() > as_datetime(end_time)
+                      }}
+                    br_next: >
+                      {{
+                        br_end if last_step else
+                        [0, [255, (br_start + repeat.index * br_step) | round(0)] | min] | max
+                      }}
+                    ct_next: >
+                      {{ ct_end if last_step else
+                        [ct_min, [ct_max, (ct_start + repeat.index * ct_step) | round(0)] | min] | max
+                      }}
+                    rgb_next: >
+                      {% if not use_rgb or last_step %}
+                        {{ rgb_end }}
+                      {%- else %}
+                        {%- set r, g, b = rgb_start %}
+                        {{
+                          [
+                            [255, [0, r + (repeat.index * rgb_step[0]) | round(0)] | max] | min,
+                            [255, [0, g + (repeat.index * rgb_step[1]) | round(0)] | max] | min,
+                            [255, [0, b + (repeat.index * rgb_step[2]) | round(0)] | max] | min,
+                          ]
+                        }}
+                      {%- endif %}
+                - if: "{{ as_datetime(end_time) > now() }}"
+                  then:
+                    - delay:
+                        seconds: "{{ ((as_datetime(end_time) - now()).total_seconds() / (steps - (repeat.index - 1))) | round(2) }}"
+                - if:
+                    - alias: "Only continue when light is still on"
+                      condition: template
+                      value_template: "{{ is_state(light, 'on') }}"
+                    - alias: "Check for unexepcted brightness change"
+                      condition: template
+                      value_template: >
+                        {%- set br = [0, [255, (br_start + (repeat.index - 1) * br_step) | round(0)] | min] | max if br_change and use_br else false %}
+                        {{
+                          state_attr(light, 'brightness') | default(0) in range((br - br_step | abs * 5) | int, (br + br_step | abs * 5) | int + 1) if br else true
+                        }}
+                    - alias: "Check for unexepcted color temperature change"
+                      condition: template
+                      value_template: >
+                        {%- set ct = [ct_min, [ct_max, (ct_start + (repeat.index -1) * ct_step) | round(0)] | min] | max if ct_change and use_ct else false %}
+                        {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                        {{
+                          state_attr(light, 'color_temperature_kelvin') | default(0) in range((ct - ct_step | abs * 5) | int, (ct + ct_step | abs * 5) | int + 1) if ct else true
+                        }}
+                    - alias: "Check for unexepcted color RGB change"
+                      condition: template
+                      value_template: >
+                        {%- if use_rgb %}
+                            {%- set r, g, b = rgb_start %}
+                            {%- set rgb =
+                              [
+                                [255, [0, r + ((repeat.index - 1) * rgb_step[0]) | round(0)] | max] | min,
+                                [255, [0, g + ((repeat.index - 1) * rgb_step[1]) | round(0)] | max] | min,
+                                [255, [0, b + ((repeat.index - 1) * rgb_step[2]) | round(0)] | max] | min,
+                              ]
+                            %}
+                        {%- else %}
+                          {%- set rgb = false %}
+                        {%- endif %}
+                        {%- set current_rgb = state_attr(light, 'rgb_color') | default([0, 0, 0]) %}
+                        {{
+                          (current_rgb[0] in range((rgb[0] - rgb_step[0] | abs * 5) | int, (rgb[0] + rgb_step[0] | abs * 5) | int + 1) if rgb else true)
+                          and (current_rgb[1] in range((rgb[1] - rgb_step[1] | abs * 5) | int, (rgb[1] + rgb_step[1] | abs * 5) | int + 1) if rgb else true)
+                          and (current_rgb[2] in range((rgb[2] - rgb_step[2] | abs * 5) | int, (rgb[2] + rgb_step[2] | abs * 5) | int + 1) if rgb else true)
+                        }}
+                  then:
+                    - alias: "Peform actions"
+                      choose:
+                        - conditions: "{{ br_next == 0 }}"
+                          sequence:
+                            - alias: "Use light.turn_off when br_next is 0"
+                              if: "{{ br_change and use_br and br_next == 0 }}"
+                              then:
+                                - action: light.turn_off
+                                  target:
+                                    entity_id: "{{ light }}"
+                        - conditions: "{{ split_service }}"
+                          sequence:
+                            - alias: "Set brightness if needed"
+                              if: "{{ br_change and use_br }}"
+                              then:
+                                - action: light.turn_on
+                                  target:
+                                    entity_id: "{{ light }}"
+                                  data:
+                                    brightness: "{{ br_next }}"
+                            - alias: "Set color temp if needed"
+                              if: "{{ ct_change and use_ct }}"
+                              then:
+                                - action: light.turn_on
+                                  target:
+                                    entity_id: "{{ light }}"
+                                  data:
+                                    color_temp_kelvin: "{{ ct_next }}"
+                            - alias: "Set RGB value if needed"
+                              if: "{{ use_rgb }}"
+                              then:
+                                - action: light.turn_on
+                                  target:
+                                    entity_id: "{{ light }}"
+                                  data:
+                                    rgb_color: "{{ rgb_next }}"
+                      default:
+                        - alias: "Set new values"
+                          action: light.turn_on
+                          target:
+                            entity_id: "{{ light }}"
+                          data: >
+                            {%- set br = dict(brightness=br_next) if br_change and use_br else {} %}
+                            {%- set ct = dict(color_temp_kelvin=ct_next) if ct_change and use_ct else {} %}
+                            {%- set rgb = dict(rgb_color=rgb_next) if use_rgb else {} %}
+                            {{ dict(dict(br, **ct), **rgb) }}
+          - alias: "Remove light from group"
+            action: group.set
+            data:
+              object_id: transition_active
+              name: Lights with transition active
+              icon: mdi:lightbulb
+              entities: "{{ state_attr('group.transition_active', 'entity_id') | default([], true) | list | reject('eq', light) | list }}"
+
+  # ---------------------------------------------------------------------------
+  # COMPONENT: Resume Transition Functionality
+  # PURPOSE: Resume interrupted light transitions with stored parameters
+  # DEPENDENCIES: sensor.active_transition transition data
+  # ---------------------------------------------------------------------------
+  resume_transition_lights:
+    alias: "Resume transition light brightness, color temperature and/or RGB values"
+    icon: mdi:brightness-percent
+    mode: parallel
+    max: 20
+    max_exceeded: silent
+    fields:
+      light:
+        description: "Select the light to resume"
+        name: Light
+        example: light.livingroom
+        required: true
+        selector:
+          entity:
+            domain: light
+      ignore:
+        description: "Variables to ignore, enter a comma seperated string"
+        name: Ignore
+        example: "rgb_start, br_start"
+        required: false
+        selector:
+          text:
+    sequence:
+      - variables:
+          transition_data: >
+            {% set ignore_list = (ignore | default('', true) | replace(' ', '')).split(',') %}
+            {% set data = state_attr('sensor.active_transition', 'transition_data')  | default([], true) %}
+            {% set n = now() %}
+            {% set data = data | selectattr('light', 'eq', light) | selectattr('end_time', '>', n.isoformat()) | list %}
+            {% if iif(data) %}
+              {% set data = data | first %}
+              {% set duration = (as_datetime(data.end_time) - n).seconds %}
+              {% set ignore_list = ignore_list + [ 'end_time', 'light' ] %}
+              {% set add = dict(duration=duration, lights=data.light) %}
+              {{ dict(data.items() | rejectattr('0', 'in', ignore_list), **add) }}
+            {% endif %}
+      - if: "{{ iif(transition_data) }}"
+        then:
+          - alias: "Call the script"
+            action: script.turn_on
+            target:
+              entity_id: script.transition_lights
+            data:
+              variables: "{{ transition_data }}"

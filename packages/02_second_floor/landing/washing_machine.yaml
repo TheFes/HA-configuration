@@ -20,35 +20,3 @@ automation:
             ttl: 0
             priority: high
             notification_icon: mdi:washing-machine
-
-  # wasmachinelamp.yaml
-  - id: 8a906376-bc15-443a-9932-381bab653331
-    alias: "Toggle light washing machine area with attic light"
-    triggers:
-      - trigger: state
-        entity_id: light.zolder
-    actions:
-      - alias: "On or off"
-        choose:
-          - conditions:
-              - alias: "Light off?"
-                condition: state
-                entity_id: light.zolder
-                state: "off"
-            sequence:
-              - alias: "Turn off washing machine light and desk light"
-                action: light.turn_off
-                target:
-                  entity_id: light.wasmachinehoek
-          - conditions:
-              - alias: "Light on?"
-                condition: state
-                entity_id: light.zolder
-                state: "on"
-            sequence:
-              - alias: "Turn on washing machine light with matching brightness"
-                action: light.turn_on
-                target:
-                  entity_id: light.wasmachinehoek
-                data:
-                  brightness: "{{ state_attr('light.zolder' ,'brightness') }}"

@@ -174,7 +174,7 @@ template:
           zone: "{{ states('person.marleen') }}"
           wifi: "{{ states('sensor.de_buurvrouw_bssid') }}"
           acivity: "{{ states('sensor.nog_invullen') }}"
-  
+
       - unique_id: 11fde20f-113c-4d69-9995-e4a7ca5dd45d
         name: Location phone Martijn
         state: *value_template
@@ -183,31 +183,10 @@ template:
           zone: "{{ states('person.martijn') }}"
           wifi: "{{ states('sensor.pixel_7_pro_wifi_bssid') }}"
           acivity: "{{ states('sensor.pixel_7_pro_detected_activity') }}"
-  
+
       - unique_id: a240cb3f-d607-4047-95cc-9201c3cadeb7
         name: Zone Mapper
         state: Zone Mapper
         icon: mdi:map
         attributes:
           zones: !secret zone_mapper
-
-# From: find_iphone.yaml
-script:
-  find_iphone:
-    alias: "Find iPhone Marleen"
-    icon: mdi:cellphone-information
-    mode: restart
-    sequence:
-      - repeat:
-          count: 5
-          sequence:
-            - action: notify.mobile_app_marleen_app
-              data:
-                message: "Joehoe, hier ben ik!"
-                data:
-                  push:
-                    sound:
-                      name: default
-                      critical: 1
-                      volume: 1.0
-            - delay: 2

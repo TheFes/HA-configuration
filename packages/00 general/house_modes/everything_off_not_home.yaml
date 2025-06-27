@@ -28,15 +28,6 @@ automation:
             action: light.turn_off
             target:
               entity_id: light.groep_huis
-          - alias: "Google Home Event script"
-            action: script.google_home_event
-            data:
-              resume_id: away
-              resume: false
-              ignore:
-                entity_id: media_player.shield
-              also_stop:
-                area_id: woonkamer
           - alias: "Turn off extractor hood if needed?"
             choose:
               - conditions:
