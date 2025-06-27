@@ -116,27 +116,34 @@ automation:
     alias: "Open sunshade when needed"
     mode: restart
     triggers:
-      - trigger: state
+      - alias: The temperature in the living room is rising
+        trigger: state
         entity_id: binary_sensor.trend_woonkamer_temp
         to: "on"
-      - trigger: state
+      - alias: The sun is above the horizon
+        trigger: state
         entity_id: sun.sun
         to: above_horizon
-      - trigger: numeric_state
+      - alias: It will be over 18 degrees
+        trigger: numeric_state
         entity_id: sensor.weather_combined_max_temp_today
         above: 18
-      - trigger: state
+      - alias: Sunny or partly cloudy outside
+        trigger: state
         entity_id: weather.combined
         to:
           - sunny
           - partycloudy
-      - trigger: state
+      - alias: Currently not raining
+        trigger: state
         entity_id: binary_sensor.rain
         to: "off"
-      - trigger: numeric_state
+      - alias: Over 20 degrees inside
+        trigger: numeric_state
         entity_id: sensor.woonkamer_multi_temperature
         above: 20
-      - trigger: time
+      - alias: Time is 16:00
+        trigger: time
         at: "16:00:00"
         id: "close"
     actions:
