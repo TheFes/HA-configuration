@@ -289,6 +289,59 @@ template:
             {% from 'helpers.jinja' import area_data %}
             {{ area_data(this.name, 'device_list', media=false) }}
 
+      # sensors for dashboard messages
+      - unique_id: d187a334-2fb9-4045-9904-68efdaa4955f
+        icon: mdi:delete
+        name: >
+          {% set trash_name = state_attr(this.attributes.get('next', 'onbekend'), 'friendly_name') %}
+          {%- set name = this.state ~ ': ' ~ trash_name %}
+          {{ 'Dashboard Next Trash' if this.state == 'unknown' else name }}
+        state: >
+          {{ states(this.attributes.get('next', 'onbekend')) }}
+        attributes:
+          next: >
+            {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'sensor.afval_rest_en_gft' ] %}
+            {{
+              sensors
+                | expand
+                | sort(attribute='attributes.collection_date')
+                | map(attribute='entity_id')
+                | first
+                | default('onbekend')
+                | join
+            }}
+      - unique_id: 42e15a4b-cd5b-4b1f-aea1-606768190cfe
+        name: Dashboard ETA Martijn
+        icon: "{{ 'mdi:bike' if is_state('input_boolean.martijn_fiets', 'on') else 'mdi:car' }}"
+        state: >
+          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_martijn', 'Niet onderweg') %}
+          {% if eta != 'Niet onderweg' %}
+            ETA Martijn: {{ eta }} 
+          {% else %}
+            {{ eta }}
+          {% endif %}
+      - unique_id: bd045940-59e0-43f8-98eb-ecec92ac86d1
+        name: Dashboard ETA Marleen
+        icon: mdi:car
+        state: >
+          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_marleen', 'Niet onderweg') %}
+          {% if eta != 'Niet onderweg' %}
+            ETA Marleen: {{ eta }} 
+          {% else %}
+            {{ eta }}
+          {% endif %}
+
+  # =============================================================================
+  # FLOOR DATA SENSORS - 5 MINUTE UPDATE INTERVAL
+  # =============================================================================
+  - triggers:
+      - alias: "5 minute update interval"
+        trigger: time_pattern
+        minutes: "/5"
+      - alias: "Home Assistant start"
+        trigger: homeassistant
+        event: start
+    sensor:
       # template sensors for floor mini badges
       - unique_id: floor_data_eerste_verdieping_temperature
         name: Floor Data Eerste Verdieping Temperature
@@ -345,49 +398,10 @@ template:
         unit_of_measurement: "lx"
         state: *floor_state
 
-      # sensors for dashboard messages
-      - unique_id: d187a334-2fb9-4045-9904-68efdaa4955f
-        icon: mdi:delete
-        name: >
-          {% set trash_name = state_attr(this.attributes.get('next', 'onbekend'), 'friendly_name') %}
-          {%- set name = this.state ~ ': ' ~ trash_name %}
-          {{ 'Dashboard Next Trash' if this.state == 'unknown' else name }}
-        state: >
-          {{ states(this.attributes.get('next', 'onbekend')) }}
-        attributes:
-          next: >
-            {%- set sensors = [ 'sensor.afval_papier_en_pmd', 'sensor.afval_rest_en_gft' ] %}
-            {{
-              sensors
-                | expand
-                | sort(attribute='attributes.collection_date')
-                | map(attribute='entity_id')
-                | first
-                | default('onbekend')
-                | join
-            }}
-      - unique_id: 42e15a4b-cd5b-4b1f-aea1-606768190cfe
-        name: Dashboard ETA Martijn
-        icon: "{{ 'mdi:bike' if is_state('input_boolean.martijn_fiets', 'on') else 'mdi:car' }}"
-        state: >
-          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_martijn', 'Niet onderweg') %}
-          {% if eta != 'Niet onderweg' %}
-            ETA Martijn: {{ eta }} 
-          {% else %}
-            {{ eta }}
-          {% endif %}
-      - unique_id: bd045940-59e0-43f8-98eb-ecec92ac86d1
-        name: Dashboard ETA Marleen
-        icon: mdi:car
-        state: >
-          {% set eta = (state_attr('sensor.variables', 'variables')| default({}, true)).get('eta_marleen', 'Niet onderweg') %}
-          {% if eta != 'Niet onderweg' %}
-            ETA Marleen: {{ eta }} 
-          {% else %}
-            {{ eta }}
-          {% endif %}
+  # =============================================================================
+  # BEDROOM AIR QUALITY SENSORS - 5 MINUTE UPDATE INTERVAL
+  # =============================================================================
 
-      # template sensors for bedroom temp scores
       - unique_id: 91dfc560-f68d-4537-93e0-bc6482b37833
         name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}Temp"
         icon: mdi:thermometer
