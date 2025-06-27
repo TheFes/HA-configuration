@@ -109,7 +109,7 @@ script:
               call_disconnected: sip_call_disconnected
       - alias: "Wait untill the phone is picked up"
         wait_for_trigger:
-          - platform: webhook
+          - trigger: webhook
             local_only: true
             webhook_id: phone_picked_up
         timeout:
@@ -132,7 +132,7 @@ script:
           - sequence:
               - alias: "Wait untill connection to requested number is established"
                 wait_for_trigger:
-                  - platform: webhook
+                  - trigger: webhook
                     local_only: true
                     webhook_id: sip_connect_call_assist
                 timeout:
@@ -156,7 +156,7 @@ script:
                   sequence:
                     - alias: "Wait for the webhook"
                       wait_for_trigger:
-                        - platform: webhook
+                        - trigger: webhook
                           webhook_id: sip_call_webhook_id
                           local_only: true
                     - alias: "Check if the webhook is because a call is ended"

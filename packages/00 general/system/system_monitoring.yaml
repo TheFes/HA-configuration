@@ -114,7 +114,8 @@ automation:
     mode: parallel
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Home Assistant update available"
+        trigger: state
         entity_id:
           - update.home_assistant_core_update
           - update.home_assistant_operating_system_update
@@ -165,11 +166,13 @@ automation:
                 title: Update
       - alias: "Wait for a response"
         wait_for_trigger:
-          - trigger: event
+          - alias: "Update button pressed"
+            trigger: event
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_update }}"
-          - trigger: event
+          - alias: "Skip button pressed"
+            trigger: event
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_skip }}"

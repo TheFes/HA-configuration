@@ -1,17 +1,17 @@
 template:
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id: person.martijn
         id: state_change
-      - platform: template
+      - trigger: template
         value_template: "{{ now() - states.person.martijn.last_changed > timedelta(minutes=10) }}"
         id: recent_change
-      - platform: template
+      - trigger: template
         value_template: "{{ now() - states.person.martijn.last_changed > timedelta(hours=12) }}"
         id: extended_change
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
-      - platform: event
+      - trigger: event
         event_type: event_template_reloaded
     sensor:
       - name: House state Martijn
@@ -38,18 +38,18 @@ template:
         icon: mdi:human-male
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id: person.marleen
         id: state_change
-      - platform: template
+      - trigger: template
         value_template: "{{ now() - states.person.marleen.last_changed > timedelta(minutes=10) }}"
         id: recent_change
-      - platform: template
+      - trigger: template
         value_template: "{{ now() - states.person.marleen.last_changed > timedelta(hours=12) }}"
         id: extended_change
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
-      - platform: event
+      - trigger: event
         event_type: event_template_reloaded
     sensor:
       - name: House state Marleen

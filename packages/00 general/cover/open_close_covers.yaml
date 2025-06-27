@@ -25,7 +25,7 @@ automation:
           }}
       triggers:
         - alias: "closing time"
-          platform: template
+          trigger: template
           value_template: >
             {% set close_time = close_time_workday
               if is_state('binary_sensor.workday_sensor', 'on')
@@ -33,37 +33,37 @@ automation:
             {{ now() > today_at(close_time) }}
           id: close
         - alias: "closing time"
-          platform: template
+          trigger: template
           value_template: "{{ extra_close_time is defined and now() > today_at(extra_close_time) }}"
           id: close
         - alias: "outside temp above 18"
-          platform: numeric_state
+          trigger: numeric_state
           entity_id: sensor.weather_combined_max_temp_today
           above: 18
           id: close
         - alias: "currently sunny weather"
-          platform: state
+          trigger: state
           entity_id: weather.combined
           to:
             - sunny
             - partycloudy
           id: close
         - alias: "no rain for 15 minutes"
-          platform: state
+          trigger: state
           entity_id: binary_sensor.rain
           to: "off"
           for:
             minutes: 15
           id: close
         - alias: "inside temp above 20"
-          platform: template
+          trigger: template
           value_template: "{{ states(temp) | float(0) >= 20 }}"
           id: close
         - alias: "waiting time after manual change over"
-          platform: template
+          trigger: template
           value_template: "{{ is_state(manual, 'off') }}"
         - alias: "opening time"
-          platform: template
+          trigger: template
           value_template: "{{ now() > today_at(open_time) }}"
           id: open
       conditions:
@@ -220,13 +220,13 @@ automation:
     alias: Make sure cover is open for cleaning
     mode: restart
     triggers:
-      - platform: state
+      - trigger: state
         entity_id: cover.floris_links
         attribute: current_position
         to: 0
         for:
           minutes: 2
-      - platform: time
+      - trigger: time
         at: "08:30"
     conditions:
       - alias: "Cleaning time"
@@ -252,11 +252,11 @@ automation:
   - id: 48718b8b-2768-4e79-9ac6-fa4f3a10cabe
     alias: "Screens up with upcoming rain"
     triggers:
-      - platform: state
+      - trigger: state
         entity_id: binary_sensor.rain
         to: "on"
         for: "00:00:10"
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
         id: start
     variables:
@@ -330,7 +330,7 @@ automation:
 # binary template sensors to check if covers were manually changed
 template:
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.floris
           - cover.floris_links
@@ -344,7 +344,7 @@ template:
           auto_off: "01:00:00"
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.pepijn_template
           - cover.pepijn
@@ -354,7 +354,7 @@ template:
         <<: *config_manual
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.werkkamer_marleen
     binary_sensor:
@@ -363,7 +363,7 @@ template:
         <<: *config_manual
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.slaapkamer_zolder
           - cover.slaapkamer_zolder_template
@@ -373,7 +373,7 @@ template:
         <<: *config_manual
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.overloop_zolder
           - cover.overloop_zolder_template
@@ -383,7 +383,7 @@ template:
         <<: *config_manual
 
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - cover.veranda
     binary_sensor:

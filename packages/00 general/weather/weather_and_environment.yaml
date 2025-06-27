@@ -83,7 +83,7 @@ template:
         name: Around sunrise
         state: "{{ trigger.id }}"
         icon: "{{ 'mdi:weather-sunset-up' if this.state == 'on' else 'mdi:weather-sunset-down' }}"
-  
+
   - triggers:
       - trigger: time_pattern
         minutes: "30"
@@ -115,7 +115,7 @@ template:
               and hourly['weather.combined'].forecast is list
               and hourly['weather.combined'].forecast | count > 0
             }}
-  
+
       - unique_id: 09b40872-f8cd-400d-b3e0-889211cd7449
         name: "Rain until morning"
         state: >-
@@ -128,7 +128,7 @@ template:
           }}
         <<: *other_config
 
-# From raindata.yaml
+  # From raindata.yaml
   - binary_sensor:
       - unique_id: d2920d48-13b8-47db-8518-6a7a1eb92851
         name: Raindata
@@ -158,7 +158,7 @@ template:
               {{ dict(source='none', data=[0]*12) }}
             {% endif %}
 
-# From temp_window_open.yaml
+  # From temp_window_open.yaml
   - binary_sensor:
       - unique_id: 89607e16-e3fe-41aa-ade9-4b3d3ece55f5
         name: "Temperature Bedroom"
@@ -170,7 +170,7 @@ template:
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
-  
+
       - unique_id: 110ecf9a-de85-4976-a49a-6ec6c54ab5a6
         name: "Temperature Pepijn"
         device_class: heat
@@ -181,7 +181,7 @@ template:
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
-  
+
       - unique_id: 1676e0c4-f873-406f-8223-c0c0565f0039
         name: "Temperature Livingroom"
         device_class: heat
@@ -192,7 +192,7 @@ template:
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
-  
+
       - unique_id: b998425b-81e2-41da-bb0c-4e9564035e68
         name: "Temperature Floris"
         device_class: heat
@@ -206,30 +206,30 @@ template:
 
 # From night.yaml
 binary_sensor:
-  - platform: tod
+  - trigger: tod
     name: Night
     after: sunset
     before: sunrise
 
-# From trend.yaml
-  - platform: trend
+  # From trend.yaml
+  - trigger: trend
     sensors:
       trend_werkkamer_marleen_temp:
         entity_id: sensor.werkkamer_marleen_temp
         device_class: heat
-  
+
       trend_pepijn_temp:
         entity_id: sensor.pepijn_temp
         device_class: heat
-  
+
       trend_floris_temp:
         entity_id: sensor.floris_temp
         device_class: heat
-  
+
       trend_slaapkamer_temp:
         entity_id: sensor.awair_slaapkamer_temperature
         device_class: heat
-  
+
       trend_woonkamer_temp:
         entity_id: sensor.woonkamer_multi_temperature
         device_class: heat

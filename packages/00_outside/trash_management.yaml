@@ -17,7 +17,7 @@
 #
 # Sensors:
 # - sensor.afval_rest_en_gft - Rest & GFT waste formatted sensor
-# - sensor.afval_papier_en_pmd - Paper & PMD waste formatted sensor  
+# - sensor.afval_papier_en_pmd - Paper & PMD waste formatted sensor
 # - sensor.first_trash - Next trash collection info with color coding
 # - sensor.second_trash - Following trash collection info
 
@@ -67,12 +67,14 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: time
+      - alias: "Morning trash reminder (7:00 AM)"
+        trigger: time
         at: "07:00:00"
         variables:
           when_en: today
           when_nl: Vandaag
-      - trigger: time
+      - alias: "Evening trash reminder (8:00 PM)"
+        trigger: time
         at: "20:00:00"
         variables:
           when_en: tomorrow
@@ -118,7 +120,8 @@ automation:
 # =============================================================================
 template:
   - triggers:
-      - platform: state
+      - alias: "Rest & GFT collection date updated"
+        trigger: state
         entity_id: sensor.afvalwijzer_restgft
         attribute: days_until_collection_date
         not_to: none
@@ -142,9 +145,10 @@ template:
               {{ trigger.to_state.state }}
             in_two_weeks: >
               {{ now().date() - as_datetime(trigger.to_state.state).date() <= timedelta(weeks=2) }}
-  
+
   - triggers:
-      - platform: state
+      - alias: "Paper & PMD collection date updated"
+        trigger: state
         entity_id: sensor.afvalwijzer_dhm
         attribute: days_until_collection_date
         not_to: none
@@ -153,7 +157,7 @@ template:
         name: "Papier & PMD"
         icon: mdi:trash-can-outline
         <<: *config
-  
+
   - sensor:
       - unique_id: 3f09522f-f034-401c-aa0a-efc438e80598
         name: >

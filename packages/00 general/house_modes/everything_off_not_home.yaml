@@ -4,7 +4,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "House mode changed to away for 10 seconds"
+        trigger: state
         entity_id: sensor.house_mode
         to: "Afwezig"
         for:

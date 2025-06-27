@@ -7,15 +7,18 @@ automation:
     mode: parallel
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Marleen left work"
+        trigger: state
         entity_id: person.marleen
         from: !secret work_marleen
         to: "not_home"
-      - trigger: state
+      - alias: "Martijn left work"
+        trigger: state
         entity_id: person.martijn
         from: !secret work_martijn
         to: "not_home"
-      - trigger: state
+      - alias: "Person status changed (for reset)"
+        trigger: state
         entity_id:
           - person.martijn
           - person.marleen
@@ -24,14 +27,16 @@ automation:
           - !secret work_marleen
           - !secret work_martijn
         id: "reset"
-      - trigger: event
+      - alias: "Cancel ETA notification for Martijn"
+        trigger: event
         id: reset
         event_type: mobile_app_notification_action
         event_data:
           action: "cancel_eta_martijn"
         variables:
           name: martijn
-      - trigger: event
+      - alias: "Cancel ETA notification for Marleen"
+        trigger: event
         id: reset
         event_type: mobile_app_notification_action
         event_data:
@@ -53,11 +58,13 @@ automation:
     actions:
       - if: "{{ trigger.id == 'reset' }}"
         then:
-          - event: remove_variable
+          - alias: "Remove ETA variable"
+            event: remove_variable
             event_data:
               key: "eta_{{ name }}"
         else:
-          - action: homeassistant.update_entity
+          - alias: "Update travel time sensor"
+            action: homeassistant.update_entity
             target:
               entity_id: "{{ sensor }}"
           - alias: "Send notification to phone"
@@ -74,7 +81,8 @@ automation:
                 actions:
                   - action: "cancel_eta_{{ name }}"
                     title: "Stop updates"
-          - event: set_variable
+          - alias: "Set ETA variable"
+            event: set_variable
             event_data:
               key: "eta_{{ name }}"
               value: "{{ eta }}"
@@ -88,19 +96,23 @@ automation:
                       or (state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_'~name, none) is none
                     }}
                   sequence:
-                    - action: homeassistant.update_entity
+                    - alias: "Update travel time sensor in loop"
+                      action: homeassistant.update_entity
                       target:
                         entity_id: "{{ sensor }}"
                     - variables:
                         eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
                     - wait_for_trigger:
-                        - trigger: template
+                        - alias: "Person reached destination"
+                          trigger: template
                           value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
-                        - trigger: event
+                        - alias: "ETA cancellation requested"
+                          trigger: event
                           event_type: mobile_app_notification_action
                           event_data:
                             action: "cancel_eta_{{ name }}"
-                        - trigger: template
+                        - alias: "ETA delay detected"
+                          trigger: template
                           value_template: >
                             {{
                               (now() + timedelta(minutes=states(sensor) | float)) - as_datetime(eta) > timedelta(minutes=5)
@@ -110,7 +122,8 @@ automation:
                       then:
                         - variables:
                             eta: "{{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }}"
-                        - event: set_variable
+                        - alias: "Update ETA variable with new time"
+                          event: set_variable
                           event_data:
                             key: "eta_{{ name }}"
                             value: "{{ eta }}"
@@ -135,11 +148,13 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Martijn detected on bicycle"
+        trigger: state
         id: "on_bike"
         entity_id: sensor.pixel_7_pro_detected_activity
         to: "on_bicycle"
-      - trigger: state
+      - alias: "Martijn arrived home"
+        trigger: state
         id: "back_home"
         entity_id: person.martijn
         to: "home"
@@ -175,7 +190,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: numeric_state
+      - alias: "Marleen within 4km of home"
+        trigger: numeric_state
         entity_id: sensor.thuis_marleen_distance
         below: 4000
     conditions:

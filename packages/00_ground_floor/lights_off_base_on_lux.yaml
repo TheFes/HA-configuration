@@ -4,16 +4,19 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: numeric_state
+      - alias: "Light level above 100 lux"
+        trigger: numeric_state
         entity_id: sensor.woonkamer_lux_illuminance_lux
         id: light
         above: 100
-      - trigger: numeric_state
+      - alias: "Light level above 400 lux (very bright)"
+        trigger: numeric_state
         entity_id: sensor.woonkamer_lux_illuminance_lux
         id: very_light
         above: 400
     conditions:
-      - condition: sun
+      - alias: "Check if it's daytime (before sunset with offset)"
+        condition: sun
         before: sunset
         before_offset: "03:00:00"
     actions:

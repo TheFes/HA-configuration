@@ -1,7 +1,7 @@
 # Template sensor for Floris' cover status
 template:
   - triggers:
-      - platform: event
+      - trigger: event
         event_type: call_service
         id: closing
         event_data:
@@ -9,7 +9,7 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris_groep
-      - platform: event
+      - trigger: event
         event_type: call_service
         id: closing
         event_data:
@@ -17,7 +17,7 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris
-      - platform: event
+      - trigger: event
         event_type: call_service
         id: opening
         event_data:
@@ -25,7 +25,7 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris_groep
-      - platform: event
+      - trigger: event
         event_type: call_service
         id: opening
         event_data:
@@ -33,7 +33,7 @@ template:
           service: open_cover
           service_data:
             entity_id: cover.floris
-      - platform: state
+      - trigger: state
         entity_id: cover.floris
         attribute: current_position
         id: idle

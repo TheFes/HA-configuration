@@ -1,9 +1,11 @@
 template:
   - triggers:
-      - platform: event
+      - alias: "Pepijn sleeping event received"
+        trigger: event
         event_type: pepijn_sleeping
         id: "on"
-      - platform: template
+      - alias: "Pepijn wake up time reached"
+        trigger: template
         value_template: >
           {% set correction = states('input_number.correction_clock_pepijn') | float(0) %}
           {% set awake = today_at(states('input_datetime.pepijn_time_awake')) %}
@@ -21,10 +23,12 @@ template:
         state: "{{ trigger.id | bool }}"
         icon: "{{ 'mdi:sleep' if trigger.id | bool else 'mdi:sleep-off' }}"
   - triggers:
-      - platform: event
+      - alias: "Floris sleeping event received"
+        trigger: event
         event_type: floris_sleeping
         id: "on"
-      - platform: template
+      - alias: "Floris wake up time reached"
+        trigger: template
         value_template: >
           {% set correction = states('input_number.correction_clock_floris') | float(0) %}
           {% set awake = today_at(states('input_datetime.floris_time_awake')) %}
@@ -115,19 +119,23 @@ automation:
   - id: 7680c082-f8f8-402d-ba9c-dc2064de40b4
     alias: Turn on nightlight for Pepijn and Floris
     triggers:
-      - trigger: state
+      - alias: "Pepijn's main light turned off"
+        trigger: state
         entity_id: light.pepijn_template
         to: "off"
         id: pepijn
-      - trigger: state
+      - alias: "Pepijn's nightlight enabled"
+        trigger: state
         entity_id: input_boolean.nachtlampje_pepijn
         to: "on"
         id: pepijn
-      - trigger: state
+      - alias: "Floris's main light turned off"
+        trigger: state
         entity_id: light.floris_template
         to: "off"
         id: floris
-      - trigger: state
+      - alias: "Floris's nightlight enabled"
+        trigger: state
         entity_id: input_boolean.nachtlampje_floris
         to: "on"
         id: floris

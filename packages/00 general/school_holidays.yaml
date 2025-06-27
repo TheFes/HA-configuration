@@ -31,7 +31,7 @@
 
 # SCHOOL REGIONS:
 # - Noord (North): Northern Netherlands
-# - Midden (Middle): Central Netherlands  
+# - Midden (Middle): Central Netherlands
 # - Zuid (South): Southern Netherlands
 
 # HOLIDAY TYPES:
@@ -76,9 +76,9 @@ rest_command:
 # The attributes show the selected region, the current holiday and a the upcoming holidays for the current school year (next school year in case it's summer holiday)
 template:
   - triggers:
-      - platform: time
+      - trigger: time
         at: "00:00"
-      - platform: event
+      - trigger: event
         event_type: update_school_holidays
     actions:
       - action: rest_command.school_holidays

@@ -12,7 +12,8 @@ script:
                   entity_id:
                     - switch.waterkoker
                     - switch.espresso
-              - condition: state
+              - alias: "Check if it's dark inside"
+                condition: state
                 entity_id: binary_sensor.light_inside
                 state: "off"
               - alias: "Turn some lights on"
@@ -49,7 +50,8 @@ script:
                     - light.floris_template
                 data:
                   brightness_pct: 20
-              - action: light.turn_on
+              - alias: "Turn on Floris reading lamp"
+                action: light.turn_on
                 target:
                   entity_id: light.floris_leeslamp
                 data:

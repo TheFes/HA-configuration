@@ -2,11 +2,11 @@ automation:
   - id: 3b350cdb-4a8e-4ce9-b239-fc2e329f931d
     alias: "Activate Guest Mode when Guest Wifi is used"
     triggers:
-      - platform: state
+      - trigger: state
         entity_id: sensor.guest_wifi_active
         to: ~
         id: "on"
-      - platform: state
+      - trigger: state
         entity_id: sensor.guest_wifi_active
         to: "0"
         for:
@@ -70,12 +70,12 @@ script:
                   - action: "ignore_guest_{{ guest }}"
                     title: "Negeer"
           - wait_for_trigger:
-              - platform: event
+              - trigger: event
                 event_type: mobile_app_notification_action
                 event_data:
                   action: "add_guest_{{ guest }}"
                 id: add
-              - platform: event
+              - trigger: event
                 event_type: mobile_app_notification_action
                 event_data:
                   action: "ignore_guest_{{ guest }}"
@@ -96,10 +96,10 @@ script:
 
 template:
   - triggers:
-      - platform: event
+      - trigger: event
         event_type: wifi_ignore
         id: ignore
-      - platform: event
+      - trigger: event
         event_type: wifi_always_guest
         id: always_guest
     sensor:

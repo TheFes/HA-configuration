@@ -11,13 +11,15 @@
   alias: Turn off Studio Code Server add-on
   description: ""
   triggers:
-    - trigger: event
+    - alias: "Mobile app VSCode stop notification received"
+      trigger: event
       event_type: mobile_app_notification_action
       event_data:
         action: action_vscode_off
   conditions: []
   actions:
-    - action: hassio.addon_stop
+    - alias: "Stop VSCode Server add-on"
+      action: hassio.addon_stop
       metadata: {}
       data:
         addon: a0d7b954_vscode

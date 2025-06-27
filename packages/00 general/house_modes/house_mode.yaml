@@ -53,12 +53,14 @@
 
 template:
   - triggers:
-      - trigger: event
+      - alias: "Manual house mode override event"
+        trigger: event
         event_type: set_house_mode
         id: event
         variables:
           mode: "{{ trigger.event.data.mode }}"
-      - trigger: state
+      - alias: "Holiday, guest, or occupancy state changed"
+        trigger: state
         entity_id:
           - input_boolean.vakantie
           - input_boolean.gast
@@ -79,19 +81,22 @@ template:
             {% else %}
               Afwezig
             {% endif %}
-      - trigger: state
+      - alias: "Attic lights turned off (sleep detection)"
+        trigger: state
         entity_id: light.groep_zolder
         to: "off"
         variables:
           mode: *mode_template
-      - trigger: state
+      - alias: "30 minute timeout from teeth brushing mode"
+        trigger: state
         entity_id: sensor.house_mode
         to: "Tandenpoetsen"
         for:
           minutes: 30
         variables:
           mode: *mode_template
-      - trigger: time
+      - alias: "Pepijn's wake up time"
+        trigger: time
         at: input_datetime.pepijn_time_awake
         variables:
           mode: *mode_template

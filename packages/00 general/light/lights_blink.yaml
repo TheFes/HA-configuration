@@ -181,7 +181,7 @@ script:
 template:
   # Template sensor to store lights for which script is active
   - triggers:
-      - platform: event
+      - trigger: event
         event_type: light_effect_blink
     sensor:
       - unique_id: 7b25c899-ec7d-48f3-b9c4-3f7fb7a08a68

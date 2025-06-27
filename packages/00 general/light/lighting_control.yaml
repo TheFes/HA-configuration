@@ -50,7 +50,8 @@ automation:
     mode: parallel
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Light brightness changed"
+        trigger: state
         entity_id:
           - light.eettafel
           - light.pepijn

@@ -2,7 +2,8 @@ automation:
   - id: "1732562382351"
     alias: "Restart Zigbee2MQTT "
     triggers:
-      - trigger: state
+      - alias: "MQTT restart needed for 5 minutes"
+        trigger: state
         entity_id: binary_sensor.mqtt_restart_needed
         to: "on"
         for:
@@ -10,7 +11,8 @@ automation:
           minutes: 5
           seconds: 0
     actions:
-      - action: hassio.addon_restart
+      - alias: "Restart Zigbee2MQTT addon"
+        action: hassio.addon_restart
         data:
           addon: 45df7312_zigbee2mqtt
     mode: single

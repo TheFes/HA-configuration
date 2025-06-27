@@ -1,9 +1,11 @@
 template:
   - triggers:
-      - platform: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
         id: "true"
-      - platform: homeassistant
+      - alias: "Home Assistant shutting down"
+        trigger: homeassistant
         event: shutdown
         id: "false"
     actions:

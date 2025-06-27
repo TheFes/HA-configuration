@@ -46,13 +46,15 @@ template:
   # DEPENDENCIES: script.transition_lights_perform_transition events
   # ---------------------------------------------------------------------------
   - triggers:
-      - platform: event
+      - alias: "Script service call detected"
+        trigger: event
         event_type: call_service
         event_data:
           domain: script
           service: turn_on
     conditions:
-      - condition: template
+      - alias: "Check if transition script was called"
+        condition: template
         value_template: "{{ trigger.event.data.service_data.entity_id == ['script.transition_lights_perform_transition'] }}"
     sensor:
       unique_id: 3bfe40b0-2f2d-4090-8740-446be10ef756

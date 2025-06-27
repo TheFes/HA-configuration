@@ -5,7 +5,7 @@ automation:
       allowed_callers:
         - "**621"
     triggers:
-      - platform: webhook
+      - trigger: webhook
         webhook_id: sip_call_webhook_id
         local_only: true
     conditions:
@@ -160,7 +160,7 @@ script:
       - parallel:
           - sequence:
               - wait_for_trigger:
-                  - platform: webhook
+                  - trigger: webhook
                     local_only: true
                     webhook_id: sip_connect_call_bridge_from_menu
               - action: hassio.addon_stdin
@@ -177,7 +177,7 @@ script:
                       value_template: "{{ true }}"
                   sequence:
                     - wait_for_trigger:
-                        - platform: webhook
+                        - trigger: webhook
                           webhook_id: sip_call_webhook_id
                           local_only: true
                     - alias: "Check if the webhook is because a call is ended"

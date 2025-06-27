@@ -71,7 +71,8 @@ automation:
   - id: e03d310f-0611-4d9c-9781-0487993c4976
     alias: "Xiaomi button kitchen"
     triggers:
-      - trigger: state
+      - alias: "Kitchen button pressed"
+        trigger: state
         entity_id: event.knop_keuken_action
         not_from: unavailable
         variables:
@@ -81,12 +82,14 @@ automation:
         choose:
           - conditions: "{{ event == 'single' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle kitchen spots"
+                action: light.toggle
                 data:
                   entity_id: light.keukenspotjes
           - conditions: "{{ event == 'double' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle main kitchen light"
+                action: light.toggle
                 target:
                   entity_id: light.keuken
           - conditions: "{{ event == 'hold' }}"
@@ -104,15 +107,19 @@ automation:
     mode: restart
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Espresso machine turned on"
+        trigger: state
         entity_id: switch.espresso
         from: "off"
         to: "on"
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
-      - trigger: event
+      - alias: "Automations reloaded"
+        trigger: event
         event_type: automation_reloaded
-      - trigger: numeric_state
+      - alias: "Espresso machine power above 25W"
+        trigger: numeric_state
         entity_id: sensor.espresso_power
         above: 25
         id: "active"
@@ -130,7 +137,8 @@ automation:
             sequence:
               - alias: "Espresso machine inactive for 31 minutes"
                 wait_for_trigger:
-                  - trigger: numeric_state
+                  - alias: "Power dropped below 25W for 31 minutes"
+                    trigger: numeric_state
                     entity_id: sensor.espresso_power
                     below: 25
                     for: "00:31:00"
@@ -152,7 +160,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Ground floor lights turned on"
+        trigger: state
         entity_id: light.groep_beneden
         to: "on"
     conditions:
@@ -178,12 +187,14 @@ automation:
   - alias: Power usage kitchen
     id: 0a454b0d-156e-4938-945e-d2bfb9b3cbd7
     triggers:
-      - trigger: numeric_state
+      - alias: "Fridge power high for 10 minutes"
+        trigger: numeric_state
         entity_id: sensor.koelkast_power
         above: 80
         for: "00:10:00"
     actions:
-      - action: notify.mobile_app_pixel_7_pro
+      - alias: "Send fridge power warning notification"
+        action: notify.mobile_app_pixel_7_pro
         data:
           title: "Stroomverbruik koelkast"
           message: "De koelkast verbruikt verdacht veel stroom, check of hij niet open staat"
@@ -203,15 +214,19 @@ automation:
     mode: restart
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Water kettle turned on"
+        trigger: state
         entity_id: switch.waterkoker
         from: "off"
         to: "on"
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
-      - trigger: event
+      - alias: "Automations reloaded"
+        trigger: event
         event_type: automation_reloaded
-      - trigger: numeric_state
+      - alias: "Water kettle power above 25W"
+        trigger: numeric_state
         entity_id: sensor.waterkoker_power
         above: 25
         id: "active"
@@ -229,7 +244,8 @@ automation:
             sequence:
               - alias: "Kettle inactive for 10 minutes"
                 wait_for_trigger:
-                  - trigger: numeric_state
+                  - alias: "Power dropped below 25W for 10 minutes"
+                    trigger: numeric_state
                     entity_id: sensor.waterkoker_power
                     below: 25
                     for: "00:10:00"

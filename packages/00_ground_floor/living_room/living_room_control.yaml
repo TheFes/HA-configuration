@@ -3,7 +3,8 @@ automation:
   - id: 089a1b6a-4dfa-490e-bda3-675de31e1807
     alias: "LIDL button livingroom"
     triggers:
-      - trigger: state
+      - alias: "LIDL button pressed"
+        trigger: state
         entity_id: event.knop_tv_hoek_action
         not_from: unavailable
         variables:
@@ -32,24 +33,28 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "It gets dark inside"
+        trigger: state
         entity_id: binary_sensor.light_inside
         from: "on"
         to: "off"
         id: dark
-      - trigger: state
+      - alias: "House mode changed from away to home"
+        trigger: state
         entity_id: sensor.house_mode
         from: "Afwezig"
         to: "Thuis"
         id: "home"
-      - trigger: state
+      - alias: "NVIDIA Shield turned on"
+        trigger: state
         entity_id: media_player.nvidia_shield
         from: "off"
         not_to:
           - unavailable
           - unknown
         id: "dark"
-      - trigger: state
+      - alias: "Person arrived home"
+        trigger: state
         entity_id:
           - person.martijn
           - person.marleen
@@ -62,11 +67,13 @@ automation:
           - conditions:
               - condition: trigger
                 id: home_while_sleeping
-              - condition: state
+              - alias: "Check if house is in sleep mode"
+                condition: state
                 entity_id: sensor.house_mode
                 state: Slapen
             sequence:
-              - action: light.turn_on
+              - alias: "Turn on dining table light dimmed"
+                action: light.turn_on
                 target:
                   entity_id: light.eettafel
                 data:
@@ -95,10 +102,12 @@ automation:
                 condition: state
                 entity_id: binary_sensor.light_inside
                 state: "off"
-              - condition: sun
+              - alias: "Check if it's after sunset (with offset)"
+                condition: sun
                 after: sunset
                 after_offset: "-03:00:00"
-              - condition: state
+              - alias: "Check if house mode allows lighting"
+                condition: state
                 entity_id: sensor.house_mode
                 state:
                   - Thuis
@@ -128,7 +137,8 @@ automation:
                       - alias: "After bedtime?"
                         condition: time
                         after: "19:15:00"
-                      - not:
+                      - alias: "Check if TV is not on"
+                        not:
                           - alias: "TV aan?"
                             condition: state
                             entity_id: media_player.nvidia_shield
@@ -148,7 +158,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "NVIDIA Shield turned on"
+        trigger: state
         entity_id: media_player.nvidia_shield
         from: "off"
     actions:
@@ -171,7 +182,7 @@ automation:
 
 # From: samsung_soundbar.yaml
 media_player:
-  - platform: samsung_soundbar
+  - trigger: samsung_soundbar
     name: "Samsung Soundbar"
     unique_id: bf710249-7580-43e9-9fe9-7254119145b6
     host: 192.168.2.116
@@ -180,7 +191,7 @@ media_player:
     power_options: True
 
   # From: universal_shield_soundbar.yaml
-  - platform: universal
+  - trigger: universal
     name: Shield en Soundbar
     unique_id: 56f0b8ab-3309-4572-96cb-e6818875ad58
     children:

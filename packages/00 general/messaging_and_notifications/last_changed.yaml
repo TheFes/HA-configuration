@@ -1,6 +1,6 @@
 template:
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - input_boolean.test
         not_to: ["unavailable", "unknown"]
@@ -16,9 +16,9 @@ template:
           {% set current = this.attributes.get('changes', {}) %}
           {% set new = {trigger.entity_id: as_local(trigger.to_state.last_changed).isoformat()} %}
           {{ dict(current, **new) }}
-  
+
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id:
           - input_boolean.test
           - binary_sensor.dishwasher_active

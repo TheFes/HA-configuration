@@ -63,15 +63,15 @@ template:
   # PURPOSE: Event-driven variable management with optional timestamping and logging
   # DEPENDENCIES: Custom events for variable operations
   # ---------------------------------------------------------------------------
-  - # trigger based template sensor to store variables
+  -  # trigger based template sensor to store variables
   # for more info, see https://community.home-assistant.io/t/wth-cant-input-helpers-be-read-only-in-ui/467562/32
-  
+
   - triggers:
-      - platform: event
+      - trigger: event
         event_type: set_variable
-      - platform: event
+      - trigger: event
         event_type: remove_variable
-      - platform: event
+      - trigger: event
         event_type: clear_variables
     conditions:
       - condition: template

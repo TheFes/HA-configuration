@@ -1,9 +1,9 @@
 template:
   - triggers:
-      - platform: event
+      - trigger: event
         event_type: set_initial_state
         id: initial
-      - platform: template
+      - trigger: template
         value_template: >
           {{
             states('sensor.solar_max') | is_number

@@ -4,23 +4,27 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - platform: state
+      - alias: "Dishwasher finished running"
+        trigger: state
         entity_id: binary_sensor.dishwasher_active
         from: "on"
         to: "off"
         id: "finished"
     actions:
-      - action: input_select.select_option
+      - alias: "Reset dishwasher program to Eco"
+        action: input_select.select_option
         target:
           entity_id: input_select.dishwasher_program
         data:
           option: Eco
-      - action: input_select.select_option
+      - alias: "Reset dishwasher extra setting to Normal"
+        action: input_select.select_option
         target:
           entity_id: input_select.dishwasher_program_extra
         data:
           option: Normaal
-      - action: input_number.set_value
+      - alias: "Clear dishwasher delayed start timer"
+        action: input_number.set_value
         target:
           entity_id: input_number.dishwasher_delayed_start
         data:
@@ -57,13 +61,13 @@ input_select:
 
 template:
   - triggers:
-      - platform: state
+      - trigger: state
         entity_id: binary_sensor.dishwasher_active
         from: ["on", "off"]
         to: ["on", "off"]
         for:
           seconds: 1
-      - platform: state
+      - trigger: state
         entity_id:
           - input_select.dishwasher_program
           - input_select.dishwasher_program_extra

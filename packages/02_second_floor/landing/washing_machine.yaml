@@ -5,7 +5,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - entity_id: sensor.wasmachine_remain_time
+      - alias: "Washing machine finished (timer reached 0)"
+        entity_id: sensor.wasmachine_remain_time
         trigger: state
         from: 0:01:00
         to: 0:00:00

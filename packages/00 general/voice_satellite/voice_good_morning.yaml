@@ -14,7 +14,8 @@ automation:
         data:
           variables:
             area: "{{ area_name(trigger.device_id) }}"
-      - action: weather.get_forecasts
+      - alias: "Get daily weather forecast"
+        action: weather.get_forecasts
         data:
           type: daily
         target:

@@ -3,7 +3,8 @@ automation:
   - id: afcf34ca-7a3e-4f49-a332-9313d2a2eca5
     alias: "Actions based on doorbell"
     triggers:
-      - trigger: state
+      - alias: "Doorbell button pressed"
+        trigger: state
         entity_id: binary_sensor.smart_doorbell_button
         to: "on"
     mode: restart
@@ -192,12 +193,15 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
-      - trigger: state
+      - alias: "Doorbell chime became available"
+        trigger: state
         entity_id: switch.smart_doorbell_chime_active
         from: unavailable
-      - trigger: time
+      - alias: "Schedule time for chime control"
+        trigger: time
         at:
           - "07:00:00"
           - "19:00:00"
