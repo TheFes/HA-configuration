@@ -2,7 +2,19 @@ script:
   good_morning_routine:
     alias: "Lights on in the morning (Voice)"
     icon: mdi:weather-sunset-up
+    fields:
+      area:
+        description: "Area to activate morning routine for"
+        required: true
+        selector:
+          select:
+            options:
+              - "Keuken"
+              - "Woonkamer"
     sequence:
+      - condition: template
+        value_template: "{{ area is defined and area in ['Keuken', 'Woonkamer'] }}"
+        alias: "Validate area parameter"
       - choose:
           - conditions: "{{ area in ['Keuken', 'Woonkamer' ] }}"
             sequence:

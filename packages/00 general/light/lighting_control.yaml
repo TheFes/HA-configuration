@@ -176,4 +176,4 @@ template:
         name: "Pepijn Light inside"
         device_class: light
         state: >-
-          {{ states('pepijn_lux_illuminance_lux') | float(0) > 10 }}
+          {{ states('sensor.pepijn_lux_illuminance_lux') | float(0) > 10 }}

@@ -14,7 +14,7 @@
 # ENTITIES CREATED:
 # Automations:
 # - automation.xiaomi_button_kitchen - Kitchen button light controls
-# - automation.espresso_machine_plug_off - Auto-off after 31 minutes of inactivity  
+# - automation.espresso_machine_plug_off - Auto-off after 31 minutes of inactivity
 # - automation.extractor_hood_back_on_in_the_morning - Morning restore after overnight off
 # - automation.power_usage_kitchen - Fridge power monitoring alert (>80W for 10min)
 # - automation.water_kettle_plug_off - Auto-off after 10 minutes of inactivity
@@ -28,7 +28,7 @@
 # EXTERNAL DEPENDENCIES:
 # - Integration: Zigbee2MQTT - For Xiaomi button and device control
 # - Device: switch.espresso - Espresso machine smart plug
-# - Device: switch.afzuigkap - Extractor hood smart plug  
+# - Device: switch.afzuigkap - Extractor hood smart plug
 # - Device: switch.waterkoker - Water kettle smart plug
 # - Entity: sensor.espresso_power - Espresso machine power consumption
 # - Entity: sensor.afzuigkap_power - Extractor hood power consumption
@@ -46,7 +46,7 @@
 
 # BUTTON CONTROLS (Xiaomi Kitchen Button):
 # - Single click: Toggle kitchen spots (light.keukenspotjes)
-# - Double click: Toggle main kitchen light (light.keuken)  
+# - Double click: Toggle main kitchen light (light.keuken)
 # - Hold/Release: No action configured
 
 # APPLIANCE STATUS DETECTION:
@@ -186,12 +186,19 @@ automation:
   # ---------------------------------------------------------------------------
   - alias: Power usage kitchen
     id: 0a454b0d-156e-4938-945e-d2bfb9b3cbd7
+    mode: single
+    max_exceeded: silent
     triggers:
       - alias: "Fridge power high for 10 minutes"
         trigger: numeric_state
         entity_id: sensor.koelkast_power
         above: 80
         for: "00:10:00"
+    conditions:
+      - alias: "Rate limit: only send notification once per hour"
+        condition: template
+        value_template: >
+          {{ as_timestamp(now()) - as_timestamp(state_attr('automation.power_usage_kitchen', 'last_triggered'), 0) > 3600 }}
     actions:
       - alias: "Send fridge power warning notification"
         action: notify.mobile_app_pixel_7_pro
@@ -202,6 +209,7 @@ automation:
             channel: Fridge
             ttl: 0
             priority: high
+            tag: fridge_alert
             notification_icon: mdi:fridge-alert
 
   # ---------------------------------------------------------------------------
@@ -222,9 +230,6 @@ automation:
       - alias: "Home Assistant started"
         trigger: homeassistant
         event: start
-      - alias: "Automations reloaded"
-        trigger: event
-        event_type: automation_reloaded
       - alias: "Water kettle power above 25W"
         trigger: numeric_state
         entity_id: sensor.waterkoker_power
@@ -251,7 +256,7 @@ automation:
                     for: "00:10:00"
         default:
           - delay:
-              minutes: 30
+              minutes: 10
       - alias: "Turn plug off"
         action: switch.turn_off
         target:
