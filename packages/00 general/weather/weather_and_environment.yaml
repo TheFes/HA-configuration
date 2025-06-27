@@ -206,30 +206,35 @@ template:
 
 # From night.yaml
 binary_sensor:
-  - trigger: tod
+  - platform: tod
     name: Night
     after: sunset
     before: sunrise
 
   # From trend.yaml
-  - trigger: trend
+  - platform: trend
     sensors:
       trend_werkkamer_marleen_temp:
+        unique_id: 2980cae6-8b1f-4de4-b293-6471a3a0cd8a
         entity_id: sensor.werkkamer_marleen_temp
         device_class: heat
 
       trend_pepijn_temp:
+        unique_id: 4c3e1fe1-2a8b-4407-b580-c5aba886cc9d
         entity_id: sensor.pepijn_temp
         device_class: heat
 
       trend_floris_temp:
+        unique_id: 694c3d35-19a3-4163-ad10-f5d4fb4c4736
         entity_id: sensor.floris_temp
         device_class: heat
 
       trend_slaapkamer_temp:
+        unique_id: df62cf8a-f573-43bb-9a0e-3596095a1487
         entity_id: sensor.awair_slaapkamer_temperature
         device_class: heat
 
       trend_woonkamer_temp:
+        unique_id: c53a6dfd-5fca-4621-a7d6-1e1049d1a6ff
         entity_id: sensor.woonkamer_multi_temperature
         device_class: heat
