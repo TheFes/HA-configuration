@@ -198,21 +198,3 @@ script:
                             {% set to_end = to_end | first %}
                             {{ number if to_end == parsed else to_end }}
                     - stop: "Call disconnected"
-
-  play_music:
-    alias: Old Phone Play Music
-    mode: restart
-    variables:
-      playlist:
-        frozen: spotify:album:3YwNovUGZkSJmGP2Y4qUyz
-        frozen_2: spotify:album:3kL8E8BhaivWmyOjnms0gl
-        bollo: spotify:album:7dBjpPf4jYSKzaIqh1fRBe
-        bobo: spotify:album:2fwkkl32gl2UTkMA3bt63z
-      play_on: media_player.beneden_groep
-    sequence:
-      - action: spotcast.start
-        data:
-          entity_id: "{{ play_on }}"
-          uri: "{{ playlist[to_play] }}"
-          force_playback: true
-          start_volume: 30
