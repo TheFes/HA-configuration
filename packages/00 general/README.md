@@ -35,7 +35,7 @@ Location tracking and presence detection (7 files)
 Communication and notification systems (3 files)
 
 ### [system/](./system/)
-System monitoring and maintenance (5 files)
+System monitoring and maintenance (6 files)
 
 ### [voice_satellite/](./voice_satellite/)
 Voice command processing and responses (13 files)

@@ -1,0 +1,38 @@
+alert:
+  vscode_active:
+    name: "VSCode active"
+    title: "VSCode is nog actief"
+    message: "Ben je nog steeds aan het coderen?"
+    entity_id: binary_sensor.studio_code_server_running
+    state: "on"
+    repeat: 120
+    can_acknowledge: true
+    skip_first: true
+    notifiers:
+      - mobile_app_pixel_7_pro
+    data:
+      tag: vscode_active
+      channel: Alerst
+      ttl: 0
+      priority: high
+      notification_icon: mdi:microsoft-visual-studio-code
+      actions:
+        - action: "action_vscode_off"
+          title: "Nee, zet maar uit"
+    done_message: "clear_notification"
+
+automation:
+  - id: "1737388853880"
+    alias: Turn off Studio Code Server add-on
+    triggers:
+      - alias: "Mobile app VSCode stop notification received"
+        trigger: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: action_vscode_off
+    actions:
+      - alias: "Stop VSCode Server add-on"
+        action: hassio.addon_stop
+        data:
+          addon: a0d7b954_vscode
+    mode: single

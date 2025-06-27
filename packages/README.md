@@ -9,7 +9,7 @@ This directory contains modular Home Assistant configuration packages organized 
 - **[integrations.yaml](./integrations.yaml)** - Main integrations configuration
 
 ### Floor-Based Packages
-- **[00_ground_floor/](./00_ground_floor/)** - Ground floor room automations and controls (11 files)
+- **[00_ground_floor/](./00_ground_floor/)** - Ground floor room automations and controls (12 files)
 - **[00_outside/](./00_outside/)** - Outdoor area automations (3 files)
 - **[01_first_floor/](./01_first_floor/)** - First floor room automations (4 files)
 - **[02_second_floor/](./02_second_floor/)** - Second floor room automations (9 files)
