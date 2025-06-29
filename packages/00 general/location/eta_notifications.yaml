@@ -100,7 +100,8 @@ automation:
                       action: homeassistant.update_entity
                       target:
                         entity_id: "{{ sensor }}"
-                    - variables:
+                    - alias: "Calculate updated ETA time"
+                      variables:
                         eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
                     - wait_for_trigger:
                         - alias: "Person reached destination"
@@ -120,7 +121,8 @@ automation:
                           id: delay
                     - if: "{{ wait.trigger.id == 'delay' }}"
                       then:
-                        - variables:
+                        - alias: "Calculate delayed ETA time"
+                          variables:
                             eta: "{{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }}"
                         - alias: "Update ETA variable with new time"
                           event: set_variable
@@ -218,7 +220,8 @@ automation:
             ttl: 0
             priority: high
             notification_icon: mdi:party-popper
-      - variables:
+      - alias: "Determine TTS target devices based on Martijn's activity"
+        variables:
           target: >
             {%- 
               if is_state('media_player.martijn', 'playing')

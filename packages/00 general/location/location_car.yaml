@@ -2,12 +2,14 @@ automation:
   - id: 95757e21-9bcd-4379-a1c8-a7e2d502d2de
     alias: "Dude, Where's my car"
     triggers:
-      - trigger: state
+      - alias: "Martijn disconnected from Android Auto"
+        trigger: state
         entity_id: binary_sensor.pixel_7_pro_android_auto
         from: "on"
         to: "off"
         id: leave_car
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
         id: ha_start
     variables:
@@ -34,7 +36,7 @@ automation:
           - condition: trigger
             id: leave_car
         then:
-          - alias: "Write variables to variables template sensor"
+          - alias: "Store car location in variables"
             event: set_variable
             event_data:
               key: "car_location"
@@ -43,7 +45,7 @@ automation:
                 latitude: "{{ lat }}"
                 longitude: "{{ lon }}"
               set_timestamp: false
-      - alias: "Update device tracker"
+      - alias: "Update car device tracker location"
         action: device_tracker.see
         data:
           dev_id: car

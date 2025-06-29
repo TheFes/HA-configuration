@@ -1,6 +1,7 @@
 template:
   - triggers:
-      - trigger: state
+      - alias: "Home zone occupancy changed"
+        trigger: state
         entity_id: zone.home
     sensor:
       - name: Home person history

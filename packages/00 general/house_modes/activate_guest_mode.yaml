@@ -24,7 +24,8 @@ automation:
             )
         }}
     actions:
-      - action: input_boolean.turn_{{ trigger.id }}
+      - alias: Toggle guest mode input boolean
+        action: input_boolean.turn_{{ trigger.id }}
         target:
           entity_id: input_boolean.gast
       - if: "{{ trigger.id == 'on' }}"
@@ -36,10 +37,12 @@ automation:
                     | reject('in', trigger.from_state.attributes.names)
                     | list
                 }}
-          - repeat:
+          - alias: Notify about new guests
+            repeat:
               for_each: " {{ added }}"
               sequence:
-                - action: script.turn_on
+                - alias: Trigger guest mode notification
+                  action: script.turn_on
                   target:
                     entity_id: script.guest_mode_sensor
                   data:
@@ -54,7 +57,8 @@ script:
     sequence:
       - if: "{{ guest not in state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true)}}"
         then:
-          - action: notify.mobile_app_pixel_7_pro
+          - alias: Send guest mode notification to phone
+            action: notify.mobile_app_pixel_7_pro
             data:
               title: "🏡 Gastmodus geactiveerd"
               message: "Gastmodus geactiveert door {{ guest }}"
@@ -69,7 +73,8 @@ script:
                     title: "Gast"
                   - action: "ignore_guest_{{ guest }}"
                     title: "Negeer"
-          - wait_for_trigger:
+          - alias: Wait for user response to guest notification
+            wait_for_trigger:
               - trigger: event
                 event_type: mobile_app_notification_action
                 event_data:
@@ -84,12 +89,12 @@ script:
             continue_on_timeout: false
           - if: "{{ wait.trigger.id == 'add' }}"
             then:
-              - alias: "Change template sensor if needed"
+              - alias: Add guest to always guest list
                 event: wifi_always_guest
                 event_data:
                   name: "{{ guest }}"
             else:
-              - alias: "Change template sensor if needed"
+              - alias: Add guest to ignore list
                 event: wifi_ignore
                 event_data:
                   name: "{{ guest }}"

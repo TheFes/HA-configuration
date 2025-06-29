@@ -1,12 +1,14 @@
 # From rain.yaml
 template:
   - triggers:
-      - trigger: state
+      - alias: "Monitor rain sensor becoming unavailable"
+        trigger: state
         entity_id: binary_sensor.regensensor_water_leak
         to: unavailable
         for:
           seconds: 30
-      - trigger: state
+      - alias: "Monitor rain sensor and weather integration state changes"
+        trigger: state
         entity_id:
           - binary_sensor.regensensor_water_leak
           - binary_sensor.rain_from_weather_integrations
@@ -70,11 +72,13 @@ template:
         icon: >
           {{ 'mdi:weather-sunny' if this.state == 'off' else 'mdi:weather-rainy' }}
   - triggers:
-      - trigger: sun
+      - alias: "Trigger around sunrise period start"
+        trigger: sun
         event: sunrise
         offset: "-00:15:00"
         id: "on"
-      - trigger: sun
+      - alias: "Trigger around sunrise period end"
+        trigger: sun
         event: sunrise
         offset: "01:00:00"
         id: "off"
@@ -85,10 +89,12 @@ template:
         icon: "{{ 'mdi:weather-sunset-up' if this.state == 'on' else 'mdi:weather-sunset-down' }}"
 
   - triggers:
-      - trigger: time_pattern
+      - alias: "Update hourly forecast data every 30 minutes"
+        trigger: time_pattern
         minutes: "30"
     actions:
-      - service: weather.get_forecasts
+      - alias: "Fetch hourly weather forecast from combined weather entity"
+        service: weather.get_forecasts
         target:
           entity_id: weather.combined
         data:

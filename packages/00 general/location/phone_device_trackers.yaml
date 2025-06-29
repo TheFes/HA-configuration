@@ -3,15 +3,18 @@ automation:
   - id: 6d0dc8bd-d264-42b8-8488-10e2e44d9393
     alias: "Update device trackers for phone Martijn"
     triggers:
-      - trigger: state
+      - alias: "Martijn's phone location or battery changed"
+        trigger: state
         entity_id:
           - sensor.location_phone_martijn_bt
           - sensor.pixel_7_pro_battery_level
         from: ~
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
     actions:
-      - action: device_tracker.see
+      - alias: "Update Martijn's phone device tracker"
+        action: device_tracker.see
         data:
           dev_id: phone_martijn_bt
           host_name: Phone Martijn BT
@@ -31,7 +34,8 @@ automation:
   - id: efac28d0-19f8-42d7-928f-04e09d1191a5
     alias: "Send Digid code for kids to Marleen"
     triggers:
-      - trigger: state
+      - alias: "New SMS notification received on Martijn's phone"
+        trigger: state
         entity_id: sensor.pixel_7_pro_last_notification
         to: ~
     conditions:
@@ -56,7 +60,8 @@ automation:
     alias: "Open music app on phone Martijn on BT connection"
     mode: restart
     triggers:
-      - trigger: state
+      - alias: "Bluetooth connection changed on Martijn's phone"
+        trigger: state
         entity_id: sensor.pixel_7_pro_bluetooth_connection
         attribute: connected_paired_devices
     variables:
@@ -75,7 +80,7 @@ automation:
     actions:
       - if: "{{ bt_added in headphones }}"
         then:
-          - alias: "Send notification to select right app"
+          - alias: "Send music app selection notification"
             action: notify.mobile_app_pixel_7_pro
             data:
               title: Muziekje?
@@ -95,9 +100,10 @@ automation:
                   - action: "URI"
                     title: "TuneIn"
                     uri: "app://tunein.player"
-          - delay:
+          - alias: "Wait before clearing notification"
+            delay:
               minutes: 10
-      - alias: "Remove notification"
+      - alias: "Clear music app selection notification"
         action: notify.mobile_app_pixel_7_pro
         data:
           message: "clear_notification"
@@ -109,7 +115,8 @@ automation:
     alias: "Turn on right sound mode phone Martijn based on home state"
     mode: queued
     triggers:
-      - trigger: state
+      - alias: "Martijn arrived home or left home"
+        trigger: state
         entity_id: person.martijn
         to:
           - home
@@ -121,13 +128,15 @@ automation:
             entity_id: person.martijn
             state: home
         then:
-          - action: notify.mobile_app_pixel_7_pro
+          - alias: "Set phone to normal sound mode"
+            action: notify.mobile_app_pixel_7_pro
             data:
               message: "command_ringer_mode"
               data:
                 command: "normal"
         else:
-          - action: notify.mobile_app_pixel_7_pro
+          - alias: "Set phone to vibrate mode"
+            action: notify.mobile_app_pixel_7_pro
             data:
               message: "command_ringer_mode"
               data:

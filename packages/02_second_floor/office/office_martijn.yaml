@@ -13,7 +13,8 @@ automation:
         choose:
           - conditions: "{{ event == 'single' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle office ceiling light with dim warm setting"
+                action: light.toggle
                 target:
                   entity_id: light.werkkamer_martijn_plafond
                 data:
@@ -23,18 +24,22 @@ automation:
             sequence:
               - if: "{{ is_state('light.awtrix_martijn_matrix', 'off') }}"
                 then:
-                  - action: light.turn_on
+                  - alias: "Turn on matrix display with low brightness"
+                    action: light.turn_on
                     target:
                       entity_id: light.awtrix_martijn_matrix
                     data:
                       brightness: 10
-                  - delay: 10
-              - action: light.turn_off
+                  - alias: "Wait 10 seconds before turning off matrix"
+                    delay: 10
+              - alias: "Turn off matrix display"
+                action: light.turn_off
                 target:
                   entity_id: light.awtrix_martijn_matrix
           - conditions: "{{ event == 'double' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle office ceiling light with bright cool setting"
+                action: light.toggle
                 target:
                   entity_id: light.werkkamer_martijn_plafond
                 data:
@@ -70,7 +75,7 @@ automation:
           - "off"
         for: "00:30:00"
     actions:
-      - alias: "Turn off plug"
+      - alias: "Turn off desk plug when devices are idle"
         action: switch.turn_off
         target:
           entity_id: switch.shelly1pm_bureau_martijn_relay
@@ -90,11 +95,14 @@ automation:
         entity_id: switch.shelly1pm_bureau_martijn_relay
         to: ~
     actions:
-      - delay: "{{ 0 if trigger.to_state.state == 'off' else 30 }}"
-      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_device"
+      - alias: "Wait 30 seconds if turning on, no delay if turning off"
+        delay: "{{ 0 if trigger.to_state.state == 'off' else 30 }}"
+      - alias: "Enable or disable audio devices based on desk switch state"
+        action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_device"
         data:
           device_id: "{{ devices.values() | list }}"
-      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+      - alias: "Enable or disable integrations based on desk switch state"
+        action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
         data:
           config_entry_id: "{{ integrations.values() | list }}"
 
@@ -133,7 +141,7 @@ automation:
         choose:
           - conditions: "{{ trigger.id == 'not_today' }}"
             sequence:
-              - alias: "Turn on input boolean"
+              - alias: "Turn on no vacuum today boolean"
                 action: input_boolean.turn_on
                 target:
                   entity_id: input_boolean.no_vacuum_today
@@ -148,16 +156,17 @@ automation:
                     entity_id: input_boolean.no_vacuum_today
                     state: "off"
                 then:
-                  - action: vacuum.start
+                  - alias: "Start vacuum cleaner"
+                    action: vacuum.start
                     target:
                       entity_id: vacuum.valetudo_brokenachingdragonfly
                 else:
-                  - alias: "Turn off input boolean"
+                  - alias: "Turn off no vacuum today boolean"
                     action: input_boolean.turn_off
                     target:
                       entity_id: input_boolean.no_vacuum_today
         default:
-          - alias: "Notification to phones"
+          - alias: "Send vacuum start notification to phones"
             action: notify.all_phones
             data:
               message: "Is alles van de grond?"
@@ -197,7 +206,7 @@ automation:
     actions:
       - if: "{{ trigger.id == 'docked' }}"
         then:
-          - alias: "Increase counter"
+          - alias: "Increase vacuum dust bin counter"
             action: counter.increment
             target:
               entity_id: counter.vacuum_dust_bin
@@ -217,7 +226,7 @@ automation:
                     {%- else %}
                       Er is iets mis met de stofzuiger. De melding is: {{ states('sensor.valetudo_brokenachingdragonfly_error') }}
                     {%- endif %}
-              - alias: "Notification to phones"
+              - alias: "Send vacuum status notification to phones"
                 action: notify.all_phones
                 data:
                   title: "{{ title }}"
@@ -244,7 +253,7 @@ automation:
                 entity_id: binary_sensor.workday_sensor
                 state: "on"
             sequence:
-              - alias: "Notification to Martijn"
+              - alias: "Send vacuum bin full notification to Martijn"
                 action: notify.mobile_app_pixel_7_pro
                 data:
                   title: Bakje vol
@@ -259,7 +268,7 @@ automation:
                         title: "Done!"
           - conditions: "{{ trigger.id == 'empty' }}"
             sequence:
-              - alias: "Reset counter"
+              - alias: "Reset vacuum dust bin counter"
                 action: counter.reset
                 target:
                   entity_id: counter.vacuum_dust_bin
@@ -280,7 +289,8 @@ automation:
           - alias: "Actions with shake"
             conditions: "{{ event == 'shake' }}"
             sequence:
-              - action: switch.turn_on
+              - alias: "Turn on desk power switch"
+                action: switch.turn_on
                 target:
                   entity_id: switch.shelly1pm_bureau_martijn_relay
               - alias: "Turn on radio if morning on workday"
@@ -294,17 +304,18 @@ automation:
                         entity_id: binary_sensor.workday_sensor
                         state: "on"
                     sequence:
-                      - wait_template: "{{ 'media_player.martijn' | has_value }}"
+                      - alias: "Wait for media player to be available"
+                        wait_template: "{{ 'media_player.martijn' | has_value }}"
                         timeout:
                           minutes: 3
                         continue_on_timeout: false
-                      - alias: "Set volume"
+                      - alias: "Set media player volume to 50%"
                         action: media_player.volume_set
                         target:
                           entity_id: media_player.martijn
                         data:
                           volume_level: 0.5
-                      - alias: "Turn on Studio Brussel"
+                      - alias: "Start playing Studio Brussel radio"
                         action: music_assistant.play_media
                         target:
                           entity_id: media_player.martijn
@@ -318,7 +329,8 @@ automation:
                   volume: "{{ state_attr('media_player.martijn', 'volume_level') }}"
               - if: "{{ volume is not none }}"
                 then:
-                  - action: media_player.volume_set
+                  - alias: "Adjust media player volume based on cube rotation"
+                    action: media_player.volume_set
                     target:
                       entity_id: media_player.martijn
                     data:
@@ -352,9 +364,12 @@ script:
           pc_on: "{{ is_state('binary_sensor.computer_zolder', 'on') }}"
       - if: "{{ pc_on }}"
         then:
-          - action: hassio.addon_stdin
+          - alias: "Send shutdown command to computer"
+            action: hassio.addon_stdin
             data:
               addon: core_rpc_shutdown
               input: computer_zolder
-          - wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
-          - delay: 10
+          - alias: "Wait for computer to turn off"
+            wait_template: "{{ is_state('binary_sensor.computer_zolder', 'off') }}"
+          - alias: "Wait 10 seconds after computer shutdown"
+            delay: 10

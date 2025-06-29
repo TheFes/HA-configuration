@@ -28,7 +28,8 @@ automation:
               scene_id: soundbar_before
               snapshot_entities:
                 - media_player.samsung_soundbar
-          - wait_for_trigger:
+          - alias: Wait for satellite to enter processing state
+            wait_for_trigger:
               - trigger: state
                 entity_id:
                   - assist_satellite.woonkamer
@@ -68,7 +69,8 @@ automation:
               source: aux
             target:
               entity_id: media_player.samsung_soundbar
-      - wait_for_trigger:
+      - alias: Wait for satellite to return to idle state
+        wait_for_trigger:
           - trigger: template
             value_template: "{{ is_state(trigger.entity_id, 'idle') }}"
             for:
@@ -102,12 +104,14 @@ automation:
                     | first
                     | default('unknown')
                 }}
-          - wait_template: "{{ is_state(player, 'playing') }}"
+          - alias: Wait for music to start playing
+            wait_template: "{{ is_state(player, 'playing') }}"
             timeout:
               seconds: 10
           - variables:
               something_played: "{{ wait.completed }}"
-          - wait_for_trigger:
+          - alias: Wait for music to stop playing
+            wait_for_trigger:
               - trigger: template
                 value_template: >
                   {{
@@ -150,11 +154,14 @@ automation:
             entity_id: media_player.samsung_soundbar
             state: "off"
         then:
-          - action: media_player.turn_on
+          - alias: Turn on soundbar
+            action: media_player.turn_on
             target:
               entity_id: media_player.samsung_soundbar
-          - wait_template: "{{ is_state('media_player.samsung_soundbar', 'on') }}"
-      - action: media_player.select_source
+          - alias: Wait for soundbar to turn on
+            wait_template: "{{ is_state('media_player.samsung_soundbar', 'on') }}"
+      - alias: Select correct soundbar source
+        action: media_player.select_source
         data:
           source: "{{ trigger.id }}"
         target:

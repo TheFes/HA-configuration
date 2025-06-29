@@ -56,10 +56,12 @@ template:
   - triggers:
       - trigger: time
         at: "00:00"
+        alias: "Activate daily tariff calculation at midnight"
         variables:
           factor: 1
       - trigger: time
         at: "00:02"
+        alias: "Deactivate daily tariff calculation after midnight"
         variables:
           factor: 0
     sensor:
@@ -86,10 +88,12 @@ template:
   - triggers:
       - trigger: time
         at: "00:01"
+        alias: "Activate daily consumption reset at midnight"
         variables:
           factor: 1
       - trigger: time
         at: "00:03"
+        alias: "Deactivate daily consumption reset after midnight"
         variables:
           factor: 0
     sensor:

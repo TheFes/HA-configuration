@@ -4,17 +4,22 @@ automation:
     alias: "Ulanzi activate or deactivate app"
     mode: queued
     triggers:
-      - trigger: state
+      - alias: Monitor Ulanzi battery level changes
+        trigger: state
         entity_id: sensor.awtrix_martijn_battery
         to: ~
         variables:
           show: "{{ trigger.to_state.state != '100' }}"
           app: bat
     conditions:
-      - "{{ app is defined and app is not none }}"
-      - "{{ update | default(true) | bool(true) }}"
+      - alias: Check app is defined and valid
+        condition: template
+        value_template: "{{ app is defined and app is not none }}"
+      - alias: Check update flag is enabled
+        condition: template
+        value_template: "{{ update | default(true) | bool(true) }}"
     actions:
-      - alias: "Activate or deactivate app"
+      - alias: Publish app activation status to MQTT
         action: mqtt.publish
         data:
           qos: 0
@@ -35,21 +40,24 @@ automation:
     alias: "Ulanzi indicators"
     mode: queued
     triggers:
-      - trigger: state
+      - alias: Monitor WhatsApp notification status
+        trigger: state
         entity_id: binary_sensor.whatsapp_notification_active
         to: ~
         variables:
           action: "{{ trigger.to_state.state }}"
           indicator: 1
           color_name: green
-      - trigger: state
+      - alias: Monitor rain data status
+        trigger: state
         entity_id: binary_sensor.raindata
         to: ~
         variables:
           action: "{{ trigger.to_state.state }}"
           indicator: 2
           color_name: blue
-      - trigger: state
+      - alias: Monitor net power consumption status
+        trigger: state
         entity_id: binary_sensor.net_power_consumption
         to: ~
         variables:
@@ -57,11 +65,13 @@ automation:
           indicator: 3
           color_name: "{{ 'yellow' if trigger.to_state.state == 'off' else 'purple' }}"
     conditions:
-      - "{{ update | default(true) | bool(true) }}"
+      - alias: Check update flag is enabled for indicators
+        condition: template
+        value_template: "{{ update | default(true) | bool(true) }}"
     actions:
       - if: "{{ action | default(true) | bool(true) }}"
         then:
-          - alias: Turn indicator on
+          - alias: Turn Ulanzi indicator light on
             action: light.turn_on
             target:
               entity_id: light.awtrix_martijn_indicator_{{ indicator | default(1) | int(1) }}
@@ -69,7 +79,7 @@ automation:
               brightness: "{{ brightness | default(state_attr('light.matrix', 'brightness')) | int(255) }}"
               color_name: "{{ color_name | default('white') }}"
         else:
-          - alias: Turn indicator off
+          - alias: Turn Ulanzi indicator light off
             action: light.turn_off
             target:
               entity_id: light.awtrix_martijn_indicator_{{ indicator }}
@@ -80,7 +90,8 @@ automation:
     mode: queued
     triggers:
       # apps - text
-      - trigger: state
+      - alias: Monitor weather changes for display
+        trigger: state
         entity_id: weather.combined
         to: ~
         variables: &weather
@@ -88,12 +99,14 @@ automation:
           text: "{{ state_attr('weather.combined', 'temperature') }} °C"
           icon: "{{ states('weather.combined') }}"
           update: "{{ state_attr('weather.combined', 'temperature') is not none }}"
-      - trigger: state
+      - alias: Monitor weather temperature changes
+        trigger: state
         entity_id: weather.combined
         attribute: temperature
         variables: *weather
-    
-      - trigger: state
+
+      - alias: Monitor office temperature and humidity sensors
+        trigger: state
         entity_id:
           - sensor.werkkamer_martijn_temp
           - sensor.werkkamer_martijn_vocht
@@ -111,9 +124,10 @@ automation:
             {% else %}
               temp-normal
             {% endif %}
-    
+
       # notifications - text
-      - trigger: state
+      - alias: Monitor phone notification changes
+        trigger: state
         entity_id: sensor.pixel_7_pro_last_notification
         to: ~
         variables:
@@ -135,16 +149,18 @@ automation:
           repeat: 2
           textCase: 2
           pushIcon: 2
-      - trigger: state
+      - alias: Monitor doorbell button press
+        trigger: state
         entity_id: binary_sensor.smart_doorbell_button
         to: "on"
         variables:
           icon: dingdong
           text: Ding Dong!
           background: 4CBEFC
-    
+
       # app - graph
-      - trigger: state
+      - alias: Monitor rain data for graph display
+        trigger: state
         entity_id: binary_sensor.raindata
         variables:
           update: "{{ trigger.to_state.state in ['on', 'off'] }}"
@@ -159,12 +175,16 @@ automation:
     variables:
       plot_graph: "{{ graph_data is defined and graph_data is not string and graph_data is iterable }}"
     conditions:
-      - "{{ update | default(true) | bool(true) }}"
-      - "{{ deactivate is defined or plot_graph is defined or text is defined }}"
+      - alias: Check update flag is enabled for notifications
+        condition: template
+        value_template: "{{ update | default(true) | bool(true) }}"
+      - alias: Check if app deactivation or content is defined
+        condition: template
+        value_template: "{{ deactivate is defined or plot_graph is defined or text is defined }}"
     actions:
       - if: "{{ deactivate | default(false) }}"
         then:
-          - alias: "Deactivate app"
+          - alias: Deactivate custom app via MQTT
             action: mqtt.publish
             data:
               qos: 0
@@ -172,7 +192,7 @@ automation:
               topic: awtrix_martijn/custom/{{ app }}
               payload: ""
         else:
-          - alias: "Update custom app or send notification"
+          - alias: Update custom app or send notification via MQTT
             action: mqtt.publish
             data:
               qos: 0
@@ -215,7 +235,8 @@ automation:
     alias: "Ulanzi turn screen on and off"
     mode: queued
     triggers:
-      - trigger: state
+      - alias: Monitor house mode changes for screen control
+        trigger: state
         entity_id: sensor.house_mode
         to: ~
         variables:
@@ -235,14 +256,16 @@ automation:
               if action == 'on'
               else true
             }}
-      - trigger: state
+      - alias: Monitor office power switch for screen control
+        trigger: state
         entity_id: switch.shelly1pm_bureau_martijn_relay
         to: ~
         variables:
           action: >
             {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
           update: *update
-      - trigger: time
+      - alias: Schedule screen on/off at specific times
+        trigger: time
         at:
           - "07:00"
           - "22:00"
@@ -254,7 +277,8 @@ automation:
               else 'on'
             }}
           update: *update
-      - trigger: state
+      - alias: Monitor person presence for screen control
+        trigger: state
         entity_id: person.martijn
         to: ~
         variables:
@@ -266,68 +290,69 @@ automation:
               else true
             }}
     conditions:
-      - "{{ update | default(true) | bool(true) }}"
+      - alias: Check update flag is enabled for screen control
+        condition: template
+        value_template: "{{ update | default(true) | bool(true) }}"
     actions:
-      - alias: "Turn matrix on or off"
+      - alias: Turn Ulanzi matrix display on or off
         action: light.turn_{{ iif(action | default(true) | bool(true), 'on', 'off') }}
         target:
           entity_id: light.awtrix_martijn_matrix
-
-
 
   # From: awtrix_button_press.yaml
   - id: 630ae4fd-f5fd-41f9-8d83-837e991a08c8
     alias: Run actions on Awtrix button press
     triggers:
-    - trigger: state
-      entity_id:
-      - binary_sensor.awtrix_martijn_button_left
-      - binary_sensor.awtrix_martijn_button_select
-      - binary_sensor.awtrix_martijn_button_right
-      - binary_sensor.awtrix_floris_button_left
-      - binary_sensor.awtrix_floris_button_select
-      - binary_sensor.awtrix_floris_button_right
-      - binary_sensor.awtrix_pepijn_button_left
-      - binary_sensor.awtrix_pepijn_button_select
-      - binary_sensor.awtrix_pepijn_button_right
-      from: 'off'
-      to: 'on'
+      - alias: Monitor all Awtrix button presses
+        trigger: state
+        entity_id:
+          - binary_sensor.awtrix_martijn_button_left
+          - binary_sensor.awtrix_martijn_button_select
+          - binary_sensor.awtrix_martijn_button_right
+          - binary_sensor.awtrix_floris_button_left
+          - binary_sensor.awtrix_floris_button_select
+          - binary_sensor.awtrix_floris_button_right
+          - binary_sensor.awtrix_pepijn_button_left
+          - binary_sensor.awtrix_pepijn_button_select
+          - binary_sensor.awtrix_pepijn_button_right
+        from: "off"
+        to: "on"
     actions:
-    - alias: Wait 2 seconds for release
-      wait_for_trigger:
-      - trigger: template
-        value_template: "{{ is_state(trigger.entity_id, 'off') }}"
-      timeout:
-        seconds: 2
-    - alias: Check for long press
-      if: "{{ wait.trigger is none }}"
-      then:
-      - alias: Send hold event
-        event: awtrix_button_event
-        event_data:
-          area: "{{ area_id(trigger.entity_id) }}"
-          button: "{{ trigger.entity_id.split('_')[-1] }}"
-          click: hold
-      else:
-      - alias: Send event for short presses
-        repeat:
-          sequence:
-          - alias: wait for new click trigger
-            wait_for_trigger:
-            - trigger: template
-              value_template: "{{ is_state(trigger.entity_id, 'on') }}"
-            timeout:
-              seconds: 0.5
-          - alias: Send event in case there were no new presses
-            if: "{{ wait.trigger is none }}"
-            then:
-            - alias: Send event
-              event: awtrix_button_event
-              event_data:
-                area: "{{ area_id(trigger.entity_id) }}"
-                button: "{{ trigger.entity_id.split('_')[-1] }}"
-                click: "{{ 'single' if repeat.index == 1 else 'multiple' }}"
-                count: "{{ repeat.index }}"
-          until: "{{ wait.trigger is none }}"
-
-
+      - alias: Wait 2 seconds for button release
+        wait_for_trigger:
+          - alias: Check if button is released
+            trigger: template
+            value_template: "{{ is_state(trigger.entity_id, 'off') }}"
+        timeout:
+          seconds: 2
+      - alias: Determine if long press or short press
+        if: "{{ wait.trigger is none }}"
+        then:
+          - alias: Send hold event for long press
+            event: awtrix_button_event
+            event_data:
+              area: "{{ area_id(trigger.entity_id) }}"
+              button: "{{ trigger.entity_id.split('_')[-1] }}"
+              click: hold
+        else:
+          - alias: Handle short press sequence
+            repeat:
+              sequence:
+                - alias: Wait for additional button presses
+                  wait_for_trigger:
+                    - alias: Check for new button press
+                      trigger: template
+                      value_template: "{{ is_state(trigger.entity_id, 'on') }}"
+                  timeout:
+                    seconds: 0.5
+                - alias: Send click event if no additional presses
+                  if: "{{ wait.trigger is none }}"
+                  then:
+                    - alias: Send button click event
+                      event: awtrix_button_event
+                      event_data:
+                        area: "{{ area_id(trigger.entity_id) }}"
+                        button: "{{ trigger.entity_id.split('_')[-1] }}"
+                        click: "{{ 'single' if repeat.index == 1 else 'multiple' }}"
+                        count: "{{ repeat.index }}"
+              until: "{{ wait.trigger is none }}"

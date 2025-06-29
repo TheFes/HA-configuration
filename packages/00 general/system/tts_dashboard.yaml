@@ -72,7 +72,8 @@ script:
       default_selection: "Martijn"
       reset_booleans: True
     sequence:
-      - variables:
+      - alias: "Determine target devices from selected booleans"
+        variables:
           target: >
             {%
               set target = expand(boolean)
@@ -95,17 +96,19 @@ script:
               entity_id: "{{ target }}"
             data:
               message: "{{ states('input_text.tts_message') }}"
-          - alias: "Reset message"
+          - alias: "Reset TTS message to default value"
             choose:
               - conditions: "{{ default_message is defined }}"
                 sequence:
-                  - action: input_text.set_value
+                  - alias: "Set message input to default value"
+                    action: input_text.set_value
                     target:
                       entity_id: input_text.tts_message
                     data:
                       value: "{{ default_message }}"
         else:
-          - variables:
+          - alias: "Set up radio station data for media playback"
+            variables:
               radio_data:
                 NPO Radio 2:
                   picture: "http://192.168.2.94:8123/local/pictures/radio/npo_radio_2.png"
@@ -127,7 +130,7 @@ script:
                   picture: "http://192.168.2.94:8123/local/pictures/radio/stu_bru.png"
                   url: http://icecast.vrtcdn.be/stubru.aac
                   title: "Life is Music"
-          - alias: "Turn on Radio"
+          - alias: "Play selected radio station on target devices"
             action: media_player.play_media
             target:
               entity_id: "{{ target }}"
@@ -141,16 +144,17 @@ script:
                   artist: "{{ states('input_select.radio_channel') }}"
                   images:
                     - url: "{{ radio_data[states('input_select.radio_channel')].picture }}"
-          - alias: "Reset selction"
+          - alias: "Reset radio channel selection to default"
             action: input_select.select_option
             target:
               entity_id: input_select.radio_channel
             data:
               option: "Geen"
-      - alias: "Reset booleans"
+      - alias: "Reset boolean selections to off state"
         choose:
           - conditions: "{{ reset_booleans and (boolean is defined) }}"
             sequence:
-              - action: homeassistant.turn_off
+              - alias: "Turn off all target selection booleans"
+                action: homeassistant.turn_off
                 target:
                   entity_id: "{{ boolean }}"

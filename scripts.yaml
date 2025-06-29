@@ -28,21 +28,24 @@ martijn_starts_working:
       entity_id: sensor.awtrix_martijn_illuminance
       below: 50
     then:
-    - action: light.turn_on
+    - alias: "Turn on office ceiling light"
+      action: light.turn_on
       metadata: {}
       data:
         brightness_pct: 100
         kelvin: 6500
       target:
         entity_id: light.werkkamer_martijn_plafond_template
-  - action: music_assistant.play_media
+  - alias: "Start Studio Brussel radio"
+    action: music_assistant.play_media
     metadata: {}
     data:
       media_type: radio
       media_id: Studio Brussel
     target:
       entity_id: media_player.martijn
-  - action: switch.turn_on
+  - alias: "Turn on office desk power"
+    action: switch.turn_on
     metadata: {}
     data: {}
     target:

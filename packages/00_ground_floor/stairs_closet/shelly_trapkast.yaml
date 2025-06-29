@@ -4,39 +4,43 @@ automation:
     mode: parallel
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Sonoff stairs closet button pressed"
+        trigger: state
         entity_id: event.sonoff_trapkast_sonoff_trapkast
         not_from: unavailable
     conditions:
-      - condition: state
+      - alias: "Check if button is in detached mode"
+        condition: state
         entity_id: select.sonoff_trapkast_button_type
         state: Detached
     actions:
-      - if: "{{ 'light.trapkast' | has_value }}"
+      - alias: "Check if light entity is available"
+        if: "{{ 'light.trapkast' | has_value }}"
         then:
-          - choose:
+          - alias: "Choose action based on press type"
+            choose:
               - conditions:
-                  - alias: "Short?"
+                  - alias: "Single press detected"
                     condition: template
                     value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
                 sequence:
-                  - alias: "Toggle light"
+                  - alias: "Toggle stairs closet light"
                     action: light.toggle
                     target:
                       entity_id: light.trapkast_template
               - conditions:
-                  - alias: "Double?"
+                  - alias: "Double press detected"
                     condition: template
                     value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
                 sequence:
-                  - alias: "Toggle light to 100%"
+                  - alias: "Toggle stairs closet light to full brightness"
                     action: light.toggle
                     target:
                       entity_id: light.trapkast_template
                     data:
                       brightness: 255
         else:
-          - alias: "Toggle switch"
+          - alias: "Toggle Sonoff relay as fallback"
             action: switch.toggle
             target:
               entity_id: switch.sonoff_trapkast_relay

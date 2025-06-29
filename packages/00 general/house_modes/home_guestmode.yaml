@@ -12,7 +12,8 @@ automation:
         entity_id: input_boolean.gast
         state: "on"
     actions:
-      - action: notify.mobile_app_pixel_7_pro
+      - alias: Send guest mode notification
+        action: notify.mobile_app_pixel_7_pro
         data:
           title: "🏡 Welkom thuis"
           message: "Mag de gastmodus uit?"
@@ -27,7 +28,8 @@ automation:
                 title: "Yep"
               - action: "guest_mode_on"
                 title: "Nope"
-      - wait_for_trigger:
+      - alias: Wait for user response to guest mode question
+        wait_for_trigger:
           - trigger: event
             event_type: mobile_app_notification_action
             event_data:

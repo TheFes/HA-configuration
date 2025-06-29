@@ -76,20 +76,23 @@ automation:
               condition: trigger
               id: "computer_off"
             sequence:
-              - action: switch.turn_off
+              - alias: "Turn off computer after user confirms"
+                action: switch.turn_off
                 target:
                   entity_id: switch.computer_zolder
           - conditions:
               condition: trigger
               id: "computer_on"
             sequence:
-              - action: alert.turn_off
+              - alias: "Turn off computer alert after user says keep on"
+                action: alert.turn_off
                 target:
                   entity_id: alert.computer_martijn
           - conditions:
               condition: trigger
               id: "alert_on"
             sequence:
-              - action: alert.turn_on
+              - alias: "Turn on computer alert at 8 AM"
+                action: alert.turn_on
                 target:
                   entity_id: alert.computer_martijn

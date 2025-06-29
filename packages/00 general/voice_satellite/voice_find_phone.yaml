@@ -26,7 +26,8 @@ script:
           current_dnd: "{{ states('sensor.' ~ phone ~ '_do_not_disturb_sensor') | default('off') }}"
       - if: "{{ current_val != 20 }}"
         then:
-          - action: "{{ notify_service }}"
+          - alias: Set alarm volume to maximum
+            action: "{{ notify_service }}"
             data:
               message: command_volume_level
               data:
@@ -34,7 +35,8 @@ script:
                 command: 20
       - if: "{{ current_dnd != 'off' }}"
         then:
-          - action: "{{ notify_service }}"
+          - alias: Turn off do not disturb
+            action: "{{ notify_service }}"
             data:
               message: command_dnd
               data:
@@ -45,7 +47,8 @@ script:
               entity_id: binary_sensor.pixel_7_pro_interactive
               state: "off"
           sequence:
-            - action: "{{ notify_service }}"
+            - alias: Send notification to phone
+              action: "{{ notify_service }}"
               data:
                 title: Joehoe!
                 message: Hier ben ik!
@@ -61,14 +64,16 @@ script:
                 milliseconds: 0
       - if: "{{ current_dnd != 'off' }}"
         then:
-          - action: "{{ notify_service }}"
+          - alias: Restore do not disturb setting
+            action: "{{ notify_service }}"
             data:
               message: command_dnd
               data:
                 command: "{{ current_dnd }}"
       - if: "{{ current_val != 20 }}"
         then:
-          - action: "{{ notify_service }}"
+          - alias: Restore original alarm volume
+            action: "{{ notify_service }}"
             data:
               message: command_volume_level
               data:

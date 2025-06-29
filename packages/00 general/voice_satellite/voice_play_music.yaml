@@ -81,7 +81,8 @@ intent_script:
             and players | count > 0
           }}
         then:
-          - action: media_player.shuffle_set
+          - alias: Enable shuffle for playlist
+            action: media_player.shuffle_set
             data:
               shuffle: "{{ map_to_data[to_play].data.media_type == 'playlist' }}"
             target:
@@ -112,7 +113,7 @@ intent_script:
       - alias: Show on Ulanzi display in case there is one in the room
         if: "{{ topic != 'unknown'}}"
         then:
-          - alias: "Send notification"
+          - alias: Send music notification to Ulanzi display
             action: mqtt.publish
             data:
               qos: 0
@@ -165,7 +166,7 @@ automation:
                   entity_id: "{{ player }}"
           - conditions: "{{ player_state == 'playing' }}"
             sequence:
-              - alias: Resume Playback
+              - alias: Skip to next track
                 action: media_player.media_next_track
                 target:
                   entity_id: "{{ player }}"

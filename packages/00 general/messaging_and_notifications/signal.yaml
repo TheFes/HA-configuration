@@ -38,10 +38,11 @@ template:
         trigger: time_pattern
         minutes: "/1"
     actions:
-      - alias: Fetch messages
+      - alias: Fetch Signal messages from API
         action: rest_command.signal_get_messages
         response_variable: rest_messages
-      - variables:
+      - alias: Parse and format message data
+        variables:
           messages: >
             {% set ns = namespace(data=[]) %}
             {% for e in rest_messages.content | from_json if e.envelope.dataMessage is defined %}

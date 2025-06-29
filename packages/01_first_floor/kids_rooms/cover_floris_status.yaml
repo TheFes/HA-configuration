@@ -1,7 +1,8 @@
 # Template sensor for Floris' cover status
 template:
   - triggers:
-      - trigger: event
+      - alias: "Floris cover group close command received"
+        trigger: event
         event_type: call_service
         id: closing
         event_data:
@@ -9,7 +10,8 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris_groep
-      - trigger: event
+      - alias: "Floris individual cover close command received"
+        trigger: event
         event_type: call_service
         id: closing
         event_data:
@@ -17,7 +19,8 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris
-      - trigger: event
+      - alias: "Floris cover group open command received (incorrect service)"
+        trigger: event
         event_type: call_service
         id: opening
         event_data:
@@ -25,7 +28,8 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris_groep
-      - trigger: event
+      - alias: "Floris individual cover open command received"
+        trigger: event
         event_type: call_service
         id: opening
         event_data:
@@ -33,7 +37,8 @@ template:
           service: open_cover
           service_data:
             entity_id: cover.floris
-      - trigger: state
+      - alias: "Floris cover position changed to idle"
+        trigger: state
         entity_id: cover.floris
         attribute: current_position
         id: idle

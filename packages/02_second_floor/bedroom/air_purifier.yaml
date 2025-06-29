@@ -49,12 +49,14 @@ automation:
                     entity_id: sensor.luchtreiniger_slaapkamer_air_quality
                     state: excellent
             sequence:
-              - action: fan.turn_on
+              - alias: "Turn on bedroom air purifier at low speed for sleep mode"
+                action: fan.turn_on
                 data:
                   percentage: 11
                 target:
                   entity_id: fan.luchtreiniger_slaapkamer
-              - action: switch.turn_off
+              - alias: "Turn off bedroom air purifier LED for sleep"
+                action: switch.turn_off
                 target:
                   entity_id: switch.luchtreiniger_slaapkamer_led_enable
           - conditions:
@@ -73,7 +75,8 @@ automation:
                 entity_id: zone.home
                 above: 0
             sequence:
-              - action: fan.turn_on
+              - alias: "Turn on bedroom air purifier in auto mode"
+                action: fan.turn_on
                 data:
                   preset_mode: auto
                 target:
@@ -100,9 +103,11 @@ automation:
                         for:
                           minutes: 5
             sequence:
-              - action: fan.turn_off
+              - alias: "Turn off bedroom air purifier when air quality is excellent"
+                action: fan.turn_off
                 target:
                   entity_id: fan.luchtreiniger_slaapkamer
-              - action: switch.turn_on
+              - alias: "Turn on bedroom air purifier LED when stopping"
+                action: switch.turn_on
                 target:
                   entity_id: switch.luchtreiniger_slaapkamer_led_enable

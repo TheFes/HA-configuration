@@ -5,11 +5,12 @@ automation:
       allowed_callers:
         - "**621"
     triggers:
-      - trigger: webhook
+      - alias: "SIP call webhook received"
+        trigger: webhook
         webhook_id: sip_call_webhook_id
         local_only: true
     conditions:
-      - alias: Check if webhook is for incoming call
+      - alias: "Check if webhook is for incoming call"
         condition: template
         value_template: "{{ trigger.json.event == 'incoming_call' }}"
     actions:
@@ -17,7 +18,7 @@ automation:
           number_calling: "{{ trigger.json.parsed_caller }}"
       - choose:
           - conditions:
-              - alias: Check if caller is in allowed caller list
+              - alias: "Check if caller is in allowed caller list"
                 condition: template
                 value_template: >
                   {{
@@ -26,7 +27,7 @@ automation:
                     else true
                   }}
             sequence:
-              - alias: Start menu
+              - alias: "Start phone menu system"
                 action: hassio.addon_stdin
                 data:
                   addon: c7744bff_ha-sip
@@ -146,7 +147,8 @@ script:
             }}
           number: "{{ internal_phonebook[to_call] if use_internal else phonebook[to_call]}}"
           parsed: "{{ number | regex_replace('sip:|'~sip, '') }}"
-      - action: hassio.addon_stdin
+      - alias: "Dial the requested number"
+        action: hassio.addon_stdin
         data:
           addon: c7744bff_ha-sip
           input:
@@ -159,11 +161,14 @@ script:
               call_disconnected: sip_call_disconnected
       - parallel:
           - sequence:
-              - wait_for_trigger:
-                  - trigger: webhook
+              - alias: "Wait for call connection"
+                wait_for_trigger:
+                  - alias: "Call established webhook"
+                    trigger: webhook
                     local_only: true
                     webhook_id: sip_connect_call_bridge_from_menu
-              - action: hassio.addon_stdin
+              - alias: "Bridge audio between caller and destination"
+                action: hassio.addon_stdin
                 data:
                   addon: c7744bff_ha-sip
                   input:
@@ -176,20 +181,24 @@ script:
                     - condition: template
                       value_template: "{{ true }}"
                   sequence:
-                    - wait_for_trigger:
-                        - trigger: webhook
+                    - alias: "Wait for call disconnection webhook"
+                      wait_for_trigger:
+                        - alias: "Call webhook for disconnection"
+                          trigger: webhook
                           webhook_id: sip_call_webhook_id
                           local_only: true
                     - alias: "Check if the webhook is because a call is ended"
                       condition: template
                       value_template: "{{ wait.trigger.json.event == 'call_disconnected'}}"
-                    - variables:
+                    - alias: "Determine which caller disconnected"
+                      variables:
                         parsed_hung: "{{ wait.trigger.json.parsed_caller }}"
                         to_end: "{{ [parsed, number_calling] | reject('eq', parsed_hung) | list }}"
-                    - alias: Check if the webhook is about the correct call.
+                    - alias: "Check if the webhook is about the correct call"
                       condition: template
                       value_template: "{{ to_end | count == 1 }}"
-                    - action: hassio.addon_stdin
+                    - alias: "Hang up the remaining caller"
+                      action: hassio.addon_stdin
                       data:
                         addon: c7744bff_ha-sip
                         input:

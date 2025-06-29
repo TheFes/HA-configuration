@@ -59,7 +59,7 @@ automation:
           trigger: template
           value_template: "{{ states(temp) | float(0) >= 20 }}"
           id: close
-        - alias: "waiting time after manual change over"
+        - alias: "Wait for manual override period to end"
           trigger: template
           value_template: "{{ is_state(manual, 'off') }}"
         - alias: "opening time"
@@ -67,7 +67,8 @@ automation:
           value_template: "{{ now() > today_at(open_time) }}"
           id: open
       conditions:
-        - condition: template
+        - alias: "During screen season (March through September)"
+          condition: template
           value_template: "{{ 3 <= now().month <= 9 }}"
         - condition: or
           conditions:
@@ -256,7 +257,8 @@ automation:
         entity_id: binary_sensor.rain
         to: "on"
         for: "00:00:10"
-      - trigger: homeassistant
+      - alias: "Home Assistant startup"
+        trigger: homeassistant
         event: start
         id: start
     variables:
@@ -290,6 +292,7 @@ automation:
             condition: template
             value_template: "{{ screens_unavailable | count > 0 }}"
       - alias: "Rain?"
+        alias: "Verify it's currently raining"
         condition: state
         entity_id: binary_sensor.rain
         state: "on"
@@ -304,7 +307,7 @@ automation:
                 action: cover.open_cover
                 target:
                   entity_id: "{{ down_entity_id }}"
-      - alias: "Notificatie to phone Martijn"
+      - alias: "Send rain notification to phone Martijn"
         action: notify.mobile_app_pixel_7_pro
         data:
           title: >
@@ -330,7 +333,8 @@ automation:
 # binary template sensors to check if covers were manually changed
 template:
   - triggers:
-      - trigger: state
+      - alias: "Monitor Floris covers for manual changes"
+        trigger: state
         entity_id:
           - cover.floris
           - cover.floris_links
@@ -344,7 +348,8 @@ template:
           auto_off: "01:00:00"
 
   - triggers:
-      - trigger: state
+      - alias: "Monitor Pepijn covers for manual changes"
+        trigger: state
         entity_id:
           - cover.pepijn_template
           - cover.pepijn
@@ -354,7 +359,8 @@ template:
         <<: *config_manual
 
   - triggers:
-      - trigger: state
+      - alias: "Monitor Marleen office cover for manual changes"
+        trigger: state
         entity_id:
           - cover.werkkamer_marleen
     binary_sensor:
@@ -363,7 +369,8 @@ template:
         <<: *config_manual
 
   - triggers:
-      - trigger: state
+      - alias: "Monitor bedroom covers for manual changes"
+        trigger: state
         entity_id:
           - cover.slaapkamer_zolder
           - cover.slaapkamer_zolder_template
@@ -373,7 +380,8 @@ template:
         <<: *config_manual
 
   - triggers:
-      - trigger: state
+      - alias: "Monitor landing covers for manual changes"
+        trigger: state
         entity_id:
           - cover.overloop_zolder
           - cover.overloop_zolder_template
@@ -383,7 +391,8 @@ template:
         <<: *config_manual
 
   - triggers:
-      - trigger: state
+      - alias: "Monitor veranda cover for manual changes"
+        trigger: state
         entity_id:
           - cover.veranda
     binary_sensor:
@@ -403,19 +412,23 @@ template:
             {{ 100 - state_attr(c, 'current_position') }}
           availability: "{{ (this.entity_id | replace('_template', '')) | has_value }}"
           open_cover:
-            - action: cover.close_cover
+            - alias: "Open inverted cover by closing physical cover"
+              action: cover.close_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
           close_cover:
-            - action: cover.open_cover
+            - alias: "Close inverted cover by opening physical cover"
+              action: cover.open_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
           stop_cover:
-            - service: cover.stop_cover
+            - alias: "Stop inverted cover movement"
+              service: cover.stop_cover
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
           set_cover_position:
-            - service: cover.set_cover_position
+            - alias: "Set inverted cover position (invert percentage)"
+              service: cover.set_cover_position
               target:
                 entity_id: "{{ this.entity_id | replace('_template', '') }}"
               data:

@@ -4,7 +4,8 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
+      - alias: "Motion detected in restroom"
+        trigger: state
         entity_id: binary_sensor.wc_motion_occupancy
         to: "on"
         from: "off"
@@ -17,20 +18,23 @@ automation:
           sequence:
             - alias: "Wait until motion sensor triggers again"
               wait_for_trigger:
-                - trigger: state
+                - alias: "Motion detected again"
+                  trigger: state
                   entity_id: binary_sensor.wc_motion_occupancy
                   to: "on"
-                - trigger: state
+                - alias: "Light turned off manually"
+                  trigger: state
                   entity_id: light.wc
                   to: "off"
               timeout: "00:06:00"
             - if: "{{ wait.trigger is none }}"
               then:
-                - alias: "Turn light off"
+                - alias: "Turn light off after timeout"
                   action: light.turn_off
                   target:
                     entity_id: light.wc
           until:
-            - condition: state
+            - alias: "Check if light is off"
+              condition: state
               entity_id: light.wc
               state: "off"

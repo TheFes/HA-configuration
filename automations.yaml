@@ -229,7 +229,8 @@
         - name: Martijn
           description: Father of the house
           notifiers:
-            - action: notify.mobile_app_pixel_7_pro
+            - alias: "Send mobile notification to Martijn"
+              action: notify.mobile_app_pixel_7_pro
               data:
                 data:
                   channel: Reminders
@@ -237,7 +238,8 @@
                   priority: high
                   notification_icon: mdi:reminder
               condition: "{{ is_state('input_boolean.test', 'on') }}"
-            - action: tts.speak
+            - alias: "Announce reminder via TTS to Martijn"
+              action: tts.speak
               target:
                 entity_id: tts.home_assistant_cloud
               data:
@@ -247,7 +249,8 @@
         - name: Marleen
           description: Mother of the house
           notifiers:
-            - action: notify.mobile_app_pixel_8_marleen
+            - alias: "Send mobile notification to Marleen"
+              action: notify.mobile_app_pixel_8_marleen
               data:
                 data:
                   channel: Reminders

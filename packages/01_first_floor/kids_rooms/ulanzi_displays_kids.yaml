@@ -53,9 +53,11 @@ automation:
     alias: "Update ulanzi Pepijn"
     mode: parallel
     triggers:
-      - trigger: time_pattern
+      - alias: "Update Pepijn display every minute"
+        trigger: time_pattern
         seconds: "0"
-      - trigger: state
+      - alias: "Pepijn sleeping state changed"
+        trigger: state
         entity_id: binary_sensor.pepijn_sleeping
         from:
           - "on"
@@ -63,11 +65,13 @@ automation:
         to:
           - "on"
           - "off"
-      - trigger: state
+      - alias: "Pepijn Ulanzi display came back online"
+        trigger: state
         entity_id: light.awtrix_pepijn_matrix
         from:
           - "unavailable"
-      - trigger: state
+      - alias: "Weather or Pepijn clock correction changed"
+        trigger: state
         entity_id:
           - weather.combined
           - input_number.correction_clock_pepijn
@@ -79,19 +83,22 @@ automation:
         then:
           - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Manual') }}"
             then:
-              - action: select.select_option
+              - alias: "Set Pepijn display brightness to manual mode"
+                action: select.select_option
                 data:
                   option: Manual
                 target:
                   entity_id: select.awtrix_pepijn_brightness_mode
           - if: "{{ not is_state_attr('light.awtrix_pepijn_matrix', 'brightness', 2) }}"
             then:
-              - action: light.turn_on
+              - alias: "Dim Pepijn display for nighttime"
+                action: light.turn_on
                 target:
                   entity_id: light.awtrix_pepijn_matrix
                 data:
                   brightness: 2
-          - action: mqtt.publish
+          - alias: "Publish sleep clock display for Pepijn"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false
@@ -119,7 +126,8 @@ automation:
                       )
                 }}
         else:
-          - action: mqtt.publish
+          - alias: "Publish weather clock display for Pepijn"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false
@@ -133,14 +141,16 @@ automation:
                 }}
           - if: "{{ not is_state('select.awtrix_pepijn_brightness_mode', 'Auto') }}"
             then:
-              - action: select.select_option
+              - alias: "Set Pepijn display brightness to auto mode"
+                action: select.select_option
                 data:
                   option: Auto
                 target:
                   entity_id: select.awtrix_pepijn_brightness_mode
       - if: "{{ not is_state('sensor.awtrix_pepijn_current_app', 'sleep_clock') }}"
         then:
-          - action: mqtt.publish
+          - alias: "Switch Pepijn display to sleep clock app"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false
@@ -151,7 +161,8 @@ automation:
   - id: 8c6c0182-b227-47b8-a53b-c88075761b1a
     alias: "Awtrix button Floris"
     triggers:
-      - trigger: event
+      - alias: "Floris Ulanzi button pressed"
+        trigger: event
         event_type: awtrix_button_event
         event_data:
           area: slaapkamer_floris
@@ -163,7 +174,8 @@ automation:
         choose:
           - conditions: "{{ event == 'single' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle selected Floris light based on button pressed"
+                action: light.toggle
                 target:
                   entity_id: >
                     {%
@@ -195,9 +207,11 @@ automation:
     alias: "Update ulanzi Floris"
     mode: parallel
     triggers:
-      - trigger: time_pattern
+      - alias: "Update Floris display every minute"
+        trigger: time_pattern
         seconds: "0"
-      - trigger: state
+      - alias: "Floris sleeping state changed"
+        trigger: state
         entity_id: binary_sensor.floris_sleeping
         from:
           - "on"
@@ -205,11 +219,13 @@ automation:
         to:
           - "on"
           - "off"
-      - trigger: state
+      - alias: "Floris Ulanzi display came back online"
+        trigger: state
         entity_id: light.awtrix_floris_matrix
         from:
           - "unavailable"
-      - trigger: state
+      - alias: "Weather or Floris clock correction changed"
+        trigger: state
         entity_id:
           - weather.combined
           - input_number.correction_clock_floris
@@ -221,19 +237,22 @@ automation:
         then:
           - if: "{{ not is_state('select.awtrix_floris_brightness_mode', 'Manual') }}"
             then:
-              - action: select.select_option
+              - alias: "Set Floris display brightness to manual mode"
+                action: select.select_option
                 data:
                   option: Manual
                 target:
                   entity_id: select.awtrix_floris_brightness_mode
           - if: "{{ not is_state_attr('light.awtrix_floris_matrix', 'brightness', 2) }}"
             then:
-              - action: light.turn_on
+              - alias: "Dim Floris display for nighttime"
+                action: light.turn_on
                 target:
                   entity_id: light.awtrix_floris_matrix
                 data:
                   brightness: 2
-          - action: mqtt.publish
+          - alias: "Publish sleep clock display for Floris"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false
@@ -256,7 +275,8 @@ automation:
                       )
                 }}
         else:
-          - action: mqtt.publish
+          - alias: "Publish weather clock display for Floris"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false
@@ -270,14 +290,16 @@ automation:
                 }}
           - if: "{{ not is_state('select.awtrix_floris_brightness_mode', 'Auto') }}"
             then:
-              - action: select.select_option
+              - alias: "Set Floris display brightness to auto mode"
+                action: select.select_option
                 data:
                   option: Auto
                 target:
                   entity_id: select.awtrix_floris_brightness_mode
       - if: "{{ not is_state('sensor.awtrix_floris_current_app', 'sleep_clock') }}"
         then:
-          - action: mqtt.publish
+          - alias: "Switch Floris display to sleep clock app"
+            action: mqtt.publish
             data:
               qos: 0
               retain: false

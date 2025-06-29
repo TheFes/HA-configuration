@@ -4,13 +4,15 @@ template:
   # template sensors for temperature and trend
   # probe 1
   - triggers:
-      - trigger: state
+      - alias: "Probe 1 temperature reading updated"
+        trigger: state
         entity_id: sensor.xbbq_112c_temperature_probe_1
         from: ~
         id: state
         variables: &var_sensor_probe1
           probe_entity: sensor.xbbq_112c_temperature_probe_1
-      - trigger: time_pattern
+      - alias: "Probe 1 periodic update every minute"
+        trigger: time_pattern
         minutes: "/1"
         id: time
         variables: *var_sensor_probe1
@@ -54,13 +56,15 @@ template:
             {%- endif %}
   # probe 2
   - triggers:
-      - trigger: state
+      - alias: "Probe 2 temperature reading updated"
+        trigger: state
         entity_id: sensor.xbbq_112c_temperature_probe_2
         from: ~
         id: state
         variables: &var_sensor_probe2
           probe_entity: sensor.xbbq_112c_temperature_probe_2
-      - trigger: time_pattern
+      - alias: "Probe 2 periodic update every minute"
+        trigger: time_pattern
         minutes: "/1"
         id: time
         variables: *var_sensor_probe2

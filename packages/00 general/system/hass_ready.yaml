@@ -9,7 +9,8 @@ template:
         event: shutdown
         id: "false"
     actions:
-      - if: >
+      - alias: "Check if Home Assistant started after reboot notification"
+        if: >
           {{
             trigger.id | bool
             and (state_attr('sensor.variables', 'variables') | default(dict(reboot_from_notification=false))).reboot_from_notification

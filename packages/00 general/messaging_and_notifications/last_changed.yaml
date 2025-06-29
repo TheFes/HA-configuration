@@ -1,6 +1,7 @@
 template:
   - triggers:
-      - trigger: state
+      - alias: Track state changes for nominal entities
+        trigger: state
         entity_id:
           - input_boolean.test
         not_to: ["unavailable", "unknown"]
@@ -18,7 +19,8 @@ template:
           {{ dict(current, **new) }}
 
   - triggers:
-      - trigger: state
+      - alias: Track binary state changes for on/off entities
+        trigger: state
         entity_id:
           - input_boolean.test
           - binary_sensor.dishwasher_active

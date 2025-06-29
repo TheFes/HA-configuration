@@ -1,17 +1,22 @@
 template:
   - triggers:
-      - trigger: state
+      - alias: "Martijn's location state changed"
+        trigger: state
         entity_id: person.martijn
         id: state_change
-      - trigger: template
+      - alias: "Martijn's location stable for 10 minutes"
+        trigger: template
         value_template: "{{ now() - states.person.martijn.last_changed > timedelta(minutes=10) }}"
         id: recent_change
-      - trigger: template
+      - alias: "Martijn's location stable for 12 hours"
+        trigger: template
         value_template: "{{ now() - states.person.martijn.last_changed > timedelta(hours=12) }}"
         id: extended_change
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
-      - trigger: event
+      - alias: "Template entities reloaded"
+        trigger: event
         event_type: event_template_reloaded
     sensor:
       - name: House state Martijn
@@ -38,18 +43,23 @@ template:
         icon: mdi:human-male
 
   - triggers:
-      - trigger: state
+      - alias: "Marleen's location state changed"
+        trigger: state
         entity_id: person.marleen
         id: state_change
-      - trigger: template
+      - alias: "Marleen's location stable for 10 minutes"
+        trigger: template
         value_template: "{{ now() - states.person.marleen.last_changed > timedelta(minutes=10) }}"
         id: recent_change
-      - trigger: template
+      - alias: "Marleen's location stable for 12 hours"
+        trigger: template
         value_template: "{{ now() - states.person.marleen.last_changed > timedelta(hours=12) }}"
         id: extended_change
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
-      - trigger: event
+      - alias: "Template entities reloaded"
+        trigger: event
         event_type: event_template_reloaded
     sensor:
       - name: House state Marleen

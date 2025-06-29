@@ -22,10 +22,12 @@ automation:
                 target:
                   entity_id: light.tv_lamp
           - conditions:
-              - alias: "Double"
+              - alias: "Double press detected"
                 condition: template
                 value_template: "{{ event == 'off' }}"
-            sequence: []
+            sequence:
+              - alias: "No action for double press"
+                stop: "Double press - no action configured"
 
   # From: livingroom_lights_home_or_dark.yaml
   - id: 56046ae8-2eaa-47c0-b6ad-953cd4b5c641
@@ -82,11 +84,11 @@ automation:
               - condition: trigger
                 id: home
             sequence:
-              - alias: "Turn on exractor hood plug when arriving home"
+              - alias: "Turn on extractor hood plug when arriving home"
                 action: switch.turn_on
                 target:
                   entity_id: switch.afzuigkap
-              - alias: "Not bed time yet"
+              - alias: "Check if it's not bedtime yet"
                 condition: time
                 after: "06:00"
                 before: "22:00:00"
@@ -175,7 +177,7 @@ automation:
             }}
       - if: "{{ playing | count > 0 }}"
         then:
-          - alias: "Turn of Voice Satellites"
+          - alias: "Turn off Voice Satellites that are playing"
             action: media_player.turn_off
             target:
               entity_id: "{{ playing }}"

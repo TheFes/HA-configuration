@@ -47,16 +47,19 @@ automation:
   - id: 782ed19b-f497-47b9-adb2-782d538e8e33
     alias: "Disable Printer ingegration"
     triggers:
-      - trigger: state
+      - alias: "Printer connectivity status changed"
+        trigger: state
         entity_id: binary_sensor.printer
         to:
           - "on"
           - "off"
     actions:
-      - action: automation.turn_{{ trigger.to_state.state }}
+      - alias: "Toggle printer status monitoring automation"
+        action: automation.turn_{{ trigger.to_state.state }}
         target:
           entity_id: automation.f2_status_messages_for_printer
-      - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
+      - alias: "Enable or disable printer config entries based on connectivity"
+        action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
         data:
           config_entry_id:
             - ca207fdeedd4443f3ffd84b518b1edae
@@ -70,28 +73,32 @@ automation:
   - id: fab3e0d1-1d3a-46ce-b1c1-5c56e788bf02
     alias: "Status messages for printer"
     triggers:
-      - trigger: template
+      - alias: "Toner level dropped below 26%"
+        trigger: template
         value_template: >
           {{
             'sensor.dcp_l2530dw_black_toner_remaining' | has_value
             and states('sensor.dcp_l2530dw_black_toner_remaining') | float < 26
           }}
         id: toner
-      - trigger: template
+      - alias: "Toner level dropped below 11% (critical)"
+        trigger: template
         value_template: >
           {{
             'sensor.dcp_l2530dw_black_toner_remaining' | has_value
             and states('sensor.dcp_l2530dw_black_toner_remaining') | float < 11
           }}
         id: toner
-      - trigger: template
+      - alias: "Drum life dropped below 26%"
+        trigger: template
         value_template: >
           {{
             'sensor.dcp_l2530dw_drum_remaining_life' | has_value
             and states('sensor.dcp_l2530dw_drum_remaining_life') | float < 26
           }}
         id: drum
-      - trigger: template
+      - alias: "Drum life dropped below 11% (critical)"
+        trigger: template
         value_template: >
           {{
             'sensor.dcp_l2530dw_drum_remaining_life' | has_value
@@ -103,7 +110,8 @@ automation:
         condition: template
         value_template: "{{ trigger.from_state.state not in ['unavailable', 'unknown'] }}"
     actions:
-      - variables:
+      - alias: "Prepare notification message based on trigger type"
+        variables:
           message: >
             {%- if trigger.id == 'toner' %}
               "De toner is nog maar voor {{ states('sensor.dcp_l2530dw_black_toner_remaining') }}% vol"

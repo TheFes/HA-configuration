@@ -3,12 +3,14 @@ template:
       - trigger: event
         event_type: set_initial_state
         id: initial
+        alias: "Initialize solar max sensor on system startup"
       - trigger: template
         value_template: >
           {{
             states('sensor.solar_max') | is_number
             and states('sensor.ecu_today_energy') | float(0) > states('sensor.solar_max') | float
           }}
+        alias: "Update solar max when daily energy exceeds current maximum"
     sensor:
       unique_id: 770f3fe1-6afb-4922-8070-a9b5c5954061
       name: "Solar Max daily"

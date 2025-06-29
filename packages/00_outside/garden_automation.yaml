@@ -107,7 +107,8 @@ automation:
                 condition: template
                 value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
             sequence:
-              - action: "cover.{{ 'close' if is_state('cover.veranda', 'open') else 'open' }}_cover"
+              - alias: "Toggle veranda cover open/close"
+                action: "cover.{{ 'close' if is_state('cover.veranda', 'open') else 'open' }}_cover"
                 target:
                   entity_id: cover.veranda
 
@@ -147,7 +148,8 @@ automation:
         at: "16:00:00"
         id: "close"
     actions:
-      - if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
+      - alias: "Check if sun is rising and cover not in manual mode"
+        if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
         then:
           - alias: "No rain"
             condition: state
@@ -175,7 +177,8 @@ automation:
             action: cover.open_cover
             target:
               entity_id: cover.veranda
-      - if: "{{ trigger.id == 'close' }}"
+      - alias: "Check if this is the evening close trigger"
+        if: "{{ trigger.id == 'close' }}"
         then:
           - alias: "Close cover"
             action: cover.close_cover

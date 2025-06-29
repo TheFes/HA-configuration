@@ -85,16 +85,19 @@ template:
         unique_id: ee67de73-5c72-40d5-a7f1-dd68b23fc5f8
         device_class: update
         press:
-          - repeat:
+          - alias: "Install all available updates sequentially"
+            repeat:
               for_each: >
                 {% set last = ['update.home_assistant_operating_system_update', 'update.home_assistant_operating_system_update'] %}
                 {% set first = states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | reject('in', last) | list %}
                 {{ first + last | select('is_state', 'on') | list }}
               sequence:
-                - service: update.install
+                - alias: "Install update for current entity"
+                  service: update.install
                   target:
                     entity_id: "{{ repeat.item }}"
-                - wait_template: "{{ is_state(repeat.item, 'off') }}"
+                - alias: "Wait for update to complete"
+                  wait_template: "{{ is_state(repeat.item, 'off') }}"
 
 # skip_esphome_updates.yaml
   - button:
@@ -102,7 +105,8 @@ template:
         unique_id: 0ad105f3-3128-481b-b14e-641bfcd1bdd7
         device_class: update
         press:
-          - service: update.skip
+          - alias: "Skip all available ESPHome updates"
+            service: update.skip
             target:
               entity_id: >
                 {{ integration_entities('esphome') | select('search', '^update.') | select('is_state', 'on') | list }}
@@ -139,11 +143,11 @@ automation:
               https://github.com/home-assistant/core/releases/tag/{{ to }}
             {%- endif %}
     actions:
-      - alias: "Set up variables for the actions"
+      - alias: "Set up variables for notification actions"
         variables:
           action_update: "{{ 'UPDATE_' ~ context.id }}"
           action_skip: "{{ 'SKIP_' ~ context.id }}"
-      - alias: "Send notification to phone"
+      - alias: "Send Home Assistant update notification to phone"
         action: notify.mobile_app_pixel_7_pro
         data:
           title: >
@@ -164,7 +168,7 @@ automation:
                 title: Skip
               - action: "{{ action_update }}"
                 title: Update
-      - alias: "Wait for a response"
+      - alias: "Wait for user response on notification"
         wait_for_trigger:
           - alias: "Update button pressed"
             trigger: event
@@ -176,13 +180,14 @@ automation:
             event_type: mobile_app_notification_action
             event_data:
               action: "{{ action_skip }}"
-      - alias: "Update or skip"
+      - alias: "Install or skip update based on user choice"
         action: update.{{ 'install' if 'UPDATE' in wait.trigger.event.data.action else 'skip' }}
         target:
           entity_id: "{{ trigger.entity_id }}"
-      - if: "{{ wait.trigger.event.data.action == action_update }}"
+      - alias: "Set reboot notification flag if update was installed"
+        if: "{{ wait.trigger.event.data.action == action_update }}"
         then:
-          - alias: "Write variables to variables template sensor"
+          - alias: "Write reboot flag to variables sensor"
             event: set_variable
             event_data:
               key: "reboot_from_notification"

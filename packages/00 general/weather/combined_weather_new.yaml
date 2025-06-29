@@ -6,12 +6,15 @@
 template:
   # trigger based template weather entity which combines all forecasts
   - triggers:
-      - trigger: time_pattern
+      - alias: "Update combined weather forecast hourly at 30 seconds past the hour"
+        trigger: time_pattern
         minutes: "0"
         seconds: "30"
-      - trigger: homeassistant
+      - alias: "Update combined weather forecast on Home Assistant startup"
+        trigger: homeassistant
         event: start
-      - trigger: event
+      - alias: "Update combined weather forecast on manual trigger event"
+        trigger: event
         event_type: update_combined_forecast
     actions:
       - alias: "Define weights for different weather integrations"
@@ -49,7 +52,8 @@ template:
           - alias: Get forecasts in case there are entities
             if: "{{ weather_entities | count > 0 }}"
             then:
-              - variables:
+              - alias: "Set forecast available flag when entities found"
+                variables:
                   forecast_available: true
               - alias: Get hourly forecast data out of selected entities
                 action: weather.get_forecasts
@@ -59,7 +63,8 @@ template:
                   entity_id: "{{ weather_entities }}"
                 response_variable: forecast
             else:
-              - variables:
+              - alias: "Set forecast unavailable flag when no entities found"
+                variables:
                   forecast_available: false
       - alias: Combine the forecasts in one
         variables:
@@ -186,7 +191,8 @@ template:
                 | select('has_value')
                 | list
             }}
-      - if: "{{ debug | default(false) | bool(false) }}"
+      - alias: "Send debug notification if debug mode is enabled"
+        if: "{{ debug | default(false) | bool(false) }}"
         then:
           - alias: Send notification with some debug date
             action: persistent_notification.create

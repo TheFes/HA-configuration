@@ -2,37 +2,44 @@ automation:
   - id: e18beec6-b22c-4ac5-88da-05b7c05b9c33
     alias: "ECU reset with switch"
     triggers:
-      - trigger: template
+      - alias: "Solar energy output sensor not responding for 5 minutes"
+        trigger: template
         value_template: "{{ not states('sensor.solar_total_lifetime_energy_output') | is_number }}"
         for:
           minutes: 5
         id: "off"
-      - trigger: state
+      - alias: "ECU reset switch turned off for 10 seconds"
+        trigger: state
         entity_id: switch.ecu_reset
         to: "off"
         for:
           seconds: 10
         id: "on"
-      - trigger: homeassistant
+      - alias: "Home Assistant started"
+        trigger: homeassistant
         event: start
         id: "on"
-      - trigger: state
+      - alias: "ECU current power unavailable for 15 minutes"
+        trigger: state
         entity_id: sensor.ecu_current_power
         to: ~
         for:
           minutes: 15
         id: stable
     conditions:
-      - >
-        {{
-          trigger.id != 'stable'
-          or
-          (
-            is_state('sun.sun', 'above_horizon')
-            and trigger.to_state.state | int(0) > 0
-          )
-        }}
+      - alias: "Check if trigger is not stable or if sun is up with power output"
+        condition: template
+        value_template: >
+          {{
+            trigger.id != 'stable'
+            or
+            (
+              is_state('sun.sun', 'above_horizon')
+              and trigger.to_state.state | int(0) > 0
+            )
+          }}
     actions:
-      - action: switch.turn_{{ 'off' if trigger.id == 'stable' else trigger.id }}
+      - alias: "Turn ECU reset switch on or off based on trigger"
+        action: switch.turn_{{ 'off' if trigger.id == 'stable' else trigger.id }}
         target:
           entity_id: switch.ecu_reset

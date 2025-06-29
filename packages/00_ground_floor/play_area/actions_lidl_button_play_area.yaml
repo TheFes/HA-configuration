@@ -3,7 +3,8 @@ automation:
     alias: "LIDL button play area"
     mode: restart
     triggers:
-      - trigger: state
+      - alias: "Play area LIDL button pressed"
+        trigger: state
         entity_id: event.knop_speelhoek_action
         not_from: unavailable
         variables:
@@ -25,6 +26,7 @@ automation:
                 condition: template
                 value_template: "{{ event == 'off' }}"
             sequence:
-              - action: light.toggle
+              - alias: "Toggle bookcase light"
+                action: light.toggle
                 target:
                   entity_id: light.boekenkast
