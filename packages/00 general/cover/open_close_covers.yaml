@@ -291,8 +291,7 @@ automation:
           - alias: "Screens unavailable?"
             condition: template
             value_template: "{{ screens_unavailable | count > 0 }}"
-      - alias: "Rain?"
-        alias: "Verify it's currently raining"
+      - alias: "Verify it's currently raining"
         condition: state
         entity_id: binary_sensor.rain
         state: "on"
