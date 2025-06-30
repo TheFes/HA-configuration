@@ -1,0 +1,74 @@
+template:
+  - sensor:
+      - name: "Plant Problems Count"
+        unique_id: a7b2c8d4-f3e1-4a5b-9c7d-2e8f1a6b3c9e
+        state: >
+          {% set problem_plants = states.plant 
+                                    | selectattr('entity_id', 'has_value')
+                                    | selectattr('attributes.moisture_status', '!=', 'ok')
+                                    | list
+          %}
+          {{ problem_plants | count }}
+        attributes:
+          thirsty: >
+            {% set thirsty_plants = states.plant 
+                                      | selectattr('entity_id', 'has_value')
+                                      | selectattr('attributes.moisture_status', 'eq', 'Low')
+                                      | list
+            %}
+            {{ thirsty_plants | map(attribute='entity_id') | list }}
+          flooded: >
+            {% set flooded_plants = states.plant 
+                                      | selectattr('entity_id', 'has_value')
+                                      | selectattr('attributes.moisture_status', 'eq', 'High')
+                                      | list
+            %}
+            {{ flooded_plants | map(attribute='entity_id') | list }}
+
+automation:
+  - id: "ec867a7d-71bf-4fee-89aa-1ac88a201711"
+    alias: Notify when plants have moisture issues
+    triggers:
+      - alias: Check every evening
+        trigger: time
+        at: "20:00:00"
+        id: time
+      - alias: Check on a state chagne of the plant problem sensor
+        trigger: state
+        entity_id: sensor.plant_problems_count
+        not_from:
+          - unavailable
+          - unknown
+        id: sensor
+    conditions:
+      - alias: Check if a message is required
+        condition: template
+        value_template: >
+          {{
+            trigger.to_state.state | int > trigger.from_state.state | int 
+            if trigger.id == 'sensor' 
+            else states('sensor.plant_problems_count') | int(0) > 0
+          }}
+    actions:
+      - alias: Assign texts for thirsty and flooded plants
+        variables:
+          thirsty: |
+            {%- set ns = namespace(plants=[]) -%}
+            {%- for plant in state_attr('sensor.plant_problems_count', 'thirsty') -%}
+              {%- set ns.plants = ns.plants + [state_attr(plant, 'friendly_name') | trim ~ ' in ' ~ area_name(plant)] -%}
+            {%- endfor -%}
+            {%- set plants = (ns.plants[:-1] | join(', ') ~ ' en ' ~ ns.plants[-1]) if ns.plants | count > 2 else ns.plants | join(' en ') -%}
+            {{ ('De volgende planten hebben dorst: ' ~ plants) if plants }}
+          flooded: >
+            {%- set ns = namespace(plants=[]) -%}
+            {%- for plant in state_attr('sensor.plant_problems_count', 'flooded') -%}
+              {%- set ns.plants = ns.plants + [state_attr(plant, 'friendly_name') | trim ~ ' in ' ~ area_name(plant)] -%}
+            {%- endfor -%}
+            {%- set plants = (ns.plants[:-1] | join(', ') ~ ' en ' ~ ns.plants[-1]) if ns.plants | count > 2 else ns.plants | join(' en ') -%}
+            {{ ('De volgende planten hebben te veel water: ' ~ plants) if plants }}
+      - alias: Send message
+        action: rest_command.signal_send_message
+        data:
+          message: >
+            {{ ['🌱 Plant Alarm!', thirsty, flooded] | select() | join('\n') }}
+    mode: single
