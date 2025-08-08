@@ -147,6 +147,16 @@ automation:
         trigger: time
         at: "16:00:00"
         id: "close"
+    conditions: 
+      - condition: template 
+        value_template: >
+          {{
+            (
+              is_state('cover.veranda', 'open')
+              and trigger.id == 'close'
+            )
+            or is_state('cover.veranda', 'closed')
+          }}
     actions:
       - alias: "Check if sun is rising and cover not in manual mode"
         if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
@@ -173,14 +183,55 @@ automation:
             condition: numeric_state
             entity_id: sensor.woonkamer_multi_temperature
             above: 20
+          - alias: "Store the current state of the light"
+            variables:
+              light_state: "{{ states('light.veranda') }}"
           - alias: "Open cover"
             action: cover.open_cover
             target:
               entity_id: cover.veranda
+          - alias: Wait if the light changes
+            wait_template: "{{ not is_state('light.veranda', light_state) }}"
+            timeout: "00:05:00"
+            continue_on_timeout: false
+          - alias: "Restore the light state"
+            action: light.turn_{{ light_state }}
+            target: 
+              entity_id: light.veranda
       - alias: "Check if this is the evening close trigger"
         if: "{{ trigger.id == 'close' }}"
         then:
+          - alias: "Store the current state of the light"
+            variables:
+              light_state: "{{ states('light.veranda') }}"
           - alias: "Close cover"
             action: cover.close_cover
             target:
               entity_id: cover.veranda
+          - alias: "Restore the light state"
+            action: light.turn_{{ light_state }}
+            target: 
+              entity_id: light.veranda
+
+  - id: '1752267977360'
+    alias: Turn off awning light during daytime
+    triggers:
+    - alias: "Veranda light turned on"
+      trigger: state
+      entity_id:
+      - light.veranda
+      to: 'on'
+    conditions:
+    - alias: "Sun is above horizon (daytime)"
+      condition: state
+      entity_id: sun.sun
+      state: above_horizon
+    - alias: "Light was turned on automatically (not by user)"
+      condition: template
+      value_template: "{{ trigger.to_state.context.parent_id is none and trigger.to_state.context.user_id is none }}"
+    actions:
+    - alias: "Turn off veranda light"
+      action: light.turn_off
+      target:
+        entity_id: light.veranda
+    mode: single

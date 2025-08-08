@@ -11,8 +11,8 @@ This directory contains modular Home Assistant configuration packages organized 
 ### Floor-Based Packages
 - **[00_ground_floor/](./00_ground_floor/)** - Ground floor room automations and controls (12 files)
 - **[00_outside/](./00_outside/)** - Outdoor area automations (3 files)
-- **[01_first_floor/](./01_first_floor/)** - First floor room automations (4 files)
-- **[02_second_floor/](./02_second_floor/)** - Second floor room automations (9 files)
+- **[01_first_floor/](./01_first_floor/)** - First floor room automations (5 files)
+- **[02_second_floor/](./02_second_floor/)** - Second floor room automations (10 files)
 
 ### Third-Party Integrations
 - **[google_cast/](./google_cast/)** - Google Cast integration with comprehensive documentation

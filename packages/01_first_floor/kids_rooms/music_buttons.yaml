@@ -1,0 +1,143 @@
+automation:
+  - id: e666e5ab-6dda-4c3b-8a1e-980104c2f102
+    alias: Actions for music buttons kids
+    triggers:
+      - alias: Trigger on button press
+        trigger: state
+        entity_id:
+          - event.knop_muziek_pepijn_action
+          - event.knop_muziek_floris_action
+        not_from: unavailable
+    actions:
+      - alias: Define variables
+        variables:
+          area: "{{ area_id(trigger.entity_id) }}"
+          event_type: "{{ trigger.to_state.attributes.event_type }}"
+          data_mapper:
+            slaapkamer_floris:
+              playlist: library://playlist/252
+              player: media_player.floris
+              exclude_lights: []
+            slaapkamer_pepijn:
+              playlist: library://playlist/251
+              player: media_player.pepijn
+              exclude_lights:
+                - light.pepijn_template
+                - light.pepijn
+          player: >
+            {{
+              integration_entities('music_assistant')
+                | select('in', area_entities(area))
+                | first
+                | default
+            }}
+      - alias: Perform the right actions based on the button press
+        choose:
+          - conditions:
+              - alias: Light on button short press
+                condition: template
+                value_template: "{{ event_type == 'on' }}"
+            sequence:
+              - alias: Enable party lights
+                action: script.party_party
+                data:
+                  party_on: true
+                  area: "{{ area }}"
+                  exclude_lights: "{{ data_mapper[area].exclude_lights }}"
+                  set_by: Music Button
+              - alias: Enable shuffle
+                action: media_player.shuffle_set
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+                data:
+                  shuffle: true
+              - alias: Start playlist
+                action: music_assistant.play_media
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+                data:
+                  enqueue: replace
+                  media_id: "{{ data_mapper[area].playlist }}"
+          - conditions:
+              - alias: Light off button short press
+                condition: template
+                value_template: "{{ event_type == 'off' }}"
+            sequence:
+              - alias: Disable party lights
+                action: script.party_party
+                data:
+                  party_on: false
+                  area: "{{ area }}"
+                  set_by: Music Button
+              - alias: Start playlist
+                action: media_player.turn_off
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+          - conditions:
+              - alias: Left arrow short press
+                condition: template
+                value_template: "{{ event_type == 'arrow_left_click' }}"
+            sequence:
+              - alias: Previous song
+                action: media_player.media_previous_track
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+          - conditions:
+              - alias: Right arrow short press
+                condition: template
+                value_template: "{{ event_type == 'arrow_right_click' }}"
+            sequence:
+              - alias: Next song
+                action: media_player.media_next_track
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+          - conditions:
+              - alias: Light on button short press
+                condition: template
+                value_template: "{{ event_type == 'brightness_move_up' }}"
+            sequence:
+              - alias: Enable party lights
+                action: script.party_party
+                data:
+                  party_on: true
+                  area: "{{ area }}"
+                  exclude_lights: "{{ data_mapper[area].exclude_lights }}"
+                  set_by: Music Button
+          - conditions:
+              - alias: Light off button long press
+                condition: template
+                value_template: "{{ event_type == 'brightness_move_down' }}"
+            sequence:
+              - alias: Disable party lights
+                action: script.party_party
+                data:
+                  party_on: false
+                  area: "{{ area }}"
+                  set_by: Music Button
+          - conditions:
+              - alias: Left arrow long press
+                condition: template
+                value_template: "{{ event_type == 'arrow_left_hold' }}"
+            sequence:
+              - alias: Start playlist
+                action: media_player.turn_off
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+          - conditions:
+              - alias: Right arrow long press
+                condition: template
+                value_template: "{{ event_type == 'arrow_right_hold' }}"
+            sequence:
+              - alias: Enable shuffle
+                action: media_player.shuffle_set
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+                data:
+                  shuffle: true
+              - alias: Start playlist
+                action: music_assistant.play_media
+                target:
+                  entity_id: "{{ data_mapper[area].player }}"
+                data:
+                  enqueue: replace
+                  media_id: "{{ data_mapper[area].playlist }}"

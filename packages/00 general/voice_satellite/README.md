@@ -16,4 +16,3 @@ This directory contains configurations for voice command processing and automate
 - **[voice_make_call.yaml](./voice_make_call.yaml)** - Voice-activated calling system
 - **[voice_next_trash_pickup.yaml](./voice_next_trash_pickup.yaml)** - Voice queries for trash collection
 - **[voice_play_music.yaml](./voice_play_music.yaml)** - Voice control for music playback
-- **[voice_set_reminder.yaml](./voice_set_reminder.yaml)** - Voice-activated reminder system

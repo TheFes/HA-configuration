@@ -92,19 +92,22 @@ automation:
               condition: trigger
               id: holiday_house
             sequence:
-              - variables:
-                  switches: >
-                    {{
-                      integration_entities('esphome')
-                        | select('is_state', 'Detached')
-                        | map('replace', 'select', 'switch')
-                        | map('replace', '_button_type', '')
-                        | select('has_value')
-                        | list
-                    }}
-              - action: switch.turn_off
-                target:
-                  entity_id: "{{ switches }}"
+              - alias: "Placeholder to prevent empty sequence"
+                delay: 0
+              # Commented out ESPHome switch turn off action
+              # - variables:
+              #     switches: >
+              #       {{
+              #         integration_entities('esphome')
+              #           | select('is_state', 'Detached')
+              #           | map('replace', 'select', 'switch')
+              #           | map('replace', '_button_type', '')
+              #           | select('has_value')
+              #           | list
+              #       }}
+              # - action: switch.turn_off
+              #   target:
+              #     entity_id: "{{ switches }}"
           - conditions:
               condition: trigger
               id: no_holiday

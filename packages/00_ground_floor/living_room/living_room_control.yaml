@@ -182,6 +182,24 @@ automation:
             target:
               entity_id: "{{ playing }}"
 
+  - id: '1752261526546'
+    alias: Set Shield to Launcher on start
+    triggers:
+    - alias: "Shield turned on from off to idle"
+      trigger: state
+      entity_id:
+      - media_player.nvidia_shield
+      to: idle
+      from: 'off'
+    actions:
+    - alias: "Send HOME command to Shield"
+      action: androidtv.adb_command
+      data:
+        command: HOME
+      target:
+        entity_id: media_player.nvidia_shield
+    mode: single
+
 # From: samsung_soundbar.yaml
 media_player:
   - platform: samsung_soundbar

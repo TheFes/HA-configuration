@@ -5,6 +5,7 @@ template:
         state: >
           {% set problem_plants = states.plant 
                                     | selectattr('entity_id', 'has_value')
+                                    | selectattr('state', '!=', 'ok')
                                     | selectattr('attributes.moisture_status', '!=', 'ok')
                                     | list
           %}
@@ -33,10 +34,13 @@ automation:
         trigger: time
         at: "20:00:00"
         id: time
-      - alias: Check on a state chagne of the plant problem sensor
+      - alias: Check on a state change of the plant problem sensor
         trigger: state
         entity_id: sensor.plant_problems_count
         not_from:
+          - unavailable
+          - unknown
+        not_to:
           - unavailable
           - unknown
         id: sensor

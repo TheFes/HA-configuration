@@ -59,7 +59,7 @@ automation:
             graden {{ weather_condition[states('weather.combined')][0] }}.
             Vandaag wordt het een {{ weather_condition[forecast.condition][1] }} dag met een temperatuur tussen 
             de {{ forecast.templow | round(0) }} en {{ forecast.temperature | round(0) }} graden. 
-            {% if forecast.temperature | round(0) != forecast.apparent_temperature | round(0) %}Het voelt 
+            {% if forecast.temperature | round(0) != forecast.apparent_temperature | default(forecast.temperature) | round(0) %}Het voelt 
             als {{ forecast.apparent_temperature | round(0) }} graden.{% endif %}
             {% if forecast.precipitation_probability > 10 %}Er is {{ forecast.precipitation_probability | 
             round(0) }}% kans op {{ forecast.precipitation | round(0) }} mm regen, neem voor de zekerheid 

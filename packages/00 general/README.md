@@ -2,11 +2,12 @@
 
 This directory contains system-wide functionality, utilities, and cross-room features for Home Assistant.
 
-## Root Files (10)
+## Root Files (11)
 - **[battery_management.yaml](./battery_management.yaml)** - Battery monitoring and alerts
 - **[christmas_features.yaml](./christmas_features.yaml)** - Holiday-specific automations
 - **[dashboard_helpers.yaml](./dashboard_helpers.yaml)** - Dashboard utilities and helpers
 - **[ikea_pairing.yaml](./ikea_pairing.yaml)** - IKEA device pairing configurations
+- **[plant_warnings.yaml](./plant_warnings.yaml)** - Plant care monitoring and alerts
 - **[postcodeloterij.yaml](./postcodeloterij.yaml)** - Dutch lottery integration
 - **[power_plug_always_on.yaml](./power_plug_always_on.yaml)** - Power plug monitoring
 - **[school_holidays.yaml](./school_holidays.yaml)** - School holiday calendar integration
