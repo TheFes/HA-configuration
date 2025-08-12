@@ -349,6 +349,9 @@ actions:
             {% for key in key_list %}
               {% set key_items = data | selectattr(key, 'defined') | map(attribute=key) | list %}
               {% if key_items[0] is string %}
+                {% if not day %}
+                  {% set key_items = key_items | map('replace', 'sunny', 'clear-night') | list %}
+                {% endif %}
                 {% set ns.item = dict(ns.item, **{key: key_items | statistical_mode}) %}
               {% elif key == 'temperature' %}
                 {% set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items | min}) %}

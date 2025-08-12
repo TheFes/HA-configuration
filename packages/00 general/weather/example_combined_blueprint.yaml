@@ -1,0 +1,35 @@
+template:
+  - use_blueprint:
+      path: TheFes/combined_weather.yaml
+      input:
+        # this is an example based on the entities in my system
+        # default setting is an empty list
+        weight_input:
+          - entity_id: weather.knmi
+            current: 3
+            daily: 3
+            hourly: 4
+          - entity_id: weather.buienradar
+            current: 2
+            daily: 2
+        # all settings below are the default settings
+        # you can remove them if you want to use these defaults
+        triggers:
+          - alias: "Update combined weather forecast hourly at 30 seconds past the hour"
+            trigger: time_pattern
+            minutes: "0"
+            seconds: "30"
+          - alias: "Update combined weather forecast on Home Assistant startup"
+            trigger: homeassistant
+            event: start
+          - alias: "Update combined weather forecast on manual trigger event"
+            trigger: event
+            event_type: update_combined_forecast
+        ignore_entities: [] # empty list
+        temperature_unit: "°C"
+        pressure_unit: "hPa"
+        wind_speed_unit: "km/h"
+        visibility_unit: "km"
+        precipitation_unit: "mm"
+    name: Combined
+    unique_id: 963c3718-c964-4ead-80ca-b48f4b9388d8
