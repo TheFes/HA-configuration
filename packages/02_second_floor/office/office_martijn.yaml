@@ -115,16 +115,14 @@ automation:
         at:
           - "08:00:00"
           - "09:00:00"
+        weekday:
+          - "tue"
       - trigger: event
         event_type: mobile_app_notification_action
         event_data:
           action: "not_today"
         id: "not_today"
     conditions:
-      - alias: "Tuesday?"
-        condition: time
-        weekday:
-          - "tue"
       - alias: "Vacuum working"
         condition: state
         entity_id: binary_sensor.vacuum
