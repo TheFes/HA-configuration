@@ -3,6 +3,7 @@ blueprint:
   description: '# Creates a template weather which combines all your other weather
     integrations
 
+
     ## Trigger settings
 
     By default there are 3 triggers:
@@ -18,15 +19,34 @@ blueprint:
 
     You can add or remove triggers, or change the existing ones
 
+
     ## Input settings
 
     Here you can add weights to weather entities. In case you have a specific entity
     you trust more than others, you can apply additional weight. All weights need
     to be integers. The input needs to be a list, where each list item is a mapping.
     Weights can be applied for the current weather information (`current`), for for
-    the 3 forecast types (`daily`, `twice_daily`, `hourly`). Example: ```yaml weight_input:
-    - entity_id: weather.knmi current: 3 daily: 3 hourly: 4 - entity_id: weather.buienradar
-    current: 2 daily: 2 ```
+    the 3 forecast types (`daily`, `twice_daily`, `hourly`). Example: 
+      
+    ```yaml
+    
+    weight_input:
+    
+      - entity_id: weather.knmi
+      
+        current: 3
+        
+        daily: 3 
+        
+        hourly: 4 
+      
+      - entity_id: weather.buienradar
+        
+        current: 2 
+        
+        daily: 2 
+    
+    ```
 
     In the input settings you can also provide weather entiteis which should be ignored,
     e.g. when you have integrations configured for another location, e.g. where you
@@ -35,6 +55,7 @@ blueprint:
     ## Unit of measurement settings
 
     Set the unit of measurements according to the source sensors. These are the defaults:
+    
     ```yaml
     
     temperature_unit: "°C"
@@ -48,6 +69,15 @@ blueprint:
     precipitation_unit: "mm" 
     
     ```
+
+
+    ## Twice daily settings
+    
+    If no weather integration provides a twice daily foreast, it will be calculated based on the
+    hourly forecast. In hte twice daily settings you can set the start time of the daytime and night
+    period. By default these are `09:00:00` for daytime, and `18:00:00` for night, which is based on
+    the twice daily forecast NWS provides.
+
 
     ## Debug mode
 
@@ -183,6 +213,25 @@ blueprint:
           selector:
             text: {}
           default: mm
+    twice_daily_settings:
+      name: Twice daily settings
+      icon: mdi:eye
+      description: Settings used to create a twice daily forecast in case none
+        of the weahter integrations provide it
+      collapsed: true
+      input:
+        start_daytime:
+          name: Daytime start
+          description: The start time of the daytime period
+          selector:
+            time: {}
+          default: "09:00:00"
+        start_night:
+          name: Night start
+          description: The start time of the night period
+          selector:
+            time: {}
+          default: "18:00:00"
     debug_mode:
       name: Debug mode
       icon: mdi:bug
@@ -203,6 +252,8 @@ actions:
   variables:
     debug: !input debug
     weight: !input weight_input
+    start_daytime: !input start_daytime
+    start_night: !input start_night
 - alias: Set right forecast type
   variables:
     type: hourly
@@ -212,13 +263,19 @@ actions:
     - 6
     - 7
 - alias: Get the forecast data from the entities
-  sequence: &id001
+  sequence: &get_forecasts
   - alias: Get all entities which support the forecast type
     variables:
-      weather_entities: "{{\n  states.weather \n    | selectattr('attributes.supported_features',
-        'defined')\n    | selectattr('attributes.supported_features', 'in', supported)\n
-        \   | map(attribute='entity_id') \n    | reject('in', integration_entities('template'))\n
-        \   | select('has_value')\n    | list\n}}\n"
+          weather_entities: >
+            {{
+              states.weather 
+                | selectattr('attributes.supported_features', 'defined')
+                | selectattr('attributes.supported_features', 'in', supported)
+                | map(attribute='entity_id') 
+                | reject('in', integration_entities('template'))
+                | select('has_value')
+                | list
+            }}
   - alias: Get forecasts in case there are entities
     if: '{{ weather_entities | count > 0 }}'
     then:
@@ -239,89 +296,146 @@ actions:
 - alias: Combine the forecasts in one
   variables:
     hourly_entities: '{{ weather_entities }}'
-    hourly: "{# set number of days to use for forecasts #}\n  {% set forecast_days
-      = 3 if type == 'hourly' else 10 %}\n{# define valid forecast attributes and
-      precision for rounding #}\n  {% set forecast_all = \n    [\n      dict(attr='condition'),\n
-      \     dict(attr='wind_bearing', round=2),\n      dict(attr='cloud_coverage',
-      round=0),\n      dict(attr='temperature', round=1),\n      dict(attr='wind_speed',
-      round=2),\n      dict(attr='precipitation', round=2),\n      dict(attr='precipitation_probability',
-      round=0),\n      dict(attr='dew_point', round=1),\n      dict(attr='uv_index',
-      round=2),\n      dict(attr='apparent_temperature', round=1),\n      dict(attr='pressure',
-      round=2),\n      dict(attr='humidity', round=0)\n    ]\n  %}\n  {% set forecast_daily
-      =\n    [\n      dict(attr='templow', round=1),\n      dict(attr='wind_gust_speed',
-      round=2)\n    ]\n  %}\n  {% set forecast_twice_daily =\n    [ dict(attr='is_daytime')
-      ]\n  %}\n  {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all
-      + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily
-      %}\n{# check if forecast is retreived #}\n  {% if forecast_available %}\n  {#
-      combine all forecasts in one list #}\n    {% if weight is defined\n        and
-      weight is list\n        and weight | count > 0\n        and weight[0] is mapping\n
-      \   %}\n      {% set ns = namespace(all=[]) %}\n      {% for k, v in forecast.items()
-      %}\n        {% set w = weight \n                    | selectattr('entity_id',
-      'eq', k)\n                    | map(attribute=type)\n                    | first\n
-      \                   | default(1) %}\n        {% set ns.all = ns.all + v.forecast
-      * w %}\n      {% endfor %}\n      {% set all = ns.all %}\n    {% else %}\n      {%
-      set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}\n
-      \   {% endif %}\n  {# make sure no old forecasts are included, and only 3 days
-      for hourly forecasts, and 10 days for daily #}\n    {% set compare_start = today_at()
-      if type == 'daily' else now() - timedelta(hours=1) %}\n    {% set compare_end
-      = now() + timedelta(days=forecast_days) %}\n  {# align datetimes so they all
-      use local timezone, and the same start time for daily forecasts #}\n    {% set
-      ns = namespace(aligned=[], forecast=[]) %}\n    {% for item in all if compare_start
-      <= as_datetime(item.datetime) | as_local <= compare_end %}\n      {% set new_dt
-      = item.datetime | as_datetime(item.datetime) | as_local %}\n      {% set new_dt
-      = new_dt.isoformat() if type in ['hourly', 'twice_daily'] else new_dt.replace(hour=0,
-      minute=0).isoformat() %}\n      {% set ns.aligned = ns.aligned + [dict(item,
-      datetime=new_dt)] %}\n    {% endfor %}\n  {# set list of unique datetime #}\n
-      \   {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort
-      | list %}\n  {# create forecast list item for each datetime #}\n    {% for dt
-      in dt_list %}\n      {% set forecasts = ns.aligned | selectattr('datetime',
-      'eq', dt) | list %}\n      {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt))
-      %}\n      {# find forecast available forecast items #}\n        {% for item
-      in forecasts %}\n          {% set dt_ns.keys = dt_ns.keys + item.keys() | list
-      %}\n        {% endfor %}\n        {# remove unsupported types for template weather
-      #}\n        {% set allowed_keys = forecast_attr | map(attribute='attr') | list
-      %}\n        {% set keys_list = dt_ns.keys | unique | select('in', allowed_keys)
-      %}\n      {# find value for each forecast item #}\n        {% for key in keys_list
-      %}\n          {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n          {# find most frequent item for condition #}\n            {%
-      if key == 'condition' %}\n              {% if 'clear-night' in key_items %}\n
-      \               {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n              {% endif %}\n              {% set add_dict = dict(condition=statistical_mode(key_items,
-      none)) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict)
-      %}\n            {% elif key == 'is_daytime' %}\n              {% set add_dict
-      = dict(is_daytime=key_items[0]) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast,
-      **add_dict) %}                          \n          {# find median for other
-      (numeric) forecast types #}\n            {% else %}\n              {# filter
-      out non numeric values #}\n                {% set values = key_items  | map('replace',
-      none, 0) | select('is_number') | map('float') | list | sort %}\n                {%
-      if values | count > 0 %}\n                  {# add forecast item to forecast
-      #}\n                    {% set round = forecast_attr | selectattr('attr', 'eq',
-      key) | map(attribute='round') | list | first %}\n                    {% set
-      add_dict = {key: median(values)|round(round)} %}\n                    {% set
-      dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} \n                {% endif
-      %}\n            {% endif %}\n        {% endfor %}\n      {# combine forecast
-      for each datetime in one list #}\n        {% set ns.forecast = ns.forecast +
-      [dt_ns.forecast] %}\n    {% endfor %}\n  {# output the forecast #}\n    {{ ns.forecast
-      }}\n{# create twice daily forecast based on hourly forecast if not provided
-      normally #} {% elif type == 'twice_daily' and hourly | count > 0 %}\n  {% set
-      times = hourly | selectattr('datetime', 'search', 'T09:00|T18:00') | map(attribute='datetime')
-      | list %}\n  {% set ns = namespace(forecast=[], item={}) %}\n  {% for t in times
-      %}\n    {% set day = t is search 'T09:00' %}\n    {% set dates = hourly | map(attribute='datetime')
-      | list %}\n    {% set index = dates.index(t) %}\n    {% set data = hourly[index:index+(9
-      if day else 13)] %}\n    {% set key_list = data[0].keys() | list %}\n    {%
-      set ns.item = {'datetime': t, 'is_daytime': day} %}\n    {% for key in key_list
-      %}\n      {% set key_items = data | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n      {% if key_items[0] is string %}\n        {% if not day %}\n
-      \         {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n        {% endif %}\n        {% set ns.item = dict(ns.item, **{key:
-      key_items | statistical_mode}) %}\n      {% elif key == 'temperature' %}\n        {%
-      set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items |
-      min}) %}\n      {% elif key_items[0] | is_number %}\n        {% set r = forecast_attr
-      | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1)
-      %}\n        {% set ns.item = dict(ns.item, **{key: key_items | average | round(r)})
-      %}\n      {% endif %}\n    {% endfor %}\n    {% set ns.forecast = ns.forecast
-      + [ns.item] %}\n  {% endfor %}\n  {{ ns.forecast }}\n{% else %}\n  []\n{% endif
-      %}\n"
+      hourly: &combine_forecasts >
+        {# set number of days to use for forecasts #}
+          {% set forecast_days = 3 if type == 'hourly' else 10 %}
+        {# define valid forecast attributes and precision for rounding #}
+          {% set forecast_all = 
+            [
+              dict(attr='condition'),
+              dict(attr='wind_bearing', round=2),
+              dict(attr='cloud_coverage', round=0),
+              dict(attr='temperature', round=1),
+              dict(attr='wind_speed', round=2),
+              dict(attr='precipitation', round=2),
+              dict(attr='precipitation_probability', round=0),
+              dict(attr='dew_point', round=1),
+              dict(attr='uv_index', round=2),
+              dict(attr='apparent_temperature', round=1),
+              dict(attr='pressure', round=2),
+              dict(attr='humidity', round=0)
+            ]
+          %}
+          {% set forecast_daily =
+            [
+              dict(attr='templow', round=1),
+              dict(attr='wind_gust_speed', round=2)
+            ]
+          %}
+          {% set forecast_twice_daily =
+            [ dict(attr='is_daytime') ]
+          %}
+          {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily %}
+        {# check if forecast is retreived #}
+          {% if forecast_available %}
+          {# combine all forecasts in one list #}
+            {% if weight is defined
+                and weight is list
+                and weight | count > 0
+                and weight[0] is mapping
+            %}
+              {% set ns = namespace(all=[]) %}
+              {% for k, v in forecast.items() %}
+                {% set w = weight 
+                            | selectattr('entity_id', 'eq', k)
+                            | map(attribute=type)
+                            | first
+                            | default(1) %}
+                {% set ns.all = ns.all + v.forecast * w %}
+              {% endfor %}
+              {% set all = ns.all %}
+            {% else %}
+              {% set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}
+            {% endif %}
+          {# make sure no old forecasts are included, and only 3 days for hourly forecasts, and 10 days for daily #}
+            {% set compare_start = today_at() if type == 'daily' else now() - timedelta(hours=1) %}
+            {% set compare_end = now() + timedelta(days=forecast_days) %}
+          {# align datetimes so they all use local timezone, and the same start time for daily forecasts #}
+            {% set ns = namespace(aligned=[], forecast=[]) %}
+            {% for item in all if compare_start <= as_datetime(item.datetime) | as_local <= compare_end %}
+              {% set new_dt = item.datetime | as_datetime(item.datetime) | as_local %}
+              {% set new_dt = new_dt.isoformat() if type in ['hourly', 'twice_daily'] else new_dt.replace(hour=0, minute=0).isoformat() %}
+              {% set ns.aligned = ns.aligned + [dict(item, datetime=new_dt)] %}
+            {% endfor %}
+          {# set list of unique datetime #}
+            {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort | list %}
+          {# create forecast list item for each datetime #}
+            {% for dt in dt_list %}
+              {% set forecasts = ns.aligned | selectattr('datetime', 'eq', dt) | list %}
+              {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt)) %}
+              {# find forecast available forecast items #}
+                {% for item in forecasts %}
+                  {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
+                {% endfor %}
+                {# remove unsupported types for template weather #}
+                {% set allowed_keys = forecast_attr | map(attribute='attr') | list %}
+                {% set keys_list = dt_ns.keys | unique | select('in', allowed_keys) %}
+              {# find value for each forecast item #}
+                {% for key in keys_list %}
+                  {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key) | list %}
+                  {# find most frequent item for condition #}
+                    {% if key == 'condition' %}
+                      {% if 'clear-night' in key_items %}
+                        {% set key_items = key_items | map('replace', 'sunny', 'clear-night') | list %}
+                      {% endif %}
+                      {% set add_dict = dict(condition=statistical_mode(key_items, none)) %}
+                      {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
+                    {% elif key == 'is_daytime' %}
+                      {% set add_dict = dict(is_daytime=key_items[0]) %}
+                      {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}                          
+                  {# find median for other (numeric) forecast types #}
+                    {% else %}
+                      {# filter out non numeric values #}
+                        {% set values = key_items  | map('replace', none, 0) | select('is_number') | map('float') | list | sort %}
+                        {% if values | count > 0 %}
+                          {# add forecast item to forecast #}
+                            {% set round = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | list | first %}
+                            {% set add_dict = {key: median(values)|round(round)} %}
+                            {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+              {# combine forecast for each datetime in one list #}
+                {% set ns.forecast = ns.forecast + [dt_ns.forecast] %}
+            {% endfor %}
+          {# output the forecast #}
+            {{ ns.forecast }}
+        {# create twice daily forecast based on hourly forecast if not provided normally #}
+        {% elif type == 'twice_daily' and hourly | count > 0 %}
+          {% set times = hourly
+                          | selectattr('datetime', 'search', 'T'~start_daytime~'|T'~start_night)
+                          | map(attribute='datetime')
+                          | list %}
+          {% set hours_delta = (today_at(start_night) - today_at(start_daytime)).total_seconds() // 3600 %}
+          {% set hours_day = hours_delta if hours_delta > 0 else 24 + hours_delta %}
+          {% set ns = namespace(forecast=[], item={}) %}
+          {% for t in times %}
+            {% set day = t is search 'T' ~ start_daytime %}
+            {% set dates = hourly | map(attribute='datetime') | list %}
+            {% set index = dates.index(t) %}
+            {% set data = hourly[index:index+(hours_day if day else 24-hours_day)] %}
+            {% set key_list = data[0].keys() | list %}
+            {% set ns.item = {'datetime': t, 'is_daytime': day} %}
+            {% for key in key_list %}
+              {% set key_items = data | selectattr(key, 'defined') | map(attribute=key) | list %}
+              {% if key_items[0] is string %}
+                {% if not day %}
+                  {% set key_items = key_items | map('replace', 'sunny', 'clear-night') | list %}
+                {% endif %}
+                {% set ns.item = dict(ns.item, **{key: key_items | statistical_mode}) %}
+              {% elif key == 'temperature' %}
+                {% set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items | min}) %}
+              {% elif key_items[0] | is_number %}
+                {% set r = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1) %}
+                {% set ns.item = dict(ns.item, **{key: key_items | average | round(r)}) %}
+              {% endif %}
+            {% endfor %}
+            {% set ns.forecast = ns.forecast + [ns.item] %}
+          {% endfor %}
+          {{ ns.forecast }}
+        {% else %}
+          []
+        {% endif %}
 - alias: Set right forecast type
   variables:
     type: daily
@@ -331,93 +445,11 @@ actions:
     - 5
     - 7
 - alias: Get the forecast data from the entities
-  sequence: *id001
+  sequence: *get_forecasts
 - alias: Combine the forecasts in one
   variables:
     daily_entities: '{{ weather_entities }}'
-    daily: "{# set number of days to use for forecasts #}\n  {% set forecast_days
-      = 3 if type == 'hourly' else 10 %}\n{# define valid forecast attributes and
-      precision for rounding #}\n  {% set forecast_all = \n    [\n      dict(attr='condition'),\n
-      \     dict(attr='wind_bearing', round=2),\n      dict(attr='cloud_coverage',
-      round=0),\n      dict(attr='temperature', round=1),\n      dict(attr='wind_speed',
-      round=2),\n      dict(attr='precipitation', round=2),\n      dict(attr='precipitation_probability',
-      round=0),\n      dict(attr='dew_point', round=1),\n      dict(attr='uv_index',
-      round=2),\n      dict(attr='apparent_temperature', round=1),\n      dict(attr='pressure',
-      round=2),\n      dict(attr='humidity', round=0)\n    ]\n  %}\n  {% set forecast_daily
-      =\n    [\n      dict(attr='templow', round=1),\n      dict(attr='wind_gust_speed',
-      round=2)\n    ]\n  %}\n  {% set forecast_twice_daily =\n    [ dict(attr='is_daytime')
-      ]\n  %}\n  {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all
-      + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily
-      %}\n{# check if forecast is retreived #}\n  {% if forecast_available %}\n  {#
-      combine all forecasts in one list #}\n    {% if weight is defined\n        and
-      weight is list\n        and weight | count > 0\n        and weight[0] is mapping\n
-      \   %}\n      {% set ns = namespace(all=[]) %}\n      {% for k, v in forecast.items()
-      %}\n        {% set w = weight \n                    | selectattr('entity_id',
-      'eq', k)\n                    | map(attribute=type)\n                    | first\n
-      \                   | default(1) %}\n        {% set ns.all = ns.all + v.forecast
-      * w %}\n      {% endfor %}\n      {% set all = ns.all %}\n    {% else %}\n      {%
-      set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}\n
-      \   {% endif %}\n  {# make sure no old forecasts are included, and only 3 days
-      for hourly forecasts, and 10 days for daily #}\n    {% set compare_start = today_at()
-      if type == 'daily' else now() - timedelta(hours=1) %}\n    {% set compare_end
-      = now() + timedelta(days=forecast_days) %}\n  {# align datetimes so they all
-      use local timezone, and the same start time for daily forecasts #}\n    {% set
-      ns = namespace(aligned=[], forecast=[]) %}\n    {% for item in all if compare_start
-      <= as_datetime(item.datetime) | as_local <= compare_end %}\n      {% set new_dt
-      = item.datetime | as_datetime(item.datetime) | as_local %}\n      {% set new_dt
-      = new_dt.isoformat() if type in ['hourly', 'twice_daily'] else new_dt.replace(hour=0,
-      minute=0).isoformat() %}\n      {% set ns.aligned = ns.aligned + [dict(item,
-      datetime=new_dt)] %}\n    {% endfor %}\n  {# set list of unique datetime #}\n
-      \   {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort
-      | list %}\n  {# create forecast list item for each datetime #}\n    {% for dt
-      in dt_list %}\n      {% set forecasts = ns.aligned | selectattr('datetime',
-      'eq', dt) | list %}\n      {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt))
-      %}\n      {# find forecast available forecast items #}\n        {% for item
-      in forecasts %}\n          {% set dt_ns.keys = dt_ns.keys + item.keys() | list
-      %}\n        {% endfor %}\n        {# remove unsupported types for template weather
-      #}\n        {% set allowed_keys = forecast_attr | map(attribute='attr') | list
-      %}\n        {% set keys_list = dt_ns.keys | unique | select('in', allowed_keys)
-      %}\n      {# find value for each forecast item #}\n        {% for key in keys_list
-      %}\n          {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n          {# find most frequent item for condition #}\n            {%
-      if key == 'condition' %}\n              {% if 'clear-night' in key_items %}\n
-      \               {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n              {% endif %}\n              {% set add_dict = dict(condition=statistical_mode(key_items,
-      none)) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict)
-      %}\n            {% elif key == 'is_daytime' %}\n              {% set add_dict
-      = dict(is_daytime=key_items[0]) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast,
-      **add_dict) %}                          \n          {# find median for other
-      (numeric) forecast types #}\n            {% else %}\n              {# filter
-      out non numeric values #}\n                {% set values = key_items  | map('replace',
-      none, 0) | select('is_number') | map('float') | list | sort %}\n                {%
-      if values | count > 0 %}\n                  {# add forecast item to forecast
-      #}\n                    {% set round = forecast_attr | selectattr('attr', 'eq',
-      key) | map(attribute='round') | list | first %}\n                    {% set
-      add_dict = {key: median(values)|round(round)} %}\n                    {% set
-      dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} \n                {% endif
-      %}\n            {% endif %}\n        {% endfor %}\n      {# combine forecast
-      for each datetime in one list #}\n        {% set ns.forecast = ns.forecast +
-      [dt_ns.forecast] %}\n    {% endfor %}\n  {# output the forecast #}\n    {{ ns.forecast
-      }}\n{# create twice daily forecast based on hourly forecast if not provided
-      normally #} {% elif type == 'twice_daily' and hourly | count > 0 %}\n  {% set
-      times = hourly | selectattr('datetime', 'search', 'T09:00|T18:00') | map(attribute='datetime')
-      | list %}\n  {% set ns = namespace(forecast=[], item={}) %}\n  {% for t in times
-      %}\n    {% set day = t is search 'T09:00' %}\n    {% set dates = hourly | map(attribute='datetime')
-      | list %}\n    {% set index = dates.index(t) %}\n    {% set data = hourly[index:index+(9
-      if day else 13)] %}\n    {% set key_list = data[0].keys() | list %}\n    {%
-      set ns.item = {'datetime': t, 'is_daytime': day} %}\n    {% for key in key_list
-      %}\n      {% set key_items = data | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n      {% if key_items[0] is string %}\n        {% if not day %}\n
-      \         {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n        {% endif %}\n        {% set ns.item = dict(ns.item, **{key:
-      key_items | statistical_mode}) %}\n      {% elif key == 'temperature' %}\n        {%
-      set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items |
-      min}) %}\n      {% elif key_items[0] | is_number %}\n        {% set r = forecast_attr
-      | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1)
-      %}\n        {% set ns.item = dict(ns.item, **{key: key_items | average | round(r)})
-      %}\n      {% endif %}\n    {% endfor %}\n    {% set ns.forecast = ns.forecast
-      + [ns.item] %}\n  {% endfor %}\n  {{ ns.forecast }}\n{% else %}\n  []\n{% endif
-      %}\n"
+    daily: *combine_forecasts
 - alias: Set right forecast type
   variables:
     type: twice_daily
@@ -427,229 +459,277 @@ actions:
     - 6
     - 7
 - alias: Get the forecast data from the entities
-  sequence: *id001
+  sequence: *get_forecasts
 - alias: Combine the forecasts in one
   variables:
     twice_daily_entities: '{{ weather_entities }}'
-    twice_daily: "{# set number of days to use for forecasts #}\n  {% set forecast_days
-      = 3 if type == 'hourly' else 10 %}\n{# define valid forecast attributes and
-      precision for rounding #}\n  {% set forecast_all = \n    [\n      dict(attr='condition'),\n
-      \     dict(attr='wind_bearing', round=2),\n      dict(attr='cloud_coverage',
-      round=0),\n      dict(attr='temperature', round=1),\n      dict(attr='wind_speed',
-      round=2),\n      dict(attr='precipitation', round=2),\n      dict(attr='precipitation_probability',
-      round=0),\n      dict(attr='dew_point', round=1),\n      dict(attr='uv_index',
-      round=2),\n      dict(attr='apparent_temperature', round=1),\n      dict(attr='pressure',
-      round=2),\n      dict(attr='humidity', round=0)\n    ]\n  %}\n  {% set forecast_daily
-      =\n    [\n      dict(attr='templow', round=1),\n      dict(attr='wind_gust_speed',
-      round=2)\n    ]\n  %}\n  {% set forecast_twice_daily =\n    [ dict(attr='is_daytime')
-      ]\n  %}\n  {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all
-      + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily
-      %}\n{# check if forecast is retreived #}\n  {% if forecast_available %}\n  {#
-      combine all forecasts in one list #}\n    {% if weight is defined\n        and
-      weight is list\n        and weight | count > 0\n        and weight[0] is mapping\n
-      \   %}\n      {% set ns = namespace(all=[]) %}\n      {% for k, v in forecast.items()
-      %}\n        {% set w = weight \n                    | selectattr('entity_id',
-      'eq', k)\n                    | map(attribute=type)\n                    | first\n
-      \                   | default(1) %}\n        {% set ns.all = ns.all + v.forecast
-      * w %}\n      {% endfor %}\n      {% set all = ns.all %}\n    {% else %}\n      {%
-      set all = forecast.values() | map(attribute='forecast') | sum(start=[]) %}\n
-      \   {% endif %}\n  {# make sure no old forecasts are included, and only 3 days
-      for hourly forecasts, and 10 days for daily #}\n    {% set compare_start = today_at()
-      if type == 'daily' else now() - timedelta(hours=1) %}\n    {% set compare_end
-      = now() + timedelta(days=forecast_days) %}\n  {# align datetimes so they all
-      use local timezone, and the same start time for daily forecasts #}\n    {% set
-      ns = namespace(aligned=[], forecast=[]) %}\n    {% for item in all if compare_start
-      <= as_datetime(item.datetime) | as_local <= compare_end %}\n      {% set new_dt
-      = item.datetime | as_datetime(item.datetime) | as_local %}\n      {% set new_dt
-      = new_dt.isoformat() if type in ['hourly', 'twice_daily'] else new_dt.replace(hour=0,
-      minute=0).isoformat() %}\n      {% set ns.aligned = ns.aligned + [dict(item,
-      datetime=new_dt)] %}\n    {% endfor %}\n  {# set list of unique datetime #}\n
-      \   {% set dt_list = ns.aligned | map(attribute='datetime') | unique | sort
-      | list %}\n  {# create forecast list item for each datetime #}\n    {% for dt
-      in dt_list %}\n      {% set forecasts = ns.aligned | selectattr('datetime',
-      'eq', dt) | list %}\n      {% set dt_ns = namespace(keys=[], forecast=dict(datetime=dt))
-      %}\n      {# find forecast available forecast items #}\n        {% for item
-      in forecasts %}\n          {% set dt_ns.keys = dt_ns.keys + item.keys() | list
-      %}\n        {% endfor %}\n        {# remove unsupported types for template weather
-      #}\n        {% set allowed_keys = forecast_attr | map(attribute='attr') | list
-      %}\n        {% set keys_list = dt_ns.keys | unique | select('in', allowed_keys)
-      %}\n      {# find value for each forecast item #}\n        {% for key in keys_list
-      %}\n          {% set key_items = forecasts | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n          {# find most frequent item for condition #}\n            {%
-      if key == 'condition' %}\n              {% if 'clear-night' in key_items %}\n
-      \               {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n              {% endif %}\n              {% set add_dict = dict(condition=statistical_mode(key_items,
-      none)) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict)
-      %}\n            {% elif key == 'is_daytime' %}\n              {% set add_dict
-      = dict(is_daytime=key_items[0]) %}\n              {% set dt_ns.forecast = dict(dt_ns.forecast,
-      **add_dict) %}                          \n          {# find median for other
-      (numeric) forecast types #}\n            {% else %}\n              {# filter
-      out non numeric values #}\n                {% set values = key_items  | map('replace',
-      none, 0) | select('is_number') | map('float') | list | sort %}\n                {%
-      if values | count > 0 %}\n                  {# add forecast item to forecast
-      #}\n                    {% set round = forecast_attr | selectattr('attr', 'eq',
-      key) | map(attribute='round') | list | first %}\n                    {% set
-      add_dict = {key: median(values)|round(round)} %}\n                    {% set
-      dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} \n                {% endif
-      %}\n            {% endif %}\n        {% endfor %}\n      {# combine forecast
-      for each datetime in one list #}\n        {% set ns.forecast = ns.forecast +
-      [dt_ns.forecast] %}\n    {% endfor %}\n  {# output the forecast #}\n    {{ ns.forecast
-      }}\n{# create twice daily forecast based on hourly forecast if not provided
-      normally #} {% elif type == 'twice_daily' and hourly | count > 0 %}\n  {% set
-      times = hourly | selectattr('datetime', 'search', 'T09:00|T18:00') | map(attribute='datetime')
-      | list %}\n  {% set ns = namespace(forecast=[], item={}) %}\n  {% for t in times
-      %}\n    {% set day = t is search 'T09:00' %}\n    {% set dates = hourly | map(attribute='datetime')
-      | list %}\n    {% set index = dates.index(t) %}\n    {% set data = hourly[index:index+(9
-      if day else 13)] %}\n    {% set key_list = data[0].keys() | list %}\n    {%
-      set ns.item = {'datetime': t, 'is_daytime': day} %}\n    {% for key in key_list
-      %}\n      {% set key_items = data | selectattr(key, 'defined') | map(attribute=key)
-      | list %}\n      {% if key_items[0] is string %}\n        {% if not day %}\n
-      \         {% set key_items = key_items | map('replace', 'sunny', 'clear-night')
-      | list %}\n        {% endif %}\n        {% set ns.item = dict(ns.item, **{key:
-      key_items | statistical_mode}) %}\n      {% elif key == 'temperature' %}\n        {%
-      set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items |
-      min}) %}\n      {% elif key_items[0] | is_number %}\n        {% set r = forecast_attr
-      | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1)
-      %}\n        {% set ns.item = dict(ns.item, **{key: key_items | average | round(r)})
-      %}\n      {% endif %}\n    {% endfor %}\n    {% set ns.forecast = ns.forecast
-      + [ns.item] %}\n  {% endfor %}\n  {{ ns.forecast }}\n{% else %}\n  []\n{% endif
-      %}\n"
-- alias: Set variable for weather entities for attributes
-  variables:
-    weather_entities: "{{\n  states.weather\n    | map(attribute='entity_id')\n    |
-      reject('in', integration_entities('template'))\n    | select('has_value')\n
-      \   | list\n}}\n"
-- alias: Send debug notification if debug mode is enabled
-  if: '{{ debug | default(false) | bool(false) }}'
-  then:
-  - alias: Send notification with some debug date
-    action: persistent_notification.create
-    data:
-      title: Weather Combined debug
-      message: 'hourly: {{ hourly | count }} items
+    twice_daily: *combine_forecasts
+  - alias: Set variable for weather entities for attributes
+    variables:
+      weather_entities: >
+        {{
+          states.weather
+            | map(attribute='entity_id')
+            | reject('in', integration_entities('template'))
+            | select('has_value')
+            | list
+        }}
+  - alias: "Send debug notification if debug mode is enabled"
+    if: "{{ debug | default(false) | bool(false) }}"
+    then:
+      - alias: Send notification with some debug date
+        action: persistent_notification.create
+        data:
+          title: Weather Combined debug
+          message: |
+            hourly: {{ hourly | count }} items
+            hourly_entities: "{{ hourly_entities | join(', ') }}"
+            daily: {{ daily | count }} items
+            daily_entities: {{ daily_entities | join(', ') }}
+            twice_daily: {{ twice_daily | count }} items
+            twice_daily_entities: {{ twice_daily_entities | join(', ') }}
 
-        hourly_entities: "{{ hourly_entities | join('', '') }}"
-
-        daily: {{ daily | count }} items
-
-        daily_entities: {{ daily_entities | join('', '') }}
-
-        twice_daily: {{ twice_daily | count }} items
-
-        twice_daily_entities: {{ twice_daily_entities | join('', '') }}
-
-        '
 weather:
-  condition_template: "{% if weight is defined and weight is mapping %}\n  {% set
-    ns = namespace(weight=[]) %}\n  {% for e in weather_entities %}\n    {% set w
-    = weight.get(e, {}).get('current', 1) %}\n    {% set ns.weight = ns.weight + [states(e)]
-    * w %}\n  {% endfor %}\n  {{ statistical_mode(ns.weight) }}\n{% else %}\n  {{
-    expand(weather_entities)\n      | map(attribute='state')\n      | list\n      |
-    statistical_mode(none)\n  }}\n{% endif %}\n"
-  temperature_template: "{%- set attribute = 'temperature' %} {% if weight is defined
-    and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in
-    weather_entities %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {%
-    set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n
-    \ {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none)
-    }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  apparent_temperature_template: "{%- set attribute = 'apparent_temperature' %} {%
-    if weight is defined and weight is mapping %}\n  {% set ns = namespace(weight=[])
-    %}\n  {% for e in weather_entities %}\n    {% set w = weight.get(e, {}).get('current',
-    1) %}\n    {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n
-    \ {% endfor %}\n  {{ median(ns.weight | select('is_number') | list, none) | round(1,
-    default=none) }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  pressure_template: "{%- set attribute = 'pressure' %} {% if weight is defined and
-    weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in weather_entities
-    %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {% set ns.weight
-    = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n  {{ median(ns.weight
-    | select('is_number') | list, none) | round(2, default=none) }}\n{% else %}\n
-    \ {{\n    expand(weather_entities)\n      | selectattr('attributes.' ~ attribute,
-    'defined')\n      | map(attribute='attributes.' ~ attribute)\n      | select('is_number')\n
-    \     | list\n      | median(none)\n      | round(2, default=none)\n  }}\n{% endif
-    %}\n"
-  wind_speed_template: "{%- set attribute = 'wind_speed' %} {% if weight is defined
-    and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in
-    weather_entities %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {%
-    set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n
-    \ {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none)
-    }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  wind_gust_speed_template: "{%- set attribute = 'wind_gust_speed' %} {% if weight
-    is defined and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {%
-    for e in weather_entities %}\n    {% set w = weight.get(e, {}).get('current',
-    1) %}\n    {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n
-    \ {% endfor %}\n  {{ median(ns.weight | select('is_number') | list, none) | round(1,
-    default=none) }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  visibility_template: "{%- set attribute = 'visibility' %} {% if weight is defined
-    and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in
-    weather_entities %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {%
-    set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n
-    \ {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none)
-    }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  humidity_template: "{%- set attribute = 'humidity' %} {% if weight is defined and
-    weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in weather_entities
-    %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {% set ns.weight
-    = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n  {{ median(ns.weight
-    | select('is_number') | list, none) | round(0, default=none) }}\n{% else %}\n
-    \ {{\n    expand(weather_entities)\n      | selectattr('attributes.' ~ attribute,
-    'defined')\n      | map(attribute='attributes.' ~ attribute)\n      | select('is_number')\n
-    \     | list\n      | median(none)\n      | round(0, default=none)\n  }}\n{% endif
-    %}\n"
-  wind_bearing_template: "{%- set attribute = 'wind_bearing' %} {% if weight is defined
-    and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in
-    weather_entities %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {%
-    set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n
-    \ {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none)
-    }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
-  ozone_template: "{%- set attribute = 'ozone' %} {% if weight is defined and weight
-    is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in weather_entities
-    %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {% set ns.weight
-    = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n  {{ median(ns.weight
-    | select('is_number') | list, none) | round(2, default=none) }}\n{% else %}\n
-    \ {{\n    expand(weather_entities)\n      | selectattr('attributes.' ~ attribute,
-    'defined')\n      | map(attribute='attributes.' ~ attribute)\n      | select('is_number')\n
-    \     | list\n      | median(none)\n      | round(2, default=none)\n  }}\n{% endif
-    %}\n"
-  cloud_coverage_template: "{%- set attribute = 'cloud_coverage' %} {% if weight is
-    defined and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {%
-    for e in weather_entities %}\n    {% set w = weight.get(e, {}).get('current',
-    1) %}\n    {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n
-    \ {% endfor %}\n  {{ median(ns.weight | select('is_number') | list, none) | round(0,
-    default=none) }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(0, default=none)\n
-    \ }}\n{% endif %}\n"
-  dew_point_template: "{%- set attribute = 'dew_point' %} {% if weight is defined
-    and weight is mapping %}\n  {% set ns = namespace(weight=[]) %}\n  {% for e in
-    weather_entities %}\n    {% set w = weight.get(e, {}).get('current', 1) %}\n    {%
-    set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}\n  {% endfor %}\n
-    \ {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none)
-    }}\n{% else %}\n  {{\n    expand(weather_entities)\n      | selectattr('attributes.'
-    ~ attribute, 'defined')\n      | map(attribute='attributes.' ~ attribute)\n      |
-    select('is_number')\n      | list\n      | median(none)\n      | round(1, default=none)\n
-    \ }}\n{% endif %}\n"
+  condition_template: >
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [states(e)] * w %}
+      {% endfor %}
+      {{ statistical_mode(ns.weight) }}
+    {% else %}
+      {{ expand(weather_entities)
+          | map(attribute='state')
+          | list
+          | statistical_mode(none)
+      }}
+    {% endif %}
+  temperature_template: >
+    {%- set attribute = 'temperature' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  apparent_temperature_template: >
+    {%- set attribute = 'apparent_temperature' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  pressure_template: >
+    {%- set attribute = 'pressure' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(2, default=none)
+      }}
+    {% endif %}
+  wind_speed_template: >
+    {%- set attribute = 'wind_speed' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  wind_gust_speed_template: >
+    {%- set attribute = 'wind_gust_speed' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  visibility_template: >
+    {%- set attribute = 'visibility' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  humidity_template: >
+    {%- set attribute = 'humidity' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(0, default=none)
+      }}
+    {% endif %}
+  wind_bearing_template: >
+    {%- set attribute = 'wind_bearing' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
+  ozone_template: >
+    {%- set attribute = 'ozone' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(2, default=none)
+      }}
+    {% endif %}
+  cloud_coverage_template: >
+    {%- set attribute = 'cloud_coverage' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(0, default=none)
+      }}
+    {% endif %}
+  dew_point_template: >
+    {%- set attribute = 'dew_point' %}
+    {% if weight is defined and weight is mapping %}
+      {% set ns = namespace(weight=[]) %}
+      {% for e in weather_entities %}
+        {% set w = weight.get(e, {}).get('current', 1) %}
+        {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
+      {% endfor %}
+      {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
+    {% else %}
+      {{
+        expand(weather_entities)
+          | selectattr('attributes.' ~ attribute, 'defined')
+          | map(attribute='attributes.' ~ attribute)
+          | select('is_number')
+          | list
+          | median(none)
+          | round(1, default=none)
+      }}
+    {% endif %}
   temperature_unit: !input temperature_unit
   pressure_unit: !input pressure_unit
   wind_speed_unit: !input wind_speed_unit
   visibility_unit: !input visibility_unit
   precipitation_unit: !input precipitation_unit
-  forecast_hourly_template: '{{ hourly }}'
-  forecast_daily_template: '{{ daily }}'
-  forecast_twice_daily_template: '{{ twice_daily }}'
+  forecast_hourly_template: "{{ hourly }}"
+  forecast_daily_template: "{{ daily }}"
+  forecast_twice_daily_template: "{{ twice_daily }}"
