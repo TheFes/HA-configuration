@@ -31,6 +31,37 @@ template:
             - entity_id: weather.buienradar
               current: 2
               daily: 2
+          forecast_all:
+            - attr: condition
+            - attr: wind_bearing
+              round: 2
+            - attr: cloud_coverage
+              round: 0
+            - attr: temperature
+              round: 1
+            - attr: wind_speed
+              round: 2
+            - attr: precipitation
+              round: 2
+            - attr: precipitation_probability
+              round: 0
+            - attr: dew_point
+              round: 1
+            - attr: uv_index
+              round: 2
+            - attr: apparent_temperature
+              round: 1
+            - attr: pressure
+              round: 2
+            - attr: humidity
+              round: 0
+          forecast_daily:
+            - attr: templow
+              round: 2
+            - attr: wind_gust_speed
+              round: 0
+          forecast_twice_daily:
+            - attr: is_daytime
       - alias: Set right forecast type
         variables:
           type: hourly
@@ -73,31 +104,6 @@ template:
             {# set number of days to use for forecasts #}
               {% set forecast_days = 3 if type == 'hourly' else 10 %}
             {# define valid forecast attributes and precision for rounding #}
-              {% set forecast_all = 
-                [
-                  dict(attr='condition'),
-                  dict(attr='wind_bearing', round=2),
-                  dict(attr='cloud_coverage', round=0),
-                  dict(attr='temperature', round=1),
-                  dict(attr='wind_speed', round=2),
-                  dict(attr='precipitation', round=2),
-                  dict(attr='precipitation_probability', round=0),
-                  dict(attr='dew_point', round=1),
-                  dict(attr='uv_index', round=2),
-                  dict(attr='apparent_temperature', round=1),
-                  dict(attr='pressure', round=2),
-                  dict(attr='humidity', round=0)
-                ]
-              %}
-              {% set forecast_daily =
-                [
-                  dict(attr='templow', round=1),
-                  dict(attr='wind_gust_speed', round=2)
-                ]
-              %}
-              {% set forecast_twice_daily =
-                [ dict(attr='is_daytime') ]
-              %}
               {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily %}
             {# check if forecast is retreived #}
               {% if forecast_available %}
@@ -253,7 +259,8 @@ template:
                   {% set values = weather_entities | map('state_attr', a) | select('is_number') | list %}
                 {% endif %}
               {% endif %}
-              {% set value = values | statistical_mode if a == 'condition' else values | median(none) | round(attr_all[a] | default(1), default=none) %}
+              {% set r = attr_all | selectattr('attr', 'eq', a) | map(attribute='round') | first | default(1) %}
+              {% set value = values | statistical_mode if a == 'condition' else values | median(none) | round(r, default=none) %}
               {% set ns.values = dict(ns.values, **{a: value}) %}
             {% endfor %}
             {{ ns.values }}
@@ -271,6 +278,7 @@ template:
                 daily_entities: {{ daily_entities | join(', ') }}
                 twice_daily: {{ twice_daily | count }} items
                 twice_daily_entities: {{ twice_daily_entities | join(', ') }}
+                current_values: {{ current_values }}
     # template weather entity which will combine all the data from the other weather entities
     weather:
       - name: Combined

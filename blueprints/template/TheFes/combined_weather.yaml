@@ -113,7 +113,7 @@ blueprint:
               trigger: event
               event_type: update_combined_forecast
     input_settings:
-      name: Input settings
+      name: Input and round settings
       icon: mdi:cloud
       description: Settings to add weight or ignore specific entities
       collapsed: true
@@ -125,7 +125,7 @@ blueprint:
             impact
           selector:
             object:
-              label_field: weight
+              label_field: entity_id
               multiple: true
               fields:
                 entity_id:
@@ -180,6 +180,91 @@ blueprint:
               multiple: true
               reorder: false
           default: []
+        precision_input:
+          name: Precision for numberic values
+          description:
+            Provide weight data so integrations you trust more have a bigger
+            impact
+          selector:
+            object:
+              label_field: attr
+              description_field: round
+              multiple: true
+              fields:
+                attr:
+                  label: Forecast attribute
+                  selector:
+                    select:
+                      options:
+                        - label: Apparent temperature
+                          value: apparent_temperature
+                        - label: Cloud coverage
+                          value: cloud_coverage
+                        - label: Dew point
+                          value: dew_point
+                        - label: Humidity
+                          value: humidity
+                        - label: Ozone
+                          value: ozone
+                        - label: Pressure
+                          value: pressure
+                        - label: Temp low
+                          value: temp_low
+                        - label: Temperature
+                          value: temperature
+                        - label: Precipitation
+                          value: precipitation
+                        - label: Precipitation probability
+                          value: precipitation_probability
+                        - label: UV index
+                          value: uv_index
+                        - label: Visibility
+                          value: visibility
+                        - label: Wind bearing
+                          value: wind_bearing
+                        - label: Wind gust speed
+                          value: wind_gust_speed
+                        - label: Wind speed
+                          value: wind_speed
+                round:
+                  label: Precision
+                  selector:
+                    number:
+                      min: 0
+                      max: 5
+                      step: 1
+                      mode: slider
+          default:
+            - attr: apparent_temperature
+              round: 1
+            - attr: cloud_coverage
+              round: 0
+            - attr: dew_point
+              round: 1
+            - attr: humidity
+              round: 0
+            - attr: ozone
+              round: 2
+            - attr: pressure
+              round: 2
+            - attr: templow
+              round: 1
+            - attr: temperature
+              round: 1
+            - attr: precipitation
+              round: 2
+            - attr: precipitation_probability
+              round: 0
+            - attr: uv_index
+              round: 2
+            - attr: visibility
+              round: 1
+            - attr: wind_bearing
+              round: 2
+            - attr: wind_gust_speed
+              round: 0
+            - attr: wind_speed
+              round: 2
     unit_settings:
       name: Unit of measurement settings
       icon: mdi:eye
@@ -254,12 +339,31 @@ blueprint:
           default: false
 triggers: !input triggers
 actions:
-  - alias: Define weights for different weather integrations
+  - alias: Define variables based on inputs and for forecast attribute precision
     variables:
       debug: !input debug
       weight: !input weight_input
       start_daytime: !input start_daytime
       start_night: !input start_night
+      precision: !input precision_input
+      forecast_all:
+        - condition
+        - wind_bearing
+        - cloud_coverage
+        - temperature
+        - wind_speed
+        - precipitation
+        - precipitation_probability
+        - dew_point
+        - uv_index
+        - apparent_temperature
+        - pressure
+        - humidity
+      forecast_daily:
+        - templow
+        - wind_gust_speed
+      forecast_twice_daily:
+        - is_daytime
   - alias: Set right forecast type
     variables:
       type: hourly
@@ -305,33 +409,6 @@ actions:
       hourly: &combine_forecasts >
         {# set number of days to use for forecasts #}
           {% set forecast_days = 3 if type == 'hourly' else 10 %}
-        {# define valid forecast attributes and precision for rounding #}
-          {% set forecast_all = 
-            [
-              dict(attr='condition'),
-              dict(attr='wind_bearing', round=2),
-              dict(attr='cloud_coverage', round=0),
-              dict(attr='temperature', round=1),
-              dict(attr='wind_speed', round=2),
-              dict(attr='precipitation', round=2),
-              dict(attr='precipitation_probability', round=0),
-              dict(attr='dew_point', round=1),
-              dict(attr='uv_index', round=2),
-              dict(attr='apparent_temperature', round=1),
-              dict(attr='pressure', round=2),
-              dict(attr='humidity', round=0)
-            ]
-          %}
-          {% set forecast_daily =
-            [
-              dict(attr='templow', round=1),
-              dict(attr='wind_gust_speed', round=2)
-            ]
-          %}
-          {% set forecast_twice_daily =
-            [ dict(attr='is_daytime') ]
-          %}
-          {% set forecast_attr = forecast_all if type == 'hourly' else forecast_all + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily %}
         {# check if forecast is retreived #}
           {% if forecast_available %}
           {# combine all forecasts in one list #}
@@ -342,7 +419,7 @@ actions:
             %}
               {% set ns = namespace(all=[]) %}
               {% for k, v in forecast.items() %}
-                {% set w = weight 
+                {% set w = weight
                             | selectattr('entity_id', 'eq', k)
                             | map(attribute=type)
                             | first
@@ -374,7 +451,7 @@ actions:
                   {% set dt_ns.keys = dt_ns.keys + item.keys() | list %}
                 {% endfor %}
                 {# remove unsupported types for template weather #}
-                {% set allowed_keys = forecast_attr | map(attribute='attr') | list %}
+                {% set allowed_keys = forecast_all if type == 'hourly' else forecast_all + forecast_daily if type == 'daily' else forecast_all + forecast_twice_daily %}
                 {% set keys_list = dt_ns.keys | unique | select('in', allowed_keys) %}
               {# find value for each forecast item #}
                 {% for key in keys_list %}
@@ -388,16 +465,16 @@ actions:
                       {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
                     {% elif key == 'is_daytime' %}
                       {% set add_dict = dict(is_daytime=key_items[0]) %}
-                      {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}                          
+                      {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
                   {# find median for other (numeric) forecast types #}
                     {% else %}
                       {# filter out non numeric values #}
                         {% set values = key_items  | map('replace', none, 0) | select('is_number') | map('float') | list | sort %}
                         {% if values | count > 0 %}
                           {# add forecast item to forecast #}
-                            {% set round = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | list | first %}
+                            {% set round = precision | selectattr('attr', 'eq', key) | map(attribute='round') | list | first %}
                             {% set add_dict = {key: median(values)|round(round)} %}
-                            {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %} 
+                            {% set dt_ns.forecast = dict(dt_ns.forecast, **add_dict) %}
                         {% endif %}
                     {% endif %}
                 {% endfor %}
@@ -419,7 +496,7 @@ actions:
             {% set day = t is search 'T' ~ start_daytime %}
             {% set dates = hourly | map(attribute='datetime') | list %}
             {% set index = dates.index(t) %}
-            {% set data = hourly[index:index+(hours_day if day else 24-hours_day)] %}
+            {% set data = hourly[index:(index+(hours_day if day else 24-hours_day)) | int] %}
             {% set key_list = data[0].keys() | list %}
             {% set ns.item = {'datetime': t, 'is_daytime': day} %}
             {% for key in key_list %}
@@ -432,7 +509,7 @@ actions:
               {% elif key == 'temperature' %}
                 {% set ns.item = dict(ns.item, **{key: key_items | max, 'templow': key_items | min}) %}
               {% elif key_items[0] | is_number %}
-                {% set r = forecast_attr | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1) %}
+                {% set r = precision | selectattr('attr', 'eq', key) | map(attribute='round') | first | default(1) %}
                 {% set ns.item = dict(ns.item, **{key: key_items | average | round(r)}) %}
               {% endif %}
             {% endfor %}
@@ -481,7 +558,6 @@ actions:
             | list
         }}
       current_values: >
-        {% set attr_all = forecast_all + forecast_daily %}
         {% set ns = namespace(attributes=['condition'], values={}) %}
         {% for e in weather_entities %}
           {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
@@ -502,7 +578,8 @@ actions:
               {% set values = weather_entities | map('state_attr', a) | select('is_number') | list %}
             {% endif %}
           {% endif %}
-          {% set value = values | statistical_mode if a == 'condition' else values | median(none) | round(attr_all[a] | default(1), default=none) %}
+          {% set r = precision | selectattr('attr', 'eq', a) | map(attribute='round') | first | default(1) %}
+          {% set value = values | statistical_mode if a == 'condition' else values | median(none) | round(r, default=none) %}
           {% set ns.values = dict(ns.values, **{a: value}) %}
         {% endfor %}
         {{ ns.values }}
@@ -512,7 +589,7 @@ actions:
       - alias: Send notification with some debug date
         action: persistent_notification.create
         data:
-          title: Weather Combined debug
+          title: Weather Combined debug for
           message: |
             hourly: {{ hourly | count }} items
             hourly_entities: "{{ hourly_entities | join(', ') }}"
@@ -520,6 +597,7 @@ actions:
             daily_entities: {{ daily_entities | join(', ') }}
             twice_daily: {{ twice_daily | count }} items
             twice_daily_entities: {{ twice_daily_entities | join(', ') }}
+            current_values: {{ current_values }}
 
 weather:
   condition_template: "{{ current_values.get('condition', none) }}"

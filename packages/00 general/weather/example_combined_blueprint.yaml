@@ -26,6 +26,37 @@ template:
             trigger: event
             event_type: update_combined_forecast
         ignore_entities: [] # empty list
+        precision_input:
+          - attr: apparent_temperature
+            round: 1
+          - attr: cloud_coverage
+            round: 0
+          - attr: dew_point
+            round: 1
+          - attr: humidity
+            round: 0
+          - attr: ozone
+            round: 2
+          - attr: pressure
+            round: 2
+          - attr: templow
+            round: 1
+          - attr: temperature
+            round: 1
+          - attr: precipitation
+            round: 2
+          - attr: precipitation_probability
+            round: 0
+          - attr: uv_index
+            round: 2
+          - attr: visibility
+            round: 1
+          - attr: wind_bearing
+            round: 2
+          - attr: wind_gust_speed
+            round: 0
+          - attr: wind_speed
+            round: 2
         temperature_unit: "°C"
         pressure_unit: "hPa"
         wind_speed_unit: "km/h"
