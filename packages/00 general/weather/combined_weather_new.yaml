@@ -231,6 +231,32 @@ template:
                 | select('has_value')
                 | list
             }}
+          current_values: >
+            {% set attr_all = forecast_all + forecast_daily %}
+            {% set ns = namespace(attributes=['condition'], values={}) %}
+            {% for e in weather_entities %}
+              {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
+            {% endfor %}
+            {% set attributes = ns.attributes | unique | list %}
+            {% for a in attributes %}
+              {% if weight is defined and weight is list and weight[0] is mapping %}
+                {% set ns.weight = [] %}
+                {% for e in weather_entities %}
+                  {% set w = weight | selectattr('entity_id', 'eq', e) | map(attribute='current') | first | default(1) %}
+                  {% set ns.weight = ns.weight + [states(e) if a == 'condition' else state_attr(e, a)] * w %}
+                {% endfor %}
+                {% set values = ns.weight | reject('none') | list %}
+              {% else %}
+                {% if a == 'condition' %}
+                  {% set values = weather_entities | map('states') | list %}
+                {% else %}
+                  {% set values = weather_entities | map('state_attr', a) | select('is_number') | list %}
+                {% endif %}
+              {% endif %}
+              {% set value = values | statistical_mode if a == 'condition' else values | median(none) | round(attr_all[a] | default(1), default=none) %}
+              {% set ns.values = dict(ns.values, **{a: value}) %}
+            {% endfor %}
+            {{ ns.values }}
       - alias: "Send debug notification if debug mode is enabled"
         if: "{{ debug | default(false) | bool(false) }}"
         then:
@@ -249,241 +275,18 @@ template:
     weather:
       - name: Combined
         unique_id: 97b3c060-3146-41dd-91d9-0765d2e15e16
-        condition_template: >
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [states(e)] * w %}
-            {% endfor %}
-            {{ statistical_mode(ns.weight) }}
-          {% else %}
-            {{ expand(weather_entities)
-                | map(attribute='state')
-                | list
-                | statistical_mode(none)
-            }}
-          {% endif %}
-        temperature_template: >
-          {%- set attribute = 'temperature' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        apparent_temperature_template: >
-          {%- set attribute = 'apparent_temperature' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        pressure_template: >
-          {%- set attribute = 'pressure' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(2, default=none)
-            }}
-          {% endif %}
-        wind_speed_template: >
-          {%- set attribute = 'wind_speed' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        wind_gust_speed_template: >
-          {%- set attribute = 'wind_gust_speed' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        visibility_template: >
-          {%- set attribute = 'visibility' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        humidity_template: >
-          {%- set attribute = 'humidity' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(0, default=none)
-            }}
-          {% endif %}
-        wind_bearing_template: >
-          {%- set attribute = 'wind_bearing' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
-        ozone_template: >
-          {%- set attribute = 'ozone' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(2, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(2, default=none)
-            }}
-          {% endif %}
-        cloud_coverage_template: >
-          {%- set attribute = 'cloud_coverage' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(0, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(0, default=none)
-            }}
-          {% endif %}
-        dew_point_template: >
-          {%- set attribute = 'dew_point' %}
-          {% if weight is defined and weight is mapping %}
-            {% set ns = namespace(weight=[]) %}
-            {% for e in weather_entities %}
-              {% set w = weight.get(e, {}).get('current', 1) %}
-              {% set ns.weight = ns.weight + [state_attr(e, attribute)] * w %}
-            {% endfor %}
-            {{ median(ns.weight | select('is_number') | list, none) | round(1, default=none) }}
-          {% else %}
-            {{
-              expand(weather_entities)
-                | selectattr('attributes.' ~ attribute, 'defined')
-                | map(attribute='attributes.' ~ attribute)
-                | select('is_number')
-                | list
-                | median(none)
-                | round(1, default=none)
-            }}
-          {% endif %}
+        condition_template: "{{ current_values.get('condition', none) }}"
+        temperature_template: "{{ current_values.get('temperature', none) }}"
+        apparent_temperature_template: "{{ current_values.get('apparent_temperature', none) }}"
+        pressure_template: "{{ current_values.get('pressure', none) }}"
+        wind_speed_template: "{{ current_values.get('wind_speed', none) }}"
+        wind_gust_speed_template: "{{ current_values.get('wind_gust_speed', none) }}"
+        visibility_template: "{{ current_values.get('visibility', none) }}"
+        humidity_template: "{{ current_values.get('humidity', none) }}"
+        wind_bearing_template: "{{ current_values.get('wind_bearing', none) }}"
+        ozone_template: "{{ current_values.get('ozone', none) }}"
+        cloud_coverage_template: "{{ current_values.get('cloud_coverage', none) }}"
+        dew_point_template: "{{ current_values.get('dew_point', none) }}"
         temperature_unit: &temp_unit "°C"
         pressure_unit: "hPa"
         wind_speed_unit: "km/h"
