@@ -6,9 +6,9 @@
 template:
   # trigger based template weather entity which combines all forecasts
   - triggers:
-      - alias: "Update combined weather forecast hourly at 30 seconds past the hour"
+      - alias: "Update combined weather forecast every 5 minutes at 30 seconds past the minute"
         trigger: time_pattern
-        minutes: "0"
+        minutes: "/5"
         seconds: "30"
       - alias: "Update combined weather forecast on Home Assistant startup"
         trigger: homeassistant
