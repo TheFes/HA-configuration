@@ -157,12 +157,44 @@ automation:
     actions:
       - if: "{{ trigger.id == 'pepijn' }}"
         then:
-          - alias: Turn on correct light
+          - alias: Turn on night light Pepijn
             action: light.turn_on
             target:
-              entity_id: light.wereldbol
+              entity_id: >
+                {% set area = 'slaapkamer_pepijn' %}
+                {{ 
+                  intersect(label_entities('night_light'), area_entities(area))
+                    | select('is_state', 'on')
+                    | list
+                }}
         else:
-          - alias: Turn on reading light Floris
+          - alias: Turn on night light Floris
             action: light.turn_on
             target:
-              entity_id: light.planeet
+              entity_id: >
+                {% set area = 'slaapkamer_floris' %}
+                {{ 
+                  intersect(label_entities('night_light'), area_entities(area))
+                    | select('is_state', 'on')
+                    | list
+                }}
+
+  - id: d9126ef3-31ed-4058-a8d8-564f6faaf3c5
+    alias: Dim Reading light Floris when used as night light
+    triggers:
+      - alias: Night lights on, else off
+        trigger: state
+        entity_id: binary_sensor.dashboard_floris_slaapt
+        to: "on"
+    conditions:
+      - alias: Reading light floris is on (as night light)
+        condition: state
+        entity_id: light.floris_leeslamp
+        state: "on"
+    action:
+      - alias: Dim the reading light
+        action: light.turn_on
+        target:
+          entity_id: light.floris_leeslamp
+        data:
+          brightness_pct: 10
