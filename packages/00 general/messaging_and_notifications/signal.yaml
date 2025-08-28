@@ -21,7 +21,7 @@ rest_command:
       {# ensure recipient is provided and ensure it is a list #}
         {% set recip = recipients | default(default_recipient) %}
         {% set recip = recip if recip is list else recip.split(',') | map('trim') | list %}
-      
+
       {{
         {
           "message": message | default(""),
@@ -45,7 +45,13 @@ template:
         variables:
           messages: >
             {% set ns = namespace(data=[]) %}
-            {% for e in rest_messages.content | from_json if e.envelope.dataMessage is defined %}
+            {% set message_data =  (rest_messages | default({}, true)).get('content')
+              | from_json([]) %}
+            {% for e in message_data
+              if message_data is mapping
+              and e.envelope is defined
+              and e.envelope.dataMessage is defined 
+            %}
               {% set d = e.envelope %}
               {% set ns.data = ns.data + 
                 [
