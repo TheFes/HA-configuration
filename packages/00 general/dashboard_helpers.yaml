@@ -2,9 +2,8 @@ template:
   - sensor:
       # template sensors for area state use /config/custom_templates/helpers.jinja
       - unique_id: area_data_template_slaapkamer_floris
-        name: >
-          {% set area_name = 'Floris' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_slaapkamer_floris
+        name: Floris
         icon: mdi:bed
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -18,9 +17,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_speelhoek
-        name: >
-          {% set area_name = 'Speelhoek' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_speelhoek
+        name: Speelhoek
         icon: mdi:toy-brick
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -34,9 +32,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, sensor=false, media=false) }}
 
       - unique_id: area_data_template_wc
-        name: >
-          {% set area_name = 'WC' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_ws
+        name: WC
         icon: mdi:toilet
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -50,9 +47,8 @@ template:
             {{ area_data(this.name, 'device_list', media=false, sensor=false) }}
 
       - unique_id: area_data_template_hal
-        name: >
-          {% set area_name = 'Hal' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_hal
+        name: Hal
         icon: mdi:door
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -66,9 +62,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_keuken
-        name: >
-          {% set area_name = 'Keuken' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_keuken
+        name: Keuken
         icon: mdi:countertop
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -82,9 +77,8 @@ template:
             {{ area_data([this.name, 'Eettafel'], 'device_list', binary=false, sensor=true) }}
 
       - unique_id: area_data_template_slaapkamer_pepijn
-        name: >
-          {% set area_name = 'Pepijn' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_slaapkamer_pepijn
+        name: Pepijn
         icon: mdi:unicorn
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -98,9 +92,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_trapkast
-        name: >
-          {% set area_name = 'Trapkast' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_trapkast
+        name: Trapkast
         icon: mdi:stairs
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -114,9 +107,8 @@ template:
             {{ area_data(this.name, 'device_list', sensor=false, media=false) }}
 
       - unique_id: area_data_template_tuin
-        name: >
-          {% set area_name = 'Tuin' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_tuin
+        name: Tuin
         icon: mdi:tree
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -130,9 +122,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_woonkamer
-        name: >
-          {% set area_name = 'Woonkamer' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_woonkamer
+        name: Woonkamer
         icon: mdi:sofa
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -146,9 +137,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_overloop
-        name: >
-          {% set area_name = 'Overloop' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_overloop
+        name: Overloop
         icon: mdi:fence
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -162,9 +152,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_badkamer
-        name: >
-          {% set area_name = 'Badkamer' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_badkamer
+        name: Badkamer
         icon: mdi:bathtub
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -178,9 +167,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false) }}
 
       - unique_id: area_data_template_overloop_zolder
-        name: >
-          {% set area_name = 'Overloop Zolder' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_overloop_zolder
+        name: Overloop Zolder
         icon: mdi:fence
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -194,9 +182,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false, sensor=false) }}
 
       - unique_id: area_data_template_technische_ruimte_zolder
-        name: >
-          {% set area_name = 'Technische Ruimte' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_technische_ruimte
+        name: Technische Ruimte
         icon: mdi:radiator
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -210,9 +197,8 @@ template:
             {{ area_data(this.name, 'device_list', media=false) }}
 
       - unique_id: area_data_template_werkkamer_martijn
-        name: >
-          {% set area_name = 'Werkkamer Martijn' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_werkkamer_martijn
+        name: Werkkamer Martijn
         icon: mdi:desk
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -226,9 +212,8 @@ template:
             {{ area_data([this.name, 'Knieschot'], 'device_list') }}
 
       - unique_id: area_data_template_badkamer_zolder
-        name: >
-          {% set area_name = 'Badkamer Zolder' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_badkamer_zolder
+        name: Badkamer Zolder
         icon: mdi:toilet
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -242,9 +227,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false, media=false) }}
 
       - unique_id: area_data_template_slaapkamer_zolder
-        name: >
-          {% set area_name = 'Slaapkamer Zolder' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_slaapkamer_zolder
+        name: Slaapkamer Zolder
         icon: mdi:bed-double
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -258,9 +242,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_werkkamer_marleen
-        name: >
-          {% set area_name = 'Werkkamer Marleen' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_werkkamer_marleen
+        name: Werkkamer Marleen
         icon: mdi:desk
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -274,9 +257,8 @@ template:
             {{ area_data(this.name, 'device_list', binary=false) }}
 
       - unique_id: area_data_template_vliering
-        name: >
-          {% set area_name = 'Vliering' %}
-          {{ ('Area Data ' ~ area_name) if this.state == 'unknown' else area_name }}
+        default_entity_id: sensor.area_data_vliering
+        name: Vliering
         icon: mdi:home-floor-3
         state: >
           {% from 'helpers.jinja' import area_data %}
@@ -292,10 +274,10 @@ template:
       # sensors for dashboard messages
       - unique_id: d187a334-2fb9-4045-9904-68efdaa4955f
         icon: mdi:delete
+        default_entity_id: sensor.dashboard_next_trash
         name: >
           {% set trash_name = state_attr(this.attributes.get('next', 'onbekend'), 'friendly_name') %}
-          {%- set name = this.state ~ ': ' ~ trash_name %}
-          {{ 'Dashboard Next Trash' if this.state == 'unknown' else name }}
+          {{ this.state ~ ': ' ~ trash_name }}
         state: >
           {{ states(this.attributes.get('next', 'onbekend')) }}
         attributes:
@@ -398,9 +380,9 @@ template:
         unit_of_measurement: "lx"
         state: *floor_state
 
-  # =============================================================================
-  # BEDROOM AIR QUALITY SENSORS - 5 MINUTE UPDATE INTERVAL
-  # =============================================================================
+      # =============================================================================
+      # BEDROOM AIR QUALITY SENSORS - 5 MINUTE UPDATE INTERVAL
+      # =============================================================================
 
       - unique_id: 91dfc560-f68d-4537-93e0-bc6482b37833
         name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}Temp"
@@ -698,6 +680,7 @@ template:
           {{ is_state('sensor.wasmachine', 'on') }}
 
       - unique_id: sensor_anniversary_martijn
+        default_entity_id: binary_sensor.dashboard_anniversary_martijn
         name: Martijn
         <<: &anniversary_config
           state: &state_template >
@@ -723,6 +706,7 @@ template:
             {{ days }} {{ ('(' ~ y ~ ' jaar)') if y }}
 
       - unique_id: sensor_anniversary_marleen
+        default_entity_id: binary_sensor.dashboard_anniversary_marleen
         name: Marleen
         attributes:
           source: sensor.anniversary_marleen
@@ -730,6 +714,7 @@ template:
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_pepijn
+        default_entity_id: binary_sensor.dashboard_anniversary_pepijn
         name: Pepijn
         attributes:
           source: sensor.anniversary_pepijn
@@ -737,6 +722,7 @@ template:
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_floris
+        default_entity_id: binary_sensor.dashboard_anniversary_floris
         name: Floris
         attributes:
           source: sensor.anniversary_floris
@@ -744,6 +730,7 @@ template:
         <<: *anniversary_config
 
       - unique_id: sensor_anniversary_eerste_date
+        default_entity_id: binary_sensor.dashboard_anniversary_eerste_date
         name: Eerste Date
         state: *state_template
         icon: mdi:heart-multiple
@@ -752,6 +739,7 @@ template:
           text: *anniversary_text
 
       - unique_id: sensor_anniversary_sinterklaas
+        default_entity_id: binary_sensor.dashboard_anniversary_sinterklaas
         name: Sinterklaas
         state: *state_template
         icon: mdi:gift-open
@@ -763,16 +751,6 @@ template:
         name: Dashboard Werkkamer Martijn Satellite Available
         state: "{{ 'media_player.martijn' | has_value }}"
         icon: mdi:cast
-
-      # dummy binary sensors for tile cards
-      - unique_id: 815dab72-ae42-4fdd-9836-c690237b5879
-        name: Dummy Active
-        state: "{{ true }}"
-        icon: mdi:play
-      - unique_id: 9be8e45b-9038-482f-b120-adf5a24c077d
-        name: Dummy Inactive
-        state: "{{ false }}"
-        icon: mdi:stop
 
   - switch:
       - unique_id: 98efcbde-ffbe-4050-98f9-cf60275a8f81
