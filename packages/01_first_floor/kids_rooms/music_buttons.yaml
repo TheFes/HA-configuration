@@ -8,11 +8,12 @@ automation:
           - event.knop_muziek_pepijn_action
           - event.knop_muziek_floris_action
         not_from: unavailable
+        not_to: unavailable
     actions:
       - alias: Define variables
         variables:
           area: "{{ area_id(trigger.entity_id) }}"
-          event_type: "{{ trigger.to_state.attributes.event_type }}"
+          event_type: "{{ trigger.to_state.attributes.event_type | default(none) }}"
           data_mapper:
             slaapkamer_floris:
               playlist: library://playlist/252
