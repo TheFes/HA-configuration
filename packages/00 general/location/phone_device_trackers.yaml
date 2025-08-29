@@ -112,21 +112,24 @@ automation:
 
   # From: sound_mode_phone.yaml
   - id: e7e51e10-c152-4514-bfc7-393c6d16d468
-    alias: "Turn on right sound mode phone Martijn based on home state"
+    alias: "Turn on right sound mode and beacon Martijn based on home proximity"
     mode: queued
     triggers:
-      - alias: "Martijn arrived home or left home"
-        trigger: state
-        entity_id: person.martijn
-        to:
-          - home
-          - not_home
+      - alias: "Martijn within 2 km of home"
+        trigger: numeric_state
+        entity_id: sensor.thuis_martijn_distance
+        below: 2000
+        id: home
+      - alias: "Martijn outside 2 km of home"
+        trigger: numeric_state
+        entity_id: sensor.thuis_martijn_distance
+        above: 2000
+        id: not_home
     actions:
       - alias: "Home or not?"
         if:
-          - condition: state
-            entity_id: person.martijn
-            state: home
+          - condition: trigger
+            id: home
         then:
           - alias: "Set phone to normal sound mode"
             action: notify.mobile_app_pixel_7_pro
@@ -134,6 +137,11 @@ automation:
               message: "command_ringer_mode"
               data:
                 command: "normal"
+          - action: notify.mobile_app_pixel_7_pro
+            data:
+              message: "command_ble_transmitter"
+              data:
+                command: "turn_on"
         else:
           - alias: "Set phone to vibrate mode"
             action: notify.mobile_app_pixel_7_pro
@@ -141,6 +149,11 @@ automation:
               message: "command_ringer_mode"
               data:
                 command: "vibrate"
+          - action: notify.mobile_app_pixel_7_pro
+            data:
+              message: "command_ble_transmitter"
+              data:
+                command: "turn_off"
 
 # From: location_phones.yaml
 template:
