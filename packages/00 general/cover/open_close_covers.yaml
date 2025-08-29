@@ -85,7 +85,7 @@ automation:
                         trigger.id == 'open'
                         and 
                           (
-                            is_state('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
+                            states('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
                             or not is_state('binary_sensor.rain_until_morning', 'off')
                           )
                     }}
