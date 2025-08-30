@@ -4,7 +4,7 @@ automation:
     triggers:
       - alias: "Martijn disconnected from Android Auto"
         trigger: state
-        entity_id: binary_sensor.pixel_7_pro_android_auto
+        entity_id: binary_sensor.pixel_10_pro_android_auto
         from: "on"
         to: "off"
         id: leave_car
@@ -15,7 +15,7 @@ automation:
     variables:
       loc: >
         {{
-          states('sensor.pixel_7_pro_geocoded_location')
+          states('sensor.pixel_10_pro_geocoded_location')
           if trigger.id == 'leave_car'
           else state_attr('sensor.variables', 'variables').get('car_location', {}).get('location')
         }}

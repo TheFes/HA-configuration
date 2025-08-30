@@ -14,7 +14,7 @@ alert:
     can_acknowledge: true
     skip_first: false
     notifiers:
-      - mobile_app_pixel_7_pro
+      - mobile_app_pixel_10_pro
     data:
       tag: holiday_alert
       channel: Holiday
@@ -79,7 +79,7 @@ automation:
               - action: input_boolean.turn_on
                 target:
                   entity_id: input_boolean.vakantie
-              - action: notify.mobile_app_pixel_7_pro
+              - action: notify.mobile_app_pixel_10_pro
                 data:
                   title: "☀️ Fijne vakantie! ☀️"
                   message: "Vakantiemodus is nu actief"

@@ -10,7 +10,7 @@ template:
           {%- set n = states.update | selectattr('state', 'eq', 'on') | list | count %} 
           {{ 'mdi:numeric-' ~ n ~ '-box' if n < 10 else 'mdi:numeric-9-plus-box' }}
 
-# esphome_updates_available.yaml
+  # esphome_updates_available.yaml
   - binary_sensor:
       - unique_id: 81bb0ebc-32d0-4745-b14a-10496801ca40
         name: "ESPHome Updates available"
@@ -25,7 +25,7 @@ template:
               | count > 0
           }}
 
-# shelly_firmware.yaml
+  # shelly_firmware.yaml
   - binary_sensor:
       - unique_id: 9aec0333-a840-46a4-807f-01f5e9a231e4
         name: "Shelly Firmware"
@@ -40,7 +40,7 @@ template:
               | count > 0
           }}
 
-# shelly_issue.yaml
+  # shelly_issue.yaml
   - binary_sensor:
       - unique_id: e30ef290-3bb8-4187-9bed-63c7bdb583ae
         name: "Shelly Issue"
@@ -55,7 +55,7 @@ template:
               | count > 0
           }}
 
-# hacs_updates.yaml
+  # hacs_updates.yaml
   - sensor:
       - unique_id: 61cbbd80-1ede-4d9e-92ad-b4dfecb4612b
         name: HACS Updates
@@ -79,7 +79,7 @@ template:
                 | list
             }}
 
-# update_all.yaml
+  # update_all.yaml
   - button:
       - name: Update alles
         unique_id: ee67de73-5c72-40d5-a7f1-dd68b23fc5f8
@@ -99,7 +99,7 @@ template:
                 - alias: "Wait for update to complete"
                   wait_template: "{{ is_state(repeat.item, 'off') }}"
 
-# skip_esphome_updates.yaml
+  # skip_esphome_updates.yaml
   - button:
       - name: Skip ESPHome Updates
         unique_id: 0ad105f3-3128-481b-b14e-641bfcd1bdd7
@@ -148,7 +148,7 @@ automation:
           action_update: "{{ 'UPDATE_' ~ context.id }}"
           action_skip: "{{ 'SKIP_' ~ context.id }}"
       - alias: "Send Home Assistant update notification to phone"
-        action: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_10_pro
         data:
           title: >
             Update: {{ what }}

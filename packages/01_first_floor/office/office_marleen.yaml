@@ -22,7 +22,7 @@
 # - Entity: sensor.dcp_l2530dw_black_toner_remaining - Toner level (%)
 # - Entity: sensor.dcp_l2530dw_drum_remaining_life - Drum life remaining (%)
 # - Entity: automation.f2_status_messages_for_printer - Status automation reference
-# - Service: notify.mobile_app_pixel_7_pro - Mobile notifications
+# - Service: notify.mobile_app_pixel_10_pro - Mobile notifications
 
 # PRINTER INTEGRATION MANAGEMENT:
 # - Automatically enables integration when printer is online
@@ -119,7 +119,7 @@ automation:
               "De levensduur van de drum is nog maar {{ states('sensor.dcp_l2530dw_drum_remaining_life') }}"
             {%- endif %}
       - alias: "Notificatie naar telefoon Martijn"
-        action: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_10_pro
         data:
           title: "Printer {{ trigger.id }} status"
           message: "{{ message }}"

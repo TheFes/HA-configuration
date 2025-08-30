@@ -45,10 +45,10 @@ automation:
           name: marleen
     variables:
       name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
-      notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_7_pro' }}"
+      notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_10_pro' }}"
       gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
       sensor: "sensor.{{ name }}_naar_huis"
-      vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_7_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
+      vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_10_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
       eta: >
         {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
         {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
@@ -153,7 +153,7 @@ automation:
       - alias: "Martijn detected on bicycle"
         trigger: state
         id: "on_bike"
-        entity_id: sensor.pixel_7_pro_detected_activity
+        entity_id: sensor.pixel_10_pro_detected_activity
         to: "on_bicycle"
       - alias: "Martijn arrived home"
         trigger: state
@@ -211,7 +211,7 @@ automation:
         state: "home"
     actions:
       - alias: "Message to phone Martijn"
-        action: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_10_pro
         data:
           title: "Hoera!"
           message: "Marleen is bijna thuis"

@@ -52,7 +52,7 @@ template:
         value_template: "{{ trigger.id == 'manual' or now().day in [1,2,3] }}"
     actions:
       - variables:
-          notify_action: notify.mobile_app_pixel_7_pro
+          notify_action: notify.mobile_app_pixel_10_pro
       - alias: Create variables for the month to use in the rest commands and messages
         variables:
           month: >

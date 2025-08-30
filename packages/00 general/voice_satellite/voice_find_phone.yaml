@@ -18,9 +18,9 @@ script:
     sequence:
       - variables:
           phone_mapper:
-            martijn: pixel_7_pro
+            martijn: pixel_10_pro
             marleen: pixel_8_marleen
-          phone: "{{ phone_mapper[phone_owner | lower] | default('pixel_7_pro') }}"
+          phone: "{{ phone_mapper[phone_owner | lower] | default('pixel_10_pro') }}"
           notify_service: "{{ 'notify.mobile_app_' ~ phone }}"
           current_vol: "{{ states('sensor.' ~ phone ~ '_volume_level_alarm') | int(4) }}"
           current_dnd: "{{ states('sensor.' ~ phone ~ '_do_not_disturb_sensor') | default('off') }}"
@@ -44,7 +44,7 @@ script:
       - repeat:
           while:
             - condition: state
-              entity_id: binary_sensor.pixel_7_pro_interactive
+              entity_id: binary_sensor.pixel_10_pro_interactive
               state: "off"
           sequence:
             - alias: Send notification to phone

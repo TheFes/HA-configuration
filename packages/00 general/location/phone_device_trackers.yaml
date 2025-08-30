@@ -7,7 +7,7 @@ automation:
         trigger: state
         entity_id:
           - sensor.location_phone_martijn_bt
-          - sensor.pixel_7_pro_battery_level
+          - sensor.pixel_10_pro_battery_level
         from: ~
       - alias: "Home Assistant started"
         trigger: homeassistant
@@ -19,7 +19,7 @@ automation:
           dev_id: phone_martijn_bt
           host_name: Phone Martijn BT
           mac: "0C:C4:13:45:75:85"
-          battery: "{{ states('sensor.pixel_7_pro_battery_level') }}"
+          battery: "{{ states('sensor.pixel_10_pro_battery_level') }}"
           location_name: >
             {% if is_state('sensor.location_phone_martijn_bt', 'Niet Thuis') %}
               not_home
@@ -36,18 +36,18 @@ automation:
     triggers:
       - alias: "New SMS notification received on Martijn's phone"
         trigger: state
-        entity_id: sensor.pixel_7_pro_last_notification
+        entity_id: sensor.pixel_10_pro_last_notification
         to: ~
     conditions:
       - alias: "Notification from SMS app"
         condition: state
-        entity_id: sensor.pixel_7_pro_last_notification
+        entity_id: sensor.pixel_10_pro_last_notification
         attribute: package
         state: "com.google.android.apps.messaging"
       - alias: "SMS regarding DigID code"
         condition: template
         value_template: >
-          {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_7_pro_last_notification') }}
+          {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_10_pro_last_notification') }}
     actions:
       - alias: "Send notification to Marleen"
         action: notify.mobile_app_marleen_app
@@ -62,7 +62,7 @@ automation:
     triggers:
       - alias: "Bluetooth connection changed on Martijn's phone"
         trigger: state
-        entity_id: sensor.pixel_7_pro_bluetooth_connection
+        entity_id: sensor.pixel_10_pro_bluetooth_connection
         attribute: connected_paired_devices
     variables:
       bt_added: >
@@ -81,7 +81,7 @@ automation:
       - if: "{{ bt_added in headphones }}"
         then:
           - alias: "Send music app selection notification"
-            action: notify.mobile_app_pixel_7_pro
+            action: notify.mobile_app_pixel_10_pro
             data:
               title: Muziekje?
               message: Wat wil je luisteren
@@ -104,7 +104,7 @@ automation:
             delay:
               minutes: 10
       - alias: "Clear music app selection notification"
-        action: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_10_pro
         data:
           message: "clear_notification"
           data:
@@ -132,24 +132,24 @@ automation:
             id: home
         then:
           - alias: "Set phone to normal sound mode"
-            action: notify.mobile_app_pixel_7_pro
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ringer_mode"
               data:
                 command: "normal"
-          - action: notify.mobile_app_pixel_7_pro
+          - action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ble_transmitter"
               data:
                 command: "turn_on"
         else:
           - alias: "Set phone to vibrate mode"
-            action: notify.mobile_app_pixel_7_pro
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ringer_mode"
               data:
                 command: "vibrate"
-          - action: notify.mobile_app_pixel_7_pro
+          - action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ble_transmitter"
               data:
@@ -203,8 +203,8 @@ template:
         picture: "/api/image/serve/7dce8363a8fd22c90115bbada5ff395a/512x512"
         attributes:
           zone: "{{ states('person.martijn') }}"
-          wifi: "{{ states('sensor.pixel_7_pro_wifi_bssid') }}"
-          acivity: "{{ states('sensor.pixel_7_pro_detected_activity') }}"
+          wifi: "{{ states('sensor.pixel_10_pro_wifi_bssid') }}"
+          acivity: "{{ states('sensor.pixel_10_pro_detected_activity') }}"
 
       - unique_id: a240cb3f-d607-4047-95cc-9201c3cadeb7
         name: Zone Mapper

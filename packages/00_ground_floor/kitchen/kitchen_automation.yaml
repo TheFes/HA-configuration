@@ -201,7 +201,7 @@ automation:
           {{ as_timestamp(now()) - as_timestamp(state_attr('automation.power_usage_kitchen', 'last_triggered'), 0) > 3600 }}
     actions:
       - alias: "Send fridge power warning notification"
-        action: notify.mobile_app_pixel_7_pro
+        action: notify.mobile_app_pixel_10_pro
         data:
           title: "Stroomverbruik koelkast"
           message: "De koelkast verbruikt verdacht veel stroom, check of hij niet open staat"
