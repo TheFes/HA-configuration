@@ -50,7 +50,7 @@ automation:
           {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_10_pro_last_notification') }}
     actions:
       - alias: "Send notification to Marleen"
-        action: notify.mobile_app_marleen_app
+        action: notify.mobile_app_pixel_8_marleen
         data:
           title: "DigiD code"
           message: "{{ trigger.to_state.state }}"
