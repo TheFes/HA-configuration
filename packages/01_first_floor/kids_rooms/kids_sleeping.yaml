@@ -186,6 +186,16 @@ automation:
         trigger: state
         entity_id: binary_sensor.dashboard_floris_slaapt
         to: "on"
+        variables:
+          target_brightness: 10
+      - alias: Parent bedtime
+        trigger: state
+        entity_id: sensor.house_mode
+        to:
+          - Slapen
+          - Tandenpoetsen
+        variables:
+          target_brightness: 3
     conditions:
       - alias: Reading light floris is on (as night light)
         condition: state
@@ -197,4 +207,4 @@ automation:
         target:
           entity_id: light.floris_leeslamp
         data:
-          brightness_pct: 10
+          brightness_pct: "{{ target_brightness }}"
