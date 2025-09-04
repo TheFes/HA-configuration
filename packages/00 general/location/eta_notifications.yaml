@@ -45,7 +45,7 @@ automation:
           name: marleen
     variables:
       name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
-      notify: "{{ 'notify.mobile_app_marleen_app' if name == 'martijn' else 'notify.mobile_app_pixel_10_pro' }}"
+      notify: "{{ 'notify.mobile_app_pixel_8_marleen' if name == 'martijn' else 'notify.mobile_app_pixel_10_pro' }}"
       gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
       sensor: "sensor.{{ name }}_naar_huis"
       vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_10_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
