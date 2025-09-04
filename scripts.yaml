@@ -1515,7 +1515,7 @@ llm_web_search:
     metadata: {}
     data:
       text: '{{ query }}'
-      agent_id: conversation.openai_conversation
+      agent_id: conversation.gemini_web_search
     response_variable: response
   - stop: ''
     response_variable: response
@@ -1529,8 +1529,10 @@ llm_web_search:
         on the web
       required: true
   alias: LLM Web search
-  description: Use this tool if the information in the data model isn't sufficient
-    to answer the question, and a search on the web is required to gather the information.
+  description: Makes a Google search to answer questions that are completely unrelated
+    with the smart home and are exclusively about current events or information in
+    real-time like the current president, results of last night's game, release dates,
+    etc.
 test_object_selector:
   sequence:
   - delay:
