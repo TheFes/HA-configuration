@@ -8,6 +8,23 @@ automation:
         for:
           minutes: 5
         id: "off"
+      - alias: ECU reports lower value then current return to grid
+        trigger: template
+        value_template: >
+          {{
+            states('sensor.ecu_current_power') | float(0) <
+            states('sensor.electricity_meter_energieproductie') | float(0)
+          }}
+        for:
+          minutes: 10
+        id: "off"
+      - alias: "ECU current power didn't change for 15 minutes"
+        trigger: state
+        entity_id: sensor.ecu_current_power
+        to: ~
+        for:
+          minutes: 15
+        id: stable
       - alias: "ECU reset switch turned off for 10 seconds"
         trigger: state
         entity_id: switch.ecu_reset
@@ -19,13 +36,6 @@ automation:
         trigger: homeassistant
         event: start
         id: "on"
-      - alias: "ECU current power unavailable for 15 minutes"
-        trigger: state
-        entity_id: sensor.ecu_current_power
-        to: ~
-        for:
-          minutes: 15
-        id: stable
     conditions:
       - alias: "Check if trigger is not stable or if sun is up with power output"
         condition: template
