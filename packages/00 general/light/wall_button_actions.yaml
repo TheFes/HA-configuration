@@ -353,6 +353,9 @@ automation:
             - entity: number.dimmer_badkamer_start_brightness
               when: Slapen
               percentage: 30
+            - entity: number.dimmer_badkamer_start_brightness
+              when: Opstaan
+              percentage: 100
       - alias: Determine which actions to take
         choose:
           - alias: Actions when house mode changes to Thuis (in the morning)

@@ -72,6 +72,11 @@ template:
             {% set holiday = is_state('input_boolean.vakantie', 'on') %}
             {% if home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
               Slapen
+            {% elif home
+              and today_at('06:30') < now() < today_at('07:00')
+              and now().isoweekday() <= 5
+            %}
+              Opstaan
             {% elif home %}
               Thuis
             {% elif guest %}
@@ -81,6 +86,17 @@ template:
             {% else %}
               Afwezig
             {% endif %}
+      - alias: "Set mode to prepare for the day"
+        trigger: time
+        at: "06:30:00"
+        weekday:
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
+        variables: 
+          mode: *mode_template
       - alias: "Attic lights turned off (sleep detection)"
         trigger: state
         entity_id: light.groep_zolder
@@ -109,7 +125,8 @@ template:
                               'Gast': 'mdi:account',
                               'Afwezig': 'mdi:home-outline',
                               'Vakantie': 'mdi:bag-suitcase',
-                              'Tandenpoetsen': 'mdi:toothbrush', 
+                              'Tandenpoetsen': 'mdi:toothbrush',
+                              'Opstaan': 'mdi:bed-clock',
                               'Slapen': 'mdi:bed'
                             }
           %}
