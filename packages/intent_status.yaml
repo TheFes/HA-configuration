@@ -1,0 +1,30 @@
+rest:
+  - resource: https://ohf-voice.github.io/intents/
+    scan_interval: 14400
+    binary_sensor:
+      - unique_id: 5f1bf2ef-1258-4195-81f4-e8efd8ddb36a
+        name: All Dutch intents provided
+        value_template: >
+          {{
+            value.split('</td>')
+              | select('search', 'Nederlands')
+              | select('search', '⭐️')
+              | list
+              | count > 0
+          }}
+        icon: mdi:star
+
+automation:
+  - id: ef97c1e3-8e09-4b7c-9973-cc5379d6239d
+    alias: Warn when not all Dutch intents are provided
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.all_intents_provided
+        to: "off"
+    actions:
+      - alias: Send message
+        action: rest_command.signal_send_message
+        data:
+          message: >
+            ⭐ Nederlands heeft geen ster meer, er zijn dus nieuwe intents bij gekomen.
+            Check welke intents missen.
