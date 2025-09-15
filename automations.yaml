@@ -1,79 +1,78 @@
-- id: "1737403451714"
+- id: '1737403451714'
   alias: Music Assistant - Local(only) Voice Support Blueprint
-  description: ""
+  description: ''
   use_blueprint:
     path: music-assistant/mass_assist_blueprint_en.yaml
     input:
       default_player_entity_id_input: media_player.test_player
       album_trigger:
-        - (play|listen to|bla bla) [the ](album|ep|record|compilation|single) {media_name}
-          [by [the ](artist|band|group) {artist}] [(in|on|using) [the ]{area_or_player_name}][
-          (with|using) {radio_mode}]
+      - (play|listen to|bla bla) [the ](album|ep|record|compilation|single) {media_name}
+        [by [the ](artist|band|group) {artist}] [(in|on|using) [the ]{area_or_player_name}][
+        (with|using) {radio_mode}]
       track_trigger:
-        - (play|listen to|bla bla) [the ](track|song) {media_name} [by [the ](artist|band|group)
-          {artist}] [(in|on|using) [the ]{area_or_player_name}][ (with|using) {radio_mode}]
+      - (play|listen to|bla bla) [the ](track|song) {media_name} [by [the ](artist|band|group)
+        {artist}] [(in|on|using) [the ]{area_or_player_name}][ (with|using) {radio_mode}]
       artist_trigger:
-        - (play|listen to|bla bla) [the ](artist|band|group) {media_name} [(in|on|using)
-          [the ]{area_or_player_name}][ (with|using) {radio_mode}]
+      - (play|listen to|bla bla) [the ](artist|band|group) {media_name} [(in|on|using)
+        [the ]{area_or_player_name}][ (with|using) {radio_mode}]
       radio_trigger:
-        - (play|listen to|bla bla) [the ]((radio station)|(radio)|(station)) {media_name}
-          [(in|on|using) [the ]{area_or_player_name}]
+      - (play|listen to|bla bla) [the ]((radio station)|(radio)|(station)) {media_name}
+        [(in|on|using) [the ]{area_or_player_name}]
       playlist_trigger:
-        - (play|listen to|bla bla) [the ]playlist {media_name} [(in|on|using) [the ]{area_or_player_name}][
-          (with|using) {radio_mode}]
-      response_input:
-        "TEST: {{ trigger.slots.media_name }} playing on {{ mass_player_name
-        }}"
-- id: "1737968496160"
+      - (play|listen to|bla bla) [the ]playlist {media_name} [(in|on|using) [the ]{area_or_player_name}][
+        (with|using) {radio_mode}]
+      response_input: 'TEST: {{ trigger.slots.media_name }} playing on {{ mass_player_name
+        }}'
+- id: '1737968496160'
   alias: Voice - Weather Forecast - Local Assist Blueprint
-  description: ""
+  description: ''
   use_blueprint:
     path: TheFes/1_voice_weather_forecast_local.yaml
     input:
       weather_entity: weather.combined
-- id: "1737968516911"
+- id: '1737968516911'
   alias: Voice - Weather Forecast - Local Assist Blueprint
-  description: ""
+  description: ''
   use_blueprint:
     path: TheFes/1_voice_weather_forecast_local.yaml
     input:
       weather_entity: weather.combined
       today:
-        - vandaag
+      - vandaag
       tomorrow:
-        - morgen
+      - morgen
       day_after_tomorrow:
-        - overmorgen
+      - overmorgen
       monday:
-        - maandag
+      - maandag
       tuesday:
-        - dinsdag
+      - dinsdag
       wednesday:
-        - woensdag
+      - woensdag
       thursday:
-        - donderdag
+      - donderdag
       friday:
-        - vrijdag
+      - vrijdag
       saturday:
-        - zaterdag
+      - zaterdag
       sunday:
-        - zondag
+      - zondag
       night:
-        - vannacht
-        - morgennacht
-        - morgen nacht
+      - vannacht
+      - morgennacht
+      - morgen nacht
       morning:
-        - ochtend
-        - morgenvroeg
-        - morgen vroeg
+      - ochtend
+      - morgenvroeg
+      - morgen vroeg
       afternoon:
-        - middag
-        - vanmiddag
-        - morgenmiddag
+      - middag
+      - vanmiddag
+      - morgenmiddag
       evening:
-        - morgenavond
-        - vanavond
-        - morgen avond
+      - morgenavond
+      - vanavond
+      - morgen avond
       clear: en helder
       clear-night: en helder
       cloudy: en bewolkt
@@ -90,12 +89,10 @@
       windy: en winderig
       windy-variant: met wind en woken
       exceptional: met zeer uitzonderlijk weer
-      response_invalid_phrase:
-        Ik kan geen weersvoorspelling ophalen voor {{ phrase
+      response_invalid_phrase: Ik kan geen weersvoorspelling ophalen voor {{ phrase
         }}
       response_no_data: Geen weersvoorspelling beschikbaar voor {{ phrase }}
-      response_forecast:
-        Het wordt {{ temperature }} graden {{ condition_translated
+      response_forecast: Het wordt {{ temperature }} graden {{ condition_translated
         }}. {% if temperature != apparent_temperature %}Het voelt als {{ apparent_temperature
         }} graden.{% endif %} {% if precipitation_probability > rain_warning_threshold
         %}Er is {{ precipitation_probability }}% kans op {{ precipitation }} milimeter
@@ -120,54 +117,54 @@
         een zeer zware storm: 103
         een orkaan: 118
       triggers:
-        - Wat voor weer wordt het [[deze|komende] {phrase}]
-        - Wat is de [weers]voorspelling [[voor] [deze|komende] {phrase}]
-- id: "1738179908517"
+      - Wat voor weer wordt het [[deze|komende] {phrase}]
+      - Wat is de [weers]voorspelling [[voor] [deze|komende] {phrase}]
+- id: '1738179908517'
   alias: Voice - Calendar Entries - Local Assist Blueprint
-  description: ""
+  description: ''
   use_blueprint:
     path: TheFes/1_voice_calendar_entries_local.yaml
     input:
       calendar_entity:
-        - calendar.kids
-        - calendar.thefes
-        - calendar.m_m
+      - calendar.kids
+      - calendar.thefes
+      - calendar.m_m
       today:
-        - vandaag
+      - vandaag
       tomorrow:
-        - morgen
+      - morgen
       day_after_tomorrow:
-        - overmorgen
+      - overmorgen
       monday:
-        - maandag
+      - maandag
       tuesday:
-        - dinsdag
+      - dinsdag
       wednesday:
-        - woensdag
+      - woensdag
       thursday:
-        - donderdag
+      - donderdag
       friday:
-        - vrijdag
+      - vrijdag
       saturday:
-        - zaterdag
+      - zaterdag
       sunday:
-        - zondag
+      - zondag
       night:
-        - vannacht
-        - morgennacht
-        - morgen nacht
+      - vannacht
+      - morgennacht
+      - morgen nacht
       morning:
-        - ochtend
-        - morgenvroeg
-        - morgen vroeg
+      - ochtend
+      - morgenvroeg
+      - morgen vroeg
       afternoon:
-        - middag
-        - vanmiddag
-        - morgenmiddag
+      - middag
+      - vanmiddag
+      - morgenmiddag
       evening:
-        - morgenavond
-        - vanavond
-        - morgen avond
+      - morgenavond
+      - vanavond
+      - morgen avond
       response_translations:
         Monday: maandag
         Tuesday: dinsdag
@@ -195,63 +192,63 @@
       day_event: Voor de hele dag staat er {event_list}.
       part_day_event: Van {start} tot {end} heb je {event_summary}.
       triggers:
-        - wat staat er [voor|op] {phrase} op de (agenda|kalender|planning)
-        - staat er [voor|op] {phrase} iets op de (agenda|kalender|planning)
-- id: "1738230371255"
+      - wat staat er [voor|op] {phrase} op de (agenda|kalender|planning)
+      - staat er [voor|op] {phrase} iets op de (agenda|kalender|planning)
+- id: '1738230371255'
   alias: Voice - Get ToDo Entries - Local Assist Blueprint
-  description: ""
+  description: ''
   use_blueprint:
     path: TheFes/1_voice_get_todo_entries_local.yaml
     input:
       default_entity: todo.boodschappenlijst
       triggers:
-        - wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) {list_name}|{list_name}[
-          ]lijst)
-      no_items_response: "{list_name} is leeg."
-      list_items_response: "Er staan {item_count} dingen op: {list_items}"
+      - wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) {list_name}|{list_name}[
+        ]lijst)
+      no_items_response: '{list_name} is leeg.'
+      list_items_response: 'Er staan {item_count} dingen op: {list_items}'
       invalid_list_response: Ik kan geen lijst met de naam {list_name} vinden.
-- id: "1743151381222"
+- id: '1743151381222'
   alias: Voice - Send Reminder - Automation
-  description: ""
+  description: ''
   use_blueprint:
     path: TheFes/0_voice_send_reminder.yaml
     input:
       recipients:
-        - name: Martijn
-          description: Father of the house
-          notifiers:
-            - alias: Send mobile notification to Martijn
-              action: notify.mobile_app_pixel_10_pro
-              data:
-                data:
-                  channel: Reminders
-                  ttl: 0
-                  priority: high
-                  notification_icon: mdi:reminder
-              condition: "{{ is_state('input_boolean.test', 'on') }}"
-            - alias: Announce reminder via TTS to Martijn
-              action: tts.speak
-              target:
-                entity_id: tts.home_assistant_cloud
-              data:
-                media_player_entity_id: media_player.martijn
-              prefix: "Dit is een reminder voor:"
-              condition: "{{ is_state('person.martijn', 'home') }}"
-        - name: Marleen
-          description: Mother of the house
-          notifiers:
-            - alias: Send mobile notification to Marleen
-              action: notify.mobile_app_pixel_8_marleen
-              data:
-                data:
-                  channel: Reminders
-                  ttl: 0
-                  priority: high
-                  notification_icon: mdi:reminder
+      - name: Martijn
+        description: Father of the house
+        notifiers:
+        - alias: Send mobile notification to Martijn
+          action: notify.mobile_app_pixel_10_pro
+          data:
+            data:
+              channel: Reminders
+              ttl: 0
+              priority: high
+              notification_icon: mdi:reminder
+          condition: '{{ is_state(''input_boolean.test'', ''on'') }}'
+        - alias: Announce reminder via TTS to Martijn
+          action: tts.speak
+          target:
+            entity_id: tts.home_assistant_cloud
+          data:
+            media_player_entity_id: media_player.martijn
+          prefix: 'Dit is een reminder voor:'
+          condition: '{{ is_state(''person.martijn'', ''home'') }}'
+      - name: Marleen
+        description: Mother of the house
+        notifiers:
+        - alias: Send mobile notification to Marleen
+          action: notify.mobile_app_pixel_8_marleen
+          data:
+            data:
+              channel: Reminders
+              ttl: 0
+              priority: high
+              notification_icon: mdi:reminder
       llm_agent: conversation.chatgpt
       todo_entity: todo.reminder
       triggers:
-        - alias: Trigger to check for Todo items every minute
-          trigger: time_pattern
-          minutes: /5
+      - alias: Trigger to check for Todo items every minute
+        trigger: time_pattern
+        minutes: /5
       after_notification: Mark as completed
