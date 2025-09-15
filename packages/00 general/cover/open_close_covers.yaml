@@ -57,7 +57,7 @@ automation:
           id: close
         - alias: "inside temp above 20"
           trigger: template
-          value_template: "{{ states(temp) | float(0) >= 20 }}"
+          value_template: "{{ states(temp) | float(0) >= 22 or (states(temp) | float(0) > 20 and now().month in range(4,9)) }}"
           id: close
         - alias: "Wait for manual override period to end"
           trigger: template
@@ -69,7 +69,7 @@ automation:
       conditions:
         - alias: "During screen season (March through September)"
           condition: template
-          value_template: "{{ 3 <= now().month <= 9 }}"
+          value_template: "{{ 3 <= now().month <= 8 }}"
         - condition: or
           conditions:
             - alias: "open"
