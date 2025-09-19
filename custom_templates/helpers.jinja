@@ -146,3 +146,50 @@
     {%- endif -%}
   {%- endif -%}
 {%- endmacro -%}
+
+{%- macro _month_date(from_now=0, type='start', returns=none) -%}
+  {%- if type not in ['start', 'end'] -%}
+    {%- set output = 'type either needs to be "start" or "end", current input was {}'.format(type) -%}
+  {%- elif from_now | is_number and from_now | int == from_now | float -%}
+    {%- set ns= namespace(start = today_at().replace(day=1), end = (today_at() + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)) -%}
+    {%- for i in range(from_now | int | abs) -%}
+      {%- if from_now < 0 -%}
+        {%- set ns.start = (ns.start - timedelta(days=1)).replace(day=1) -%}
+        {%- set ns.end = ns.end.replace(day=1) - timedelta(days=1) -%} 
+      {%- else -%}
+        {%- set ns.start = (ns.start + timedelta(days=32)).replace(day=1) -%}
+        {%- set ns.end = (ns.end + timedelta(days=32)).replace(day=1) - timedelta(days=1) -%} 
+      {%- endif -%}
+    {%- endfor -%}
+    {%- set output = ns[type] -%}
+  {%- else -%}
+    {%- set output = 'from_now needs to be a postive or negative integer, current input was {}'.format(from_now) -%}
+  {%- endif -%}
+  {% do returns(output) %}
+{%- endmacro -%}
+{%- set month_date = _month_date | as_function -%}
+
+{%- macro _quarter_date(from_now=0, type='start', returns=none) -%}
+  {%- if type not in ['start', 'end'] -%}
+    {%- set output = 'type either needs to be "start" or "end", current input was {}'.format(type) -%}
+  {%- elif from_now | is_number and from_now | int == from_now | float -%}
+    {%- set mapping =
+      [
+         dict(current=0, start=-2, end=0),
+         dict(current=1, start=0, end=2),
+         dict(current=2, start=-1, end=1)
+      ]
+    -%}
+    {%- set current = now().month % 3 -%}
+    {%- set quarter_dates = dict(
+          start = month_date(mapping | selectattr('current', 'eq', current) | map(attribute='start') | first + from_now * 3, 'start'),
+          end = month_date(mapping | selectattr('current', 'eq', current) | map(attribute='end') | first + from_now * 3, 'end')
+          )
+    -%}
+    {%- set output = quarter_dates[type] -%}
+  {%- else -%}
+    {%- set output = 'from_now needs to be a postive or negative integer, current input was {}'.format(from_now) -%}
+  {%- endif -%}
+  {% do returns(output) %}
+{%- endmacro -%}
+{%- set quarter_date = _quarter_date | as_function -%}
