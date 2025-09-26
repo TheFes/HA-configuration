@@ -320,77 +320,74 @@ automation:
       - alias: Set settings for number entities
         variables:
           settings:
-            - entity: number.sonof_werkkamer_martijn_plafond_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.sonoff_slaapkamer_plafond_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.sonoff_badkamer_zolder_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.dimmer_woonkamer_plafond_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.dimmer_overloop_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.dimmer_keuken_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.shelly1_eettafel_start_brightness
-              when: Tandenpoetsen
-              percentage: 40
-            - entity: number.dimmer_zolder_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.sonoff_wasmachinehoek_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.dimmer_hal_start_brightness
-              when: Tandenpoetsen
-              percentage: 30
-            - entity: number.dimmer_badkamer_start_brightness
-              when: Slapen
-              percentage: 30
-            - entity: number.dimmer_badkamer_start_brightness
-              when: Opstaan
-              percentage: 100
-      - alias: Determine which actions to take
-        choose:
-          - alias: Actions when house mode changes to Thuis (in the morning)
-            conditions: "{{ house_mode == 'Thuis'}}"
-            sequence:
-              - alias: Set all number entities to 100
-                action: number.set_value
-                target:
-                  entity_id: "{{ settings | map(attribute='entity') | list }}"
-                data:
-                  value: 100
-          - alias: Actions when house mode changes to Tandenpoetsen
-            conditions: "{{ house_mode == 'Tandenpoetsen'}}"
-            sequence:
-              - alias: Set the selected number entiteis to the provided percentage
-                repeat:
-                  for_each: "{{ settings | selectattr('when', 'eq', house_mode) | list }}"
-                  sequence:
-                    - action: number.set_value
-                      target:
-                        entity_id: "{{ repeat.item.entity }}"
-                      data:
-                        value: "{{ repeat.item.percentage }}"
-          - alias: Actions when house mode changes to Slapen
-            conditions: "{{ house_mode == 'Slapen'}}"
-            sequence:
-              - alias: Set the selected number entiteis to the provided percentage
-                repeat:
-                  for_each: "{{ settings | selectattr('when', 'eq', house_mode) | list }}"
-                  sequence:
-                    - action: number.set_value
-                      target:
-                        entity_id: "{{ repeat.item.entity }}"
-                      data:
-                        value: "{{ repeat.item.percentage }}"
+            number.sonof_werkkamer_martijn_plafond_start_brightness:
+              Opstaan: 80
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.sonoff_slaapkamer_plafond_start_brightness:
+              Opstaan: 50
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.sonoff_badkamer_zolder_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_woonkamer_plafond_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_overloop_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_keuken_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.shelly1_eettafel_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_zolder_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.sonoff_wasmachinehoek_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_hal_start_brightness:
+              Thuis: 100
+              Tandenpoetsen: 30
+            number.dimmer_badkamer_start_brightness:
+              Opstaan: 100
+              Thuis: 100
+              Slapen: 30
+            number.shelly1_pepijn_start_brightness:
+              Opstaan: 60
+              Thuis: 100
+              Slapen: 30
+            number.sonoff_floris_start_brightness:
+              Opstaan: 60
+              Thuis: 100
+              Slapen: 30
+          entities: >
+            {{
+              settings.items()
+                | selectattr('1', 'contains', house_mode)
+                | map(attribute='0')
+                | list
+            }}
+          values: >
+            {{
+              settings.items()
+                | selectattr('1', 'contains', house_mode)
+                | map(attribute='1')
+                | map(attribute=house_mode)
+                | list
+            }}
+      - alias: Set the selected number entiteis to the provided percentage
+        repeat:
+          for_each: "{{ entities }}"
+          sequence:
+            - action: number.set_value
+              target:
+                entity_id: "{{ repeat.item }}"
+              data:
+                value: "{{ values[repeat.index -1] }}"
 
   - id: 4671f017-f0a9-41ad-ac00-360ed28398ae
     alias: Change long press lights for kids to ensure night light is kept on

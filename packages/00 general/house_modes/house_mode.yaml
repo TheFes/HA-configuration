@@ -16,7 +16,7 @@
 #   * "Thuis" (Home) - Normal occupancy
 #   * "Afwezig" (Away) - No one home
 #   * "Gast" (Guest) - Guest mode active
-#   * "Vakantie" (Holiday) - Holiday mode active  
+#   * "Vakantie" (Holiday) - Holiday mode active
 #   * "Slapen" (Sleep) - Sleep mode active
 #   * "Tandenpoetsen" (Brushing teeth) - Transition to sleep
 
@@ -73,7 +73,7 @@ template:
             {% if home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
               Slapen
             {% elif home
-              and today_at('06:30') < now() < today_at('07:00')
+              and today_at('06:30') < now() < today_at('07:30')
               and now().isoweekday() <= 5
             %}
               Opstaan
@@ -95,7 +95,7 @@ template:
           - wed
           - thu
           - fri
-        variables: 
+        variables:
           mode: *mode_template
       - alias: "Attic lights turned off (sleep detection)"
         trigger: state
