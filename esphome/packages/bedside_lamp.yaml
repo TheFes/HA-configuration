@@ -1,35 +1,14 @@
-substitutions:
-  friendly_name: ${name}
-
 packages:
   bslamp2:
     url: https://github.com/mmakaay/esphome-xiaomi_bslamp2
-    ref: 2023.4.0
+    ref: dev
     files:
       - packages/core.yaml
       - packages/ota_feedback.yaml
       - packages/activate_preset_svc.yaml
     refresh: 0s
-  minimal: !include 0_general/minimal.yaml
-  basic: !include 0_general/basic.yaml
-
-esphome:
-  friendly_name: ${name}
-  name: ${lower_name}
-  project:
-    name: mmakaay.xiaomi-bedside-lamp2
-    version: "2023.4.0"
-
-esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
-    sdkconfig_options:
-      CONFIG_FREERTOS_UNICORE: y
-      ESP_MAC_IGNORE_MAC_CRC_ERROR: y
-    advanced:
-      ignore_efuse_mac_crc: true
-      ignore_efuse_custom_mac: true
+  minimal: !include 0_general/minimal.yaml # defines wifi, ota and api settings
+  basic: !include 0_general/basic.yaml # defines some basic sensors I use for all my ESPHome devices
 
 globals:
   - id: current_brightness
@@ -59,10 +38,9 @@ script:
       # for the power button.
       - if:
           condition:
-            or:
-              - text_sensor.state:
-                  id: my_light_mode
-                  state: night
+            - text_sensor.state:
+                id: my_light_mode
+                state: night
           then:
             - front_panel.turn_on_leds: [POWER]
       - front_panel.update_leds:
