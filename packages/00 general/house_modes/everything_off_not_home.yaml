@@ -18,7 +18,13 @@ automation:
     actions:
       - alias: "TV on"
         choose:
-          - conditions: "{{ states('sensor.tv_meubel_power') | float(0) > 40 }}"
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{
+                    'media_player.nvidia_shield' | has_value
+                    and not is_state('media_player.nvidia_shield', 'off')
+                  }}
             sequence:
               - alias: "Enable guest mode to avoid that they will be in the dark"
                 action: input_boolean.turn_on

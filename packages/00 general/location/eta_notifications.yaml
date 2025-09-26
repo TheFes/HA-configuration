@@ -45,9 +45,9 @@ automation:
           name: marleen
     variables:
       name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
-      notify: "{{ 'notify.mobile_app_pixel_8_marleen' if name == 'martijn' else 'notify.mobile_app_pixel_10_pro' }}"
       gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
       sensor: "sensor.{{ name }}_naar_huis"
+      notify: "{{ 'mobile_app_pixel_8_marleen' if name == 'martijn' else 'mobile_app_pixel_10_pro' }}"
       vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_10_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
       eta: >
         {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
@@ -68,7 +68,7 @@ automation:
             target:
               entity_id: "{{ sensor }}"
           - alias: "Send notification to phone"
-            action: "{{ notify }}"
+            action: "notify.{{ notify }}"
             data:
               title: "{{ name | capitalize }} is onderweg {{ (' met de ' ~ vehicle) if name == 'martijn' else ''}}"
               message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
@@ -130,7 +130,7 @@ automation:
                             key: "eta_{{ name }}"
                             value: "{{ eta }}"
                         - alias: "Send notification to phone"
-                          action: "{{ notify }}"
+                          action: "notify.{{ notify }}"
                           data:
                             title: "{{ name | capitalize }} is vertraagd"
                             message: "{{ gender | capitalize }} zou er nu rond {{ eta }} moeten zijn"

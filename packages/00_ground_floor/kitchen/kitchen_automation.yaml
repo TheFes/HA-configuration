@@ -198,7 +198,7 @@ automation:
       - alias: "Rate limit: only send notification once per hour"
         condition: template
         value_template: >
-          {{ as_timestamp(now()) - as_timestamp(state_attr('automation.power_usage_kitchen', 'last_triggered'), 0) > 3600 }}
+          {{ now() - this.attributes.last_triggered | default(as_datetime(0), true) > timedelta(hours=1) }}
     actions:
       - alias: "Send fridge power warning notification"
         action: notify.mobile_app_pixel_10_pro

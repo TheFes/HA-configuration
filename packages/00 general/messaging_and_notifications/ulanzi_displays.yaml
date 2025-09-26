@@ -76,7 +76,7 @@ automation:
             target:
               entity_id: light.awtrix_martijn_indicator_{{ indicator | default(1) | int(1) }}
             data:
-              brightness: "{{ brightness | default(state_attr('light.matrix', 'brightness')) | int(255) }}"
+              brightness: "{{ brightness | default(state_attr('light.awtrix_martijn_matrix', 'brightness')) | int(255) }}"
               color_name: "{{ color_name | default('white') }}"
         else:
           - alias: Turn Ulanzi indicator light off
