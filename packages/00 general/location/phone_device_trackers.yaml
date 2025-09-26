@@ -74,17 +74,41 @@ automation:
             | join
         }}
       headphones:
-        - 60:AB:D2:3C:85:66 (LE-Big Ears)
-        - E0:67:81:01:F7:D3 (Haylou GT3)
-        - E8:07:BF:13:99:AB (Soundcore Spirit X)
+        - "60:AB:D2:3C:85:66"
+        - "E0:67:81:01:F7:D3"
+        - "E8:07:BF:13:99:AB"
+        - "14:6C:27:1A:A7:94"
+      bt_mac: >
+        {{ bt_added.split(' ')[0] if iif(bt_added) else none }}
+      work_martijn: !secret work_martijn
+    conditions:
+      - condition: template
+        value_template: "{{ bt_mac is not none and bt_mac in headphones }}"
     actions:
-      - if: "{{ bt_added in headphones }}"
+      - alias: "Always start TuneIn when at work or home with Anker Soundcore"
+        if:
+          - alias: Headphones connected at work or home
+            condition: state
+            entity_id: person.martijn
+            state:
+              - home
+              - !secret work_martijn
+          - alias: Soundcore BT headphones connected
+            condition: template
+            value_template: "{{ bt_mac == '14:6C:27:1A:A7:94' }}"
         then:
+          - alias: Start TuneIn
+            action: notify.mobile_app_pixel_10_pro
+            data:
+              message: "command_launch_app"
+              data:
+                package_name: "tunein.player"
+        else:
           - alias: "Send music app selection notification"
             action: notify.mobile_app_pixel_10_pro
             data:
-              title: Muziekje?
-              message: Wat wil je luisteren
+              title: Muziekje of filmpje?
+              message: Wil je iets luisteren of zien?
               data:
                 tag: "music_choose"
                 ttl: 0
@@ -95,20 +119,20 @@ automation:
                     title: "Spotify"
                     uri: "app://com.spotify.music"
                   - action: "URI"
-                    title: "YT Music"
-                    uri: "app://com.google.android.apps.youtube.music"
-                  - action: "URI"
                     title: "TuneIn"
                     uri: "app://tunein.player"
+                  - action: "URI"
+                    title: "Emby"
+                    uri: "app://com.mb.android"
           - alias: "Wait before clearing notification"
             delay:
               minutes: 10
-      - alias: "Clear music app selection notification"
-        action: notify.mobile_app_pixel_10_pro
-        data:
-          message: "clear_notification"
-          data:
-            tag: "music_choose"
+          - alias: "Clear music app selection notification"
+            action: notify.mobile_app_pixel_10_pro
+            data:
+              message: "clear_notification"
+              data:
+                tag: "music_choose"
 
   # From: sound_mode_phone.yaml
   - id: e7e51e10-c152-4514-bfc7-393c6d16d468
@@ -182,14 +206,15 @@ template:
             {{ zones.get(zone, '❓') }}
           {%- else %}
             {%- set wifi = this.attributes.get('wifi') %}
-            {%- set floors = {
-                                "2c:3a:fd:bf:2c:fb": "🏡2️⃣",
-                                "2c:3a:fd:df:6d:a5": "🏡1️⃣",
-                                "3c:a6:2f:f9:ee:c3": "🏡0️⃣",
-                                "2c:91:ab:e6:1b:7c": "🏡0️⃣"
-                              } 
+            {%- set wifi = wifi.split(':')[:-1] | join(':') if ':' in wifi else wifi %}
+            {%- set floors = [
+                                dict(mac="2c:3a:fd:bf:2c", icon="🏡2️⃣"),
+                                dict(mac="2c:3a:fd:df:6d", icon="🏡1️⃣"),
+                                dict(mac="3c:a6:2f:f9:ee", icon="🏡0️⃣"),
+                                dict(mac="2c:91:ab:e6:1b", icon="🏡0️⃣")
+                              ] 
             %}
-            {{ floors.get(wifi, '🏡') }}
+            {{ floors | selectattr('mac', 'contains', wifi) | map(attribute='icon') | first | default('🏡') }}
           {%- endif %}
         picture: "/api/image/serve/e261093701adc6a0bd34e9c96b5feacb/512x512"
         attributes:
