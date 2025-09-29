@@ -12,12 +12,14 @@ template:
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
     actions:
-      - alias: "Set Pepijn dimmer start brightness based on sleep state"
-        action: number.set_value
-        target:
-          entity_id: number.shelly1_pepijn_start_brightness
-        data:
-          value: "{{ 30 if trigger.id == 'on' else 100 }}"
+      - if: "{{ trigger.id == 'on'}}"
+        then:
+          - alias: "Set Pepijn dimmer start brightness based on sleep state"
+            action: number.set_value
+            target:
+              entity_id: number.shelly1_pepijn_start_brightness
+            data:
+              value: 30
     binary_sensor:
       - unique_id: 2d748636-6ecd-4941-aef7-797d7cde1d5a
         name: Pepijn Sleeping
@@ -36,12 +38,14 @@ template:
           {{ now() + timedelta(hours=correction) > awake }}
         id: "off"
     actions:
-      - alias: "Set Floris dimmer start brightness based on sleep state"
-        action: number.set_value
-        target:
-          entity_id: number.sonoff_floris_start_brightness
-        data:
-          value: "{{ 30 if trigger.id == 'on' else 100 }}"
+      - if: "{{ trigger.id == 'on'}}"
+        then:
+          - alias: "Set Floris dimmer start brightness based on sleep state"
+            action: number.set_value
+            target:
+              entity_id: number.sonoff_floris_start_brightness
+            data:
+              value: 30
     binary_sensor:
       - unique_id: 7cbf7bc9-03cc-4a32-a56a-e0cfeda6828e
         name: Floris Sleeping
