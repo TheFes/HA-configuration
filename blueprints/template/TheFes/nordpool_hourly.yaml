@@ -1,0 +1,170 @@
+blueprint:
+  name: Create a hourly energy price sensor based on a sensor providing 15 minute data
+  description: "# Creates a hourly energy price sensor based on a sensor providing 15 minute data"
+  author: TheFes
+  source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/nordpool_hourly.yaml
+  domain: template
+  input:
+    source_sensor:
+      name: Source sensor
+      description: The source sensor providing the 15 minute data
+      selector:
+        entity:
+          filter:
+            - domain:
+                - sensor
+          multiple: false
+          reorder: false
+    unit_of_measurement:
+      name: Unit of measurement
+      description: The unit of measurement as provided by the source sensor
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "EUR/kWh"
+    time_key:
+      name: Time Key for start of time period
+      description: The key used in the source data for the datetime values
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "start"
+    time_end_key:
+      name: Time Key for end of price period
+      description: The key used in the source data for the datetime values when the price ends
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "end"
+    value_key:
+      name: Value Key
+      description: The key used in the source data for the prices
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "value"
+    attr_today:
+      name: Today attribute
+      description: Attribute for the list with only the price values for today
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "today"
+    attr_tomorrow:
+      name: Tomorrow attribute
+      description: Attribute for the list with only the price values for tomorrow
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "tomorrow"
+    attr_raw_today:
+      name: Raw Today attribute
+      description: Attribute for values for today including datetimes
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "raw_today"
+    attr_raw_tomorrow:
+      name: Raw Tomorrow attribute
+      description: Attribute for values for tomorrow including datetimes
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: "raw_tomorrow"
+    use_time_end_key:
+      name: Use time end key
+      description: Toggle to on when the source sensor provides a datetime when the prices end
+      selector:
+        boolean: {}
+      default: true
+variables:
+  source_sensor: !input source_sensor
+  time_key: !input time_key
+  value_key: !input value_key
+  attr_today: !input attr_today
+  attr_tomorrow: !input attr_tomorrow
+  attr_raw_today: !input attr_raw_today
+  attr_raw_tomorrow: !input attr_raw_tomorrow
+  time_end_key: !input time_end_key
+  use_time_end_key: !input use_time_end_key
+sensor:
+  state: "{{ this.attributes.get('today',[])[now().hour] | default(none) }}"
+  # availability: "{{ source_sensor | has_value }}"
+  unit_of_measurement: !input unit_of_measurement
+  state_class: measurement
+  attributes:
+    today: >
+      {% set data = state_attr(source_sensor, attr_today) | default([], true) -%}
+      {% set ns = namespace(data=[]) -%}
+      {% if data | count > 24 -%}
+        {% set dph = (data | count / 24) | int -%}
+        {% for item in data -%}
+          {% if loop.index0 % dph == 0 -%}
+            {% set avg = data[loop.index0:loop.index0+dph] | average | round(3) -%}
+            {% set ns.data = ns.data + [avg] -%}
+          {% endif -%}
+        {% endfor -%}
+        {% set data = ns.data -%}
+      {% endif -%}
+      {{ data }}
+    tomorrow: >
+      {% set data = state_attr(source_sensor, attr_tomorrow) | default([], true) -%}
+      {% set ns = namespace(data=[]) -%}
+      {% if data | count > 24 -%}
+        {% set dph = (data | count / 24) | int -%}
+        {% for item in data -%}
+          {% if loop.index0 % dph == 0 -%}
+            {% set avg = data[loop.index0:loop.index0+dph] | average | round(3) -%}
+            {% set ns.data = ns.data + [avg] -%}
+          {% endif -%}
+        {% endfor -%}
+        {% set data = ns.data -%}
+      {% endif -%}
+      {{ data }}
+    raw_today: >
+      {% set data = state_attr(source_sensor, attr_raw_today) | default([], true) %}
+      {% set ns = namespace(data=[]) %}
+      {% if data | count > 24 %}
+        {% set dph = (data | count / 24) | int %}
+        {% for item in data %}
+          {% if loop.index0 % dph == 0 %}
+            {% set avg = data[loop.index0:loop.index0+dph] | map(attribute=value_key) | average | round(3) %}
+            {% set start = item[time_key] | as_datetime %}
+            {% set basic_data = {time_key: start.isoformat(), value_key: avg} %}
+            {% set end_data = {time_end_key: (start + timedelta(hours=1)).isoformat()} if use_time_end_key else {} %}
+            {% set data = basic_data | combine(end_data) %}
+            {% set ns.data = ns.data + [data] %}
+          {% endif %}
+        {% endfor %}
+        {% set data = ns.data %}
+      {% endif %}
+      {{ data }}
+    raw_tomorrow: >
+      {% set data = state_attr(source_sensor, attr_raw_tomorrow) | default([], true) %}
+      {% set ns = namespace(data=[]) %}
+      {% if data | count > 24 %}
+        {% set dph = (data | count / 24) | int %}
+        {% for item in data %}
+          {% if loop.index0 % dph == 0 %}
+            {% set avg = data[loop.index0:loop.index0+dph] | map(attribute=value_key) | average | round(3) %}
+            {% set start = item[time_key] | as_datetime %}
+            {% set basic_data = {time_key: start.isoformat(), value_key: avg} %}
+            {% set end_data = {time_end_key: (start + timedelta(hours=1)).isoformat()} if use_time_end_key else {} %}
+            {% set data = basic_data | combine(end_data) %}
+            {% set ns.data = ns.data + [data] %}
+          {% endif %}
+        {% endfor %}
+        {% set data = ns.data %}
+      {% endif %}
+      {{ data }}
+    tomorrow_valid: >
+      {% set value = state_attr(source_sensor, 'tomorrow_valid') %}
+      {{ value | bool if value is not none else 'unknown' }}
