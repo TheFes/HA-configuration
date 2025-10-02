@@ -104,7 +104,7 @@ sensor:
     current_price: "{{ this.attributes.get('today',[])[now().hour] | default('unknown') }}"
     min: "{{ this.attributes.get('today',[]) | min | default('unknown') }}"
     max: "{{ this.attributes.get('today',[]) | max | default('unknown') }}"
-    average: "{{ this.attributes.get('today',[]) | average | default('unknown') }}"
+    average: "{{ this.attributes.get('today',[]) | average | default('unknown') | round(5, default='unknown') }}"
     today: >
       {% set data = state_attr(source_sensor, attr_today) | default([], true) -%}
       {% set ns = namespace(data=[]) -%}
