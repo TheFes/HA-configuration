@@ -97,7 +97,7 @@ variables:
   use_time_end_key: !input use_time_end_key
 sensor:
   state: "{{ this.attributes.get('today',[])[now().hour] | default(none) }}"
-  # availability: "{{ source_sensor | has_value }}"
+  availability: "{{ source_sensor | has_value }}"
   unit_of_measurement: !input unit_of_measurement
   state_class: measurement
   attributes:
