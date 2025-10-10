@@ -332,7 +332,8 @@ automation:
               Thuis: 100
               Tandenpoetsen: 30
             number.dimmer_woonkamer_plafond_start_brightness:
-              Thuis: 100
+              Thuis: 60
+              Opstaan: 60
               Tandenpoetsen: 30
             number.dimmer_overloop_start_brightness:
               Thuis: 100
@@ -588,3 +589,53 @@ script:
                 action: script.turn_on
                 target:
                   entity_id: script.bedtime_pepijn_routine
+
+  dashboard_turn_on_dimmed:
+    alias: Dashboard turn on dimmed
+    fields:
+      area:
+        name: Area
+        description: Area to target
+        required: false
+        selector:
+          area:
+            multiple: false
+      lights:
+        name: Lights
+        description: Lights to target (will overrule area)
+        required: false
+        selector:
+          entity:
+            multiple: true
+            filter:
+              - domain: light
+    sequence:
+      - variables:
+          use_lights: "{{ lights is defined and lights is not none and lights is list }}"
+          lights: "{{ lights if use_lights else area_entities(area) | select('in', label_entities('off_long_press')) | select('search', '^light.') | list }}"
+          main_lights: "{{ lights if use_lights else lights | select('in', label_entities('main_light')) | list }}"
+      - if: "{{ lights | select('is_state', 'on') | list | count > 0 }}"
+        then:
+          - action: light.turn_off
+            target:
+              entity_id: "{{ lights }}"
+        else:
+          - variables:
+              area_list: "{{ main_lights | map('area_id') | unique | list }}"
+          - repeat:
+              for_each: "{{ area_list }}"
+              sequence:
+                - action: light.turn_on
+                  target:
+                    entity_id: "{{ area_entities(repeat.item) | select('in', main_lights) | list }}"
+                  data:
+                    brightness_pct: >
+                      {{
+                        area_entities(repeat.item)
+                          | select('search', '^number.*start_brightness$')
+                          | map('states')
+                          | select('is_number')
+                          | map('float')
+                          | average(100)
+                          | int
+                      }}
