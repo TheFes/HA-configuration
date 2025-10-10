@@ -13,7 +13,7 @@
 # ENTITIES CREATED:
 # Automations:
 # - automation.change_color_temperature_of_lights_based_on_brightness - Dynamic color temp
-# 
+#
 # Template Lights:
 # - light.planeet - Template light for Planeet device with power monitoring
 #
@@ -26,7 +26,7 @@
 # - Entity: light.eettafel, light.pepijn, light.floris, light.tv_lamp, light.speelhoek, light.bedside_lamp - Target lights
 # - Entity: switch.planeet - Physical switch for Planeet light
 # - Entity: sensor.planeet_power - Power consumption monitoring
-# - Entity: sensor.woonkamer_lux_illuminance_lux - Living room light sensor
+# - Entity: sensor.woonkamer_lux_illuminance - Living room light sensor
 # - Entity: input_boolean.dimmed_* - Dimming state trackers
 # - Entity: input_number.light_inside - Light threshold setting
 
@@ -167,7 +167,7 @@ template:
         name: "Light inside"
         device_class: light
         state: >-
-          {{ states('sensor.woonkamer_lux_illuminance_lux') | float(0) > states('input_number.light_inside') | float(0) }}
+          {{ states('sensor.woonkamer_lux_illuminance') | float(0) > states('input_number.light_inside') | float(0) }}
         delay_off: "00:05:00"
         delay_on: "00:05:00"
 

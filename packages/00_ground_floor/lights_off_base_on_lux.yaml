@@ -6,12 +6,12 @@ automation:
     triggers:
       - alias: "Light level above 100 lux"
         trigger: numeric_state
-        entity_id: sensor.woonkamer_lux_illuminance_lux
+        entity_id: sensor.woonkamer_lux_illuminance
         id: light
         above: 100
       - alias: "Light level above 400 lux (very bright)"
         trigger: numeric_state
-        entity_id: sensor.woonkamer_lux_illuminance_lux
+        entity_id: sensor.woonkamer_lux_illuminance
         id: very_light
         above: 400
     conditions:
