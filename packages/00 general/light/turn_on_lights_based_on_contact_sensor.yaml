@@ -1,0 +1,80 @@
+automation:
+  - id: 3e12aad4-2ddb-46ce-af36-1dbcc14129d9
+    alias: "Turn lights on/off based on contact sensor"
+    mode: parallel
+    max_exceeded: silent
+    triggers:
+      - alias: "Stairs closet door state changed"
+        trigger: state
+        entity_id:
+          - binary_sensor.deur_trapkast_contact
+          - binary_sensor.knieschotluik_contact
+          - binary_sensor.vlieringluik_contact
+    variables:
+      data_mapping:
+        - sensor: binary_sensor.deur_trapkast_contact
+          light: light.trapkast_template
+          auto_turnoff: true
+          turnoff_minutes: 5
+        - sensor: binary_sensor.knieschotluik_contact
+          light: light.knieschot_led
+          auto_turnoff: false
+          turnoff_minutes: 0.5
+        - sensor: binary_sensor.vlieringluik_contact
+          light: light.vliering_led
+          auto_turnoff: false
+          turnoff_minutes: 5
+      sensor: "{{ trigger.entity_id }}"
+      light: >
+        {{
+          data_mapping
+            | selectattr('sensor', 'eq', sensor)
+            | map(attribute='light')
+            | first
+        }}
+      auto_turnoff: >
+        {{
+          data_mapping
+            | selectattr('sensor', 'eq', sensor)
+            | map(attribute='auto_turnoff')
+            | first
+        }}
+      turnoff_minutes: >
+        {{
+          data_mapping
+            | selectattr('sensor', 'eq', sensor)
+            | map(attribute='turnoff_minutes')
+            | first
+        }}
+    actions:
+      - alias: "Open or closed?"
+        choose:
+          - conditions:
+              - alias: "Door open?"
+                condition: template
+                value_template: "{{ trigger.to_state.state == 'on' }}"
+            sequence:
+              - alias: "Turn connected light on"
+                action: light.turn_on
+                target:
+                  entity_id: "{{ light }}"
+              - if: "{{ auto_turnoff }}"
+                then:
+                  - wait_template: "{{ is_state(sensor, 'off') }}"
+                    timeout:
+                      minutes: "{{ turnoff_minutes }}"
+                    continue_on_timeout: true
+                  - alias: "Turn connected light off after delay"
+                    action: light.turn_off
+                    target:
+                      entity_id: "{{ light }}"
+          - conditions:
+              - alias: "Door closed?"
+                condition: state
+                condition: template
+                value_template: "{{ trigger.to_state.state == 'off' }}"
+            sequence:
+              - alias: "Turn off the light immediately"
+                action: light.turn_off
+                target:
+                  entity_id: "{{ light }}"
