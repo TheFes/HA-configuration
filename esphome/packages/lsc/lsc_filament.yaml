@@ -1,5 +1,6 @@
 substitutions:
   dim_lenght: "20s"
+  light_icon: mdi:lightbulb
 
 esphome:
   friendly_name: ${name}
@@ -27,6 +28,7 @@ output:
 light:
   - platform: cwww
     name: ""
+    icon: ${light_icon}
     id: light_bulb
     cold_white: output_daylight
     warm_white: output_warm_white
