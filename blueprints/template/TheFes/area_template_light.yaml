@@ -1,0 +1,154 @@
+blueprint:
+  name: Template light for area dashboard
+  description: >
+    Light to use on main dashboard to toggle lights
+  author: TheFes
+  source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/area_template_light.yaml
+  domain: template
+  input:
+    area:
+      name: Area
+      description: The area from which the lights should be used
+      selector:
+        area:
+          multiple: true
+    sleeping_sensor:
+      name: Sleeping sensor
+      description: The binary sensor which indicates if the room in sleeping
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: binary_sensor
+      default: null
+    night_light_boolean:
+      name: Night light boolean
+      description: Input boolean to indicate night light should be used
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: input_boolean
+      default: null
+    icon_on:
+      name: Icon On
+      description: Icon to be used when the template light is on
+      selector:
+        icon:
+          placeholder: mdi:lightbulb-group
+      default: mdi:lightbulb-group
+    icon_off:
+      name: Icon Off
+      description: Icon to be used when the template light is off
+      selector:
+        icon:
+          placeholder: mdi:lightbulb-group-off
+      default: mdi:lightbulb-group-off
+
+variables:
+  area: !input area
+  sleeping_sensor: !input sleeping_sensor
+  night_light_boolean: !input night_light_boolean
+  icon_on: !input icon_on
+  icon_off: !input icon_off
+  icon_sleep: mdi:sleep
+  area_lights: >
+    {% set select_lights = 
+            label_entities('off_long_press') + label_entities('night_light')
+    %}
+    {{
+      area
+        | map('area_entities')
+        | flatten(1)
+        | select('search', '^light.')
+        | select('in', select_lights)
+        | unique
+        | list
+    }}
+  main_lights: >
+    {{
+      area_lights
+        | select('in', label_entities('main_light'))
+        | list
+    }}
+  night_lights: >
+    {{
+      area_lights
+        | select('in', label_entities('night_light'))
+        | list
+    }}
+
+light:
+  state: "{{ area_lights | select('is_state', 'on') | list | count > 0 }}"
+  icon: >
+    {% set area_lights_on = 
+            area_lights | select('is_state', 'on') | list | count
+    %}
+    {% set sleeping = 
+        area_lights_on > 0
+        and sleeping_sensor is not none
+        and sleeping_sensor | has_value
+        and night_light_boolean is not none
+        and night_light_boolean | has_value
+        and is_state(sleeping_sensor, 'on')
+        and is_state(night_light_boolean, 'on')
+        and area_lights_on == night_lights | select('is_state', 'on') | list | count 
+    %}
+    {% if sleeping is defined and sleeping %}
+      {{ icon_sleep }}
+    {% else %}
+      {{ icon_on if area_lights_on > 0 else icon_off }}
+    {% endif %}
+  turn_on:
+    - if: >
+        {{
+          sleeping_sensor is not none
+          and sleeping_sensor | has_value
+          and night_light_boolean is not none
+          and night_light_boolean | has_value
+          and is_state(sleeping_sensor, 'on')
+          and is_state(night_light_boolean, 'on')
+        }}
+      then:
+        - action: light.turn_on
+          target:
+            entity_id: "{{ night_lights }}"
+      else:
+        - if: >
+            {{
+              main_lights
+                | expand
+                | selectattr('brightness', 'defined')
+                | list
+                | count > 0
+            }}
+          then:
+            - action: light.turn_on
+              target:
+                entity_id: "{{ main_lights }}"
+              data:
+                brightness_pct: >
+                  {{
+                    area
+                      | map('area_entities')
+                      | flatten(1)
+                      | select('search', '^number.*start_brightness$')
+                      | map('states')
+                      | select('is_number')
+                      | map('float')
+                      | average(100)
+                      | int
+                  }}
+          else:
+            - action: light.turn_on
+              target:
+                entity_id: "{{ main_lights }}"
+  turn_off:
+    - action: light.turn_off
+      target:
+        entity_id: >
+          {{
+            area_lights
+              | select('is_state', 'on')
+              | list
+          }}
