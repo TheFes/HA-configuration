@@ -1,0 +1,167 @@
+blueprint:
+  name: Relay light and add effects
+  description: >
+    Converts a switch to a light
+  author: TheFes
+  source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/relay_light_and_add_effects.yaml
+  domain: template
+  input:
+    source_light:
+      name: Source light
+      description: Source light for the template light
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: switch
+      default: null
+    relay_switch:
+      name: Relay Switch
+      description: Switch entity used to toggle the entity.
+      selector:
+        entity:
+          multiple: false
+          filter:
+            - domain: switch
+      default: null
+    icon_on:
+      name: Icon On
+      description: Icon to be used when the template light is on
+      selector:
+        icon:
+          placeholder: mdi:lightbulb
+      default: mdi:lightbulb
+    icon_off:
+      name: Icon Off
+      description: Icon to be used when the template light is off
+      selector:
+        icon:
+          placeholder: mdi:lightbulb-off
+      default: mdi:lightbulb-off
+    min_brightness:
+      name: Minimum brightness
+      description: Minimal brightness to be used when the light is on
+      selector:
+        number:
+          min: 0
+          max: 255
+      default: 0
+    default_entity_id:
+      name: Default entity_id
+      description: The default entity id to use
+      selector:
+        text:
+          multiple: false
+          multiline: false
+
+variables:
+  source_light: !input source_light
+  relay_switch: !input relay_switch
+  icon_on: !input icon_on
+  icon_off: !input icon_off
+  min_brightness: !input min_brightness
+
+light:
+  default_entity_id: !input default_entity_id
+  name: "{{ state_attr(source_light, 'friendly_name') }}"
+  icon: "{{ icon_on if is_state(source_light, 'on') else icon_off }}"
+  state: >
+    {{
+      is_state(source_light, 'on')
+      or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
+      or 
+        (
+          not states(source_light) | bool('na') is boolean
+          and (is_state(relay_switch, 'on') if relay_switch else true)
+        )
+    }}
+  turn_on:
+    - if: "{{ source_light | has_value }}"
+      then:
+        - alias: Turn light on
+          action: light.turn_on
+          target:
+            entity_id: "{{ source_light }}"
+          data: >
+            {% if relay_switch is not none %}
+              {% set brightness =
+                device_entities(device_id(relay_switch))
+                  | select('search', '^number.*start_brightness$')
+                  | map('states')
+                  | select('is_number')
+                  | map('float')
+                  | average('na')
+                  | int('na')
+              %}
+              {{ dict(brightness_pct=brightness) if brightness | is_number else dict() }}
+            {% else %}
+              {{ dict() }}
+            {% endif %}
+      else:
+        - alias: Turn on switch
+          action: switch.turn_on
+          target:
+            entity_id: "{{ relay_switch }}"
+  turn_off:
+    - if: "{{ source_light | has_value }}"
+      then:
+        - alias: Turn light off
+          action: light.turn_off
+          target:
+            entity_id: "{{ source_light }}"
+      else:
+        - alias: Turn on switch
+          action: switch.turn_off
+          target:
+            entity_id: "{{ relay_switch }}"
+  level: >
+    {{
+      [
+        1,
+        ((state_attr(source_light, 'brightness') | int(0) - min_brightness) / ((255 - min_brightness) / 255)) | round
+      ] | max
+    }}
+  set_level:
+    - action: light.turn_on
+      data:
+        entity_id: "{{ source_light }}"
+        brightness: >
+          {{ (brightness | float * ((255 - min_brightness) / 255) + min_brightness) | round }}
+  effect_list: >
+    {% set effect = state_attr(source_light, 'effect_list') | default([], true) %}
+    {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
+  effect: >
+    {% set custom = state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
+    {% set def = state_attr(source_light, effect) | default('None') %}
+    {% set effect = [def, custom] | reject('eq', 'None') | list %}
+    {{ effect | first if effect else 'None' }}
+  set_effect:
+    - variables:
+        built_in_effects: "{{ state_attr(source_light, 'effect_list') | default([], true) }}"
+    - if: "{{ effect in built_in_effects }}"
+      then:
+        - action: light.turn_on
+          target:
+            entity_id: "{{ source_light }}"
+          data: "{{ dict(effect=effect) }}"
+      else:
+        - action: script.turn_on
+          target:
+            entity_id: script.light_blink
+          data:
+            variables:
+              light: "{{ this.entity_id }}"
+              toggle_entity: "{{ source_light }}"
+              effect: "{{ effect }}"
+  rgb: "{{ state_attr(source_light, 'rgb') }}"
+  set_rgb:
+    - action: light.turn_on
+      data:
+        entity_id: "{{ source_light }}"
+        rgb: "{{ rgb }}"
+  supports_transition: "{{ state_attr(source_light, 'supported_features') | bitwise_and(32) != 0 }}"
+  availability: >
+    {{
+      source_light | has_value
+      or (relay_switch | has_value if relay_switch else false)
+    }}

@@ -1,0 +1,235 @@
+template:
+  # only brightness
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.trapkast
+        relay_switch: switch.sonoff_trapkast_relay
+        icon_on: mdi:bulkhead-light
+        icon_off: mdi:bulkhead-light
+        default_entity_id: light.trapkast_template
+    unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.floris
+        relay_switch: switch.sonoff_floris_relay
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.floris_template
+    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.keuken
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.keuken_template
+    unique_id: 3b6a08d8-b6d1-4549-bc10-cd018a6aaa0f
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.woonkamer_plafond
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.woonkamer_plafond_template
+    unique_id: 8bb4f274-2577-44ca-8c11-52b2d8551f50
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.hal
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.hal_template
+    unique_id: 57d3327c-f4dd-4f7d-8a1f-7cb38b579a6a
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.badkamer
+        icon_on: mdi:ceiling-light-multiple
+        icon_off: mdi:ceiling-light-multiple-outline
+        default_entity_id: light.badkamer_template
+    unique_id: 075af7f8-33f2-4965-91e7-0cdea360acc6
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.overloop
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.overloop_template
+    unique_id: 249fed5a-76b7-400d-890d-c15d3202ea35
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.zolder
+        icon_on: mdi:bulkhead-light
+        icon_off: mdi:bulkhead-light
+        default_entity_id: light.zolder_template
+    unique_id: d86446ee-6857-4556-903b-72dd2e3a9b41
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_brightness.yaml
+      input:
+        source_light: light.veranda
+        icon_on: mdi:wall-sconce-flat
+        icon_off: mdi:wall-sconce-flat-outline
+        default_entity_id: light.veranda_template
+    unique_id: 83b9379d-81d9-4759-b81f-1338165547c8
+
+  # brightness and color temp
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.boekenkast
+        icon_on: mdi:led-strip-variant
+        icon_off: mdi:led-strip-variant-off
+        default_entity_id: light.boekenkast_template
+    unique_id: ab1d64cb-58c3-45a8-ae6f-03d1205df543
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.voordeur
+        relay_switch: switch.sonoff_voordeur_relay
+        icon_on: mdi:coach-lamp
+        icon_off: mdi:coach-lamp
+        min_brightness: 37
+        default_entity_id: light.voordeur_template
+    unique_id: 2eea83f3-105a-42dd-ac39-c7c57cea6e50
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.floris_leeslamp
+        icon_on: mdi:lightbulb
+        icon_off: mdi:lightbulb-off
+        default_entity_id: light.floris_leeslamp_template
+    unique_id: d4d8ae15-3439-4473-acf4-aed0942ca4d1
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.eettafel
+        relay_switch: switch.shelly1_eettafel_relay
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        min_brightness: 37
+        default_entity_id: light.eettafel_template
+    unique_id: 847f5495-8971-4656-8fde-7a636e983735
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.pepijn
+        relay_switch: switch.shelly1_pepijn_relay
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        min_brightness: 37
+        default_entity_id: light.pepijn_template
+    unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.slaapkamer_plafond
+        relay_switch: switch.sonoff_slaapkamer_plafond_relay
+        icon_on: mdi:wall-sconce-flat
+        icon_off: mdi:wall-sconce-flat-outline
+        default_entity_id: light.slaapkamer_plafond_template
+    unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.wasmachinehoek
+        relay_switch: switch.sonoff_wasmachinehoek_relay
+        icon_on: mdi:wall-sconce-flat
+        icon_off: mdi:wall-sconce-flat-outline
+        default_entity_id: light.wasmachinehoek_template
+    unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.badkamer_zolder
+        relay_switch: switch.sonoff_badkamer_zolder_relay
+        icon_on: mdi:wall-sconce-flat
+        icon_off: mdi:wall-sconce-flat-outline
+        default_entity_id: light.badkamer_zolder_template
+    unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.speelhoek
+        icon_on: mdi:lamp
+        icon_off: mdi:lamp-outline
+        default_entity_id: light.speelhoek_template
+    unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.werkkamer_marleen
+        relay_switch: switch.shelly1_werkkamer_marleen_relay
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        min_brightness: 37
+        default_entity_id: light.werkkamer_marleen_template
+    unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.werkkamer_martijn_plafond
+        relay_switch: switch.sonoff_badkamerspiegel_zolder_relay
+        icon_on: mdi:wall-sconce-flat
+        icon_off: mdi:wall-sconce-flat-outline
+        default_entity_id: light.werkkamer_martijn_plafond_template
+    unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
+
+  # colortemp and rgb
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp_rgb.yaml
+      input:
+        source_light: light.bedside_lamp
+        icon_on: mdi:lamp
+        icon_off: mdi:lamp-outline
+        default_entity_id: light.bedside_lamp_template
+    unique_id: 4f868cad-6487-40d3-935c-2fabb7d75ebb
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp_rgb.yaml
+      input:
+        source_light: light.pepijn_leeslamp
+        icon_on: mdi:desk-lamp
+        icon_off: mdi:desk-lamp-off
+        default_entity_id: light.pepijn_leeslamp_template
+    unique_id: 9c60f0f9-6f63-4f9f-9481-d55efab4b8bf
+
+  # rgb
+  - use_blueprint:
+      path: TheFes/light_relay_effect_rgb.yaml
+      input:
+        source_light: light.vliering_led
+        icon_on: mdi:led-strip-variant
+        icon_off: mdi:led-strip-variant-off
+        default_entity_id: light.vliering_led_template
+    unique_id: ba2c70a7-7e6f-4da9-a1a3-03b3146f5bd4
+
+  # rgbw
+  - use_blueprint:
+      path: TheFes/light_relay_effect_rgbw.yaml
+      input:
+        source_light: light.graafmachine
+        icon_on: mdi:excavator
+        icon_off: mdi:excavator
+        default_entity_id: light.graafmachine_template
+    unique_id: 2e183aee-bbbf-4f4c-a43d-e6c48e36c879

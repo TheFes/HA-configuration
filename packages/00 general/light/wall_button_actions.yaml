@@ -23,6 +23,7 @@ automation:
           - event.dimmer_zolder_zolder
           - event.sonoff_wasmachinehoek_sonoff_wasmachinehoek
           - event.dimmer_hal_hal
+          - event.sonoff_voordeur_sonoff_voordeur
         not_from: unavailable
         variables:
           event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
@@ -57,16 +58,6 @@ automation:
                 | map('states')
                 | join 
                 | default('Detached', true) in ['Detached', 'Events Only']
-            }}
-          start_brightness: >
-            {{
-              device_entities(device_id(trigger.entity_id))
-                | select('search', 'start_brightness')
-                | map('states')
-                | map('float', 100)
-                | list
-                | default([100], true)
-                | average
             }}
           scope: >
             {{ device_entities(device_id(trigger.entity_id))
@@ -121,67 +112,25 @@ automation:
                 condition: template
                 value_template: "{{ event == 'single_press' and control_light }}"
             sequence:
-              - choose:
-                  - alias: "Check if the button has a relay, if the relay is on and if any of the assigned lights is available"
-                    conditions: >
-                      {{
-                        relay | has_value 
-                        and
-                          (
-                            is_state(relay, 'off')
-                            or toggle_lights | select('has_value') | list | count == 0
-                          )
-                      }}
-                    sequence:
-                      - alias: Toggle Relay
-                        action: switch.toggle
-                        target:
-                          entity_id: "{{ relay }}"
-                  - alias: Check if any of the assigned lights is on
-                    conditions: "{{ toggle_lights | select('is_state', 'on') | list | count > 0 }}"
-                    sequence:
-                      - alias: Turn off lights
-                        action: light.turn_off
-                        target:
-                          entity_id: "{{ toggle_lights }}"
-                default:
+              - alias: Check if any of the assigned lights is on
+                if: "{{ toggle_lights | select('is_state', 'on') | list | count > 0 }}"
+                then:
+                  - alias: Turn off lights
+                    action: light.turn_off
+                    target:
+                      entity_id: "{{ toggle_lights | select('is_state', 'on') | list }}"
+                else:
                   - alias: Turn on lights
-                    repeat:
-                      for_each: "{{ toggle_lights }}"
-                      sequence:
-                        - alias: Set correct light settings for each light
-                          variables:
-                            data:
-                              brightness_pct: >
-                                {{
-                                  start_brightness
-                                    if repeat.item | has_value 
-                                    and states[repeat.item].attributes.brightness is defined
-                                  else 'na'
-                                }}
-                              kelvin: >
-                                {% set kelvin_used = repeat.item | has_value 
-                                    and states[repeat.item].attributes.min_color_temp_kelvin is defined
-                                %}
-                                {% if kelvin_used %}
-                                  {% set k_min = state_attr(repeat.item, 'min_color_temp_kelvin') %}
-                                  {% set k_max = state_attr(repeat.item, 'max_color_temp_kelvin') %}
-                                  {{ ((k_max - k_min) * start_brightness / 100 + k_min) | round(0) }}
-                                {% else %}
-                                  na
-                                {% endif %}
-                        - alias: Turn each of the assigned lights on with the correct settings
-                          action: light.turn_on
-                          target:
-                            entity_id: "{{ repeat.item }}"
-                          data: "{{ dict(data.items() | selectattr('1', 'is_number')) }}"
-                        - alias: Set dim toggle to either dim down or up
-                          if: "{{ dim_switch | has_value }}"
-                          then:
-                            - alias: Set dim switch
-                              action: switch.turn_{{ 'on' if start_brightness >= 50 else 'off' }}
-                              target:
-                                entity_id: "{{ dim_switch }}"
+                    action: light.turn_on
+                    target:
+                      entity_id: "{{ toggle_lights }}"
+                  - alias: Set dim toggle to either dim down
+                    if: "{{ dim_switch | has_value }}"
+                    then:
+                      - alias: Set dim switch
+                        action: switch.turn_on
+                        target:
+                          entity_id: "{{ dim_switch }}"
           - conditions:
               - alias: "Actions on double press event (100%)"
                 condition: template
@@ -213,7 +162,7 @@ automation:
                       target:
                         entity_id: "{{ repeat.item }}"
                       data: "{{ dict(data.items() | selectattr('1', 'is_number')) }}"
-                    - alias: Set dim toggle to either dim down
+                    - alias: Set dim toggle to dim down
                       if: "{{ dim_switch | has_value }}"
                       then:
                         - alias: Set dim switch
@@ -589,53 +538,3 @@ script:
                 action: script.turn_on
                 target:
                   entity_id: script.bedtime_pepijn_routine
-
-  dashboard_turn_on_dimmed:
-    alias: Dashboard turn on dimmed
-    fields:
-      area:
-        name: Area
-        description: Area to target
-        required: false
-        selector:
-          area:
-            multiple: false
-      lights:
-        name: Lights
-        description: Lights to target (will overrule area)
-        required: false
-        selector:
-          entity:
-            multiple: true
-            filter:
-              - domain: light
-    sequence:
-      - variables:
-          use_lights: "{{ lights is defined and lights is not none and lights is list }}"
-          lights: "{{ lights if use_lights else area_entities(area) | select('in', label_entities('off_long_press')) | select('search', '^light.') | list }}"
-          main_lights: "{{ lights if use_lights else lights | select('in', label_entities('main_light')) | list }}"
-      - if: "{{ lights | select('is_state', 'on') | list | count > 0 }}"
-        then:
-          - action: light.turn_off
-            target:
-              entity_id: "{{ lights }}"
-        else:
-          - variables:
-              area_list: "{{ main_lights | map('area_id') | unique | list }}"
-          - repeat:
-              for_each: "{{ area_list }}"
-              sequence:
-                - action: light.turn_on
-                  target:
-                    entity_id: "{{ area_entities(repeat.item) | select('in', main_lights) | list }}"
-                  data:
-                    brightness_pct: >
-                      {{
-                        area_entities(repeat.item)
-                          | select('search', '^number.*start_brightness$')
-                          | map('states')
-                          | select('is_number')
-                          | map('float')
-                          | average(100)
-                          | int
-                      }}
