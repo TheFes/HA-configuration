@@ -43,7 +43,7 @@ template:
           - alias: "Set Floris dimmer start brightness based on sleep state"
             action: number.set_value
             target:
-              entity_id: number.sonoff_floris_start_brightness
+              entity_id: number.light_floris_start_brightness
             data:
               value: 30
     binary_sensor:
@@ -67,9 +67,15 @@ script:
           - alias: "Set Floris dimmer to sleep brightness"
             action: number.set_value
             target:
-              entity_id: number.sonoff_floris_start_brightness
+              entity_id: number.floris_start_brightness
             data:
               value: 30
+          - alias: "Set Floris dimmer to sleep brightness"
+            action: number.set_value
+            target:
+              entity_id: number.floris_leeslamp_start_brightness
+            data:
+              value: 40
       - alias: "Light on"
         action: light.turn_on
         target:
@@ -77,13 +83,7 @@ script:
             - light.floris_template
             - light.bedlamp_floris
             - light.planeet
-      - alias: "Turn on Floris reading light with warm settings"
-        action: light.turn_on
-        target:
-          entity_id: light.floris_leeslamp
-        data:
-          color_temp_kelvin: 4000
-          brightness: 150
+            - light.floris_leeslamp_template
       - alias: "Turn on graafmachine"
         action: light.turn_on
         target:

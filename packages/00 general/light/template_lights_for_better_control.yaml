@@ -171,6 +171,8 @@ template:
         source_light: light.speelhoek
         icon_on: mdi:lamp
         icon_off: mdi:lamp-outline
+        min_brightness: 26
+        max_ct_kelvin: 3500
         default_entity_id: light.speelhoek_template
     unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
 
@@ -233,3 +235,22 @@ template:
         icon_off: mdi:excavator
         default_entity_id: light.graafmachine_template
     unique_id: 2e183aee-bbbf-4f4c-a43d-e6c48e36c879
+
+  - triggers:
+      - trigger: event
+        event_type: template_light_start_brightness
+    sensor:
+      - unique_id: b579a6e5-549c-4ef1-935d-a584365aeb70
+        name: Template Light Start Brightness
+        state: OK
+        attributes:
+          start_brightness: >
+            {% set current = this.attributes.get('start_brightness', []) %}
+            {% set light = trigger.event.data.light %}
+            {% set start_brightness = trigger.event.data.start_brightness %}
+            {% set others = current | rejectattr('light', 'eq', light) | list %}
+            {% if start_brightness | is_number  %}
+              {{ others + [dict(light=light, start_brightness=start_brightness)] }}
+            {% else %}
+              {{ current }}
+            {% endif %}

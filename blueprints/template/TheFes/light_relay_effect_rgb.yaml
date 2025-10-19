@@ -85,7 +85,7 @@ light:
           data: >
             {% if relay_switch is not none %}
               {% set brightness =
-                device_entities(device_id(relay_switch))
+                device_entities(device_id(source_light))
                   | select('search', '^number.*start_brightness$')
                   | map('states')
                   | select('is_number')

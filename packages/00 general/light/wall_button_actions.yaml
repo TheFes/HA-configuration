@@ -259,25 +259,27 @@ automation:
 
   - id: 806efebe-1dd4-44c5-9087-c12b6a896bd0
     alias: Change start brightness for light buttons based on House Mode
+    mode: restart
     triggers:
       - trigger: state
         entity_id: sensor.house_mode
-        to: ~
-        variables:
-          house_mode: "{{ trigger.to_state.state }}"
+        not_from:
+          - unavailable
+          - unknown
     actions:
       - alias: Set settings for number entities
         variables:
+          house_mode: "{{ states('sensor.house_mode') }}"
           settings:
-            number.sonof_werkkamer_martijn_plafond_start_brightness:
+            number.werkkamer_martijn_plafond_start_brightness:
               Opstaan: 80
               Thuis: 100
               Tandenpoetsen: 30
-            number.sonoff_slaapkamer_plafond_start_brightness:
+            number.slaapkamer_plafond_start_brightness:
               Opstaan: 50
               Thuis: 100
               Tandenpoetsen: 30
-            number.sonoff_badkamer_zolder_start_brightness:
+            number.badkamer_zolder_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
             number.dimmer_woonkamer_plafond_start_brightness:
@@ -290,13 +292,14 @@ automation:
             number.dimmer_keuken_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.shelly1_eettafel_start_brightness:
+            number.light_eettafel_start_brightness:
               Thuis: 100
+              Relax: 30
               Tandenpoetsen: 30
             number.dimmer_zolder_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.sonoff_wasmachinehoek_start_brightness:
+            number.wasmachinehoek_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
             number.dimmer_hal_start_brightness:
@@ -306,14 +309,22 @@ automation:
               Opstaan: 100
               Thuis: 100
               Slapen: 30
-            number.shelly1_pepijn_start_brightness:
+            number.light_pepijn_start_brightness:
               Opstaan: 60
               Thuis: 100
               Slapen: 30
-            number.sonoff_floris_start_brightness:
+            number.floris_start_brightness:
               Opstaan: 60
               Thuis: 100
               Slapen: 30
+            number.floris_leeslamp_start_brightness:
+              Thuis: 100
+              Slapen: 5
+            number.boekenkast_start_brightness:
+              Thuis: 15
+            number.speelhoek_start_brightness:
+              Thuis: 40
+              Relax: 2
           entities: >
             {{
               settings.items()

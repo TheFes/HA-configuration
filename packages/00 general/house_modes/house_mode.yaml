@@ -57,35 +57,12 @@ template:
         trigger: event
         event_type: set_house_mode
         id: event
-        variables:
-          mode: "{{ trigger.event.data.mode }}"
       - alias: "Holiday, guest, or occupancy state changed"
         trigger: state
         entity_id:
           - input_boolean.vakantie
           - input_boolean.gast
           - zone.home
-        variables:
-          mode: &mode_template >
-            {% set home = states('zone.home') | int(0) > 0 %}
-            {% set guest = is_state('input_boolean.gast', 'on') %}
-            {% set holiday = is_state('input_boolean.vakantie', 'on') %}
-            {% if home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
-              Slapen
-            {% elif home
-              and today_at('06:30') < now() < today_at('07:30')
-              and now().isoweekday() <= 5
-            %}
-              Opstaan
-            {% elif home %}
-              Thuis
-            {% elif guest %}
-              Gast
-            {% elif holiday %}
-              Vakantie
-            {% else %}
-              Afwezig
-            {% endif %}
       - alias: "Set mode to prepare for the day"
         trigger: time
         at: "06:30:00"
@@ -95,27 +72,55 @@ template:
           - wed
           - thu
           - fri
-        variables:
-          mode: *mode_template
       - alias: "Attic lights turned off (sleep detection)"
         trigger: state
         entity_id: light.groep_zolder
         to: "off"
-        variables:
-          mode: *mode_template
       - alias: "30 minute timeout from teeth brushing mode"
         trigger: state
         entity_id: sensor.house_mode
         to: "Tandenpoetsen"
         for:
           minutes: 30
-        variables:
-          mode: *mode_template
+      - alias: Shield turns on
+        trigger: state
+        entity_id: media_player.nvidia_shield
+        from: "off"
+        not_to:
+          - unavailable
+          - unknown
       - alias: "Pepijn's wake up time"
         trigger: time
         at: input_datetime.pepijn_time_awake
-        variables:
-          mode: *mode_template
+    variables:
+      mode: >
+        {% set home = states('zone.home') | int(0) > 0 %}
+        {% set guest = is_state('input_boolean.gast', 'on') %}
+        {% set holiday = is_state('input_boolean.vakantie', 'on') %}
+        {% if trigger.id == 'event' %}
+          {{ trigger.event.data.mode }}
+        {% elif home and trigger.platform != 'time' and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen']) %}
+          Slapen
+        {% elif home
+          and today_at('06:30') < now() < today_at('07:30')
+          and now().isoweekday() <= 5
+        %}
+          Opstaan
+        {% elif home
+          and today_at('19:15') < now() < today_at('22:30')
+          and 'media_player.nvidia_shield' | has_value
+          and not is_state('media_player.nvidia_shield', 'on')
+        %}
+          Relax
+        {% elif home %}
+          Thuis
+        {% elif guest %}
+          Gast
+        {% elif holiday %}
+          Vakantie
+        {% else %}
+          Afwezig
+        {% endif %}
     sensor:
       - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
         name: House Mode
@@ -127,6 +132,7 @@ template:
                               'Vakantie': 'mdi:bag-suitcase',
                               'Tandenpoetsen': 'mdi:toothbrush',
                               'Opstaan': 'mdi:bed-clock',
+                              'Relax': 'mdi:sofa',
                               'Slapen': 'mdi:bed'
                             }
           %}

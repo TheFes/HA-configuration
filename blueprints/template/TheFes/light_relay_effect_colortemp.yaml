@@ -46,6 +46,30 @@ blueprint:
           min: 0
           max: 255
       default: 0
+    max_brightness:
+      name: Maximum brightness
+      description: Maximum brightness to be used when the light is on
+      selector:
+        number:
+          min: 0
+          max: 255
+      default: 255
+    min_ct_kelvin:
+      name: Minimum color temperature Kelvin
+      description: Minimal color temperature to be used when the light is on
+      selector:
+        number:
+          min: 0
+          max: 10000
+      default: 0
+    max_ct_kelvin:
+      name: Maximum color temperature Kelvin
+      description: Maximum color temperature to be used when the light is on
+      selector:
+        number:
+          min: 0
+          max: 10000
+      default: 10000
     default_entity_id:
       name: Default entity_id
       description: The default entity id to use
@@ -60,6 +84,25 @@ variables:
   icon_on: !input icon_on
   icon_off: !input icon_off
   min_brightness: !input min_brightness
+  max_brightness: !input max_brightness
+  min_ct_kelvin: !input min_ct_kelvin
+  max_ct_kelvin: !input max_ct_kelvin
+  min_ct: "{{ [min_ct_kelvin, state_attr(source_light, 'min_color_temp_kelvin')] | max }}"
+  max_ct: "{{ [max_ct_kelvin, state_attr(source_light, 'max_color_temp_kelvin')] | min }}"
+  min_mireds: >
+    {{ 
+      [
+        (1000000/max_ct) | round | int,
+        state_attr(source_light, 'min_mireds') | default(100, true)
+      ] | max
+    }}
+  max_mireds: >
+    {{ 
+      [
+        (1000000/min_ct) | round | int,
+        state_attr(source_light, 'max_mireds') | default(100, true)
+      ] | min
+    }}
 
 light:
   default_entity_id: !input default_entity_id
@@ -84,8 +127,8 @@ light:
             entity_id: "{{ source_light }}"
           data: >
             {% if relay_switch is not none %}
-              {% set brightness =
-                device_entities(device_id(relay_switch))
+              {% set br_pct =
+                device_entities(device_id(source_light))
                   | select('search', '^number.*start_brightness$')
                   | map('states')
                   | select('is_number')
@@ -93,7 +136,10 @@ light:
                   | average('na')
                   | int('na')
               %}
-              {{ dict(brightness_pct=brightness) if brightness | is_number else dict() }}
+              {% set brightness = (br_pct | float(100) * 2.25) %}
+              {% set ct = (min_ct + (max_ct-min_ct) * (br_pct | float(100) / 100)) | round(0) | int %} 
+              {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
+              {{ dict(brightness=brightness, color_temp_kelvin=ct) if br_pct | is_number else dict() }}
             {% else %}
               {{ dict() }}
             {% endif %}
@@ -118,28 +164,30 @@ light:
     {{
       [
         1,
-        ((state_attr(source_light, 'brightness') | int(0) - min_brightness) / ((255 - min_brightness) / 255)) | round
+        (
+          (state_attr(source_light, 'brightness') | int(0) - min_brightness)
+            / ((max_brightness - min_brightness) / 255)
+        ) | round
       ] | max
     }}
   set_level:
     - action: light.turn_on
+      target:
+        entity_id: "{{ source_light }}"
+      data: >
+        {% set ct = (min_ct + (max_ct-min_ct) * (brightness / 255)) | round(0) | int %} 
+        {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
+        {{ dict(brightness=brightness, color_temp_kelvin=ct) }}
+  temperature: >
+    {% set source = state_attr(source_light, 'color_temp') %}
+    {{ source if source is none else [min_mireds, source, max_mireds] | median }}
+  min_mireds: "{{ min_mireds }}"
+  max_mireds: "{{ max_mireds }}"
+  set_temperature:
+    - action: light.turn_on
       data:
         entity_id: "{{ source_light }}"
-        brightness: >
-          {{ (brightness | float * ((255 - min_brightness) / 255) + min_brightness) | round }}
-  temperature: >
-    {{ state_attr(source_light, 'color_temp') }}
-  min_mireds: >
-    {{ state_attr(source_light, 'min_mireds') | default(100, true) }}
-  max_mireds: >
-    {{ state_attr(source_light, 'max_mireds') | default(150, true) }}
-  set_temperature:
-    - if: "{{ state_attr(source_light, 'min_mireds') is not none }}"
-      then:
-        - action: light.turn_on
-          data:
-            entity_id: "{{ source_light }}"
-            color_temp_kelvin: "{{ (1000000 / color_temp) | int }}"
+        color_temp_kelvin: "{{ (1000000 / color_temp) | int }}"
   effect_list: >
     {% set effect = state_attr(source_light, 'effect_list') | default([], true) %}
     {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}

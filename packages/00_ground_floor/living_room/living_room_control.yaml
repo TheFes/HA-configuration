@@ -146,13 +146,21 @@ automation:
                             entity_id: media_player.nvidia_shield
                             state: "off"
                     sequence:
-                      - alias: "Dim some lights"
+                      - delay: 0.5
+                      - alias: "Dim eethoek light"
                         action: light.turn_on
                         target:
                           entity_id:
-                            - light.eettafel
+                            - light.eettafel_template
                         data:
-                          brightness: 100
+                          brightness_pct: "{{ states('number.light_eettafel_start_brightness') }}"
+                      - alias: "Dim eethoek light"
+                        action: light.turn_on
+                        target:
+                          entity_id:
+                            - light.speelhoek
+                        data:
+                          brightness_pct: "{{ states('number.speelhoek_start_brightness') }}"
 
   # From: tv_on_music_home_off.yaml
   - id: cfeadbfe-57cd-4034-b993-e09a4eb3ce7d
@@ -182,22 +190,22 @@ automation:
             target:
               entity_id: "{{ playing }}"
 
-  - id: '1752261526546'
+  - id: "1752261526546"
     alias: Set Shield to Launcher on start
     triggers:
-    - alias: "Shield turned on from off to idle"
-      trigger: state
-      entity_id:
-      - media_player.nvidia_shield
-      to: idle
-      from: 'off'
+      - alias: "Shield turned on from off to idle"
+        trigger: state
+        entity_id:
+          - media_player.nvidia_shield
+        to: idle
+        from: "off"
     actions:
-    - alias: "Send HOME command to Shield"
-      action: androidtv.adb_command
-      data:
-        command: HOME
-      target:
-        entity_id: media_player.nvidia_shield
+      - alias: "Send HOME command to Shield"
+        action: androidtv.adb_command
+        data:
+          command: HOME
+        target:
+          entity_id: media_player.nvidia_shield
     mode: single
 
 # From: samsung_soundbar.yaml
