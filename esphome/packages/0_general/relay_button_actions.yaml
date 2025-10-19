@@ -262,17 +262,3 @@ switch:
     lambda: |-
       return id(dim_down_bool);
     entity_category: config
-
-number:
-  - platform: template
-    name: "Start Brightness"
-    id: start_brightness
-    optimistic: true
-    min_value: 1
-    max_value: 100
-    step: 1
-    restore_value: true
-    initial_value: 100
-    entity_category: config
-    icon: mdi:brightness-percent
-    unit_of_measurement: "%"
