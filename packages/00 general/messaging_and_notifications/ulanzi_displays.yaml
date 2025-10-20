@@ -302,6 +302,8 @@ automation:
   # From: awtrix_button_press.yaml
   - id: 630ae4fd-f5fd-41f9-8d83-837e991a08c8
     alias: Run actions on Awtrix button press
+    mode: single
+    max_exceeded: silent
     triggers:
       - alias: Monitor all Awtrix button presses
         trigger: state
