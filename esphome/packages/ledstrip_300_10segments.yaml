@@ -8,7 +8,7 @@ esphome:
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+    type: esp-idf
 
 packages:
   minimal: !include 0_general/minimal.yaml
@@ -16,11 +16,11 @@ packages:
   btproxy: !include 0_general/bt_proxy.yaml
 
 light:
-  - platform: neopixelbus
-    variant: ${strip_variant}
+  - platform: esp32_rmt_led_strip
+    chipset: ${chipset}
     pin: ${light_pin}
     num_leds: 300
-    type: ${color_type}
+    rgb_order: ${rgb_order}
     name: ""
     id: vliering_led
     effects: &effects
