@@ -138,7 +138,7 @@ automation:
             sequence:
               - alias: Turn each toggle light to 100% (if supported)
                 repeat:
-                  for_each: "{{ toggle_lights }}"
+                  for_each: "{{ toggle_lights | select('has_value') | list }}"
                   sequence:
                     - alias: Set correct light settings for each light
                       variables:
@@ -146,15 +146,7 @@ automation:
                           brightness_pct: >
                             {{
                               100
-                                if repeat.item | has_value
-                                and states[repeat.item].attributes.brightness is defined
-                              else 'na'
-                            }}
-                          kelvin: >
-                            {{
-                              state_attr(repeat.item, 'max_color_temp_kelvin')
-                                if repeat.item | has_value 
-                                and states[repeat.item].attributes.color_temp_kelvin is defined
+                              if states[repeat.item].attributes.brightness is defined
                               else 'na'
                             }}
                     - alias: Turn on light on 100%
