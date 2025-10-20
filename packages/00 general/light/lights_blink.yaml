@@ -75,108 +75,6 @@ script:
       - event: light_effect_blink
         event_data:
           light: "{{ light }}"
-
-  # script to blink lights in case of an alert (eg doorbell)
-  light_blink_alert:
-    alias: "Blink lights to alert"
-    icon: mdi:alert
-    mode: single
-    max_exceeded: silent
-    variables:
-      blink:
-        always:
-          - light.eettafel_template
-          - light.tv_lamp_template
-          - light.hal
-          - light.overloop
-          - light.badkamer_zolder_template
-          - light.werkkamer_marleen_template
-          - light.badkamer
-        only_on:
-          - light.slaapkamer_plafond_template
-          - light.pepijn_template
-          - light.graafmachine
-          - light.floris
-          - light.leeslamp_floris
-          - light.werkkamer_martijn_plafond_template
-      hue:
-        - light.floris
-        - light.leeslamp_floris
-    sequence:
-      - alias: "Determine which lights are one and should blink"
-        variables:
-          lights: >
-            {{ blink.only_on | select('is_state', 'on') | list + blink.always }}
-          effect: >
-            {{
-              expand(lights)
-                | rejectattr('entity_id', 'in', 'hue')
-                | selectattr('attributes.effect_list', 'defined')
-                | selectattr('attributes.effect_list', 'contains', 'Slow Pulse')
-                | map(attribute='entity_id')
-                | list
-            }}
-          other: "{{ lights | reject('in', hue + effect) | list}}"
-      - alias: "Create scene with current state"
-        action: scene.create
-        data:
-          scene_id: before
-          snapshot_entities: "{{ lights }}"
-      - alias: "Hue lights to blink?"
-        if: "{{ lights | select('in', hue) | list | count > 0 }}"
-        then:
-          - alias: "Blink lights (hue_lights)"
-            action: light.turn_on
-            target:
-              entity_id: "{{ lights | select('in', hue) | list }}"
-            data:
-              flash: long
-      - alias: "Lights with pulse effecst"
-        if: "{{ effect | count > 0 }}"
-        then:
-          - alias: "Blink lights"
-            action: light.turn_on
-            target:
-              entity_id: "{{ effect }}"
-            data:
-              effect: "Slow Pulse"
-      - alias: "Others lights to blink?"
-        if: "{{ other | count > 0 }}"
-        then:
-          - repeat:
-              for_each: "{{ other }}"
-              sequence:
-                - action: script.turn_on
-                  target:
-                    entity_id: script.light_blink
-                  data:
-                    variables:
-                      light: "{{ repeat.item }}"
-                      effect: "{{ effect }}"
-          - alias: "Blink other lights using repeat loop"
-            repeat:
-              count: 10
-              sequence:
-                - alias: "Toggle other lights"
-                  action: light.toggle
-                  data:
-                    entity_id: "{{ other }}"
-                - alias: "Short delay between toggle"
-                  delay: 0.5
-      - delay:
-          seconds: 10
-      - alias: "Disable blinking"
-        action: light.turn_on
-        data:
-          effect: "None"
-        target:
-          entity_id: "{{ effect | select('is_state', 'on') | list }}"
-      - delay: 0.5
-      - alias: "Restore state"
-        action: scene.turn_on
-        target:
-          entity_id: scene.before
-
 template:
   # Template sensor to store lights for which script is active
   - triggers:
@@ -199,6 +97,7 @@ template:
               {{ current }}
             {% endif %}
 
+  # switch to light + add effects
   - use_blueprint:
       path: TheFes/switch_to_light.yaml
       input:
