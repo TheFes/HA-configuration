@@ -228,3 +228,57 @@ automation:
                 action: switch.turn_on
                 data:
                   entity_id: switch.smart_doorbell_chime_active
+
+script:
+  # script to blink lights in case of an alert (eg doorbell)
+  light_blink_alert:
+    alias: "Blink lights to alert"
+    icon: mdi:alert
+    mode: single
+    max_exceeded: silent
+    variables:
+      blink:
+        always:
+          - light.eettafel_template
+          - light.tv_lamp_template
+          - light.hal_template
+          - light.overloop_template
+          - light.badkamer_zolder_template
+          - light.werkkamer_marleen_template
+          - light.badkamer_template
+        only_on:
+          - light.slaapkamer_plafond_template
+          - light.pepijn_template
+          - light.graafmachine_template
+          - light.floris_template
+          - light.leeslamp_floris_template
+          - light.werkkamer_martijn_plafond_template
+    sequence:
+      - alias: "Determine which lights are on and should blink"
+        variables:
+          lights: >
+            {{ blink.only_on | select('is_state', 'on') | list + blink.always }}
+      - alias: "Create scene with current state"
+        action: scene.create
+        data:
+          scene_id: before
+          snapshot_entities: "{{ lights }}"
+      - alias: "Lights with pulse effecst"
+        action: light.turn_on
+        target:
+          entity_id: "{{ lights }}"
+        data:
+          effect: "Slow Pulse"
+      - delay:
+          seconds: 10
+      - alias: "Disable blinking"
+        action: light.turn_on
+        data:
+          effect: "None"
+        target:
+          entity_id: "{{ lights | select('is_state', 'on') | list }}"
+      - delay: 0.5
+      - alias: "Restore state"
+        action: scene.turn_on
+        target:
+          entity_id: scene.before
