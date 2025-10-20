@@ -62,13 +62,22 @@ blueprint:
           multiple: false
           multiline: false
 
-variables:
-  source_light: !input source_light
-  relay_switch: !input relay_switch
-  icon_on: !input icon_on
-  icon_off: !input icon_off
-  min_brightness: !input min_brightness
-  max_brightness: !input max_brightness
+triggers:
+  - trigger: state
+    entity_id: !input source_light
+  - trigger: event
+    event_type: event_template_reloaded
+  - trigger: homeassistant
+    event: start
+
+ actions:
+  variables:
+    source_light: !input source_light
+    relay_switch: !input relay_switch
+    icon_on: !input icon_on
+    icon_off: !input icon_off
+    min_brightness: !input min_brightness
+    max_brightness: !input max_brightness
 
 light:
   default_entity_id: !input default_entity_id

@@ -37,10 +37,19 @@ blueprint:
           multiple: false
           multiline: false
 
-variables:
-  switch: !input switch
-  icon_on: !input icon_on
-  icon_off: !input icon_off
+triggers:
+  - trigger: state
+    entity_id: !input switch
+  - trigger: event
+    event_type: event_template_reloaded
+  - trigger: homeassistant
+    event: start
+
+actions:
+  variables:
+    switch: !input switch
+    icon_on: !input icon_on
+    icon_off: !input icon_off
 
 light:
   default_entity_id: !input default_entity_id
