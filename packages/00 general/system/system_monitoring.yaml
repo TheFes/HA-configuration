@@ -148,7 +148,7 @@ automation:
           action_update: "{{ 'UPDATE_' ~ context.id }}"
           action_skip: "{{ 'SKIP_' ~ context.id }}"
       - alias: "Send Home Assistant update notification to phone"
-        action: notify.mobile_app_pixel_10_pro
+        action: notify.phone_martijn
         data:
           title: >
             Update: {{ what }}
@@ -157,8 +157,6 @@ automation:
           data:
             tag: "ha_update_{{ what | slugify }}"
             channel: Home Assistant
-            ttl: 0
-            priority: high
             clickAction: "/config/dashboard"
             actions:
               - action: "URI"

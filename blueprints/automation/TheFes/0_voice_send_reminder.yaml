@@ -85,7 +85,6 @@ blueprint:
               options:
               - Delete item
               - Mark as completed
-              sort: false
               custom_value: false
               multiple: false
           default: Delete item
@@ -102,8 +101,6 @@ blueprint:
               data:
                 data:
                   channel: Reminders
-                  ttl: 0
-                  priority: high
                   notification_icon: mdi:reminder
             - action: tts.speak
               target:

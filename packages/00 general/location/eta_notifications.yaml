@@ -47,7 +47,7 @@ automation:
       name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
       gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
       sensor: "sensor.{{ name }}_naar_huis"
-      notify: "{{ 'mobile_app_pixel_8_marleen' if name == 'martijn' else 'mobile_app_pixel_10_pro' }}"
+      notify: "{{ 'phone_marleen' if name == 'martijn' else 'phone_martijn' }}"
       vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_10_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
       eta: >
         {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
@@ -75,8 +75,6 @@ automation:
               data:
                 channel: ETA
                 tag: eta_{{ name }}
-                ttl: 0
-                priority: high
                 notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
                 actions:
                   - action: "cancel_eta_{{ name }}"
@@ -137,8 +135,6 @@ automation:
                             data:
                               channel: ETA
                               tag: eta_{{ name }}
-                              ttl: 0
-                              priority: high
                               notification_icon: mdi:car
                               actions:
                                 - action: "cancel_eta_{{ name }}"
@@ -211,14 +207,12 @@ automation:
         state: "home"
     actions:
       - alias: "Message to phone Martijn"
-        action: notify.mobile_app_pixel_10_pro
+        action: notify.phone_martijn
         data:
           title: "Hoera!"
           message: "Marleen is bijna thuis"
           data:
             channel: ETA
-            ttl: 0
-            priority: high
             notification_icon: mdi:party-popper
       - alias: "Determine TTS target devices based on Martijn's activity"
         variables:

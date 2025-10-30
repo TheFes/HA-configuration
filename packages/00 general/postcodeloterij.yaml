@@ -52,7 +52,7 @@ template:
         value_template: "{{ trigger.id == 'manual' or now().day in [1,2,3] }}"
     actions:
       - variables:
-          notify_action: notify.mobile_app_pixel_10_pro
+          notify_action: notify.phone_martijn
       - alias: Create variables for the month to use in the rest commands and messages
         variables:
           month: >
@@ -131,8 +131,6 @@ template:
               message: "{{ prize_text_full }}"
               data:
                 channel: LotteryPrize
-                ttl: 0
-                priority: high
                 notification_icon: mdi:gift
                 tag: LotteryPrize
     sensor:

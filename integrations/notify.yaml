@@ -1,6 +1,22 @@
 notify:
   - platform: group
-    name: all_phones
+    name: All Phones
     services:
-      - service: mobile_app_pixel_10_pro
-      - service: mobile_app_pixel_8_marleen
+      - action: phone_martijn
+      - action: phone_marleen
+
+  - platform: group
+    name: Phone Martijn
+    services:
+      - action: mobile_app_pixel_10_pro
+        data:
+            ttl: 0
+            priority: high
+
+  - platform: group
+    name: Phone Marleen
+    services:
+      - action: mobile_app_pixel_8_marleen
+        data:
+            ttl: 0
+            priority: high

@@ -307,7 +307,7 @@ automation:
                 target:
                   entity_id: "{{ down_entity_id }}"
       - alias: "Send rain notification to phone Martijn"
-        action: notify.mobile_app_pixel_10_pro
+        action: notify.phone_martijn
         data:
           title: >
             {%- if screens_unavailable | count > 0 %}
@@ -325,8 +325,6 @@ automation:
             {%- endif %}
           data:
             channel: Screens
-            ttl: 0
-            priority: high
             notification_icon: mdi:weather-rainy
 
 # binary template sensors to check if covers were manually changed

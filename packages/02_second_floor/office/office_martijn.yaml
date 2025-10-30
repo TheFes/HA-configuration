@@ -145,8 +145,6 @@ automation:
               title: "De stofzuiger begint om 09:00"
               data:
                 channel: Vacuum
-                ttl: 0
-                priority: high
                 notification_icon: mdi:robot-vacuum
                 actions:
                   - action: "not_today"
@@ -205,8 +203,6 @@ automation:
                   message: "{{ message }}"
                   data:
                     channel: Vacuum
-                    ttl: 0
-                    priority: high
                     tag: vacuum_error
                     notification_icon: mdi:robot-vacuum
           - conditions:
@@ -226,14 +222,12 @@ automation:
                 state: "on"
             sequence:
               - alias: "Send vacuum bin full notification to Martijn"
-                action: notify.mobile_app_pixel_10_pro
+                action: notify.phone_martijn
                 data:
                   title: Bakje vol
                   message: Maak het bakje van de stofzuiger leeg!
                   data:
                     channel: Vacuum
-                    ttl: 0
-                    priority: high
                     notification_icon: mdi:robot-vacuum
                     actions:
                       - action: "empty_vacuum_bin"

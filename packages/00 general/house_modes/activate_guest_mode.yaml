@@ -58,14 +58,12 @@ script:
       - if: "{{ guest not in state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true)}}"
         then:
           - alias: Send guest mode notification to phone
-            action: notify.mobile_app_pixel_10_pro
+            action: notify.phone_martijn
             data:
               title: "🏡 Gastmodus geactiveerd"
               message: "Gastmodus geactiveert door {{ guest }}"
               data:
                 channel: Guest
-                ttl: 0
-                priority: high
                 notification_icon: mdi:home
                 tag: "Guest_{{ guest }}"
                 actions:

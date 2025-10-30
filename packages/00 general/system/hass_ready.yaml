@@ -17,15 +17,13 @@ template:
           }}
         then:
           - alias: "Send notification to phone"
-            service: notify.mobile_app_pixel_10_pro
+            service: notify.phone_martijn
             data:
               title: Home Assistant is weer opgestart
               message: Update is succesvol uitgevoerd
               data:
                 tag: "ha_update"
                 channel: Home Assistant
-                ttl: 0
-                priority: high
           - alias: "Write variables to variables template sensor"
             event: set_variable
             event_data:
