@@ -57,22 +57,27 @@ template:
         trigger: event
         event_type: set_house_mode
         id: event
+    variables:
+      mode: "{{ trigger.event.data.mode }}"
+      icon_mapping:
+        Gast: mdi:account
+        Afwezig: mdi:home-outline
+        Vakantie: mdi:bag-suitcase
+        Tandenpoetsen: mdi:toothbrush
+        Opstaan: mdi:bed-clock
+        Relax: mdi:sofa
+        Slapen: mdi:bed
+        Thuis: mdi:home
+      modes: "{{ icon_mapping.keys() | list }}"
+      icon: "{{ icon_mapping[mode] | default('mdi:help') }}"
+    conditions:
+      - condition: template
+        value_template: "{{ mode in modes }}"
     sensor:
       - unique_id: 7f99fde6-48f5-48f4-b7c1-31bfbfe738dc
         name: House Mode
-        state: "{{ trigger.event.data.mode }}"
-        icon: >-
-          {% set mapping =  {
-                              'Gast': 'mdi:account',
-                              'Afwezig': 'mdi:home-outline',
-                              'Vakantie': 'mdi:bag-suitcase',
-                              'Tandenpoetsen': 'mdi:toothbrush',
-                              'Opstaan': 'mdi:bed-clock',
-                              'Relax': 'mdi:sofa',
-                              'Slapen': 'mdi:bed'
-                            }
-          %}
-          {{ mapping[mode] | default('mdi:home') }}
+        state: "{{ mode }}"
+        icon: "{{ icon }}"
 
 automation:
   - id: 4c798c3d-6bbc-42fa-a9a8-e00c44722ac9
@@ -109,7 +114,7 @@ automation:
         id: slapen
       - alias: Shield turns on
         trigger: state
-        entity_id: media_player.nvidia_shield
+        entity_id: media_player.shield
         from: "off"
         not_to:
           - unavailable
@@ -137,8 +142,8 @@ automation:
           Opstaan
         {% elif home
           and today_at('19:15') < now() < today_at('22:30')
-          and 'media_player.nvidia_shield' | has_value
-          and not is_state('media_player.nvidia_shield', 'off')
+          and 'media_player.shield' | has_value
+          and not is_state('media_player.shield', 'off')
         %}
           Relax
         {% elif home %}

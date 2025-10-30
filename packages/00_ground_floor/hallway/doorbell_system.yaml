@@ -47,13 +47,13 @@ automation:
         if:
           - not:
               - condition: state
-                entity_id: media_player.nvidia_shield
+                entity_id: media_player.shield
                 state: "off"
         then:
           - alias: "Pause Shield"
             action: media_player.media_pause
             target:
-              entity_id: media_player.nvidia_shield
+              entity_id: media_player.shield
       - alias: "Chime off and someone home?"
         choose:
           # Blink lights when chime is off and someone is home

@@ -22,8 +22,8 @@ automation:
               - condition: template
                 value_template: >
                   {{
-                    'media_player.nvidia_shield' | has_value
-                    and not is_state('media_player.nvidia_shield', 'off')
+                    'media_player.shield' | has_value
+                    and not is_state('media_player.shield', 'off')
                   }}
             sequence:
               - alias: "Enable guest mode to avoid that they will be in the dark"

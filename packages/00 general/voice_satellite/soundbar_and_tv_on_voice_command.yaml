@@ -3,7 +3,7 @@ automation:
     alias: Voice - Manage Shield and Soundbar on voice command in living room or kitchen
     mode: parallel
     variables:
-      tv_playing: "{{ is_state('media_player.nvidia_shield', 'playing') }}"
+      tv_playing: "{{ is_state('media_player.shield', 'playing') }}"
       soundbar_source: "{{ state_attr('media_player.samsung_soundbar', 'source') | default('off', true) }}"
       living: "{{ area_name(trigger.entity_id) == 'Woonkamer' }}"
       satellite_player: "{{ device_entities(device_id(trigger.entity_id)) | select('match', 'media_player') | list | first }}"
@@ -19,7 +19,7 @@ automation:
           - alias: "Pause the Shield"
             action: media_player.media_pause
             target:
-              entity_id: media_player.nvidia_shield
+              entity_id: media_player.shield
       - if: "{{ tv_playing }}"
         then:
           - alias: Create scene with current soundbar status
@@ -87,12 +87,12 @@ automation:
             action: scene.turn_on
             target:
               entity_id: scene.soundbar_before
-          - if: "{{ not is_state('media_player.nvidia_shield', 'playing') }}"
+          - if: "{{ not is_state('media_player.shield', 'playing') }}"
             then:
               - alias: Resume playing on Shield
                 action: media_player.media_play
                 target:
-                  entity_id: media_player.nvidia_shield
+                  entity_id: media_player.shield
       - if: "{{ not tv_playing and living }}"
         then:
           - variables:
@@ -134,7 +134,7 @@ automation:
     triggers:
       - trigger: state
         entity_id:
-          - media_player.nvidia_shield
+          - media_player.shield
         to: playing
         id: optical
       - trigger: state
