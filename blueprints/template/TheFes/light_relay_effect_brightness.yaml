@@ -62,26 +62,17 @@ blueprint:
           multiple: false
           multiline: false
 
-triggers:
-  - trigger: state
-    entity_id: !input source_light
-  - trigger: event
-    event_type: event_template_reloaded
-  - trigger: homeassistant
-    event: start
-
-actions:
-  variables:
-    source_light: !input source_light
-    relay_switch: !input relay_switch
-    icon_on: !input icon_on
-    icon_off: !input icon_off
-    min_brightness: !input min_brightness
-    max_brightness: !input max_brightness
+variables:
+  source_light: !input source_light
+  relay_switch: !input relay_switch
+  icon_on: !input icon_on
+  icon_off: !input icon_off
+  min_brightness: !input min_brightness
+  max_brightness: !input max_brightness
 
 light:
   default_entity_id: !input default_entity_id
-  name: "{{ state_attr(source_light, 'friendly_name') }}"
+  name: "{{ state_attr(source_light, 'friendly_name') | default('Not ready', true) }}"
   icon: "{{ icon_on if is_state(source_light, 'on') else icon_off }}"
   state: >
     {{
@@ -101,22 +92,18 @@ light:
           target:
             entity_id: "{{ source_light }}"
           data: >
-            {% if relay_switch is not none %}
-              {% set br_pct =
-                device_entities(device_id(source_light))
-                  | select('search', '^number.*start_brightness$')
-                  | map('states')
-                  | select('is_number')
-                  | map('float')
-                  | average('na')
-                  | int('na')
-              %}
-              {% set brightness = (br_pct | float(100) * 2.25) %}
-              {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
-              {{ dict(brightness=brightness) if br_pct | is_number else dict() }}
-            {% else %}
-              {{ dict() }}
-            {% endif %}
+            {% set br_pct =
+              device_entities(device_id(source_light))
+                | select('search', '^number.*start_brightness$')
+                | map('states')
+                | select('is_number')
+                | map('float')
+                | average('na')
+                | int('na')
+            %}
+            {% set brightness = (br_pct | float(100) * 2.25) %}
+            {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
+            {{ dict(brightness=brightness) if br_pct | is_number else dict() }}
       else:
         - alias: Turn on switch
           action: switch.turn_on

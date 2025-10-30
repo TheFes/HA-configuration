@@ -43,24 +43,15 @@ blueprint:
           multiple: false
           multiline: false
 
-triggers:
-  - trigger: state
-    entity_id: !input switch
-  - trigger: event
-    event_type: event_template_reloaded
-  - trigger: homeassistant
-    event: start
-
-actions:
-  variables:
-    switch: !input switch
-    icon_on: !input icon_on
-    icon_off: !input icon_off
-    add_effects: !input add_effects
+variables:
+  switch: !input switch
+  icon_on: !input icon_on
+  icon_off: !input icon_off
+  add_effects: !input add_effects
 
 light:
   default_entity_id: !input default_entity_id
-  name: "{{ state_attr(switch, 'friendly_name') }}"
+  name: "{{ state_attr(switch, 'friendly_name') | default('Not ready', true) }}"
   icon: "{{ icon_on if is_state(switch, 'on') else icon_off }}"
   state: >
     {% set current_effect =
