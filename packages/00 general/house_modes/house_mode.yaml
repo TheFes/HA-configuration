@@ -114,7 +114,7 @@ automation:
         id: slapen
       - alias: Shield turns on
         trigger: state
-        entity_id: media_player.shield
+        entity_id: media_player.nvidia_shield
         from: "off"
         not_to:
           - unavailable
@@ -142,8 +142,8 @@ automation:
           Opstaan
         {% elif home
           and today_at('19:15') < now() < today_at('22:30')
-          and 'media_player.shield' | has_value
-          and not is_state('media_player.shield', 'off')
+          and 'media_player.nvidia_shield' | has_value
+          and not is_state('media_player.nvidia_shield', 'off')
         %}
           Relax
         {% elif home %}

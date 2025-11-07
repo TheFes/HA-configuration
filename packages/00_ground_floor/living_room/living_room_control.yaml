@@ -49,7 +49,7 @@ automation:
         id: "home"
       - alias: "NVIDIA Shield turned on"
         trigger: state
-        entity_id: media_player.shield
+        entity_id: media_player.nvidia_shield
         from: "off"
         not_to:
           - unavailable
@@ -143,7 +143,7 @@ automation:
                         not:
                           - alias: "TV aan?"
                             condition: state
-                            entity_id: media_player.shield
+                            entity_id: media_player.nvidia_shield
                             state: "off"
                     sequence:
                       - delay: 0.5
@@ -170,7 +170,7 @@ automation:
     triggers:
       - alias: "NVIDIA Shield turned on"
         trigger: state
-        entity_id: media_player.shield
+        entity_id: media_player.nvidia_shield
         from: "off"
     actions:
       - variables:
@@ -196,7 +196,7 @@ automation:
       - alias: "Shield turned on from off to idle"
         trigger: state
         entity_id:
-          - media_player.shield
+          - media_player.nvidia_shield
         to: idle
         from: "off"
     actions:
@@ -205,7 +205,7 @@ automation:
         data:
           command: HOME
         target:
-          entity_id: media_player.shield
+          entity_id: media_player.nvidia_shield
     mode: single
 
 # From: samsung_soundbar.yaml
@@ -218,31 +218,134 @@ media_player:
     max_volume: 20
     power_options: True
 
+  - platform: media_player_template
+    media_players:
+      shield_en_soundbar:
+        friendly_name: Shield en Soundbar
+        unique_id: ca6d1b07-6e7b-41dd-9fae-963a9b5a632b
+        device_class: tv
+        value_template: >
+          {% set player = 'media_player.nvidia_shield' 
+            if not is_state(' media_player.nvidia_shield', 'off') 
+            else 'media_player.samsung_soundbar' %}
+          {{ states(player) }}
+        turn_on:
+          - action: media_player.turn_on
+            target:
+              entity_id: media_player.nvidia_shield
+        turn_off:
+          - action: media_player.turn_on
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        volume_up:
+          - action: media_player.volume_set
+            target:
+              entity_id: media_player.samsung_soundbar
+            data:
+              volume_level: "{{ [1, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.05] | min }}"
+        volume_down:
+          - action: media_player.volume_set
+            target:
+              entity_id: media_player.samsung_soundbar
+            data:
+              volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.05] | max }}"
+        set_volume:
+          - action: media_player.volume_set
+            target:
+              entity_id: media_player.samsung_soundbar
+            data:
+              volume_level: "{{ volume }}"
+        play:
+          - action: media_player.media_play
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        # play_pause:
+        #   - action: media_player.media_play_pause
+        #     target:
+        #       entity_id: >
+        #         {{ 'media_player.nvidia_shield' 
+        #           if not is_state(' media_player.nvidia_shield', 'off') 
+        #           else 'media_player.samsung_soundbar' }}
+        pause:
+          - action: media_player.media_stop
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        stop:
+          - action: media_player.media_stop
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        next:
+          - action: media_player.media_next_track
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        previous:
+          - action: media_player.media_previous_track
+            target:
+              entity_id: >
+                {{ 'media_player.nvidia_shield' 
+                  if not is_state(' media_player.nvidia_shield', 'off') 
+                  else 'media_player.samsung_soundbar' }}
+        current_source_template: >
+          {% set player = 'media_player.nvidia_shield' 
+            if not is_state(' media_player.nvidia_shield', 'off') 
+            else 'media_player.samsung_soundbar' %}
+          {{ state_attr(player, 'source') }}
+        # source_list: >
+        #   {% set player = 'media_player.nvidia_shield'
+        #     if not is_state(' media_player.nvidia_shield', 'off')
+        #     else 'media_player.samsung_soundbar' %}
+        #   {{ state_attr(player, 'source_list') }}
+        mute:
+          - action: media_player.volume_mute
+            target:
+              entity_id: media_player.samsung_soundbar
+            data:
+              is_volume_muted: "{{ is_muted }}"
+        current_is_muted_template: >
+          {{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}
+        # app_id_template: "{{ state_attr('media_player.nvidia_shield'. 'app_id') }}"
+        # app_name_template: "{{ state_attr('media_player.nvidia_shield'. 'app_name') }}"
+
   # From: universal_shield_soundbar.yaml
   - platform: universal
     name: Shield en Soundbar
     unique_id: 56f0b8ab-3309-4572-96cb-e6818875ad58
     children:
-      - media_player.shield
+      - media_player.nvidia_shield
       - media_player.samsung_soundbar
     state_template: >
       {{ 
-        states('media_player.shield')
-        if not is_state('media_player.shield', 'off')
+        states('media_player.nvidia_shield')
+        if not is_state('media_player.nvidia_shield', 'off')
         else states('media_player.samsung_soundbar')
       }}
     commands:
       turn_on:
         service: media_player.turn_on
         target:
-          entity_id: media_player.shield
+          entity_id: media_player.nvidia_shield
       turn_off:
         service: media_player.turn_off
         target:
           entity_id: >
             {{ 
-              'media_player.shield'
-              if not is_state('media_player.shield', 'off')
+              'media_player.nvidia_shield'
+              if not is_state('media_player.nvidia_shield', 'off')
               else 'media_player.samsung_soundbar'
             }}
       volume_up:
