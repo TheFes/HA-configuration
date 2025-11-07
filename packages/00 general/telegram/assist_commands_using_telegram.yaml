@@ -1,0 +1,29 @@
+automation:
+  - id: bcbed71f-862f-4142-b756-a08a7fcceb58
+    alias: Assist commands using Telegram
+    triggers:
+      - trigger: state
+        entity_id:
+          - event.thefes_update_event
+        not_from: unavailable
+    conditions:
+      - condition: state
+        entity_id: event.thefes_update_event
+        state:
+          - telegram_text
+        attribute: event_type
+    actions:
+      - action: conversation.process
+        data:
+          text: "{{ trigger.to_state.attributes.text }}"
+          conversation_id: telegram_martijn
+          agent_id: conversation.gemini_assist
+        response_variable: response
+      - action: telegram_bot.send_message
+        data:
+          config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+          target:
+            - "6269584791"
+          message: "{{ response.response.speech.plain.speech }}"
+          message_tag: conversation_response
+    mode: parallel

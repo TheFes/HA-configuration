@@ -1,0 +1,211 @@
+automation:
+  - id: 5a06a0c2-31ee-4dc2-8aa8-427da7588090
+    alias: Assist commands using Telegram
+    triggers:
+      - trigger: state
+        entity_id:
+          - event.thefes_update_event
+        not_from: unavailable
+    conditions:
+      - condition: state
+        entity_id: event.thefes_update_event
+        state:
+          - telegram_command
+        attribute: event_type
+    actions:
+      - variables:
+          command: "{{ trigger.to_state.attributes.command }}"
+      - choose:
+          - conditions: "{{ command == '/help'}}"
+            sequence:
+              - variables:
+                  message: |
+                    `/ping`: pong!
+                    `/status`: system status van de HA VM
+                    `/home`: huidige status van het huis
+                    `/update`: laat zien of er updates zijn, en voer ze uit
+                    `/restart`: herstart HA Core, HA OS of Zigbee2MQTT
+          - conditions: "{{ command == '/ping'}}"
+            sequence:
+              - variables:
+                  message: "Pong 🏓"
+          - conditions: "{{ command == '/test' }}"
+            sequence:
+              - variables:
+                  message: "Test 1, 2, 3. Ja, ik ben er nog"
+          - conditions: "{{ command == '/restart' }}"
+            sequence:
+              - variables:
+                  restart_data:
+                    - arg: core
+                      name: Home Assistant Core
+                      action: homeassistant.restart
+                    - arg: os
+                      name: Home Assistant OS
+                      action: hassio.host_reboot
+                    - arg: z2m
+                      name: Zigbee2MQTT
+                      action: hassio.addon_restart
+                      data:
+                        addon: 9336c2b0_zigbee2mqtt
+                  args: "{{ trigger.to_state.attributes.get('args', []) }}"
+                  valid_args: "{{ restart_data | map(attribute='arg') | list }}"
+              - if: "{{ args | select('in', valid_args) | list | count == 0 }}"
+                then:
+                  - action: telegram_bot.send_message
+                    data:
+                      config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+                      target:
+                        - "6269584791"
+                      message: Wat wil je herstarten?
+                      message_tag: restart question
+                      inline_keyboard:
+                        - HA Core:/core
+                        - HA OS:/os
+                        - Zigbee2MQTT:/z2m
+                  - wait_for_trigger:
+                      - trigger: state
+                        entity_id: event.thefes_update_event
+                        not_to: unavailable
+                    timeout:
+                      seconds: 10
+                  - choose:
+                      - conditions: "{{ wait.trigger is none }}"
+                        sequence:
+                          - variables:
+                              message: Restart gestopt vanwege timeout
+                      - conditions: "{{ wait.trigger.to_state.attributes.event_type == 'telegram_callback' }}"
+                        sequence:
+                          - variables:
+                              args:
+                                - "{{ wait.trigger.to_state.attributes.data | replace('/', '') }}"
+              - if: "{{ args | select('in', valid_args) | list | count > 0 }}"
+                then:
+                  - action: telegram_bot.send_message
+                    data:
+                      config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+                      target:
+                        - "6269584791"
+                      message: Weet je het zeker?
+                      message_tag: restart question
+                      inline_keyboard:
+                        - Ja:/yes
+                        - Nee:/no
+                  - wait_for_trigger:
+                      - trigger: state
+                        entity_id: event.thefes_update_event
+                        not_to: unavailable
+                    timeout:
+                      seconds: 10
+                  - choose:
+                      - conditions: "{{ wait.trigger is none }}"
+                        sequence:
+                          - variables:
+                              message: Restart gestopt vanwege timeout
+                      - conditions: >
+                          {{
+                            wait.trigger.to_state.attributes.event_type == 'telegram_callback'
+                            and wait.trigger.to_state.attributes.data == '/yes'
+                          }}
+                        sequence:
+                          - action: telegram_bot.send_message
+                            data:
+                              config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+                              target:
+                                - "6269584791"
+                              message: "{{ restart_data | selectattr('arg', 'in', args) | map(attribute='name') | join(', ') }} wordt opnieuw opgestart"
+                              message_tag: command_response
+                          - action: "{{ restart_data | selectattr('arg', 'in', args) | map(attribute='action') | list | first }}"
+                            data: "{{ restart_data | selectattr('arg', 'in', args) | map(attribute='data') | list | first | default({}, true) }}"
+                      - conditions: >
+                          {{
+                            wait.trigger.to_state.attributes.event_type == 'telegram_callback'
+                            and wait.trigger.to_state.attributes.data == '/no'
+                          }}
+                        sequence:
+                          - variables:
+                              message: Herstart geannuleerd.
+          - conditions: "{{ command == '/status' }}"
+            sequence:
+              - variables:
+                  message: |
+                    {% from 'relative_time_plus.jinja' import relative_time_plus as rtp %}
+
+                    🔥 {{ states('sensor.processor_use', with_unit=true) }} CPU load.
+                    🧠 {{ states('sensor.memory_use', with_unit=true) }} ({{ states('sensor.memory_use_percent', with_unit=true) }}) gebruikt.
+                    💽 {{ states('sensor.disk_use', with_unit=true) }} ({{
+                    states('sensor.disk_use_percent', with_unit=true) }}) gebruikt, nog {{ states('sensor.disk_free', with_unit=true) }} vrij.
+
+                    🛢️ De database is nu {{ states('sensor.database_size_sqlite', with_unit=true) }}.
+
+                    🚀 HA is {{ rtp(states('sensor.home_assistant_uptime'), parts=2, language='nl') }} geleden opgestart, en de host {{ rtp(states('sensor.last_boot'), parts=2, language='nl') }} geleden.
+
+                    💾 De laatse backup is {{ rtp(states('sensor.backup_last_successful_automatic_backup'), language='nl') }} geleden, en de volgende is gepland over {{ rtp(states('sensor.backup_next_scheduled_automatic_backup'), language='nl') }}.
+          - conditions: "{{ command == '/home' }}"
+            sequence:
+              - variables:
+                  message: |
+                    {% set lights_on = label_entities('off_long_press') | select('match', 'light.') | select('is_state', 'on') | list  | count %}
+                    {% set players_on = label_entities('off_long_press') | select('match', 'media_player.') | reject('is_state', ['off', 'idle']) | list  | count %}
+                    {% set switches_on = label_entities('area_data') | select('match', 'switch.') | select('is_state', 'on') | list  | count %}
+                    🏠 Huis status: {{ states('sensor.house_state_martijn') }}
+                    😶 {{ states('zone.home') }} {{ 'persoon' if states('zone.home') == '1' else  'personen' }} thuis
+                    💡 {{ lights_on }} lamp{{ 'en' if lights_on != 1 }} aan
+                    🎚️ {{ switches_on }} schakelaar{{ 's' if switches_on != 1 }} aan
+                    📻 {{ players_on }} media player{{ 's' if players_on != 1 }} aan
+          - conditions: "{{ command == '/update' }}"
+            sequence:
+              - variables:
+                  updates: >
+                    {% set updates = states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list %}
+                    {% set ns = namespace(updates=[]) %}
+                    {% for update in updates %}
+                      {% set ns.updates = ns.updates + [state_attr(update, 'friendly_name') | regex_replace('update|Update', '') | trim~':/'~update] %}
+                    {% endfor %}
+                    {{ ns.updates }}
+              - if: "{{ updates | count > 0 }}"
+                then:
+                  - action: telegram_bot.send_message
+                    data:
+                      config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+                      target:
+                        - "6269584791"
+                      message: Er {{ 'zijn' if updates | count > 1 else 'is' }} {{ updates | count }} update{{ 's' if updates | count > 1 }}.
+                      message_tag: update_question
+                      inline_keyboard: "{{ updates }}"
+                  - wait_for_trigger:
+                      - trigger: state
+                        entity_id: event.thefes_update_event
+                        not_to: unavailable
+                    timeout:
+                      seconds: 10
+                  - choose:
+                      - conditions: "{{ wait.trigger is none }}"
+                        sequence:
+                          - variables:
+                              message: Update gestopt vanwege timeout
+                      - conditions: "{{ wait.trigger.to_state.attributes.event_type == 'telegram_callback' }}"
+                        sequence:
+                          - variables:
+                              entity: "{{ wait.trigger.to_state.attributes.data | replace('/', '') }}"
+                          - action: update.install
+                            target:
+                              entity_id: "{{ entity }}"
+                          - variables:
+                              message: Update is {{ 'geïnstalleerd' if is_state(entity, 'off') else 'niet gelukt' }}.
+                else:
+                  - variables:
+                      message: Er zijn nu geen updates.
+        default:
+          - variables:
+              message: Ongeldig commando, gebruikt `/help` voor een lijst van geldige commando's.
+      - action: telegram_bot.send_message
+        data:
+          config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+          target:
+            - "6269584791"
+          message: "{{ message }}"
+          message_tag: command_response
+    mode: parallel
+    trace:
+      stored_traces: 15
