@@ -400,7 +400,8 @@ template:
   # template covers to invert status
   - cover:
       - unique_id: 82b8cd85-e5fd-4da1-95fb-6ee03af6be81
-        name: "{{ 'Screen Pepijn' if this.state != 'unknown' else 'Pepijn Template' }}"
+        name: Screen
+        default_entity_id: cover.screen_pepijn_template
         device_class: shade
         <<: &config_invert
           state: "{{ states(this.entity_id | replace('_template', '')) }}"
@@ -432,11 +433,13 @@ template:
                 position: "{{ 100 - position }}"
 
       - unique_id: 95fb6193-3557-435e-8b5b-8fdf8bdacd3f
-        name: "{{ 'Slaapkamer Zolder Template' if this.state == 'unknown'  else 'Screen Slaapkamer Zolder' }}"
+        name: Screen
+        default_entity_id: cover.screen_slaapkamer_zolder_template
         device_class: shade
         <<: *config_invert
 
       - unique_id: f257aa95-bd57-4f22-baf3-613754cb23ab
-        name: "{{ 'Overloop Zolder Template' if this.state == 'unknown' else 'Screen Overloop Zolder' }}"
+        name: Screen
+        default_entity_id: cover.screen_overloop_zolder_template
         device_class: shade
         <<: *config_invert
