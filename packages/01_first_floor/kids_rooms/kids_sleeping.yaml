@@ -58,24 +58,21 @@ script:
     mode: restart
     alias: "Floris is going to sleep (Voice)"
     sequence:
-      - if:
-          - condition: time
-            after: "18:00"
-        then:
-          - alias: "Send Floris sleeping event"
-            event: floris_sleeping
-          - alias: "Set Floris dimmer to sleep brightness"
-            action: number.set_value
-            target:
-              entity_id: number.floris_start_brightness
-            data:
-              value: 30
-          - alias: "Set Floris dimmer to sleep brightness"
-            action: number.set_value
-            target:
-              entity_id: number.floris_leeslamp_start_brightness
-            data:
-              value: 40
+      - alias: "Send Floris sleeping event"
+        event: floris_sleeping
+      - alias: "Set Floris dimmer to sleep brightness"
+        action: number.set_value
+        target:
+          entity_id: number.floris_start_brightness
+        data:
+          value: 30
+      - alias: "Set Floris dimmer to sleep brightness"
+        action: number.set_value
+        target:
+          entity_id: number.floris_leeslamp_start_brightness
+        data:
+          value: 40
+      - delay: 0.5
       - alias: "Light on"
         action: light.turn_on
         target:
@@ -99,12 +96,8 @@ script:
     alias: "Pepijn is going to sleep (Voice)"
     icon: mdi:bed
     sequence:
-      - if:
-          - condition: time
-            after: "18:00"
-        then:
-          - alias: "Send Pepijn sleeping event"
-            event: pepijn_sleeping
+      - alias: "Send Pepijn sleeping event"
+        event: pepijn_sleeping
       - alias: "Dim ceiling light"
         action: light.turn_on
         target:
