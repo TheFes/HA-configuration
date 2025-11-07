@@ -358,8 +358,33 @@
   macro to split a timedelta in years, months, weeks, days, hours, minutes, seconds and milliseconds
   used by the relative time plus macro, set up as a seperate macro so it can be reused
 #}
-{%- macro time_split(date, parts=8, compare_date=now(), not_use=[], always_show=['all'], time=true, round_mode='floor') -%}
+{%- macro time_split(date, parts=8, compare_date=now(), not_use=[], always_show=['all'], time=true, round_mode='floor', duration=false, duration_unit='s') -%}
   {#- set defaults for input if not entered #}
+    {%- if date in states | map(attribute='entity_id') -%}
+      {%- if date | has_value and is_state_attr(date, 'device_class', 'duration') -%}
+        {%- set duration = true -%}
+        {%- set duration_unit = state_attr(date, 'unit_of_measurement') -%}
+        {%- set date = states(date) -%}
+      {%- elif date is match('input_datetime') and not state_attr(date, 'has_date') -%}
+        {%- set date = today_at(states(date)) -%}
+      {%- else -%}
+        {%- set date = states(date) -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if duration and date | is_number -%}
+      {%- set conversion_mapper =
+        {
+          'd': 3600 * 24,
+          'h': 3600,
+          'min': 60,
+          's': 1,
+          'ms': 1/1000,
+          'μs': 1/1000000
+        }
+      -%}
+      {%- set sec = date | float * conversion_mapper[duration_unit] | default(1) -%}
+      {%- set date = now() + timedelta(seconds=sec) -%}
+    {%- endif -%}
     {%- set date = date if date is datetime else date | as_datetime('invalid') -%}
     {%- set compare_date = compare_date if compare_date is datetime else compare_date | as_datetime('invalid') -%}
     {%- set time = time | bool(true) -%}
@@ -505,7 +530,7 @@
           {%- else -%} {{- dict(error='No time parts left to output') -}}
           {%- endif -%} {# 3 #}
       {%- endif -%} {# 2 #} 
-    {%- else -%} {{- dict(error='Invalid date input')-}}
+    {%- else -%} {{- dict(error='Invalid date input') -}}
     {%- endif -%} {# 1 #}
 {%- endmacro -%}
 
@@ -541,7 +566,7 @@
 {%- endmacro -%}
 
 {# macro to output a timedelta in a readable format #}
-{%- macro relative_time_plus(date, parts=1, abbr=false, language='en', compare_date=now(), not_use=['millisecond'], always_show=[], time=true, round_mode='floor') -%}
+{%- macro relative_time_plus(date, parts=1, abbr=false, language='en', compare_date=now(), not_use=['millisecond'], always_show=[], time=true, round_mode='floor', duration=false, duration_unit='s') -%}
   {#- select correct phrases bases on language input #}
     {%- set phrases = _time_period_phrases -%}
     {%- set languages = phrases | map(attribute='language') | list -%}
@@ -550,7 +575,7 @@
     {%- set plural_form = phrases | selectattr('language', 'eq', language) | map(attribute='plural_form') | list | first -%}
     {%- set abbr = abbr | bool(false) -%}
   {# split timedelta #}
-    {%- set time_parts = time_split(date, parts, compare_date, not_use, always_show, time, round_mode) | from_json -%}
+    {%- set time_parts = time_split(date, parts, compare_date, not_use, always_show, time, round_mode, duration, duration_unit) | from_json -%}
   {# check for error #}
     {%- if 'error' in time_parts -%}
       {{- time_parts['error'] -}}
