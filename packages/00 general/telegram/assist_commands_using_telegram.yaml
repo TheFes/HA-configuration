@@ -15,10 +15,18 @@ automation:
     actions:
       - action: conversation.process
         data:
+          agent_id: conversation.home_assistant
           text: "{{ trigger.to_state.attributes.text }}"
-          conversation_id: telegram_martijn
-          agent_id: conversation.gemini_assist
+          conversation_id: telegram_assist
         response_variable: response
+      - if: "{{ response.response.response_type == 'error'}}"
+        then:
+          - action: conversation.process
+            data:
+              text: "{{ trigger.to_state.attributes.text }}"
+              conversation_id: telegram_assist
+              agent_id: conversation.chatgpt
+            response_variable: response
       - action: telegram_bot.send_message
         data:
           config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY

@@ -160,7 +160,10 @@ automation:
                     {% set updates = states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list %}
                     {% set ns = namespace(updates=[]) %}
                     {% for update in updates %}
-                      {% set ns.updates = ns.updates + [state_attr(update, 'friendly_name') | regex_replace('update|Update', '') | trim~':/'~update] %}
+                      {% set url = state_attr(update, 'release_url') %}
+                      {% set release_button = (', Release notes:'~url) if url else '' %}
+                      {% set name = state_attr(update, 'friendly_name') | regex_replace('update$|Update$', '') | trim %}
+                      {% set ns.updates = ns.updates + [name~':/'~update~release_button] %}
                     {% endfor %}
                     {{ ns.updates }}
               - if: "{{ updates | count > 0 }}"
