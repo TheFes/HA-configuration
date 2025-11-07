@@ -4,9 +4,8 @@ template:
       input:
         area:
           - woonkamer
-    name: "{{ 'woonkamer_dashboard' if this.state == 'unknown' else 'Woonkamer' }}"
-    # name: Woonkamer
-    # default_entity_id: light.woonkamer_dashboard
+        default_entity_id: light.woonkamer_dashboard
+    name: Woonkamer
     unique_id: ca014b5c-71ea-432f-918a-c80174664a66
 
   - use_blueprint:
@@ -14,9 +13,8 @@ template:
       input:
         area:
           - werkkamer_martijn
-    name: "{{ 'werkkamer_martijn_dashboard' if this.state == 'unknown' else 'Werkkamer Martijn' }}"
-    # name: Werkkamer Martijn
-    # default_entity_id: light.werkkamer_martijn_dashboard
+        default_entity_id: light.werkkamer_martijn_dashboard
+    name: Werkkamer Martijn
     unique_id: e20412ba-cbef-43b0-8ab0-fb422dc31390
 
   - use_blueprint:
@@ -26,9 +24,8 @@ template:
           - slaapkamer_pepijn
         sleeping_sensor: binary_sensor.pepijn_sleeping
         night_light_boolean: input_boolean.nachtlampje_pepijn
-    name: "{{ 'pepijn_dashboard' if this.state == 'unknown' else 'Pepijn' }}"
-    # name: Pepijn
-    # default_entity_id: light.pepijn_dashboard
+        default_entity_id: light.pepijn_dashboard
+    name: Pepijn
     unique_id: 1428844b-75cb-4994-a76f-5e570b8f8232
 
   - use_blueprint:
@@ -38,7 +35,6 @@ template:
           - slaapkamer_floris
         sleeping_sensor: binary_sensor.floris_sleeping
         night_light_boolean: input_boolean.nachtlampje_floris
-    name: "{{ 'floris_dashboard' if this.state == 'unknown' else 'Floris' }}"
-    # name: Floris
-    # default_entity_id: light.floris_dashboard
+        default_entity_id: light.floris_dashboard
+    name: Floris
     unique_id: 422bafc8-ae63-4c0b-8435-3fe2fe4b4b83

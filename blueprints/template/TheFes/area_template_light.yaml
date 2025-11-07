@@ -44,6 +44,14 @@ blueprint:
         icon:
           placeholder: mdi:lightbulb-group-off
       default: mdi:lightbulb-group-off
+    default_entity_id:
+      name: Default entity_id
+      description: The default entity id to use
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: light.area
 
 variables:
   area: !input area
@@ -80,6 +88,7 @@ variables:
 
 light:
   state: "{{ area_lights | select('is_state', 'on') | list | count > 0 }}"
+  default_entity_id: !input default_entity_id
   icon: >
     {% set area_lights_on = 
             area_lights | select('is_state', 'on') | list | count
