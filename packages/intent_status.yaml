@@ -23,8 +23,11 @@ automation:
         to: "off"
     actions:
       - alias: Send message
-        action: rest_command.signal_send_message
+        action: telegram_bot.send_message
         data:
-          message: >
-            ⭐ Nederlands heeft geen ster meer, er zijn dus nieuwe intents bij gekomen.
-            Check welke intents missen.
+          config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+          target:
+            - "6269584791"
+          message: ⭐ Nederlands heeft geen ster meer, er zijn dus nieuwe intents bij gekomen. Check op het intents overzicht welke intents missen.
+          inline_keyboard:
+            - Intents overzicht:https://ohf-voice.github.io/intents/

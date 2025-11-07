@@ -73,7 +73,9 @@ automation:
             {%- set plants = (ns.plants[:-1] | join(', ') ~ ' en ' ~ ns.plants[-1]) if ns.plants | count > 2 else ns.plants | join(' en ') -%}
             {{ ('De volgende planten hebben te veel water: ' ~ plants) if plants }}
       - alias: Send message
-        action: rest_command.signal_send_message
+        action: notify.send_message
+        target:
+          entity_id: notify.thefes_martijn_6269584791
         data:
           message: >
             {{ ['🌱 Plant Alarm!', thirsty, flooded] | select() | join('\n') }}

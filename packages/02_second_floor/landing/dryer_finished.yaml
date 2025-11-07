@@ -1,21 +1,23 @@
 automation:
-  - id: 'dryer_finished_notification'
+  - id: "dryer_finished_notification"
     alias: Dryer Finished Notification
-    description: 'Notify when dryer finishes based on power consumption below 20W for 3 minutes'
+    description: "Notify when dryer finishes based on power consumption below 20W for 3 minutes"
     triggers:
-    - trigger: numeric_state
-      alias: "Power below threshold"
-      entity_id: sensor.droger_power
-      below: 20
-      for:
-        minutes: 3
+      - trigger: numeric_state
+        alias: "Power below threshold"
+        entity_id: sensor.droger_power
+        below: 20
+        for:
+          minutes: 3
     conditions:
-    - condition: template
-      alias: "Valid power reading"
-      value_template: "{{ trigger.from_state.state | is_number }}"
+      - condition: template
+        alias: "Valid power reading"
+        value_template: "{{ trigger.from_state.state | is_number }}"
     actions:
-    - action: rest_command.signal_send_message
-      alias: "Send dryer finished notification"
-      data:
-        message: "🧺 De droger is klaar!"
+      - alias: "Send dryer finished notification"
+        action: notify.send_message
+        target:
+          entity_id: notify.thefes_martijn_6269584791
+        data:
+          message: "🧺 De droger is klaar!"
     mode: single

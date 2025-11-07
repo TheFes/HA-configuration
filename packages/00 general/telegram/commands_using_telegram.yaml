@@ -55,8 +55,7 @@ automation:
                   - action: telegram_bot.send_message
                     data:
                       config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-                      target:
-                        - "6269584791"
+                      target: "{{ [trigger.to_state.attributes.chat_id] }}"
                       message: Wat wil je herstarten?
                       message_tag: restart question
                       inline_keyboard:
@@ -84,8 +83,7 @@ automation:
                   - action: telegram_bot.send_message
                     data:
                       config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-                      target:
-                        - "6269584791"
+                      target: "{{ [trigger.to_state.attributes.chat_id] }}"
                       message: Weet je het zeker?
                       message_tag: restart question
                       inline_keyboard:
@@ -111,8 +109,7 @@ automation:
                           - action: telegram_bot.send_message
                             data:
                               config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-                              target:
-                                - "6269584791"
+                              target: "{{ [trigger.to_state.attributes.chat_id] }}"
                               message: "{{ restart_data | selectattr('arg', 'in', args) | map(attribute='name') | join(', ') }} wordt opnieuw opgestart"
                               message_tag: command_response
                           - action: "{{ restart_data | selectattr('arg', 'in', args) | map(attribute='action') | list | first }}"
@@ -161,7 +158,7 @@ automation:
                     {% set ns = namespace(updates=[]) %}
                     {% for update in updates %}
                       {% set url = state_attr(update, 'release_url') %}
-                      {% set release_button = (', Release notes:'~url) if url else '' %}
+                      {% set release_button = (', Notes:'~url) if url else '' %}
                       {% set name = state_attr(update, 'friendly_name') | regex_replace('update$|Update$', '') | trim %}
                       {% set ns.updates = ns.updates + [name~':/'~update~release_button] %}
                     {% endfor %}
@@ -171,8 +168,7 @@ automation:
                   - action: telegram_bot.send_message
                     data:
                       config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-                      target:
-                        - "6269584791"
+                      target: "{{ [trigger.to_state.attributes.chat_id] }}"
                       message: Er {{ 'zijn' if updates | count > 1 else 'is' }} {{ updates | count }} update{{ 's' if updates | count > 1 }}.
                       message_tag: update_question
                       inline_keyboard: "{{ updates }}"
@@ -205,8 +201,7 @@ automation:
       - action: telegram_bot.send_message
         data:
           config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-          target:
-            - "6269584791"
+          target: "{{ [trigger.to_state.attributes.chat_id] }}"
           message: "{{ message }}"
           message_tag: command_response
     mode: parallel
