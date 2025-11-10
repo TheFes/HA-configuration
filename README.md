@@ -1,4 +1,3 @@
-![Image](/logo/TheFesCasa_logo_dark.png)
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="/logo/TheFesCasa_logo_dark.png">
   <source media="(prefers-color-scheme: light)" srcset="/logo/TheFesCasa_logo_light.png">
