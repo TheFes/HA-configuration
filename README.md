@@ -1,3 +1,10 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/logo/TheFesCasa_logo_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="/logo/TheFesCasa_logo_light.png">
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode." src="/logo/TheFesCasa_logo_light.png">
+</picture>
+
+
 - [👋 Hi there!](#-hi-there)
 - [🛠 My config](#-my-config)
 - [🖥 My Dashboard](#-my-dashboard)
