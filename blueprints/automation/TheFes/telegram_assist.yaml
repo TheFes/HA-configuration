@@ -1,0 +1,121 @@
+blueprint:
+  domain: automation
+  name: Send assist commands using Telegram
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_assist.yaml
+  description: >
+    ![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+    # 💬 Telegram Assist
+
+    This blueprint creates an autation which processes all messages sent in a Telegram chat as voice commands.
+
+    ## ❓How to use
+
+    Provide the settings as described below.
+
+    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_assist.md>).
+
+    ## ☕ Coffee
+
+    If you think I deserve a coffe, please feel free to buy me one (I might spend it on another beverage though).
+
+    In case you decide to do so, thanks a lot!
+
+    <a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
+
+
+    Or you can do a small donation using PayPal.
+
+    [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/paypalme/thefes)
+
+    ```
+  homeassistant:
+    min_version: 2025.11.0
+  input:
+    telegram_event:
+      name: Telegram event entity
+      description:
+        The event entity from the Telegram Bot integration which referencing the chat in which you want
+        to give the commands.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - integration: telegram_bot
+              domain: event
+    llm_entity:
+      name: LLM conversation entity
+      description:
+        The LLM conversation entities to be used as fallback of the local.
+        
+        They will be processed in order, and the first result which isn't an error
+        will be returned.
+        
+        Leave empty to use local handling only.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: conversation
+      default: []
+    prefer_local:
+      name: Prefer local
+      description:
+        The conversation entity from your LLM to be used as fallback of the local. Leave empty to only use local handling.
+        Disable if you only want to use the LLM. In case no LLM entity is provided, this setting will not be used.
+      selector:
+        boolean:
+      default: true
+variables:
+  telegram_event: !input telegram_event
+  prefer_local: !input prefer_local
+  llm_entity: !input llm_entity
+  chat_id: "{{ trigger.event.data.chat_id }}"
+  allowed_chats: "{{ telegram_event | map('state_attr', 'chat_id') | list }}"
+triggers:
+  - alias: Trigger on the Telegram text event
+    trigger: event
+    event_type: telegram_text
+conditions:
+  - alias: Check if the message was sent in an allowed chat
+    condition: template
+    value_template: "{{ chat_id in allowed_chats }}"
+actions:
+  - alias: Use local handling first if set
+    if: "{{ prefer_local or llm_entity | count == 0 }}"
+    then:
+      - alias: Process Telegram chat text locally
+        action: conversation.process
+        data:
+          agent_id: conversation.home_assistant
+          text: "{{ trigger.event.data.text }}"
+          conversation_id: telegram_assist
+        response_variable: response
+  - alias: Process Telegram chat text by LLM
+    repeat:
+      while: >
+        {{
+          repeat.index < llm_entity | count
+          and
+          (
+            response is undefined
+            or response.response.response_type == 'error'
+          )
+        }}
+      sequence:
+      - alias: Ask LLM to process the telegram chat text
+        action: conversation.process
+        data:
+          text: "{{ trigger.event.data.text }}"
+          conversation_id: telegram_assist
+          agent_id: "{{ llm_entity[repeat.index-1] }}"
+        response_variable: response
+  - alias: Send respone to Telegram chat
+    action: telegram_bot.send_message
+    data:
+      config_entry_id: "{{ trigger.event.data.bot.config_entry_id }}"
+      target: "{{ chat_id }}"
+      message: "{{ response.response.speech.plain.speech }}"
+      message_tag: conversation_response
+mode: parallel

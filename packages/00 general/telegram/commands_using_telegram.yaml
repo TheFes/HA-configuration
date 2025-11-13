@@ -1,6 +1,6 @@
 automation:
   - id: 5a06a0c2-31ee-4dc2-8aa8-427da7588090
-    alias: Assist commands using Telegram
+    alias: Commands for telegram bot
     triggers:
       - trigger: state
         entity_id:
@@ -145,11 +145,13 @@ automation:
                     {% set lights_on = label_entities('off_long_press') | select('match', 'light.') | select('is_state', 'on') | list  | count %}
                     {% set players_on = label_entities('off_long_press') | select('match', 'media_player.') | reject('is_state', ['off', 'idle']) | list  | count %}
                     {% set switches_on = label_entities('area_data') | select('match', 'switch.') | select('is_state', 'on') | list  | count %}
-                    🏠 Huis status: {{ states('sensor.house_state_martijn') }}
+                    🏠 Huis status: {{ states('sensor.house_mode') }}
                     😶 {{ states('zone.home') }} {{ 'persoon' if states('zone.home') == '1' else  'personen' }} thuis
                     💡 {{ lights_on }} lamp{{ 'en' if lights_on != 1 }} aan
                     🎚️ {{ switches_on }} schakelaar{{ 's' if switches_on != 1 }} aan
                     📻 {{ players_on }} media player{{ 's' if players_on != 1 }} aan
+          - conditions: "{{ command == '/day' }}"
+            sequence:
           - conditions: "{{ command == '/update' }}"
             sequence:
               - variables:

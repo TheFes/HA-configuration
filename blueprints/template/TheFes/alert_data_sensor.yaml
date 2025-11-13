@@ -1,0 +1,56 @@
+blueprint:
+  name: Template sensor to store alert data
+  description: " ![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n#
+    \U0001F6A8 Template sensor to store alert data\nCreates a template sensor which
+    stores data of active alerts"
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/other/alert_data_sensor.yaml
+  domain: template
+  input:
+    optional_settings:
+      name: Optional settings
+      icon: mdi:cog
+      description: 'Optional settings to change the default entity id or the event
+        on which it triggers
+
+        In case you change these, make sure to update it in the automations created
+        with the Alert blueprint as well'
+      collapsed: true
+      input:
+        trigger_event:
+          name: Trigger event
+          description: The manual event type on which the sensor will trigger
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: update_thefes_alert_sensor
+        entity_id:
+          name: Entity id
+          description: 'The entity id which will be used for this template sensor
+
+            If you change the entity in the GUI after the template sensor is created,
+            make sure to update it here as well otherwise the sensor will no longer
+            work.'
+          selector:
+            text:
+              multiple: false
+              multiline: false
+          default: sensor.thefes_alert_data
+triggers:
+- alias: Trigger on the manual event
+  trigger: event
+  event_type: !input trigger_event
+variables:
+  entity_id: !input entity_id
+  current_data: '{{ state_attr(entity_id, ''alert_data'') | default({}, true) }}'
+  new_data: '{{ trigger.event.data.alert_data }}'
+  combined_data: "{{\n    current_data | combine(new_data)\n    if current_data is
+    mapping\n      and new_data is mapping\n    else current_data\n}}\n"
+sensor:
+  default_entity_id: !input entity_id
+  state: '{{ combined_data.values() | select() | list | count }}'
+  device_class: current
+  unit_of_measurement: A
+  attributes:
+    alert_data: '{{ combined_data }}'
