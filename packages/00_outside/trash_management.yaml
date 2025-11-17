@@ -118,6 +118,34 @@ automation:
 # =============================================================================
 template:
   - triggers:
+      - trigger: time
+        at:
+          - "20:00"
+          - "10:00"
+        variables:
+          new_state: >
+            {{
+              (
+                now() > today_at('20:00')
+                and states('sensor.dashboard_next_trash') == 'Morgen'
+              )
+              or
+              (
+                now() < today_at('10:00')
+                and states('sensor.dashboard_next_trash') == 'Vandaag'
+              )
+            }}
+      - trigger: event
+        event_type: trash_is_outside
+        variables:
+          new_state: False
+    binary_sensor:
+      - unique_id: c0a1ad7f-a8ac-4d04-bfe0-9b57231c6bb1
+        name: Container Alert
+        state: "{{ new_state }}"
+        device_class: problem
+
+  - triggers:
       - alias: "Rest & GFT collection date updated"
         trigger: state
         entity_id: sensor.afvalwijzer_restgft
