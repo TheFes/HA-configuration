@@ -4,7 +4,8 @@ fetch_weather_forecast_data:
     path: TheFes/3_voice_weather_forecast_full_llm.yaml
     input:
       weather_entity: weather.combined
-  description: Gets the weather forecast for either a part of a day, or one or more
+  description:
+    Gets the weather forecast for either a part of a day, or one or more
     full days. In case the weather for the weekend is requested, this means Saturday
     and Sunday
   icon: mdi:weather-lightning-rainy
@@ -14,149 +15,164 @@ fetch_calendar_events:
     path: TheFes/3_voice_calendar_entries_full_llm.yaml
     input:
       calendar_entities:
-      - calendar.m_m
-      - calendar.kids
-      - calendar.thefes
-  description: Fetch calendar events from my calendar. In case the data for the weekend
+        - calendar.m_m
+        - calendar.kids
+        - calendar.thefes
+  description:
+    Fetch calendar events from my calendar. In case the data for the weekend
     is requested, this means Saturday and Sunday
   icon: mdi:calendar
 martijn_starts_working:
   alias: Martijn Starts Working
   sequence:
-  - if:
-    - condition: numeric_state
-      entity_id: sensor.awtrix_martijn_illuminance
-      below: 50
-    then:
-    - alias: Turn on office ceiling light
-      action: light.turn_on
+    - if:
+        - condition: numeric_state
+          entity_id: sensor.awtrix_martijn_illuminance
+          below: 50
+      then:
+        - alias: Turn on office ceiling light
+          action: light.turn_on
+          metadata: {}
+          data:
+            brightness_pct: 100
+            kelvin: 6500
+          target:
+            entity_id: light.werkkamer_martijn_plafond_template
+    - alias: Start Studio Brussel radio
+      action: music_assistant.play_media
       metadata: {}
       data:
-        brightness_pct: 100
-        kelvin: 6500
+        media_type: radio
+        media_id: Studio Brussel
       target:
-        entity_id: light.werkkamer_martijn_plafond_template
-  - alias: Start Studio Brussel radio
-    action: music_assistant.play_media
-    metadata: {}
-    data:
-      media_type: radio
-      media_id: Studio Brussel
-    target:
-      entity_id: media_player.martijn
-  - alias: Turn on office desk power
-    action: switch.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.bureau_martijn_template
+        entity_id: media_player.martijn
+    - alias: Turn on office desk power
+      action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.bureau_martijn_template
   description: Actions to be performed when Martijn starts working in his office
 voice_script_for_music_assistant_requests:
   use_blueprint:
     path: music-assistant/llm_voice_script.yaml
     input:
-      media_player_prompt: Only use in case the request specifically mentions a media
+      media_player_prompt:
+        Only use in case the request specifically mentions a media
         player to play the music on. This has to be a media player provided by the
         Music Assistant integration
       actions:
-      - alias: Define variables used to send notification to the right display
-        variables:
-          map_to_awtrix:
-          - area_name: Werkkamer Martijn
-            topic: awtrix_martijn/notify
-          - area_name: Pepijn
-            topic: awtrix_pepijn/notify
-          - area_name: Floris
-            topic: awtrix_floris/notify
-          topic: '{{ map_to_awtrix | selectattr(''area_name'', ''in'', area | default([],
-            true) | map(''area_name'') | list) | map(attribute=''topic'') | list }}'
-      - alias: Show on Ulanzi display in case there is one in the room
-        repeat:
-          for_each: '{{ topic }}'
-          sequence:
-          - alias: Send notification
-            action: mqtt.publish
-            data:
-              qos: 0
-              retain: false
-              topic: '{{ repeat.item }}'
-              payload: '{{ dict(text = media_description, icon = ''musicvisualisation'',)
-                | to_json }}'
+        - alias: Define variables used to send notification to the right display
+          variables:
+            map_to_awtrix:
+              - area_name: Werkkamer Martijn
+                topic: awtrix_martijn/notify
+              - area_name: Pepijn
+                topic: awtrix_pepijn/notify
+              - area_name: Floris
+                topic: awtrix_floris/notify
+            topic:
+              "{{ map_to_awtrix | selectattr('area_name', 'in', area | default([],
+              true) | map('area_name') | list) | map(attribute='topic') | list }}"
+        - alias: Show on Ulanzi display in case there is one in the room
+          repeat:
+            for_each: "{{ topic }}"
+            sequence:
+              - alias: Send notification
+                action: mqtt.publish
+                data:
+                  qos: 0
+                  retain: false
+                  topic: "{{ repeat.item }}"
+                  payload:
+                    "{{ dict(text = media_description, icon = 'musicvisualisation',)
+                    | to_json }}"
       conditions:
-      - condition: state
-        entity_id: input_boolean.test
-        state: 'on'
+        - condition: state
+          entity_id: input_boolean.test
+          state: "on"
   alias: Voice - Script for Music Assistant requests
-  description: 'This script is used to play music based on a voice request. The tool
+  description:
+    "This script is used to play music based on a voice request. The tool
     takes the following arguments: media_type, artist, album, media_id, radio_mode,
     area. media_id, media_type are always required and must always be supplied as
     arguments to this tool. An area or Music Assistant media player can optionally
     be provided in the voice request as well. Use the parameters as described in the
     description of each parameter. Use this tool whenever the user requests to play
-    music.'
+    music."
   icon: mdi:account-music
 current_device_state:
   sequence:
-  - variables:
-      mapping:
-        dishwasher:
-          currently_active: '{{ iif(states(''binary_sensor.dishwasher_active'') |
-            bool(false), ''Yes'', ''No'') }}'
-          current_program: '{%- set prog = states(''input_select.dishwasher_program'')
-            %} {%- set prog_extra = states(''input_select.dishwasher_program_extra'')
-            %} {%- set running = states(''binary_sensor.dishwasher_active'') | bool
-            %} {{ [prog, prog_extra] | select() | join('' '') if running else ''Inactive''
-            }}
+    - variables:
+        mapping:
+          dishwasher:
+            currently_active:
+              "{{ iif(states('binary_sensor.dishwasher_active') |
+              bool(false), 'Yes', 'No') }}"
+            current_program:
+              "{%- set prog = states('input_select.dishwasher_program')
+              %} {%- set prog_extra = states('input_select.dishwasher_program_extra')
+              %} {%- set running = states('binary_sensor.dishwasher_active') | bool
+              %} {{ [prog, prog_extra] | select() | join(' ') if running else 'Inactive'
+              }}
 
-            '
-          ready_at: '{{ as_datetime(states(''sensor.dishwasher_end_time'')).replace(second=0,
-            microsecond=0) if is_state(''binary_sensor.dishwasher_active'', ''on'')
-            else ''Inactive'' }}
+              "
+            ready_at:
+              "{{ as_datetime(states('sensor.dishwasher_end_time')).replace(second=0,
+              microsecond=0) if is_state('binary_sensor.dishwasher_active', 'on')
+              else 'Inactive' }}
 
-            '
-          minutes_left: '{{ [(as_datetime(states(''sensor.dishwasher_end_time''))
-            - now()).total_seconds() // 60, 0] | max }}
+              "
+            minutes_left:
+              "{{ [(as_datetime(states('sensor.dishwasher_end_time'))
+              - now()).total_seconds() // 60, 0] | max }}
 
-            '
-        washing_machine:
-          currently_active: '{{ iif(states(''sensor.wasmachine'') | bool(false),''Yes'',
-            ''No'') }}'
-          current_program: '{%- set prog = states(''sensor.wasmachine_current_course'')
-            %} {%- set error = ''Error'' if is_state(''binary_sensor.wasmachine_error_state'',
-            ''on'') %} {%- set running = states(''sensor.wasmachine'') | bool %} {{
-            error or prog if running else ''Inactive'' }}
+              "
+          washing_machine:
+            currently_active:
+              "{{ iif(states('sensor.wasmachine') | bool(false),'Yes',
+              'No') }}"
+            current_program:
+              "{%- set prog = states('sensor.wasmachine_current_course')
+              %} {%- set error = 'Error' if is_state('binary_sensor.wasmachine_error_state',
+              'on') %} {%- set running = states('sensor.wasmachine') | bool %} {{
+              error or prog if running else 'Inactive' }}
 
-            '
-          ready_at: '{{ now().replace(second=0, microsecond=0) + as_timedelta(states(''sensor.wasmachine_remain_time''))
-            if  is_state(''sensor.wasmachine'', ''on'') else ''Inactive'' }}
+              "
+            ready_at:
+              "{{ now().replace(second=0, microsecond=0) + as_timedelta(states('sensor.wasmachine_remain_time'))
+              if  is_state('sensor.wasmachine', 'on') else 'Inactive' }}
 
-            '
-          minutes_left: '{{ (as_timedelta(states(''sensor.wasmachine_remain_time'')).total_seconds()
-            // 60) | int }}
+              "
+            minutes_left:
+              "{{ (as_timedelta(states('sensor.wasmachine_remain_time')).total_seconds()
+              // 60) | int }}
 
-            '
-      response: '{{ mapping[device] }}'
-  - stop: ''
-    response_variable: response
+              "
+        response: "{{ mapping[device] }}"
+    - stop: ""
+      response_variable: response
   fields:
     device:
       selector:
         select:
           options:
-          - dishwasher
-          - washing_machine
+            - dishwasher
+            - washing_machine
       name: Device
       description: Select from which device the details on the current state are requested.
       required: true
   alias: Current device state
-  description: Script to request the current state of a device in the house. The information
+  description:
+    Script to request the current state of a device in the house. The information
     is only available for the devices in the "device" option. Convert the time in
     minutes to hours and minutes in case it is more than 60 minutes.
 voice_get_todo_entries_full_llm_script:
   alias: Voice - Get ToDo entries - Full LLM script
   use_blueprint:
     path: TheFes/3_voice_get_todo_entries_full_llm.yaml
-  description: Fetch todo items from my todo lists. Note that the shopping list is
+  description:
+    Fetch todo items from my todo lists. Note that the shopping list is
     also considered a todo list. Ignore items marked as completed, unless the uses
     specifically requests them.
 voice_set_reminder_full_llm_script:
@@ -165,16 +181,18 @@ voice_set_reminder_full_llm_script:
     path: TheFes/3_voice_reminder_full_llm.yaml
     input:
       todo_entity: todo.reminder
-  description: Tool to set reminders based on voice commands. In case not recipient
+  description:
+    Tool to set reminders based on voice commands. In case not recipient
     is provided ask for it, in case no clear date and time is provided ask for it,
     in case no recipient is provided ask for it
 ashley_s_light_fader:
   alias: Ashley’s Light Fader
-  description: 'Fades a lamp over time. If you have any questions or comments about
+  description:
+    "Fades a lamp over time. If you have any questions or comments about
     this script, feel free to tweet Ashley Bischoff at @FriendlyAshley. Released under
     the Apache 2.0 license. (v2.0)
 
-    '
+    "
   fields:
     light:
       name: "\U0001F4A1 Light"
@@ -186,22 +204,23 @@ ashley_s_light_fader:
       required: true
     lampBrightnessScale:
       name: The lamp’s internal brightness scale
-      description: 'Most lamps seem to internally use a 0 to 255 brightness scale,
+      description:
+        "Most lamps seem to internally use a 0 to 255 brightness scale,
         but some lamps internally use a 0% to 100% brightness scale. Either of these
         settings will still fade the lamp, but if you happen to match this setting
         to the lamp’s internal brightness scale, the resulting fade may be smoother.
         (If you’re not sure, you can just leave this as is.)
 
-        '
+        "
       advanced: true
       required: true
       selector:
         select:
           options:
-          - label: 0% to 100%
-            value: zeroToOneHundred
-          - label: 0 to 255
-            value: zeroToTwoFiftyFive
+            - label: 0% to 100%
+              value: zeroToOneHundred
+            - label: 0 to 255
+              value: zeroToTwoFiftyFive
       default: zeroToTwoFiftyFive
     transitionTime:
       name: ⏱ Fade time
@@ -211,7 +230,8 @@ ashley_s_light_fader:
       required: true
     easingTypeInput:
       name: "\U0001F4C9 Easing type"
-      description: The easing function that you’d like the fade to use. As a starting
+      description:
+        The easing function that you’d like the fade to use. As a starting
         point—you can’t go wrong with any of the “Ease-In-Out X” easings as those
         will always look pretty good whenever you’re fading between two nonzero brightness
         values. As well, the “Ease-Out X” easings often tend to look good if you might
@@ -223,34 +243,34 @@ ashley_s_light_fader:
         select:
           mode: list
           options:
-          - label: Try to automatically select the easing type
-            value: auto
-          - label: Ease-In-Out Sine [a good all-rounder]
-            value: easeInOutSine
-          - label: Ease-In-Out Quad
-            value: easeInOutQuad
-          - label: Ease-In-Out Cubic
-            value: easeInOutCubic
-          - label: Ease-In-Out Quart
-            value: easeInOutQuart
-          - label: Ease-Out Sine
-            value: easeOutSine
-          - label: Ease-Out Quad
-            value: easeOutCubic
-          - label: Ease-Out Cubic
-            value: easeOutCubic
-          - label: Ease-Out Quart
-            value: easeOutQuart
-          - label: Ease-In Sine
-            value: easeInSine
-          - label: Ease-In Quad
-            value: easeInCubic
-          - label: Ease-In Cubic
-            value: easeInCubic
-          - label: Ease-In Quart
-            value: easeInQuart
-          - label: Linear [somewhat unnatural to the human eye; not recommended]
-            value: linear
+            - label: Try to automatically select the easing type
+              value: auto
+            - label: Ease-In-Out Sine [a good all-rounder]
+              value: easeInOutSine
+            - label: Ease-In-Out Quad
+              value: easeInOutQuad
+            - label: Ease-In-Out Cubic
+              value: easeInOutCubic
+            - label: Ease-In-Out Quart
+              value: easeInOutQuart
+            - label: Ease-Out Sine
+              value: easeOutSine
+            - label: Ease-Out Quad
+              value: easeOutCubic
+            - label: Ease-Out Cubic
+              value: easeOutCubic
+            - label: Ease-Out Quart
+              value: easeOutQuart
+            - label: Ease-In Sine
+              value: easeInSine
+            - label: Ease-In Quad
+              value: easeInCubic
+            - label: Ease-In Cubic
+              value: easeInCubic
+            - label: Ease-In Quart
+              value: easeInQuart
+            - label: Linear [somewhat unnatural to the human eye; not recommended]
+              value: linear
       default: auto
       required: true
     endBrightnessPercent:
@@ -262,29 +282,31 @@ ashley_s_light_fader:
           max: 100
           step: 1
           mode: slider
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
       default: 50
-      example: '50'
+      example: "50"
       required: true
     endBrightnessEntity:
       name: (optional) Use an entity instead for the end-brightness value?
-      description: You can optionally have the script ignore the end-brightness value
+      description:
+        You can optionally have the script ignore the end-brightness value
         above and instead use the numeric value of anonther entity that you select
         here, such as an input-number helper, an input-select helper, an input-text
         helper, or a numeric sensor.
       selector:
         entity:
           domain:
-          - input_number
-          - input_select
-          - input_text
-          - sensor
+            - input_number
+            - input_select
+            - input_text
+            - sensor
       example: input_number.dining_room_entertaining_level
       required: false
       advanced: true
     endBrightnessEntityScale:
       name: The end-brightness entity’s brightness scale (if used)
-      description: If you enable the “use an entity for the end-brightness value instead”
+      description:
+        If you enable the “use an entity for the end-brightness value instead”
         option, select here whether your chosen entity represents brightness with
         a 0% to 100% scale or a 0 to 255 scale. (Note—in either case, this script
         will expect that entity to solely have an integer value without any nonnumeric
@@ -293,15 +315,16 @@ ashley_s_light_fader:
       selector:
         select:
           options:
-          - label: 0% to 100%
-            value: zeroToOneHundred
-          - label: 0 to 255
-            value: zeroToTwoFiftyFive
+            - label: 0% to 100%
+              value: zeroToOneHundred
+            - label: 0 to 255
+              value: zeroToTwoFiftyFive
       default: zeroToOneHundred
       required: true
     endColorTemperatureKelvin:
       name: "\U0001F3A8 (optional) End color temperature (in Kelvin)"
-      description: Color temperature from 2000 K to 6500 K representing the final
+      description:
+        Color temperature from 2000 K to 6500 K representing the final
         color temperature.
       selector:
         number:
@@ -310,28 +333,31 @@ ashley_s_light_fader:
           step: 50
           mode: slider
           unit_of_measurement: °K
-      example: '2700'
+      example: "2700"
       required: false
     endColorTemperatureKelvinEntity:
       name: (optional) Use an entity instead for the ending Kelvin value?
-      description: You can optionally have the script ignore the end-color-temperature
+      description:
+        You can optionally have the script ignore the end-color-temperature
         value above and instead use the numeric value of anonther entity that you
         select here, such as an input-number helper, an input-select helper, an input-text
         helper, or a numeric sensor.
       selector:
         entity:
           domain:
-          - input_number
-          - input_select
-          - input_text
-          - sensor
+            - input_number
+            - input_select
+            - input_text
+            - sensor
       example: input_number.dining_room_color_temperature
       required: false
       advanced: true
     autoCancelThreshold:
-      name: "\U0001F6AB (optional) Brightness-change threshold that auto-cancels the
+      name:
+        "\U0001F6AB (optional) Brightness-change threshold that auto-cancels the
         fade"
-      description: You can optionally have the script automatically cancel its fade
+      description:
+        You can optionally have the script automatically cancel its fade
         if the lamp’s brightness were to be manually changed by a certain amount.
         For example, let’s suppose that you were to set this value to 5% and then
         you were to run this script. If there comes a point within the fade where
@@ -349,13 +375,14 @@ ashley_s_light_fader:
           max: 100
           step: 1
           mode: slider
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
       default: 10
-      example: '10'
+      example: "10"
       required: false
     shouldStopIfTheLampIsTurnedOffDuringTheFade:
       name: ⤵️ Cancel the fade if the lamp is turned off during the fade?
-      description: By default, the script will automatically disengage if the lamp
+      description:
+        By default, the script will automatically disengage if the lamp
         is turned off during the fade. But if you’d like to, you can also disable
         that behavior with this switch. (And don’t worry—this feature is smart enough
         to not automatically cancel the fade at points when the lamp’s intended brightness
@@ -367,26 +394,29 @@ ashley_s_light_fader:
       required: true
       default: true
     stopEntity:
-      name: "\U0001F6D1 (optional) Stop if a certain entity is turned on during the
+      name:
+        "\U0001F6D1 (optional) Stop if a certain entity is turned on during the
         fade?"
-      description: 'You can optionally have the script keep an eye on an input boolean
+      description:
+        "You can optionally have the script keep an eye on an input boolean
         or a binary sensor or a light. And if that entity is then turned on during
         the fade, the script will automatically stop. So for example, if you create
         a “Stop Everything” input boolean, and if you set that entity here, you can
-        stop your fade at any time by turning on that “Stop Everything” entity. '
+        stop your fade at any time by turning on that “Stop Everything” entity. "
       selector:
         entity:
           domain:
-          - input_boolean
-          - binary_sensor
-          - light
-          - switch
+            - input_boolean
+            - binary_sensor
+            - light
+            - switch
       example: input_boolean.stop_everything
       required: false
       advanced: true
     shouldResetTheStopEntityToOffAtStart:
       name: (optional) Reset that “stop” entity to off just before starting the fade?
-      description: If you make use of the stop entity (above), you can also optionally
+      description:
+        If you make use of the stop entity (above), you can also optionally
         have the script automatically reset that entity to “off” at the start of the
         fade. (By default, the script won’t change the value of the stop entity.)
       selector:
@@ -396,7 +426,8 @@ ashley_s_light_fader:
       default: false
     shouldInvertTheValueOfTheStopEntity:
       name: (optional) Stop only if the “stop” entity is instead turned OFF?
-      description: If you make use of the stop entity (above), you can optionally
+      description:
+        If you make use of the stop entity (above), you can optionally
         have the script automatically stop only if that entity is turned OFF during
         the fade.
       selector:
@@ -406,7 +437,8 @@ ashley_s_light_fader:
       default: false
     minimumStepDelayInMilliseconds:
       name: Minimum delay per step
-      description: The minimum delay between sending each brightness command. Some
+      description:
+        The minimum delay between sending each brightness command. Some
         lamps only accept commands every X milliseconds—so while you can probably
         leave this as is, if by chance your lamp were to behave strangely, you might
         try bumping up this number by another ten or twenty milliseconds.
@@ -419,11 +451,13 @@ ashley_s_light_fader:
           mode: slider
           unit_of_measurement: ms
       default: 100
-      example: '100'
+      example: "100"
     shouldTryToUseNativeLampTransitionsToo:
-      name: "\U0001F9EA (experimental) If available, use the lamp's native transitions
+      name:
+        "\U0001F9EA (experimental) If available, use the lamp's native transitions
         too?"
-      description: If this is enabled and if the lamp natively supports transitions,
+      description:
+        If this is enabled and if the lamp natively supports transitions,
         the script will make use of the lamp’s native transition effect when moving
         between brightness steps or color steps if those steps are very gradually
         spaced. When enabled, this has the possibility of offering even smoother fades.
@@ -439,7 +473,8 @@ ashley_s_light_fader:
       default: false
     isDebugMode:
       name: "\U0001F41B Enable debugging mode?"
-      description: If this is enabled, the script will output status messages to your
+      description:
+        If this is enabled, the script will output status messages to your
         Home Assistant log along the way. Unless something were to be acting weirdly,
         you can leave this off.
       selector:
@@ -448,1134 +483,1180 @@ ashley_s_light_fader:
       required: true
       default: false
   sequence:
-  - variables:
-      lightFriendlyName: '{{ state_attr(light, ''friendly_name'') }}'
-      startTimestamp: '{{ as_timestamp(now()) }}'
-      fadeTimeInSeconds: '{{ ((transitionTime.hours | int) * 60 * 60) + ((transitionTime.minutes
-        | int) * 60) + (transitionTime.seconds | int) }}
+    - variables:
+        lightFriendlyName: "{{ state_attr(light, 'friendly_name') }}"
+        startTimestamp: "{{ as_timestamp(now()) }}"
+        fadeTimeInSeconds:
+          "{{ ((transitionTime.hours | int) * 60 * 60) + ((transitionTime.minutes
+          | int) * 60) + (transitionTime.seconds | int) }}
 
-        '
-      endTimestamp: '{{ startTimestamp + fadeTimeInSeconds }}'
-      fadeTimeInMilliseconds: '{{ fadeTimeInSeconds * 1000 }}'
-      shouldIgnoreTheEndBrightnessValueAndUseAnEntityForTheEndBrightnessInstead: "{%
-        if (endBrightnessEntity is defined) and (has_value(endBrightnessEntity)) %}\n
-        \ {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      shouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead: "{%
-        if (endColorTemperatureKelvinEntity is defined) and (has_value(endColorTemperatureKelvinEntity))
-        %}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      isStopEntityEnabled: "{% if (stopEntity is defined) and (has_value(stopEntity))
-        %}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      isStopEntityToggleable: "{% if isStopEntityEnabled %}\n  {% set stopEntityDomain
-        = states[stopEntity].domain %}\n  {% if stopEntityDomain == \"binary_sensor\"
-        %}\n    {{ false }}\n  {% else %}\n    {## branch for stopEntityDomain being
-        an input_boolean or a light or a switch ##} \n    {{ true }}\n  {% endif %}\n{%
-        else %}\n  {{ false }}\n{% endif %}\n"
-      stopEntityFriendlyName: "{% if isStopEntityEnabled %}\n  {{ state_attr(stopEntity,
-        'friendly_name') }}\n{% else %}\n  {{ \"\" }}\n{% endif %}\n"
-      minColorTemperatureKelvin: "{## init ##} {% set minColorTemperature = -1 %}\n{%
-        set minColorTemperatureValue = state_attr(light, 'min_color_temp_kelvin')
-        %} {% if minColorTemperatureValue %}\n  {% if is_number(minColorTemperatureValue)
-        %}\n    {% set minColorTemperature = minColorTemperatureValue | int %}\n  {%
-        endif %}\n{% endif %} {{ minColorTemperature }}\n"
-      maxColorTemperatureKelvin: "{## init ##} {% set maxColorTemperature = -1 %}\n{%
-        set maxColorTemperatureValue = state_attr(light, 'max_color_temp_kelvin')
-        %} {% if maxColorTemperatureValue %}\n  {% if is_number(maxColorTemperatureValue)
-        %}\n    {% set maxColorTemperature = maxColorTemperatureValue | int %}\n  {%
-        endif %}\n{% endif %} {{ maxColorTemperature }}\n"
-      doesLampSupportColorTemperatureKelvin: "{% if ((minColorTemperatureKelvin |
-        int) > 0) and\n((maxColorTemperatureKelvin | int)) > 0 %}\n  {{ true }}\n{%
-        else %}\n  {{ false }}\n{% endif %}\n"
-      doesLampSupportTransitions: "{% set supportedFeatures = state_attr(light, 'supported_features')
-        | int %}\n{## Bitfield of features supported by the light entity ##} {## SUPPORT_BRIGHTNESS
-        = 1 ##} {## SUPPORT_COLOR_TEMP = 2 ##} {## SUPPORT_EFFECT = 4 ##} {## SUPPORT_FLASH
-        = 8 ##} {## SUPPORT_COLOR = 16 ##} {## SUPPORT_TRANSITION = 32 ##} {## SUPPORT_WHITE_VALUE
-        = 128 ##}\n{## via: https://github.com/home-assistant/core/blob/787faaa508cf83ca4f850ee7000ad17eade915aa/homeassistant/components/light/__init__.py#L39
-        ##}\n{% if supportedFeatures >= 128 %}\n  {% set supportedFeatures = supportedFeatures
-        - 128 %}\n{% endif %}\n{% if supportedFeatures >= 32 %}\n  {{ true }}\n{%
-        else %}\n  {{ false }}\n{% endif %}\n\n"
-      endColorTemperature: "{% if\nshouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead\n%}\n
-        \ {% set entityColorTemperatureValue = states(endColorTemperatureKelvinEntity)
-        | round (0) %}\n  \n  {% set endColorTemperatureKelvinValue = entityColorTemperatureValue
-        | int %}\n\n  {% if endColorTemperatureKelvinValue > (maxColorTemperatureKelvin
-        | int\n  ) %}\n    {% set endColorTemperatureKelvinValue = maxColorTemperatureKelvin
-        |int %}\n  {% endif %}\n\n  {% if endColorTemperatureKelvinValue < (minColorTemperatureKelvin
-        | int\n  )%}\n    {% set endColorTemperatureKelvinValue = minColorTemperatureKelvin
-        | int %}\n  {% endif %}\n  \n{% else %}\n  {## branch for shouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead
-        being off ##}\n  \n  {% if (endColorTemperatureKelvin is defined) and endColorTemperatureKelvin
-        %}\n    {% set endColorTemperatureKelvinValue = endColorTemperatureKelvin
-        | round(0) %}\n  {% else %}\n    {% set endColorTemperatureKelvinValue = 0
-        %}\n  {% endif %}\n  \n{% endif %}\n\n{{ endColorTemperatureKelvinValue }}\n"
-      isColorFadeRequested: "{% if (endColorTemperature |int) > 0 %}\n  {{ true }}\n{%
-        else %}\n  {{ false }}\n{% endif %}\n"
-      endBrightness: "{% if shouldIgnoreTheEndBrightnessValueAndUseAnEntityForTheEndBrightnessInstead
-        %}\n  {% set entityBrightnessValue = states(endBrightnessEntity) | round (0)
-        %}\n  {% if (endBrightnessEntityScale == lampBrightnessScale) %}\n    {% set
-        endBrightness = entityBrightnessValue %}\n  {% elif (lampBrightnessScale ==
-        \"zeroToTwoFiftyFive\") and (endBrightnessEntityScale == \"zeroToOneHundred\")
-        %}\n    {% set endBrightness = (entityBrightnessValue * 2.55) | round(0) %}\n
-        \ {% elif (lampBrightnessScale == \"zeroToOneHundred\") and (endBrightnessEntityScale
-        == \"zeroToTwoFiftyFive\") %}\n    {% set endBrightness = (entityBrightnessValue
-        / 2.55) | round(0) %}\n  {% endif %}\n{% else %}\n  {## branch for using the
-        brightness selector's value rather than an entity's brightness value ##}\n
-        \ {% if lampBrightnessScale == \"zeroToOneHundred\" %}\n  \t{% set endBrightness
-        = endBrightnessPercent %}\n  {% else %}\n  \n    {## lampBrightnessScale ==
-        \"zeroToTwoFiftyFive\" ##}\n    {% if endBrightnessPercent == 1 %}\n      {##
-        special case to force the endBrightness to 1/255 if the user enters \"1%\"
-        by inferring that the user is looking to set the lamp to its lowest possible
-        brightness ##}\n    \t{% set endBrightness = 1 %}\n    {% else %}\n      {%
-        set endBrightness = (endBrightnessPercent * 2.55) | round(0) %}\n    {% endif
-        %}\n  \n  {% endif %}\n{% endif %}\n\n{{ endBrightness }}\n"
-      startBrightness: "{% set rawLightLevel = state_attr(light, 'brightness') %}\n\n{##
-        If a light is off, its brightness will return \"None\"? So first check if
-        there's a valid brightness before setting the value ##}\n{% if rawLightLevel
-        %}\n\t{% set currentLightLevel = rawLightLevel | int %}\n{% else %}\n\t{%
-        set currentLightLevel = 0 %}\n{% endif %}\n\n{% if lampBrightnessScale ==
-        \"zeroToOneHundred\" %}\n  {% set currentLightLevel = (currentLightLevel /
-        2.55) | round(0) %}\n{% endif %}\n\n{## This next part, which nudges the starting
-        level from 0 to 1, is necessary in cases \n  where there’s a color fade requested
-        but the starting brightness level is 0. \n  And that’s because when a light
-        is at 0, Home Assistant doesn’t know that light's Kelvin color.            So
-        the light first needs to be nudged toward 1 just so that this script can see
-        what it’s\n  starting Kelvin color is. ##}\n  \n{% if (currentLightLevel ==
-        0) and (endBrightness > currentLightLevel) and isColorFadeRequested %}\n  {%
-        set currentLightLevel = 1 %}\n{% endif %}\n\n{{ currentLightLevel }}\n"
-      brightnessSpan: '{{ endBrightness - startBrightness }}'
-      absoluteBrightnessSpan: '{{ brightnessSpan | abs }}'
-      shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged: "{% if (autoCancelThreshold
-        is defined) and (is_number(autoCancelThreshold)) %}\n  {{ true }}\n{% else
-        %}\n  {{ false }}\n{% endif %}\n"
-      normalizedAutoCancelThreshold: "{% if not shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
-        %}\n  {## exit early if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
-        isn’t even enabled ##}\n  {{ 255 }}\n{% elif (lampBrightnessScale == \"zeroToTwoFiftyFive\")
-        %}\n  {{ (autoCancelThreshold * 2.55) | round (0) }}\n{% else %}\n  {{ autoCancelThreshold
-        }}\n{% endif %}\n"
-      expectedBrightness: '{{ startBrightness }}'
-  - if:
-    - condition: template
-      value_template: '{{ isStopEntityEnabled and isStopEntityToggleable and shouldResetTheStopEntityToOffAtStart
-        }}
-
-        '
-    then:
-    - data: {}
-      target:
-        entity_id: '{{ stopEntity }}'
-      action: homeassistant.turn_off
-  - if:
-    - condition: template
-      value_template: "{## init ##} {% set shouldStop = false %} {% if isStopEntityEnabled
-        %}\n  {% if (shouldInvertTheValueOfTheStopEntity is defined) and shouldInvertTheValueOfTheStopEntity
-        %}\n    {% if not bool(states(stopEntity), false) %}\n      {% set shouldStop
-        = true %}\n    {% endif %}\n  {% else %}\n    {% if bool(states(stopEntity),
-        false) %}\n      {% set shouldStop = true %}\n    {% endif %}\n  {% endif
-        %}\n{% endif %} {{ shouldStop }}\n"
-    then:
+          "
+        endTimestamp: "{{ startTimestamp + fadeTimeInSeconds }}"
+        fadeTimeInMilliseconds: "{{ fadeTimeInSeconds * 1000 }}"
+        shouldIgnoreTheEndBrightnessValueAndUseAnEntityForTheEndBrightnessInstead:
+          "{%
+          if (endBrightnessEntity is defined) and (has_value(endBrightnessEntity)) %}\n
+          \ {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+        shouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead:
+          "{%
+          if (endColorTemperatureKelvinEntity is defined) and (has_value(endColorTemperatureKelvinEntity))
+          %}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+        isStopEntityEnabled:
+          "{% if (stopEntity is defined) and (has_value(stopEntity))
+          %}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+        isStopEntityToggleable:
+          "{% if isStopEntityEnabled %}\n  {% set stopEntityDomain
+          = states[stopEntity].domain %}\n  {% if stopEntityDomain == \"binary_sensor\"
+          %}\n    {{ false }}\n  {% else %}\n    {## branch for stopEntityDomain being
+          an input_boolean or a light or a switch ##} \n    {{ true }}\n  {% endif %}\n{%
+          else %}\n  {{ false }}\n{% endif %}\n"
+        stopEntityFriendlyName:
+          "{% if isStopEntityEnabled %}\n  {{ state_attr(stopEntity,
+          'friendly_name') }}\n{% else %}\n  {{ \"\" }}\n{% endif %}\n"
+        minColorTemperatureKelvin:
+          "{## init ##} {% set minColorTemperature = -1 %}\n{%
+          set minColorTemperatureValue = state_attr(light, 'min_color_temp_kelvin')
+          %} {% if minColorTemperatureValue %}\n  {% if is_number(minColorTemperatureValue)
+          %}\n    {% set minColorTemperature = minColorTemperatureValue | int %}\n  {%
+          endif %}\n{% endif %} {{ minColorTemperature }}\n"
+        maxColorTemperatureKelvin:
+          "{## init ##} {% set maxColorTemperature = -1 %}\n{%
+          set maxColorTemperatureValue = state_attr(light, 'max_color_temp_kelvin')
+          %} {% if maxColorTemperatureValue %}\n  {% if is_number(maxColorTemperatureValue)
+          %}\n    {% set maxColorTemperature = maxColorTemperatureValue | int %}\n  {%
+          endif %}\n{% endif %} {{ maxColorTemperature }}\n"
+        doesLampSupportColorTemperatureKelvin:
+          "{% if ((minColorTemperatureKelvin |
+          int) > 0) and\n((maxColorTemperatureKelvin | int)) > 0 %}\n  {{ true }}\n{%
+          else %}\n  {{ false }}\n{% endif %}\n"
+        doesLampSupportTransitions:
+          "{% set supportedFeatures = state_attr(light, 'supported_features')
+          | int %}\n{## Bitfield of features supported by the light entity ##} {## SUPPORT_BRIGHTNESS
+          = 1 ##} {## SUPPORT_COLOR_TEMP = 2 ##} {## SUPPORT_EFFECT = 4 ##} {## SUPPORT_FLASH
+          = 8 ##} {## SUPPORT_COLOR = 16 ##} {## SUPPORT_TRANSITION = 32 ##} {## SUPPORT_WHITE_VALUE
+          = 128 ##}\n{## via: https://github.com/home-assistant/core/blob/787faaa508cf83ca4f850ee7000ad17eade915aa/homeassistant/components/light/__init__.py#L39
+          ##}\n{% if supportedFeatures >= 128 %}\n  {% set supportedFeatures = supportedFeatures
+          - 128 %}\n{% endif %}\n{% if supportedFeatures >= 32 %}\n  {{ true }}\n{%
+          else %}\n  {{ false }}\n{% endif %}\n\n"
+        endColorTemperature:
+          "{% if\nshouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead\n%}\n
+          \ {% set entityColorTemperatureValue = states(endColorTemperatureKelvinEntity)
+          | round (0) %}\n  \n  {% set endColorTemperatureKelvinValue = entityColorTemperatureValue
+          | int %}\n\n  {% if endColorTemperatureKelvinValue > (maxColorTemperatureKelvin
+          | int\n  ) %}\n    {% set endColorTemperatureKelvinValue = maxColorTemperatureKelvin
+          |int %}\n  {% endif %}\n\n  {% if endColorTemperatureKelvinValue < (minColorTemperatureKelvin
+          | int\n  )%}\n    {% set endColorTemperatureKelvinValue = minColorTemperatureKelvin
+          | int %}\n  {% endif %}\n  \n{% else %}\n  {## branch for shouldIgnoreTheEndColorTemperatureValueAndUseAnEntityForTheEndColorTemperatureInstead
+          being off ##}\n  \n  {% if (endColorTemperatureKelvin is defined) and endColorTemperatureKelvin
+          %}\n    {% set endColorTemperatureKelvinValue = endColorTemperatureKelvin
+          | round(0) %}\n  {% else %}\n    {% set endColorTemperatureKelvinValue = 0
+          %}\n  {% endif %}\n  \n{% endif %}\n\n{{ endColorTemperatureKelvinValue }}\n"
+        isColorFadeRequested:
+          "{% if (endColorTemperature |int) > 0 %}\n  {{ true }}\n{%
+          else %}\n  {{ false }}\n{% endif %}\n"
+        endBrightness:
+          "{% if shouldIgnoreTheEndBrightnessValueAndUseAnEntityForTheEndBrightnessInstead
+          %}\n  {% set entityBrightnessValue = states(endBrightnessEntity) | round (0)
+          %}\n  {% if (endBrightnessEntityScale == lampBrightnessScale) %}\n    {% set
+          endBrightness = entityBrightnessValue %}\n  {% elif (lampBrightnessScale ==
+          \"zeroToTwoFiftyFive\") and (endBrightnessEntityScale == \"zeroToOneHundred\")
+          %}\n    {% set endBrightness = (entityBrightnessValue * 2.55) | round(0) %}\n
+          \ {% elif (lampBrightnessScale == \"zeroToOneHundred\") and (endBrightnessEntityScale
+          == \"zeroToTwoFiftyFive\") %}\n    {% set endBrightness = (entityBrightnessValue
+          / 2.55) | round(0) %}\n  {% endif %}\n{% else %}\n  {## branch for using the
+          brightness selector's value rather than an entity's brightness value ##}\n
+          \ {% if lampBrightnessScale == \"zeroToOneHundred\" %}\n  \t{% set endBrightness
+          = endBrightnessPercent %}\n  {% else %}\n  \n    {## lampBrightnessScale ==
+          \"zeroToTwoFiftyFive\" ##}\n    {% if endBrightnessPercent == 1 %}\n      {##
+          special case to force the endBrightness to 1/255 if the user enters \"1%\"
+          by inferring that the user is looking to set the lamp to its lowest possible
+          brightness ##}\n    \t{% set endBrightness = 1 %}\n    {% else %}\n      {%
+          set endBrightness = (endBrightnessPercent * 2.55) | round(0) %}\n    {% endif
+          %}\n  \n  {% endif %}\n{% endif %}\n\n{{ endBrightness }}\n"
+        startBrightness:
+          "{% set rawLightLevel = state_attr(light, 'brightness') %}\n\n{##
+          If a light is off, its brightness will return \"None\"? So first check if
+          there's a valid brightness before setting the value ##}\n{% if rawLightLevel
+          %}\n\t{% set currentLightLevel = rawLightLevel | int %}\n{% else %}\n\t{%
+          set currentLightLevel = 0 %}\n{% endif %}\n\n{% if lampBrightnessScale ==
+          \"zeroToOneHundred\" %}\n  {% set currentLightLevel = (currentLightLevel /
+          2.55) | round(0) %}\n{% endif %}\n\n{## This next part, which nudges the starting
+          level from 0 to 1, is necessary in cases \n  where there’s a color fade requested
+          but the starting brightness level is 0. \n  And that’s because when a light
+          is at 0, Home Assistant doesn’t know that light's Kelvin color.            So
+          the light first needs to be nudged toward 1 just so that this script can see
+          what it’s\n  starting Kelvin color is. ##}\n  \n{% if (currentLightLevel ==
+          0) and (endBrightness > currentLightLevel) and isColorFadeRequested %}\n  {%
+          set currentLightLevel = 1 %}\n{% endif %}\n\n{{ currentLightLevel }}\n"
+        brightnessSpan: "{{ endBrightness - startBrightness }}"
+        absoluteBrightnessSpan: "{{ brightnessSpan | abs }}"
+        shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged:
+          "{% if (autoCancelThreshold
+          is defined) and (is_number(autoCancelThreshold)) %}\n  {{ true }}\n{% else
+          %}\n  {{ false }}\n{% endif %}\n"
+        normalizedAutoCancelThreshold:
+          "{% if not shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
+          %}\n  {## exit early if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
+          isn’t even enabled ##}\n  {{ 255 }}\n{% elif (lampBrightnessScale == \"zeroToTwoFiftyFive\")
+          %}\n  {{ (autoCancelThreshold * 2.55) | round (0) }}\n{% else %}\n  {{ autoCancelThreshold
+          }}\n{% endif %}\n"
+        expectedBrightness: "{{ startBrightness }}"
     - if:
-      - condition: template
-        value_template: '{{ (shouldInvertTheValueOfTheStopEntity is defined) and shouldInvertTheValueOfTheStopEntity
-          }}
-
-          '
-      then:
-      - variables:
-          stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because
-            " + (stopEntityFriendlyName | string) + " is off." %} {{ stopMessage }}
-
-            '
-      - if:
         - condition: template
-          value_template: '{{ isDebugMode }}
-
-            '
-        then:
-        - data_template:
-            message: '{{ stopMessage }}
-
-              '
-            level: warning
-          action: system_log.write
-      - stop: '{{ stopMessage }}
-
-          '
-      else:
-      - variables:
-          stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because
-            " + (stopEntityFriendlyName | string) + " is on." %} {{ stopMessage }}
-
-            '
-      - if:
-        - condition: template
-          value_template: '{{ isDebugMode }}
-
-            '
-        then:
-        - data_template:
-            message: '{{ stopMessage }}
-
-              '
-            level: warning
-          action: system_log.write
-      - stop: '{{ stopMessage }}
-
-          '
-  - variables:
-      timestampBeforeServiceCall: '{{ as_timestamp(now()) }}'
-  - if:
-    - condition: template
-      value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive") }}
-
-        '
-    then:
-    - target:
-        entity_id: '{{ light }}'
-      data:
-        brightness: '{{ expectedBrightness }}'
-      action: light.turn_on
-    else:
-    - target:
-        entity_id: '{{ light }}'
-      data:
-        brightness_pct: '{{ expectedBrightness }}'
-      action: light.turn_on
-  - variables:
-      processingDelayInMilliseconds: '{{ (as_timestamp(now()) -  timestampBeforeServiceCall)
-        * 1000 }}'
-      easingType: "{% if \"auto\" in easingTypeInput %}\n  {% if (startBrightness
-        == 0) and (fadeTimeInSeconds <= 20) %}\n    {{ \"easeOutCubic\" }}\n  {% elif
-        (startBrightness == 0) and (fadeTimeInSeconds <= 55) %}\n    {{ \"easeOutQuad\"
-        }}\n  {% elif (endBrightness == 0) and (fadeTimeInSeconds <= 20) %}\n    {{
-        \"easeInCubic\" }}\n  {% elif (endBrightness == 0) and (fadeTimeInSeconds
-        <= 55) %}\n    {{ \"easeInQuad\" }}\n  {% else %}\n    {{ \"easeInOutSine\"
-        }}\n  {% endif %}\n{% else %}\n  {{ easingTypeInput }}\n{% endif %}\n"
-      isLampCurrentColorDefinedUsingKelvin: "{% set rawColorTemperature = state_attr(light,
-        'color_temp_kelvin') %}\n\n{## If a light is off or if its color temperature
-        is defined using a non-Kelvin color system, \n  its color temperature will
-        return \"None\"? So first check if there's a valid color temperature ##}\n\n{%
-        if rawColorTemperature %}\n\t{{ true }}\n{% else %}\n\t{{ false }}\n{% endif
-        %}\n\n"
-      startColorTemperature: "{## init ##} {% set currentColorTemperature = -1 %}\n{%
-        set rawColorTemperature = state_attr(light, 'color_temp_kelvin') %}\n{## If
-        a light is off or if its color temperature is defined using a non-Kelvin color
-        system, \n  its color temperature will return \"None\"? So first check if
-        there's a valid color temperature ##}\n\n{% if rawColorTemperature %}\n  {%
-        if is_number(rawColorTemperature) %}\n    {% set currentColorTemperature =
-        rawColorTemperature | int %}\n  {% endif %}\n{% endif %}\n{{ currentColorTemperature
-        }}\n\n"
-      colorTemperatureSpan: "{% if doesLampSupportColorTemperatureKelvin %}\n  {{
-        (endColorTemperature | int) - (startColorTemperature | int) }}\n{% else %}\n
-        \ {{ 0 }}\n{% endif %}\n"
-      absoluteColorTemperatureSpan: '{{ colorTemperatureSpan | int | abs }}'
-      isBrightnessFadeEnabled: "{% if (absoluteBrightnessSpan | int) > 0 %}\n  {{
-        true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      isColorFadeEnabled: "{% if isColorFadeRequested and doesLampSupportColorTemperatureKelvin
-        and ((absoluteColorTemperatureSpan | int) > 0) %}\n  {{ true }}\n{% else %}\n
-        \ {{ false }}\n{% endif %}\n"
-      remainingTimeInMilliseconds: '{% set nowTimestamp = as_timestamp(now()) %}
-
-        {{ (endTimestamp - nowTimestamp) * 1000 }}
-
-        '
-      delayInMilliseconds: "{## init ##}\n{% set frameMultiplicationFactor = 1 %}\n{%
-        if \"Circ\" in easingType %}\n  {## Four as many frames for Circ-type easings
-        ##}\n  {## set idealDelay = (idealDelay / 4) | round(0) ##}\n  {% set frameMultiplicationFactor
-        = 3 %}\n{% elif (\"Cubic\" in easingType) or (\"Quart\" in easingType) %}\n
-        \ {## Three as many frames for Cubic-type or Quart-type easings ##}\n  {##
-        set idealDelay = (idealDelay / 3) | round(0) ##}\n  {% set frameMultiplicationFactor
-        = 2 %}\n{% elif \"ease\" in easingType %}\n  {## Twice as many frames for
-        other easing types ##}\n  {## set idealDelay = (idealDelay / 1.5) | round(0)
-        ##}\n  {% set frameMultiplicationFactor = 1.2 %}\n{% endif %}\n{% if isBrightnessFadeEnabled
-        %}\n  {% set brightnessFramesCount = (frameMultiplicationFactor * absoluteBrightnessSpan)
-        | round(0) %}\n  {% set totalExpectedRemainingBrightnessFadeProcessingDelay
-        = processingDelayInMilliseconds * brightnessFramesCount %}\n  {% set idealBrightnessFadeDelay
-        = ((remainingTimeInMilliseconds - totalExpectedRemainingBrightnessFadeProcessingDelay)
-        / brightnessFramesCount) | round(0) %}\n{% else %}\n  {% set idealBrightnessFadeDelay
-        = 0 %}\n{% endif %}\n{% if isColorFadeEnabled %}\n  {## The division by 25
-        below is working from the idea that you’d want the color fade \n    to progress
-        at least every 25°K, such as 2,000 K, 2,025 K, 2,050 K, and so on ##}\n  \n
-        \ {% set colorFramesCount = (frameMultiplicationFactor * (absoluteColorTemperatureSpan
-        / 25)) | round(0) %}\n  {% set totalExpectedRemainingColorFadeProcessingDelay
-        = (processingDelayInMilliseconds * colorFramesCount) | round(0) %}\n  {% set
-        idealColorFadeDelay = ((remainingTimeInMilliseconds - totalExpectedRemainingColorFadeProcessingDelay)
-        / colorFramesCount ) | round(0) %}\n{% else %}\n  {% set idealColorFadeDelay
-        = 0 %}\n{% endif %}\n{## init ##} {% set idealDelay = 0 %}\n{## if both brightness-fade
-        is enabled and color-fade is enabled, pick the one with the lowest ideal delay
-        ##}\n{% if isBrightnessFadeEnabled and isColorFadeEnabled %}\n  {% if idealBrightnessFadeDelay
-        < idealColorFadeDelay %}\n    {% set idealDelay = idealBrightnessFadeDelay
-        %} \n  {% else %}\n    {% set idealDelay = idealColorFadeDelay %}\n  {% endif
-        %}\n{% elif isBrightnessFadeEnabled %}\n  {% set idealDelay = idealBrightnessFadeDelay
-        %}\n{% elif isColorFadeEnabled %}\n  {% set idealDelay = idealColorFadeDelay
-        %}\n{% endif %}\n{## Make sure that the delay isn’t below the minimumStepDelayInMilliseconds
-        ##} {% if idealDelay < minimumStepDelayInMilliseconds %}\n  {{ minimumStepDelayInMilliseconds
-        }}\n{% else %}\n  {{ idealDelay }}\n{% endif %}\n"
-      delayInSeconds: '{{ (delayInMilliseconds | int) / 1000 }}
-
-        '
-      transitionTimeParameterInSeconds: "{% set transitionTimeParameterInSeconds =
-        ((delayInSeconds | float) * 0.9) | round(3) %}\n{## set a ceiling on the transition
-        time ##}\n{% if transitionTimeParameterInSeconds > 10 %}\n  {% set transitionTimeParameterInSeconds
-        = 10 %}\n{% endif %}\n{{ transitionTimeParameterInSeconds }}\n"
-      minimumDelayInSecondsBeforeUsingNativeLampNativeTransitionsToo: '{{ 1 }}
-
-        '
-      shouldUseNativeLampTransitionsToo: "{% if \n  (\n    (shouldTryToUseNativeLampTransitionsToo
-        is defined) \n    and shouldTryToUseNativeLampTransitionsToo \n    and doesLampSupportTransitions\n
-        \   and ((transitionTimeParameterInSeconds | float(0) ) >=    \n    minimumDelayInSecondsBeforeUsingNativeLampNativeTransitionsToo
-        | float(0) )\n  )\n%}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-  - if:
-    - condition: template
-      value_template: "{{ ((absoluteBrightnessSpan | int) == 0) and not isColorFadeEnabled
-        }}        \n"
-    then:
-    - variables:
-        stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because "
-          + (lightFriendlyName | string) + "’s starting brightness is the same as
-          its ending brightness." %} {{ stopMessage }}
-
-          '
-    - if:
-      - condition: template
-        value_template: '{{ isDebugMode }}
-
-          '
-      then:
-      - data_template:
-          message: '{{ stopMessage }}
-
-            '
-          level: warning
-        action: system_log.write
-    - stop: '{{ stopMessage }}
-
-        '
-  - if:
-    - condition: template
-      value_template: "{{ ((absoluteBrightnessSpan | int) == 0) and ((absoluteColorTemperatureSpan
-        | int) == 0) and isColorFadeEnabled }}        \n"
-    then:
-    - variables:
-        stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because "
-          + (lightFriendlyName | string) + "’s starting brightness is the same as
-          its ending brightness and its starting color temperature is the same as
-          its ending color temperature." %} {{ stopMessage }}
-
-          '
-    - if:
-      - condition: template
-        value_template: '{{ isDebugMode }}
-
-          '
-      then:
-      - data_template:
-          message: '{{ stopMessage }}
-
-            '
-          level: warning
-        action: system_log.write
-    - stop: '{{ stopMessage }}
-
-        '
-  - if:
-    - condition: template
-      value_template: "{{ isColorFadeRequested and not doesLampSupportColorTemperatureKelvin
-        }}        \n"
-    then:
-    - variables:
-        stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because a
-          color fade was requested for " + (lightFriendlyName | string) + ", but it
-          doesn’t seem to support Kelvin color temperatures. (You can look into this
-          by going into Developer Tools and checking that " + (lightFriendlyName |
-          string) + " has the defined attributes for “min_color_temp_kelvin” and “max_color_temp_kelvin”.)"
-          %} {{ stopMessage }}
-
-          '
-    - if:
-      - condition: template
-        value_template: '{{ isDebugMode }}
-
-          '
-      then:
-      - data_template:
-          message: '{{ stopMessage }}
-
-            '
-          level: warning
-        action: system_log.write
-    - stop: '{{ stopMessage }}
-
-        '
-  - if:
-    - condition: template
-      value_template: "{{ isColorFadeRequested and not isLampCurrentColorDefinedUsingKelvin
-        }}        \n"
-    then:
-    - variables:
-        stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because a
-          color fade was requested for " + (lightFriendlyName | string) + ", but its
-          current color temperature doesn’t seem to be defined using Kelvin units.
-          (You can look into this by going into Developer Tools and checking that
-          " + (lightFriendlyName | string) + " has a defined “color_temp_kelvin” attribute.)"
-          %} {{ stopMessage }}
-
-          '
-    - if:
-      - condition: template
-        value_template: '{{ isDebugMode }}
-
-          '
-      then:
-      - data_template:
-          message: '{{ stopMessage }}
-
-            '
-          level: warning
-        action: system_log.write
-    - stop: '{{ stopMessage }}
-
-        '
-  - if:
-    - condition: template
-      value_template: '{{ isDebugMode }}
-
-        '
-    then:
-    - if:
-      - condition: template
-        value_template: '{{ isColorFadeEnabled }}
-
-          '
-      then:
-      - data_template:
-          message: '{{ easingType }} easing type with {{ delayInMilliseconds | int
-            }} ms delay. remainingTimeInMilliseconds = {{ remainingTimeInMilliseconds
-            | round(0) }}, absoluteColorTemperatureSpan = {{ absoluteColorTemperatureSpan
-            }}, and absoluteBrightnessSpan = {{ absoluteBrightnessSpan }}
-
-            '
-          level: warning
-        action: system_log.write
-      - data_template:
-          message: 'startBrightness = {{ startBrightness }}, endBrightness = {{ endBrightness
-            }}, startColorTemperature = {{ startColorTemperature }}, endColorTemperature
-            = {{ endColorTemperature }}, and  processingDelayInMilliseconds = {{ processingDelayInMilliseconds
-            | int }}
-
-            '
-          level: warning
-        action: system_log.write
-      else:
-      - data_template:
-          message: '{{ easingType }} easing type with {{ delayInMilliseconds | int
-            }} ms delay. remainingTimeInMilliseconds = {{ remainingTimeInMilliseconds
-            | round(0) }}, and absoluteBrightnessSpan = {{ absoluteBrightnessSpan
+          value_template:
+            "{{ isStopEntityEnabled and isStopEntityToggleable and shouldResetTheStopEntityToOffAtStart
             }}
 
-            '
-          level: warning
-        action: system_log.write
-      - data_template:
-          message: 'startBrightness = {{ startBrightness }}, endBrightness = {{ endBrightness
-            }}, and processingDelayInMilliseconds = {{ processingDelayInMilliseconds
-            | int }}
-
-            '
-          level: warning
-        action: system_log.write
-  - repeat:
-      sequence:
-      - variables:
-          percentageOfTimeCompleted: "{% set nowTimestamp = as_timestamp(now()) %}\n{%
-            set percentageOfTimeCompleted = ((nowTimestamp - startTimestamp) / fadeTimeInSeconds)
-            %}\n{% if (percentageOfTimeCompleted < 0) %}\n  {% set percentageOfTimeCompleted
-            = 0 %}\n{% elif (percentageOfTimeCompleted > 1) %}\n  {% set percentageOfTimeCompleted
-            = 1 %}\n{% endif %}\n{{ percentageOfTimeCompleted }}\n"
-          easingAdjustedPercentageCompleted: "{% set percentageOfTimeCompleted = percentageOfTimeCompleted
-            | float(0) %} {% if easingType == \"easeInSine\" %}\n  {## https://easings.net/#easeInSine
-            ##}\n  {{  1 - cos((percentageOfTimeCompleted * pi) / 2) }}\n\n{% elif
-            easingType == \"easeInQuad\" %}\n  {## https://easings.net/#easeInQuad
-            ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted }} \n\n{%
-            elif easingType == \"easeInCubic\" %}\n  {## https://easings.net/#easeInCubic
-            ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted * percentageOfTimeCompleted
-            }}\n\n{% elif easingType == \"easeInQuart\" %}\n  {## https://easings.net/#easeInQuart
-            ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted * percentageOfTimeCompleted
-            * percentageOfTimeCompleted }}\n  \n{% elif easingType == \"easeOutSine\"
-            %}\n  {## https://easings.net/#easeOutSine ##}\n  {{ sin((percentageOfTimeCompleted
-            * pi) / 2) }}\n\n{% elif easingType == \"easeOutQuad\" %}\n  {## https://easings.net/#easeOutQuad
-            ##}\n  {{ 1 - (1 - percentageOfTimeCompleted)* (1 - percentageOfTimeCompleted)
-            }} \n\n{% elif easingType == \"easeOutCubic\" %}\n  {## https://easings.net/#easeOutCubic
-            ##}\n  {{ 1 - ((1 - percentageOfTimeCompleted) ** 3) }}\n\n{% elif easingType
-            == \"easeOutQuart\" %}\n  {## https://easings.net/#easeOutQuart ##}\n
-            \ {{ 1 - ((1 - percentageOfTimeCompleted) ** 4) }}\n\n{% elif easingType
-            == \"easeInOutSine\" %}\n  {## https://easings.net/#easeInOutSine ##}\n
-            \ {{ -1 * ((cos(pi * percentageOfTimeCompleted) - 1) / 2) }}\n  \n{% elif
-            easingType == \"easeInOutQuad\" %}\n  {## https://easings.net/#easeInOutQuad
-            ##}\n  {% if (percentageOfTimeCompleted < 0.5) %}\n    {{ 2 * percentageOfTimeCompleted
-            * percentageOfTimeCompleted }} \n  {% else %}\n    {{ 1- (((-2 * percentageOfTimeCompleted
-            + 2) ** 2) / 2) }} \n  {% endif %}\n  \n{% elif easingType == \"easeInOutCubic\"
-            %}\n  {## https://easings.net/#easeInOutCubic ##}\n  {% if (percentageOfTimeCompleted
-            < 0.5) %}\n    {{ 4 * percentageOfTimeCompleted * percentageOfTimeCompleted
-            * percentageOfTimeCompleted }} \n  {% else %}\n    {{ 1- (((-2 * percentageOfTimeCompleted
-            + 2) ** 3) / 2) }} \n  {% endif %}\n    \n{% elif easingType == \"easeInOutQuart\"
-            %}\n  {## https://easings.net/#easeInOutQuart ##}\n  {% if (percentageOfTimeCompleted
-            < 0.5) %}\n    {{ 8 * percentageOfTimeCompleted * percentageOfTimeCompleted
-            * percentageOfTimeCompleted * percentageOfTimeCompleted }} \n  {% else
-            %}\n    {{ 1 - (((-2 * percentageOfTimeCompleted + 2) ** 4) / 2) }} \n
-            \ {% endif %}\n{% else %}\n  {## linear ##}\n  {{ percentageOfTimeCompleted
-            }}\n{% endif %}\n"
-          expectedBrightness: "{% if isBrightnessFadeEnabled %}\n  {% set startBrightness
-            = startBrightness | int %}\n  {% set brightnessSpan = brightnessSpan |
-            int %}\n  {% set easingAdjustedPercentageCompleted = easingAdjustedPercentageCompleted
-            | float(0) %}\n\n  {% set calculatedBrightness = (startBrightness + (brightnessSpan
-            * easingAdjustedPercentageCompleted)) | round(0) %}\n  {% if (calculatedBrightness
-            < 0) %}\n    {% set calculatedBrightness = 0 %}\n  {% elif (calculatedBrightness
-            > 255) %}\n    {% set calculatedBrightness = 255 %}\n  {% endif %}\n\n
-            \ {% if (endBrightness >= startBrightness) and (calculatedBrightness >
-            endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
-            \ {% elif (endBrightness < startBrightness) and (calculatedBrightness
-            < endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
-            \ {% endif %}\n{% else %}\n  {## if isBrightnessFadeEnabled is false ##}\n
-            \ {% set calculatedBrightness = startBrightness %}\n{% endif %}\n\n{{
-            calculatedBrightness }}\n"
-          linearExpectedBrightness: "{% if isBrightnessFadeEnabled %}              \n
-            \ {% set startBrightness = startBrightness | int %}\n  {% set brightnessSpan
-            = brightnessSpan | int %}\n  {% set percentageOfTimeCompleted = percentageOfTimeCompleted
-            | float(0) %}\n  \n  {% set calculatedBrightness = (startBrightness +
-            (brightnessSpan * percentageOfTimeCompleted)) | round(0) %}\n  {% if (calculatedBrightness
-            < 0) %}\n    {% set calculatedBrightness = 0 %}\n  {% elif (calculatedBrightness
-            > 255) %}\n    {% set calculatedBrightness = 255 %}\n  {% endif %}\n\n
-            \ {% if (endBrightness >= startBrightness) and (calculatedBrightness >
-            endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
-            \ {% elif (endBrightness < startBrightness) and (calculatedBrightness
-            < endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
-            \ {% endif %}\n{% else %}\n  {## if isBrightnessFadeEnabled is false ##}\n
-            \ {% set calculatedBrightness = startBrightness %}\n{% endif %}\n\n{{
-            calculatedBrightness }}\n"
-          currentBrightness: "{% if isBrightnessFadeEnabled %}\n  {% set rawLightLevel
-            = state_attr(light, 'brightness') %}\n\n  {## If a light is off, its brightness
-            will return \"None\"? So first check if there's a valid brightness before
-            getting the value ##}\n  {% if rawLightLevel %}\n  \t{% set currentLightLevel
-            = rawLightLevel | int %}\n  {% else %}\n  \t{% set currentLightLevel =
-            0 %}\n  {% endif %}\n  {% if lampBrightnessScale == \"zeroToOneHundred\"
-            %}\n    {% set currentLightLevel = (currentLightLevel / 2.55) | round(0)
-            %}\n  {% endif %}\n{% else %}\n  {% set currentLightLevel = startBrightness
-            %}\n{% endif %}\n\n{{ currentLightLevel }}\n\n"
-          expectedColorTemperature: "{% if isColorFadeEnabled %}\n  {% set startColorTemperature
-            = startColorTemperature | int %}\n  {% set colorTemperatureSpan = colorTemperatureSpan
-            | int %}\n  {% set easingAdjustedPercentageCompleted = easingAdjustedPercentageCompleted
-            | float(0) %}\n\n  {% set calculatedColorTemperature = (startColorTemperature
-            + (colorTemperatureSpan * easingAdjustedPercentageCompleted)) | round(0)
-            %}\n\n  {% set minColorTemperatureKelvin = minColorTemperatureKelvin |
-            int %}\n  {% set maxColorTemperatureKelvin = maxColorTemperatureKelvin
-            | int %}\n\n  {% if (calculatedColorTemperature < minColorTemperatureKelvin)
-            %}\n    {% set calculatedColorTemperature = minColorTemperatureKelvin
-            %}\n  \n  {% elif (calculatedColorTemperature > maxColorTemperatureKelvin)
-            %}\n    {% set calculatedColorTemperature = maxColorTemperatureKelvin
-            %}\n  {% endif %}\n\n  {% if (endColorTemperature >= startColorTemperature)
-            and (calculatedColorTemperature > endColorTemperature) %}\n    {% set
-            calculatedColorTemperature = endColorTemperature %}\n  {% elif (endColorTemperature
-            < startColorTemperature) and (calculatedColorTemperature < endColorTemperature)
-            %}\n    {% set calculatedColorTemperature = endColorTemperature %}\n  {%
-            endif %}\n{% else %}\n  {% set calculatedColorTemperature = 0 %}\n{% endif
-            %}\n\n{{ calculatedColorTemperature }}\n"
-          currentColorTemperature: "{## init ##}\n{% set currentColorTemperature =
-            -1 %}\n{% if isColorFadeEnabled %}\n  {% set rawColorTemperature = state_attr(light,
-            'color_temp_kelvin') %}\n  \n  {## If a light is off or if its color temperature
-            is defined using a non-Kelvin color system, its color temperature will
-            return \"None\"? So first check if there's a valid color temperature ##}\n
-            \ {% if rawColorTemperature %}\n  \n    {% if is_number(rawColorTemperature)
-            %}\n      {% set currentColorTemperature = rawColorTemperature | int %}\n
-            \   {% endif %}\n  {% endif %}\n{% endif %}\n\n{{ currentColorTemperature
-            }}\n"
-      - if:
+            "
+      then:
+        - data: {}
+          target:
+            entity_id: "{{ stopEntity }}"
+          action: homeassistant.turn_off
+    - if:
         - condition: template
-          value_template: '{{ isBrightnessFadeEnabled and isColorFadeEnabled }}
-
-            '
-        then:
-        - if:
-          - condition: template
-            value_template: "{{ \n  (\n    ( (currentBrightness | int) != (endBrightness
-              | int) )\n    and\n    ( (currentBrightness | int) != (expectedBrightness
-              | int) )\n  )\n  or\n  (\n    ( (currentColorTemperature | int) != (endColorTemperature
-              | int) )\n    and\n    ( (currentColorTemperature | int) != (expectedColorTemperature
-              | int) )\n  )\n}}\n"
-          then:
-          - if:
-            - condition: template
-              value_template: '{{ shouldUseNativeLampTransitionsToo }}
-
-                '
-            then:
-            - if:
-              - condition: template
-                value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
-                  }}
-
-                  '
-              then:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness: '{{ expectedBrightness }}'
-                  kelvin: '{{ expectedColorTemperature }}'
-                  transition: '{{ transitionTimeParameterInSeconds | float(0)  }}'
-                action: light.turn_on
-              else:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness_pct: '{{ expectedBrightness }}'
-                  kelvin: '{{ expectedColorTemperature }}'
-                  transition: '{{ transitionTimeParameterInSeconds | float(0) }}'
-                action: light.turn_on
-            else:
-            - if:
-              - condition: template
-                value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
-                  }}
-
-                  '
-              then:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness: '{{ expectedBrightness }}'
-                  kelvin: '{{ expectedColorTemperature }}'
-                action: light.turn_on
-              else:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness_pct: '{{ expectedBrightness }}'
-                  kelvin: '{{ expectedColorTemperature }}'
-                action: light.turn_on
-          - if:
-            - condition: template
-              value_template: '{{ isDebugMode }}
-
-                '
-            then:
-            - if:
-              - condition: template
-                value_template: '{{ isColorFadeEnabled and isBrightnessFadeEnabled
-                  }}
-
-                  '
-              then:
-              - data_template:
-                  message: 'Set {{ lightFriendlyName }} to {{ expectedBrightness |
-                    int }} brightness and {{ expectedColorTemperature | int }}°K.
-                    (Linear brightness would have been {{ linearExpectedBrightness
-                    | int }}.) Delay is {{ delayInMilliseconds | int }} ms. Elapsed
-                    time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
-                    seconds. (endBrightness is {{ endBrightness}} and endColorTemperature
-                    is {{ endColorTemperature}}.)
-
-                    '
-                  level: warning
-                action: system_log.write
-        else:
-        - if:
-          - condition: template
-            value_template: "{{ isBrightnessFadeEnabled and \n  (\n    ( (currentBrightness
-              | int) != (endBrightness | int) ) \n    and\n    ( (currentBrightness
-              | int) != (expectedBrightness | int) ) \n  )\n  }}\n"
-          then:
-          - if:
-            - condition: template
-              value_template: '{{ shouldUseNativeLampTransitionsToo }}
-
-                '
-            then:
-            - if:
-              - condition: template
-                value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
-                  }}
-
-                  '
-              then:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness: '{{ expectedBrightness }}'
-                  transition: '{{ transitionTimeParameterInSeconds }}'
-                action: light.turn_on
-              else:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness_pct: '{{ expectedBrightness }}'
-                  transition: '{{ transitionTimeParameterInSeconds }}'
-                action: light.turn_on
-            else:
-            - if:
-              - condition: template
-                value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
-                  }}
-
-                  '
-              then:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness: '{{ expectedBrightness }}'
-                action: light.turn_on
-              else:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  brightness_pct: '{{ expectedBrightness }}'
-                action: light.turn_on
-          - if:
-            - condition: template
-              value_template: '{{ isDebugMode }}
-
-                '
-            then:
-            - data_template:
-                message: 'Set {{ lightFriendlyName }} to {{ expectedBrightness | int
-                  }} brightness. (Linear brightness would have been {{ linearExpectedBrightness
-                  | int }}.) Delay is {{ delayInMilliseconds | int }} ms. Elapsed
-                  time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
-                  seconds. (endBrightness is {{ endBrightness}}.)
-
-                  '
-                level: warning
-              action: system_log.write
-          else:
-          - if:
-            - condition: template
-              value_template: "{{ isColorFadeEnabled and \n  (\n    ( (currentColorTemperature
-                | int) != (endColorTemperature | int) ) \n    and\n    ( (currentColorTemperature
-                | int) != (expectedColorTemperature | int) ) \n  )\n}}\n"
-            then:
-            - if:
-              - condition: template
-                value_template: '{{ shouldUseNativeLampTransitionsToo }}
-
-                  '
-              then:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  kelvin: '{{ expectedColorTemperature }}'
-                  transition: '{{ transitionTimeParameterInSeconds | round(3) }}'
-                action: light.turn_on
-              else:
-              - target:
-                  entity_id: '{{ light }}'
-                data:
-                  kelvin: '{{ expectedColorTemperature }}'
-                action: light.turn_on
-            - if:
-              - condition: template
-                value_template: '{{ isDebugMode }}
-
-                  '
-              then:
-              - data_template:
-                  message: 'Set {{ lightFriendlyName }} to {{ expectedColorTemperature
-                    | int }}°K. Delay is {{ delayInMilliseconds | int }} ms. Elapsed
-                    time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
-                    seconds. (endColorTemperature is {{ endColorTemperature}}.)
-
-                    '
-                  level: warning
-                action: system_log.write
-      - delay:
-          milliseconds: '{{ delayInMilliseconds | float(0) }}'
-      - if:
-        - condition: template
-          value_template: "{## init ##} {% set shouldStop = false %} {% if isStopEntityEnabled
+          value_template:
+            "{## init ##} {% set shouldStop = false %} {% if isStopEntityEnabled
             %}\n  {% if (shouldInvertTheValueOfTheStopEntity is defined) and shouldInvertTheValueOfTheStopEntity
             %}\n    {% if not bool(states(stopEntity), false) %}\n      {% set shouldStop
             = true %}\n    {% endif %}\n  {% else %}\n    {% if bool(states(stopEntity),
             false) %}\n      {% set shouldStop = true %}\n    {% endif %}\n  {% endif
             %}\n{% endif %} {{ shouldStop }}\n"
-        then:
-        - if:
-          - condition: template
-            value_template: '{{ (shouldInvertTheValueOfTheStopEntity is defined) and
-              shouldInvertTheValueOfTheStopEntity }}
-
-              '
-          then:
-          - variables:
-              stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because
-                " + (stopEntityFriendlyName | string) + " turned off." %} {{ stopMessage
-                }}
-
-                '
-          - if:
-            - condition: template
-              value_template: '{{ isDebugMode }}
-
-                '
-            then:
-            - data_template:
-                message: '{{ stopMessage }}
-
-                  '
-                level: warning
-              action: system_log.write
-          - stop: '{{ stopMessage }}
-
-              '
-          else:
-          - variables:
-              stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because
-                " + (stopEntityFriendlyName | string) + " turned on." %} {{ stopMessage
-                }}
-
-                '
-          - if:
-            - condition: template
-              value_template: '{{ isDebugMode }}
-
-                '
-            then:
-            - data_template:
-                message: '{{ stopMessage }}
-
-                  '
-                level: warning
-              action: system_log.write
-          - stop: '{{ stopMessage }}
-
-              '
-      - variables:
-          currentBrightness: "{% if is_state(light, 'off') %}\n  {% set currentLightLevel
-            = 0 %}\n  {{ currentLightLevel }}\n{% else %}\n  {% set rawLightLevel
-            = state_attr(light, 'brightness') %}\n\n  {## If a light is off, its brightness
-            will return 'None'. So first check if there's a valid brightness before
-            getting the value ##}\n\n  {% if rawLightLevel %}\n  \t{% set currentLightLevel
-            = rawLightLevel | int %}\n  {% else %}\n  \t{% set currentLightLevel =
-            0 %}\n  {% endif %}\n  {% if lampBrightnessScale == \"zeroToOneHundred\"
-            %}\n    {% set currentLightLevel = (currentLightLevel / 2.55) | round(0)
-            %}\n  {% endif %}\n\n  {{ currentLightLevel }}\n{% endif %}\n\n"
-          brightnessDifferenceFromExpected: '{{ ( (currentBrightness | int) - (expectedBrightness
-            | int) ) | abs }}
-
-            '
-          isBrightnessDifferenceAboveAutoCancelThreshold: "{% if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
-            %}\n  {{ (brightnessDifferenceFromExpected | int) >= (normalizedAutoCancelThreshold
-            | int) }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      - if:
-        - condition: template
-          value_template: "{{ (\n    (\n    (not (shouldStopIfTheLampIsTurnedOffDuringTheFade
-            is defined)) or\n       (\n         (shouldStopIfTheLampIsTurnedOffDuringTheFade
-            is defined) and \n         shouldStopIfTheLampIsTurnedOffDuringTheFade\n
-            \       )\n     )\n     and ( ((expectedBrightness | int) > 0) and ((currentBrightness
-            | int) == 0) )\n   ) \n  }}\n"
-        then:
-        - variables:
-            stopMessage: '{% set stopMessage = "Stopped Ashley’s Light Fader because
-              " + (lightFriendlyName | string) + " was turned off during the fade."
-              %}
-
-              {{ stopMessage }}
-
-              '
-        - if:
-          - condition: template
-            value_template: '{{ isDebugMode }}
-
-              '
-          then:
-          - data_template:
-              message: '{{ stopMessage }}
-
-                '
-              level: warning
-            action: system_log.write
-        - stop: '{{ stopMessage }}
-
-            '
-      - if:
-        - condition: template
-          value_template: '{{ shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
-            and isBrightnessDifferenceAboveAutoCancelThreshold }}
-
-            '
-        then:
-        - variables:
-            stopMessage: "{% if lampBrightnessScale == \"zeroToTwoFiftyFive\" %}\n
-              \ {% set currentBrightnessAsPercentage = (currentBrightness / 2.55)
-              | round(0) %}\n  {% set expectedBrightnessAsPercentage = (expectedBrightness
-              / 2.55) | round(0) %}\n  {% set differenceFromExpectedAsPercentage =
-              (brightnessDifferenceFromExpected / 2.55) | round(0) %}\n{% else %}\n
-              \ {% set currentBrightnessAsPercentage = currentBrightness %}\n  {%
-              set expectedBrightnessAsPercentage = expectedBrightness %}\n  {% set
-              differenceFromExpectedAsPercentage = brightnessDifferenceFromExpected
-              %}\n{% endif %}\n\n{% set stopMessage = \"Stopped Ashley’s Light Fader
-              because \" + (lightFriendlyName | string) + \" was found to be at \"
-              + (currentBrightnessAsPercentage | string) + \"%, a difference of \"
-              + (differenceFromExpectedAsPercentage | string) + \" percentage points
-              from the expected brightness of \" + (expectedBrightnessAsPercentage
-              | string) + \"%, which is higher than the auto-cancel threshold of \"
-              + (autoCancelThreshold | string) + \" percentage points.\" %}\n{{ stopMessage
-              }}\n"
-        - if:
-          - condition: template
-            value_template: '{{ isDebugMode }}
-
-              '
-          then:
-          - data_template:
-              message: '{{ stopMessage }}
-
-                '
-              level: warning
-            action: system_log.write
-        - stop: '{{ stopMessage }}
-
-            '
-      until:
-      - condition: template
-        value_template: "{% if (as_timestamp(now()) >= endTimestamp) %}\n  {{ true
-          }}\n{% elif isBrightnessFadeEnabled or isColorFadeEnabled %}\n  {## init
-          ##}\n  {% set okayToEndTheLoop = true %}\n  \n  {% if isBrightnessFadeEnabled
-          %}\n    {% set rawLightLevel = state_attr(light, 'brightness') %}\n\n    {##
-          If a light is off, its brightness will return \"None\"? So first check if
-          there's a valid brightness before getting the value ##}\n    {% if rawLightLevel
-          %}\n    \t{% set currentLightLevel = rawLightLevel | int %}\n    {% else
-          %}\n    \t{% set currentLightLevel = 0 %}\n    {% endif %}\n    {% if lampBrightnessScale
-          == \"zeroToOneHundred\" %}\n      {% set currentLightLevel = (currentLightLevel
-          / 2.55) | round(0) %}\n    {% endif %}\n  \n    {% if (endBrightness >=
-          startBrightness) and (currentLightLevel < endBrightness) %}\n      {% set
-          okayToEndTheLoop = false %}\n    {% elif (endBrightness < startBrightness)
-          and (currentLightLevel > endBrightness) %}\n      {% set okayToEndTheLoop
-          = false %}\n    {% endif %}\n  {% endif %}\n  \n  {## The \"and okayToEndTheLoop\"
-          part is to avoid needlessly checking whether the color temp fails if the
-          brightness check already fails ##}\n  {% if isColorFadeEnabled and okayToEndTheLoop
-          %}\n\n    {## init ##}\n    {% set currentColorTemperature = -1 %}\n    \n
-          \   {% set rawColorTemperature = state_attr(light, 'color_temp_kelvin')
-          %}\n  \n    {## If a light is off or if its color temperature is defined
-          using a non-Kelvin color system, its color temperature will return \"None\"?
-          So first check if there's a valid color temperature ##}\n    {% if rawColorTemperature
-          %}\n  \n      {% if is_number(rawColorTemperature) %}\n        {% set currentColorTemperature
-          = rawColorTemperature | int %}\n      {% endif %}\n    {% endif %}\n    \n
-          \   {% if (currentColorTemperature != -1) and (endColorTemperature >= startColorTemperature)
-          and (currentColorTemperature < endColorTemperature) %}\n      {% set okayToEndTheLoop
-          = false %}\n    {% elif (currentColorTemperature != -1) and (endColorTemperature
-          < startColorTemperature) and (currentColorTemperature > endColorTemperature)
-          %}\n      {% set okayToEndTheLoop = false %}\n    {% endif %}\n\n  {% endif
-          %}\n  \n  {{ okayToEndTheLoop }}\n    \n{% else %}\n  {## neither isBrightnessFadeEnabled
-          nor isColorFadeEnabled ##} \n  {{ true }}\n{% endif %}\n\n"
-  - variables:
-      currentBrightness: "{% set rawLightLevel = state_attr(light, 'brightness') %}\n\n{##
-        If a light is off, its brightness will return 'None'. So first check if there's
-        a valid brightness before getting the value ##}\n{% if rawLightLevel %}\n\t{%
-        set currentLightLevel = rawLightLevel | int %}\n{% else %}\n\t{% set currentLightLevel
-        = 0 %}\n{% endif %}\n{% if lampBrightnessScale == \"zeroToOneHundred\" %}\n
-        \ {% set currentLightLevel = (currentLightLevel / 2.55) | round(0) %}\n{%
-        endif %}\n\n{{ currentLightLevel }}\n"
-      brightnessDifferenceFromExpected: '{{ ( (currentBrightness | int) - (endBrightness
-        | int) ) | abs }}
-
-        '
-      isBrightnessDifferenceAboveAutoCancelThreshold: "{% if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
-        %}\n  {{ (brightnessDifferenceFromExpected | int) > (normalizedAutoCancelThreshold
-        | int) }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
-      currentColorTemperature: "{## init ##} {% set currentColorTemperature = -1 %}
-        {% if isColorFadeEnabled %}\n  {% set rawColorTemperature = state_attr(light,
-        'color_temp_kelvin') %}\n  \n  {## If a light is off or if its color temperature
-        is defined using a non-Kelvin color system, its color temperature will return
-        \"None\"? So first check if there's a valid color temperature ##}\n  {% if
-        rawColorTemperature %}\n  \n    {% if is_number(rawColorTemperature) %}\n
-        \     {% set currentColorTemperature = rawColorTemperature | int %}\n    {%
-        endif %}\n  {% endif %}\n{% endif %}\n{{ currentColorTemperature }}\n"
-  - if:
-    - condition: template
-      value_template: "{{ (\n      (not shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged)
-        or \n      (not isBrightnessDifferenceAboveAutoCancelThreshold)\n    ) \n
-        \   and\n    (\n      (not (shouldStopIfTheLampIsTurnedOffDuringTheFade is
-        defined)) or\n      (not shouldStopIfTheLampIsTurnedOffDuringTheFade) or\n
-        \     ((currentBrightness | int) != 0)\n    )\n    }}\n"
-    then:
-    - if:
-      - condition: template
-        value_template: "{{ isColorFadeEnabled and isBrightnessFadeEnabled \nand\n(\n
-          \ (isBrightnessFadeEnabled and ((currentBrightness | int) != (endBrightness
-          | int)) )\n  or (isColorFadeEnabled and ((currentColorTemperature | int)
-          != (endColorTemperature | int)) )\n)\n}}\n"
       then:
-      - if:
+        - if:
+            - condition: template
+              value_template:
+                "{{ (shouldInvertTheValueOfTheStopEntity is defined) and shouldInvertTheValueOfTheStopEntity
+                }}
+
+                "
+          then:
+            - variables:
+                stopMessage:
+                  '{% set stopMessage = "Stopped Ashley’s Light Fader because
+                  " + (stopEntityFriendlyName | string) + " is off." %} {{ stopMessage }}
+
+                  '
+            - if:
+                - condition: template
+                  value_template: "{{ isDebugMode }}
+
+                    "
+              then:
+                - data_template:
+                    message: "{{ stopMessage }}
+
+                      "
+                    level: warning
+                  action: system_log.write
+            - stop: "{{ stopMessage }}
+
+                "
+          else:
+            - variables:
+                stopMessage:
+                  '{% set stopMessage = "Stopped Ashley’s Light Fader because
+                  " + (stopEntityFriendlyName | string) + " is on." %} {{ stopMessage }}
+
+                  '
+            - if:
+                - condition: template
+                  value_template: "{{ isDebugMode }}
+
+                    "
+              then:
+                - data_template:
+                    message: "{{ stopMessage }}
+
+                      "
+                    level: warning
+                  action: system_log.write
+            - stop: "{{ stopMessage }}
+
+                "
+    - variables:
+        timestampBeforeServiceCall: "{{ as_timestamp(now()) }}"
+    - if:
         - condition: template
           value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive") }}
 
             '
-        then:
+      then:
         - target:
-            entity_id: '{{ light }}'
+            entity_id: "{{ light }}"
           data:
-            brightness: '{{ endBrightness }}'
-            kelvin: '{{ endColorTemperature }}'
-          action: light.turn_on
-        else:
-        - target:
-            entity_id: '{{ light }}'
-          data:
-            brightness_pct: '{{ endBrightness }}'
-            kelvin: '{{ endColorTemperature }}'
+            brightness: "{{ expectedBrightness }}"
           action: light.turn_on
       else:
-      - if:
-        - condition: template
-          value_template: '{{ isBrightnessFadeEnabled and ((currentBrightness | int)
-            != (endBrightness | int)) }}
+        - target:
+            entity_id: "{{ light }}"
+          data:
+            brightness_pct: "{{ expectedBrightness }}"
+          action: light.turn_on
+    - variables:
+        processingDelayInMilliseconds:
+          "{{ (as_timestamp(now()) -  timestampBeforeServiceCall)
+          * 1000 }}"
+        easingType:
+          "{% if \"auto\" in easingTypeInput %}\n  {% if (startBrightness
+          == 0) and (fadeTimeInSeconds <= 20) %}\n    {{ \"easeOutCubic\" }}\n  {% elif
+          (startBrightness == 0) and (fadeTimeInSeconds <= 55) %}\n    {{ \"easeOutQuad\"
+          }}\n  {% elif (endBrightness == 0) and (fadeTimeInSeconds <= 20) %}\n    {{
+          \"easeInCubic\" }}\n  {% elif (endBrightness == 0) and (fadeTimeInSeconds
+          <= 55) %}\n    {{ \"easeInQuad\" }}\n  {% else %}\n    {{ \"easeInOutSine\"
+          }}\n  {% endif %}\n{% else %}\n  {{ easingTypeInput }}\n{% endif %}\n"
+        isLampCurrentColorDefinedUsingKelvin:
+          "{% set rawColorTemperature = state_attr(light,
+          'color_temp_kelvin') %}\n\n{## If a light is off or if its color temperature
+          is defined using a non-Kelvin color system, \n  its color temperature will
+          return \"None\"? So first check if there's a valid color temperature ##}\n\n{%
+          if rawColorTemperature %}\n\t{{ true }}\n{% else %}\n\t{{ false }}\n{% endif
+          %}\n\n"
+        startColorTemperature:
+          "{## init ##} {% set currentColorTemperature = -1 %}\n{%
+          set rawColorTemperature = state_attr(light, 'color_temp_kelvin') %}\n{## If
+          a light is off or if its color temperature is defined using a non-Kelvin color
+          system, \n  its color temperature will return \"None\"? So first check if
+          there's a valid color temperature ##}\n\n{% if rawColorTemperature %}\n  {%
+          if is_number(rawColorTemperature) %}\n    {% set currentColorTemperature =
+          rawColorTemperature | int %}\n  {% endif %}\n{% endif %}\n{{ currentColorTemperature
+          }}\n\n"
+        colorTemperatureSpan:
+          "{% if doesLampSupportColorTemperatureKelvin %}\n  {{
+          (endColorTemperature | int) - (startColorTemperature | int) }}\n{% else %}\n
+          \ {{ 0 }}\n{% endif %}\n"
+        absoluteColorTemperatureSpan: "{{ colorTemperatureSpan | int | abs }}"
+        isBrightnessFadeEnabled:
+          "{% if (absoluteBrightnessSpan | int) > 0 %}\n  {{
+          true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+        isColorFadeEnabled:
+          "{% if isColorFadeRequested and doesLampSupportColorTemperatureKelvin
+          and ((absoluteColorTemperatureSpan | int) > 0) %}\n  {{ true }}\n{% else %}\n
+          \ {{ false }}\n{% endif %}\n"
+        remainingTimeInMilliseconds:
+          "{% set nowTimestamp = as_timestamp(now()) %}
 
-            '
-        then:
-        - if:
-          - condition: template
-            value_template: '{{ (lampBrightnessScale == "zeroToTwoFiftyFive") }}
+          {{ (endTimestamp - nowTimestamp) * 1000 }}
 
-              '
-          then:
-          - target:
-              entity_id: '{{ light }}'
-            data:
-              brightness: '{{ endBrightness }}'
-            action: light.turn_on
-          else:
-          - target:
-              entity_id: '{{ light }}'
-            data:
-              brightness_pct: '{{ endBrightness }}'
-            action: light.turn_on
-        else:
-        - if:
-          - condition: template
-            value_template: '{{ isColorFadeEnabled and ((currentColorTemperature |
-              int) != (endColorTemperature | int)) }}
+          "
+        delayInMilliseconds:
+          "{## init ##}\n{% set frameMultiplicationFactor = 1 %}\n{%
+          if \"Circ\" in easingType %}\n  {## Four as many frames for Circ-type easings
+          ##}\n  {## set idealDelay = (idealDelay / 4) | round(0) ##}\n  {% set frameMultiplicationFactor
+          = 3 %}\n{% elif (\"Cubic\" in easingType) or (\"Quart\" in easingType) %}\n
+          \ {## Three as many frames for Cubic-type or Quart-type easings ##}\n  {##
+          set idealDelay = (idealDelay / 3) | round(0) ##}\n  {% set frameMultiplicationFactor
+          = 2 %}\n{% elif \"ease\" in easingType %}\n  {## Twice as many frames for
+          other easing types ##}\n  {## set idealDelay = (idealDelay / 1.5) | round(0)
+          ##}\n  {% set frameMultiplicationFactor = 1.2 %}\n{% endif %}\n{% if isBrightnessFadeEnabled
+          %}\n  {% set brightnessFramesCount = (frameMultiplicationFactor * absoluteBrightnessSpan)
+          | round(0) %}\n  {% set totalExpectedRemainingBrightnessFadeProcessingDelay
+          = processingDelayInMilliseconds * brightnessFramesCount %}\n  {% set idealBrightnessFadeDelay
+          = ((remainingTimeInMilliseconds - totalExpectedRemainingBrightnessFadeProcessingDelay)
+          / brightnessFramesCount) | round(0) %}\n{% else %}\n  {% set idealBrightnessFadeDelay
+          = 0 %}\n{% endif %}\n{% if isColorFadeEnabled %}\n  {## The division by 25
+          below is working from the idea that you’d want the color fade \n    to progress
+          at least every 25°K, such as 2,000 K, 2,025 K, 2,050 K, and so on ##}\n  \n
+          \ {% set colorFramesCount = (frameMultiplicationFactor * (absoluteColorTemperatureSpan
+          / 25)) | round(0) %}\n  {% set totalExpectedRemainingColorFadeProcessingDelay
+          = (processingDelayInMilliseconds * colorFramesCount) | round(0) %}\n  {% set
+          idealColorFadeDelay = ((remainingTimeInMilliseconds - totalExpectedRemainingColorFadeProcessingDelay)
+          / colorFramesCount ) | round(0) %}\n{% else %}\n  {% set idealColorFadeDelay
+          = 0 %}\n{% endif %}\n{## init ##} {% set idealDelay = 0 %}\n{## if both brightness-fade
+          is enabled and color-fade is enabled, pick the one with the lowest ideal delay
+          ##}\n{% if isBrightnessFadeEnabled and isColorFadeEnabled %}\n  {% if idealBrightnessFadeDelay
+          < idealColorFadeDelay %}\n    {% set idealDelay = idealBrightnessFadeDelay
+          %} \n  {% else %}\n    {% set idealDelay = idealColorFadeDelay %}\n  {% endif
+          %}\n{% elif isBrightnessFadeEnabled %}\n  {% set idealDelay = idealBrightnessFadeDelay
+          %}\n{% elif isColorFadeEnabled %}\n  {% set idealDelay = idealColorFadeDelay
+          %}\n{% endif %}\n{## Make sure that the delay isn’t below the minimumStepDelayInMilliseconds
+          ##} {% if idealDelay < minimumStepDelayInMilliseconds %}\n  {{ minimumStepDelayInMilliseconds
+          }}\n{% else %}\n  {{ idealDelay }}\n{% endif %}\n"
+        delayInSeconds: "{{ (delayInMilliseconds | int) / 1000 }}
 
-              '
-          then:
-          - target:
-              entity_id: '{{ light }}'
-            data:
-              kelvin: '{{ endColorTemperature }}'
-            action: light.turn_on
+          "
+        transitionTimeParameterInSeconds:
+          "{% set transitionTimeParameterInSeconds =
+          ((delayInSeconds | float) * 0.9) | round(3) %}\n{## set a ceiling on the transition
+          time ##}\n{% if transitionTimeParameterInSeconds > 10 %}\n  {% set transitionTimeParameterInSeconds
+          = 10 %}\n{% endif %}\n{{ transitionTimeParameterInSeconds }}\n"
+        minimumDelayInSecondsBeforeUsingNativeLampNativeTransitionsToo: "{{ 1 }}
+
+          "
+        shouldUseNativeLampTransitionsToo:
+          "{% if \n  (\n    (shouldTryToUseNativeLampTransitionsToo
+          is defined) \n    and shouldTryToUseNativeLampTransitionsToo \n    and doesLampSupportTransitions\n
+          \   and ((transitionTimeParameterInSeconds | float(0) ) >=    \n    minimumDelayInSecondsBeforeUsingNativeLampNativeTransitionsToo
+          | float(0) )\n  )\n%}\n  {{ true }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
     - if:
-      - condition: template
-        value_template: '{{ isDebugMode }}
-
-          '
-      then:
-      - if:
         - condition: template
-          value_template: '{{ isColorFadeEnabled and isBrightnessFadeEnabled }}
-
-            '
-        then:
-        - data_template:
-            message: 'Set {{ lightFriendlyName }} to {{ endBrightness | int }} brightness
-              and {{ endColorTemperature | int }}°K. Elapsed time is {{ (as_timestamp(now())
-              - startTimestamp) | round(2) }} seconds.
+          value_template:
+            "{{ ((absoluteBrightnessSpan | int) == 0) and not isColorFadeEnabled
+            }}        \n"
+      then:
+        - variables:
+            stopMessage:
+              '{% set stopMessage = "Stopped Ashley’s Light Fader because "
+              + (lightFriendlyName | string) + "’s starting brightness is the same as
+              its ending brightness." %} {{ stopMessage }}
 
               '
-            level: warning
-          action: system_log.write
-        else:
         - if:
-          - condition: template
-            value_template: '{{ isBrightnessFadeEnabled }}
-
-              '
-          then:
-          - data_template:
-              message: 'Set {{ lightFriendlyName }} to {{ endBrightness | int }} brightness.
-                Elapsed time is {{ (as_timestamp(now()) - startTimestamp) | round(2)
-                }} seconds.
-
-                '
-              level: warning
-            action: system_log.write
-          else:
-          - if:
             - condition: template
-              value_template: '{{ isColorFadeEnabled }}
+              value_template: "{{ isDebugMode }}
 
-                '
-            then:
+                "
+          then:
             - data_template:
-                message: 'Set {{ lightFriendlyName }} to {{ endColorTemperature |
-                  int }}°K. Elapsed time is {{ (as_timestamp(now()) - startTimestamp)
-                  | round(2) }} seconds.
+                message: "{{ stopMessage }}
 
-                  '
+                  "
                 level: warning
               action: system_log.write
+        - stop: "{{ stopMessage }}
+
+            "
+    - if:
+        - condition: template
+          value_template:
+            "{{ ((absoluteBrightnessSpan | int) == 0) and ((absoluteColorTemperatureSpan
+            | int) == 0) and isColorFadeEnabled }}        \n"
+      then:
+        - variables:
+            stopMessage:
+              '{% set stopMessage = "Stopped Ashley’s Light Fader because "
+              + (lightFriendlyName | string) + "’s starting brightness is the same as
+              its ending brightness and its starting color temperature is the same as
+              its ending color temperature." %} {{ stopMessage }}
+
+              '
+        - if:
+            - condition: template
+              value_template: "{{ isDebugMode }}
+
+                "
+          then:
+            - data_template:
+                message: "{{ stopMessage }}
+
+                  "
+                level: warning
+              action: system_log.write
+        - stop: "{{ stopMessage }}
+
+            "
+    - if:
+        - condition: template
+          value_template:
+            "{{ isColorFadeRequested and not doesLampSupportColorTemperatureKelvin
+            }}        \n"
+      then:
+        - variables:
+            stopMessage:
+              '{% set stopMessage = "Stopped Ashley’s Light Fader because a
+              color fade was requested for " + (lightFriendlyName | string) + ", but it
+              doesn’t seem to support Kelvin color temperatures. (You can look into this
+              by going into Developer Tools and checking that " + (lightFriendlyName |
+              string) + " has the defined attributes for “min_color_temp_kelvin” and “max_color_temp_kelvin”.)"
+              %} {{ stopMessage }}
+
+              '
+        - if:
+            - condition: template
+              value_template: "{{ isDebugMode }}
+
+                "
+          then:
+            - data_template:
+                message: "{{ stopMessage }}
+
+                  "
+                level: warning
+              action: system_log.write
+        - stop: "{{ stopMessage }}
+
+            "
+    - if:
+        - condition: template
+          value_template:
+            "{{ isColorFadeRequested and not isLampCurrentColorDefinedUsingKelvin
+            }}        \n"
+      then:
+        - variables:
+            stopMessage:
+              '{% set stopMessage = "Stopped Ashley’s Light Fader because a
+              color fade was requested for " + (lightFriendlyName | string) + ", but its
+              current color temperature doesn’t seem to be defined using Kelvin units.
+              (You can look into this by going into Developer Tools and checking that
+              " + (lightFriendlyName | string) + " has a defined “color_temp_kelvin” attribute.)"
+              %} {{ stopMessage }}
+
+              '
+        - if:
+            - condition: template
+              value_template: "{{ isDebugMode }}
+
+                "
+          then:
+            - data_template:
+                message: "{{ stopMessage }}
+
+                  "
+                level: warning
+              action: system_log.write
+        - stop: "{{ stopMessage }}
+
+            "
+    - if:
+        - condition: template
+          value_template: "{{ isDebugMode }}
+
+            "
+      then:
+        - if:
+            - condition: template
+              value_template: "{{ isColorFadeEnabled }}
+
+                "
+          then:
+            - data_template:
+                message:
+                  "{{ easingType }} easing type with {{ delayInMilliseconds | int
+                  }} ms delay. remainingTimeInMilliseconds = {{ remainingTimeInMilliseconds
+                  | round(0) }}, absoluteColorTemperatureSpan = {{ absoluteColorTemperatureSpan
+                  }}, and absoluteBrightnessSpan = {{ absoluteBrightnessSpan }}
+
+                  "
+                level: warning
+              action: system_log.write
+            - data_template:
+                message:
+                  "startBrightness = {{ startBrightness }}, endBrightness = {{ endBrightness
+                  }}, startColorTemperature = {{ startColorTemperature }}, endColorTemperature
+                  = {{ endColorTemperature }}, and  processingDelayInMilliseconds = {{ processingDelayInMilliseconds
+                  | int }}
+
+                  "
+                level: warning
+              action: system_log.write
+          else:
+            - data_template:
+                message:
+                  "{{ easingType }} easing type with {{ delayInMilliseconds | int
+                  }} ms delay. remainingTimeInMilliseconds = {{ remainingTimeInMilliseconds
+                  | round(0) }}, and absoluteBrightnessSpan = {{ absoluteBrightnessSpan
+                  }}
+
+                  "
+                level: warning
+              action: system_log.write
+            - data_template:
+                message:
+                  "startBrightness = {{ startBrightness }}, endBrightness = {{ endBrightness
+                  }}, and processingDelayInMilliseconds = {{ processingDelayInMilliseconds
+                  | int }}
+
+                  "
+                level: warning
+              action: system_log.write
+    - repeat:
+        sequence:
+          - variables:
+              percentageOfTimeCompleted:
+                "{% set nowTimestamp = as_timestamp(now()) %}\n{%
+                set percentageOfTimeCompleted = ((nowTimestamp - startTimestamp) / fadeTimeInSeconds)
+                %}\n{% if (percentageOfTimeCompleted < 0) %}\n  {% set percentageOfTimeCompleted
+                = 0 %}\n{% elif (percentageOfTimeCompleted > 1) %}\n  {% set percentageOfTimeCompleted
+                = 1 %}\n{% endif %}\n{{ percentageOfTimeCompleted }}\n"
+              easingAdjustedPercentageCompleted:
+                "{% set percentageOfTimeCompleted = percentageOfTimeCompleted
+                | float(0) %} {% if easingType == \"easeInSine\" %}\n  {## https://easings.net/#easeInSine
+                ##}\n  {{  1 - cos((percentageOfTimeCompleted * pi) / 2) }}\n\n{% elif
+                easingType == \"easeInQuad\" %}\n  {## https://easings.net/#easeInQuad
+                ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted }} \n\n{%
+                elif easingType == \"easeInCubic\" %}\n  {## https://easings.net/#easeInCubic
+                ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted * percentageOfTimeCompleted
+                }}\n\n{% elif easingType == \"easeInQuart\" %}\n  {## https://easings.net/#easeInQuart
+                ##}\n  {{ percentageOfTimeCompleted * percentageOfTimeCompleted * percentageOfTimeCompleted
+                * percentageOfTimeCompleted }}\n  \n{% elif easingType == \"easeOutSine\"
+                %}\n  {## https://easings.net/#easeOutSine ##}\n  {{ sin((percentageOfTimeCompleted
+                * pi) / 2) }}\n\n{% elif easingType == \"easeOutQuad\" %}\n  {## https://easings.net/#easeOutQuad
+                ##}\n  {{ 1 - (1 - percentageOfTimeCompleted)* (1 - percentageOfTimeCompleted)
+                }} \n\n{% elif easingType == \"easeOutCubic\" %}\n  {## https://easings.net/#easeOutCubic
+                ##}\n  {{ 1 - ((1 - percentageOfTimeCompleted) ** 3) }}\n\n{% elif easingType
+                == \"easeOutQuart\" %}\n  {## https://easings.net/#easeOutQuart ##}\n
+                \ {{ 1 - ((1 - percentageOfTimeCompleted) ** 4) }}\n\n{% elif easingType
+                == \"easeInOutSine\" %}\n  {## https://easings.net/#easeInOutSine ##}\n
+                \ {{ -1 * ((cos(pi * percentageOfTimeCompleted) - 1) / 2) }}\n  \n{% elif
+                easingType == \"easeInOutQuad\" %}\n  {## https://easings.net/#easeInOutQuad
+                ##}\n  {% if (percentageOfTimeCompleted < 0.5) %}\n    {{ 2 * percentageOfTimeCompleted
+                * percentageOfTimeCompleted }} \n  {% else %}\n    {{ 1- (((-2 * percentageOfTimeCompleted
+                + 2) ** 2) / 2) }} \n  {% endif %}\n  \n{% elif easingType == \"easeInOutCubic\"
+                %}\n  {## https://easings.net/#easeInOutCubic ##}\n  {% if (percentageOfTimeCompleted
+                < 0.5) %}\n    {{ 4 * percentageOfTimeCompleted * percentageOfTimeCompleted
+                * percentageOfTimeCompleted }} \n  {% else %}\n    {{ 1- (((-2 * percentageOfTimeCompleted
+                + 2) ** 3) / 2) }} \n  {% endif %}\n    \n{% elif easingType == \"easeInOutQuart\"
+                %}\n  {## https://easings.net/#easeInOutQuart ##}\n  {% if (percentageOfTimeCompleted
+                < 0.5) %}\n    {{ 8 * percentageOfTimeCompleted * percentageOfTimeCompleted
+                * percentageOfTimeCompleted * percentageOfTimeCompleted }} \n  {% else
+                %}\n    {{ 1 - (((-2 * percentageOfTimeCompleted + 2) ** 4) / 2) }} \n
+                \ {% endif %}\n{% else %}\n  {## linear ##}\n  {{ percentageOfTimeCompleted
+                }}\n{% endif %}\n"
+              expectedBrightness:
+                "{% if isBrightnessFadeEnabled %}\n  {% set startBrightness
+                = startBrightness | int %}\n  {% set brightnessSpan = brightnessSpan |
+                int %}\n  {% set easingAdjustedPercentageCompleted = easingAdjustedPercentageCompleted
+                | float(0) %}\n\n  {% set calculatedBrightness = (startBrightness + (brightnessSpan
+                * easingAdjustedPercentageCompleted)) | round(0) %}\n  {% if (calculatedBrightness
+                < 0) %}\n    {% set calculatedBrightness = 0 %}\n  {% elif (calculatedBrightness
+                > 255) %}\n    {% set calculatedBrightness = 255 %}\n  {% endif %}\n\n
+                \ {% if (endBrightness >= startBrightness) and (calculatedBrightness >
+                endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
+                \ {% elif (endBrightness < startBrightness) and (calculatedBrightness
+                < endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
+                \ {% endif %}\n{% else %}\n  {## if isBrightnessFadeEnabled is false ##}\n
+                \ {% set calculatedBrightness = startBrightness %}\n{% endif %}\n\n{{
+                calculatedBrightness }}\n"
+              linearExpectedBrightness:
+                "{% if isBrightnessFadeEnabled %}              \n
+                \ {% set startBrightness = startBrightness | int %}\n  {% set brightnessSpan
+                = brightnessSpan | int %}\n  {% set percentageOfTimeCompleted = percentageOfTimeCompleted
+                | float(0) %}\n  \n  {% set calculatedBrightness = (startBrightness +
+                (brightnessSpan * percentageOfTimeCompleted)) | round(0) %}\n  {% if (calculatedBrightness
+                < 0) %}\n    {% set calculatedBrightness = 0 %}\n  {% elif (calculatedBrightness
+                > 255) %}\n    {% set calculatedBrightness = 255 %}\n  {% endif %}\n\n
+                \ {% if (endBrightness >= startBrightness) and (calculatedBrightness >
+                endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
+                \ {% elif (endBrightness < startBrightness) and (calculatedBrightness
+                < endBrightness) %}\n    {% set calculatedBrightness = endBrightness %}\n
+                \ {% endif %}\n{% else %}\n  {## if isBrightnessFadeEnabled is false ##}\n
+                \ {% set calculatedBrightness = startBrightness %}\n{% endif %}\n\n{{
+                calculatedBrightness }}\n"
+              currentBrightness:
+                "{% if isBrightnessFadeEnabled %}\n  {% set rawLightLevel
+                = state_attr(light, 'brightness') %}\n\n  {## If a light is off, its brightness
+                will return \"None\"? So first check if there's a valid brightness before
+                getting the value ##}\n  {% if rawLightLevel %}\n  \t{% set currentLightLevel
+                = rawLightLevel | int %}\n  {% else %}\n  \t{% set currentLightLevel =
+                0 %}\n  {% endif %}\n  {% if lampBrightnessScale == \"zeroToOneHundred\"
+                %}\n    {% set currentLightLevel = (currentLightLevel / 2.55) | round(0)
+                %}\n  {% endif %}\n{% else %}\n  {% set currentLightLevel = startBrightness
+                %}\n{% endif %}\n\n{{ currentLightLevel }}\n\n"
+              expectedColorTemperature:
+                "{% if isColorFadeEnabled %}\n  {% set startColorTemperature
+                = startColorTemperature | int %}\n  {% set colorTemperatureSpan = colorTemperatureSpan
+                | int %}\n  {% set easingAdjustedPercentageCompleted = easingAdjustedPercentageCompleted
+                | float(0) %}\n\n  {% set calculatedColorTemperature = (startColorTemperature
+                + (colorTemperatureSpan * easingAdjustedPercentageCompleted)) | round(0)
+                %}\n\n  {% set minColorTemperatureKelvin = minColorTemperatureKelvin |
+                int %}\n  {% set maxColorTemperatureKelvin = maxColorTemperatureKelvin
+                | int %}\n\n  {% if (calculatedColorTemperature < minColorTemperatureKelvin)
+                %}\n    {% set calculatedColorTemperature = minColorTemperatureKelvin
+                %}\n  \n  {% elif (calculatedColorTemperature > maxColorTemperatureKelvin)
+                %}\n    {% set calculatedColorTemperature = maxColorTemperatureKelvin
+                %}\n  {% endif %}\n\n  {% if (endColorTemperature >= startColorTemperature)
+                and (calculatedColorTemperature > endColorTemperature) %}\n    {% set
+                calculatedColorTemperature = endColorTemperature %}\n  {% elif (endColorTemperature
+                < startColorTemperature) and (calculatedColorTemperature < endColorTemperature)
+                %}\n    {% set calculatedColorTemperature = endColorTemperature %}\n  {%
+                endif %}\n{% else %}\n  {% set calculatedColorTemperature = 0 %}\n{% endif
+                %}\n\n{{ calculatedColorTemperature }}\n"
+              currentColorTemperature:
+                "{## init ##}\n{% set currentColorTemperature =
+                -1 %}\n{% if isColorFadeEnabled %}\n  {% set rawColorTemperature = state_attr(light,
+                'color_temp_kelvin') %}\n  \n  {## If a light is off or if its color temperature
+                is defined using a non-Kelvin color system, its color temperature will
+                return \"None\"? So first check if there's a valid color temperature ##}\n
+                \ {% if rawColorTemperature %}\n  \n    {% if is_number(rawColorTemperature)
+                %}\n      {% set currentColorTemperature = rawColorTemperature | int %}\n
+                \   {% endif %}\n  {% endif %}\n{% endif %}\n\n{{ currentColorTemperature
+                }}\n"
+          - if:
+              - condition: template
+                value_template:
+                  "{{ isBrightnessFadeEnabled and isColorFadeEnabled }}
+
+                  "
+            then:
+              - if:
+                  - condition: template
+                    value_template:
+                      "{{ \n  (\n    ( (currentBrightness | int) != (endBrightness
+                      | int) )\n    and\n    ( (currentBrightness | int) != (expectedBrightness
+                      | int) )\n  )\n  or\n  (\n    ( (currentColorTemperature | int) != (endColorTemperature
+                      | int) )\n    and\n    ( (currentColorTemperature | int) != (expectedColorTemperature
+                      | int) )\n  )\n}}\n"
+                then:
+                  - if:
+                      - condition: template
+                        value_template: "{{ shouldUseNativeLampTransitionsToo }}
+
+                          "
+                    then:
+                      - if:
+                          - condition: template
+                            value_template:
+                              '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
+                              }}
+
+                              '
+                        then:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness: "{{ expectedBrightness }}"
+                              kelvin: "{{ expectedColorTemperature }}"
+                              transition: "{{ transitionTimeParameterInSeconds | float(0)  }}"
+                            action: light.turn_on
+                        else:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness_pct: "{{ expectedBrightness }}"
+                              kelvin: "{{ expectedColorTemperature }}"
+                              transition: "{{ transitionTimeParameterInSeconds | float(0) }}"
+                            action: light.turn_on
+                    else:
+                      - if:
+                          - condition: template
+                            value_template:
+                              '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
+                              }}
+
+                              '
+                        then:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness: "{{ expectedBrightness }}"
+                              kelvin: "{{ expectedColorTemperature }}"
+                            action: light.turn_on
+                        else:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness_pct: "{{ expectedBrightness }}"
+                              kelvin: "{{ expectedColorTemperature }}"
+                            action: light.turn_on
+                  - if:
+                      - condition: template
+                        value_template: "{{ isDebugMode }}
+
+                          "
+                    then:
+                      - if:
+                          - condition: template
+                            value_template:
+                              "{{ isColorFadeEnabled and isBrightnessFadeEnabled
+                              }}
+
+                              "
+                        then:
+                          - data_template:
+                              message:
+                                "Set {{ lightFriendlyName }} to {{ expectedBrightness |
+                                int }} brightness and {{ expectedColorTemperature | int }}°K.
+                                (Linear brightness would have been {{ linearExpectedBrightness
+                                | int }}.) Delay is {{ delayInMilliseconds | int }} ms. Elapsed
+                                time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
+                                seconds. (endBrightness is {{ endBrightness}} and endColorTemperature
+                                is {{ endColorTemperature}}.)
+
+                                "
+                              level: warning
+                            action: system_log.write
+            else:
+              - if:
+                  - condition: template
+                    value_template:
+                      "{{ isBrightnessFadeEnabled and \n  (\n    ( (currentBrightness
+                      | int) != (endBrightness | int) ) \n    and\n    ( (currentBrightness
+                      | int) != (expectedBrightness | int) ) \n  )\n  }}\n"
+                then:
+                  - if:
+                      - condition: template
+                        value_template: "{{ shouldUseNativeLampTransitionsToo }}
+
+                          "
+                    then:
+                      - if:
+                          - condition: template
+                            value_template:
+                              '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
+                              }}
+
+                              '
+                        then:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness: "{{ expectedBrightness }}"
+                              transition: "{{ transitionTimeParameterInSeconds }}"
+                            action: light.turn_on
+                        else:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness_pct: "{{ expectedBrightness }}"
+                              transition: "{{ transitionTimeParameterInSeconds }}"
+                            action: light.turn_on
+                    else:
+                      - if:
+                          - condition: template
+                            value_template:
+                              '{{ (lampBrightnessScale == "zeroToTwoFiftyFive")
+                              }}
+
+                              '
+                        then:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness: "{{ expectedBrightness }}"
+                            action: light.turn_on
+                        else:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              brightness_pct: "{{ expectedBrightness }}"
+                            action: light.turn_on
+                  - if:
+                      - condition: template
+                        value_template: "{{ isDebugMode }}
+
+                          "
+                    then:
+                      - data_template:
+                          message:
+                            "Set {{ lightFriendlyName }} to {{ expectedBrightness | int
+                            }} brightness. (Linear brightness would have been {{ linearExpectedBrightness
+                            | int }}.) Delay is {{ delayInMilliseconds | int }} ms. Elapsed
+                            time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
+                            seconds. (endBrightness is {{ endBrightness}}.)
+
+                            "
+                          level: warning
+                        action: system_log.write
+                else:
+                  - if:
+                      - condition: template
+                        value_template:
+                          "{{ isColorFadeEnabled and \n  (\n    ( (currentColorTemperature
+                          | int) != (endColorTemperature | int) ) \n    and\n    ( (currentColorTemperature
+                          | int) != (expectedColorTemperature | int) ) \n  )\n}}\n"
+                    then:
+                      - if:
+                          - condition: template
+                            value_template:
+                              "{{ shouldUseNativeLampTransitionsToo }}
+
+                              "
+                        then:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              kelvin: "{{ expectedColorTemperature }}"
+                              transition: "{{ transitionTimeParameterInSeconds | round(3) }}"
+                            action: light.turn_on
+                        else:
+                          - target:
+                              entity_id: "{{ light }}"
+                            data:
+                              kelvin: "{{ expectedColorTemperature }}"
+                            action: light.turn_on
+                      - if:
+                          - condition: template
+                            value_template: "{{ isDebugMode }}
+
+                              "
+                        then:
+                          - data_template:
+                              message:
+                                "Set {{ lightFriendlyName }} to {{ expectedColorTemperature
+                                | int }}°K. Delay is {{ delayInMilliseconds | int }} ms. Elapsed
+                                time is {{ (as_timestamp(now()) - startTimestamp) | round(2) }}
+                                seconds. (endColorTemperature is {{ endColorTemperature}}.)
+
+                                "
+                              level: warning
+                            action: system_log.write
+          - delay:
+              milliseconds: "{{ delayInMilliseconds | float(0) }}"
+          - if:
+              - condition: template
+                value_template:
+                  "{## init ##} {% set shouldStop = false %} {% if isStopEntityEnabled
+                  %}\n  {% if (shouldInvertTheValueOfTheStopEntity is defined) and shouldInvertTheValueOfTheStopEntity
+                  %}\n    {% if not bool(states(stopEntity), false) %}\n      {% set shouldStop
+                  = true %}\n    {% endif %}\n  {% else %}\n    {% if bool(states(stopEntity),
+                  false) %}\n      {% set shouldStop = true %}\n    {% endif %}\n  {% endif
+                  %}\n{% endif %} {{ shouldStop }}\n"
+            then:
+              - if:
+                  - condition: template
+                    value_template:
+                      "{{ (shouldInvertTheValueOfTheStopEntity is defined) and
+                      shouldInvertTheValueOfTheStopEntity }}
+
+                      "
+                then:
+                  - variables:
+                      stopMessage:
+                        '{% set stopMessage = "Stopped Ashley’s Light Fader because
+                        " + (stopEntityFriendlyName | string) + " turned off." %} {{ stopMessage
+                        }}
+
+                        '
+                  - if:
+                      - condition: template
+                        value_template: "{{ isDebugMode }}
+
+                          "
+                    then:
+                      - data_template:
+                          message: "{{ stopMessage }}
+
+                            "
+                          level: warning
+                        action: system_log.write
+                  - stop: "{{ stopMessage }}
+
+                      "
+                else:
+                  - variables:
+                      stopMessage:
+                        '{% set stopMessage = "Stopped Ashley’s Light Fader because
+                        " + (stopEntityFriendlyName | string) + " turned on." %} {{ stopMessage
+                        }}
+
+                        '
+                  - if:
+                      - condition: template
+                        value_template: "{{ isDebugMode }}
+
+                          "
+                    then:
+                      - data_template:
+                          message: "{{ stopMessage }}
+
+                            "
+                          level: warning
+                        action: system_log.write
+                  - stop: "{{ stopMessage }}
+
+                      "
+          - variables:
+              currentBrightness:
+                "{% if is_state(light, 'off') %}\n  {% set currentLightLevel
+                = 0 %}\n  {{ currentLightLevel }}\n{% else %}\n  {% set rawLightLevel
+                = state_attr(light, 'brightness') %}\n\n  {## If a light is off, its brightness
+                will return 'None'. So first check if there's a valid brightness before
+                getting the value ##}\n\n  {% if rawLightLevel %}\n  \t{% set currentLightLevel
+                = rawLightLevel | int %}\n  {% else %}\n  \t{% set currentLightLevel =
+                0 %}\n  {% endif %}\n  {% if lampBrightnessScale == \"zeroToOneHundred\"
+                %}\n    {% set currentLightLevel = (currentLightLevel / 2.55) | round(0)
+                %}\n  {% endif %}\n\n  {{ currentLightLevel }}\n{% endif %}\n\n"
+              brightnessDifferenceFromExpected:
+                "{{ ( (currentBrightness | int) - (expectedBrightness
+                | int) ) | abs }}
+
+                "
+              isBrightnessDifferenceAboveAutoCancelThreshold:
+                "{% if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
+                %}\n  {{ (brightnessDifferenceFromExpected | int) >= (normalizedAutoCancelThreshold
+                | int) }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+          - if:
+              - condition: template
+                value_template:
+                  "{{ (\n    (\n    (not (shouldStopIfTheLampIsTurnedOffDuringTheFade
+                  is defined)) or\n       (\n         (shouldStopIfTheLampIsTurnedOffDuringTheFade
+                  is defined) and \n         shouldStopIfTheLampIsTurnedOffDuringTheFade\n
+                  \       )\n     )\n     and ( ((expectedBrightness | int) > 0) and ((currentBrightness
+                  | int) == 0) )\n   ) \n  }}\n"
+            then:
+              - variables:
+                  stopMessage:
+                    '{% set stopMessage = "Stopped Ashley’s Light Fader because
+                    " + (lightFriendlyName | string) + " was turned off during the fade."
+                    %}
+
+                    {{ stopMessage }}
+
+                    '
+              - if:
+                  - condition: template
+                    value_template: "{{ isDebugMode }}
+
+                      "
+                then:
+                  - data_template:
+                      message: "{{ stopMessage }}
+
+                        "
+                      level: warning
+                    action: system_log.write
+              - stop: "{{ stopMessage }}
+
+                  "
+          - if:
+              - condition: template
+                value_template:
+                  "{{ shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
+                  and isBrightnessDifferenceAboveAutoCancelThreshold }}
+
+                  "
+            then:
+              - variables:
+                  stopMessage:
+                    "{% if lampBrightnessScale == \"zeroToTwoFiftyFive\" %}\n
+                    \ {% set currentBrightnessAsPercentage = (currentBrightness / 2.55)
+                    | round(0) %}\n  {% set expectedBrightnessAsPercentage = (expectedBrightness
+                    / 2.55) | round(0) %}\n  {% set differenceFromExpectedAsPercentage =
+                    (brightnessDifferenceFromExpected / 2.55) | round(0) %}\n{% else %}\n
+                    \ {% set currentBrightnessAsPercentage = currentBrightness %}\n  {%
+                    set expectedBrightnessAsPercentage = expectedBrightness %}\n  {% set
+                    differenceFromExpectedAsPercentage = brightnessDifferenceFromExpected
+                    %}\n{% endif %}\n\n{% set stopMessage = \"Stopped Ashley’s Light Fader
+                    because \" + (lightFriendlyName | string) + \" was found to be at \"
+                    + (currentBrightnessAsPercentage | string) + \"%, a difference of \"
+                    + (differenceFromExpectedAsPercentage | string) + \" percentage points
+                    from the expected brightness of \" + (expectedBrightnessAsPercentage
+                    | string) + \"%, which is higher than the auto-cancel threshold of \"
+                    + (autoCancelThreshold | string) + \" percentage points.\" %}\n{{ stopMessage
+                    }}\n"
+              - if:
+                  - condition: template
+                    value_template: "{{ isDebugMode }}
+
+                      "
+                then:
+                  - data_template:
+                      message: "{{ stopMessage }}
+
+                        "
+                      level: warning
+                    action: system_log.write
+              - stop: "{{ stopMessage }}
+
+                  "
+        until:
+          - condition: template
+            value_template:
+              "{% if (as_timestamp(now()) >= endTimestamp) %}\n  {{ true
+              }}\n{% elif isBrightnessFadeEnabled or isColorFadeEnabled %}\n  {## init
+              ##}\n  {% set okayToEndTheLoop = true %}\n  \n  {% if isBrightnessFadeEnabled
+              %}\n    {% set rawLightLevel = state_attr(light, 'brightness') %}\n\n    {##
+              If a light is off, its brightness will return \"None\"? So first check if
+              there's a valid brightness before getting the value ##}\n    {% if rawLightLevel
+              %}\n    \t{% set currentLightLevel = rawLightLevel | int %}\n    {% else
+              %}\n    \t{% set currentLightLevel = 0 %}\n    {% endif %}\n    {% if lampBrightnessScale
+              == \"zeroToOneHundred\" %}\n      {% set currentLightLevel = (currentLightLevel
+              / 2.55) | round(0) %}\n    {% endif %}\n  \n    {% if (endBrightness >=
+              startBrightness) and (currentLightLevel < endBrightness) %}\n      {% set
+              okayToEndTheLoop = false %}\n    {% elif (endBrightness < startBrightness)
+              and (currentLightLevel > endBrightness) %}\n      {% set okayToEndTheLoop
+              = false %}\n    {% endif %}\n  {% endif %}\n  \n  {## The \"and okayToEndTheLoop\"
+              part is to avoid needlessly checking whether the color temp fails if the
+              brightness check already fails ##}\n  {% if isColorFadeEnabled and okayToEndTheLoop
+              %}\n\n    {## init ##}\n    {% set currentColorTemperature = -1 %}\n    \n
+              \   {% set rawColorTemperature = state_attr(light, 'color_temp_kelvin')
+              %}\n  \n    {## If a light is off or if its color temperature is defined
+              using a non-Kelvin color system, its color temperature will return \"None\"?
+              So first check if there's a valid color temperature ##}\n    {% if rawColorTemperature
+              %}\n  \n      {% if is_number(rawColorTemperature) %}\n        {% set currentColorTemperature
+              = rawColorTemperature | int %}\n      {% endif %}\n    {% endif %}\n    \n
+              \   {% if (currentColorTemperature != -1) and (endColorTemperature >= startColorTemperature)
+              and (currentColorTemperature < endColorTemperature) %}\n      {% set okayToEndTheLoop
+              = false %}\n    {% elif (currentColorTemperature != -1) and (endColorTemperature
+              < startColorTemperature) and (currentColorTemperature > endColorTemperature)
+              %}\n      {% set okayToEndTheLoop = false %}\n    {% endif %}\n\n  {% endif
+              %}\n  \n  {{ okayToEndTheLoop }}\n    \n{% else %}\n  {## neither isBrightnessFadeEnabled
+              nor isColorFadeEnabled ##} \n  {{ true }}\n{% endif %}\n\n"
+    - variables:
+        currentBrightness:
+          "{% set rawLightLevel = state_attr(light, 'brightness') %}\n\n{##
+          If a light is off, its brightness will return 'None'. So first check if there's
+          a valid brightness before getting the value ##}\n{% if rawLightLevel %}\n\t{%
+          set currentLightLevel = rawLightLevel | int %}\n{% else %}\n\t{% set currentLightLevel
+          = 0 %}\n{% endif %}\n{% if lampBrightnessScale == \"zeroToOneHundred\" %}\n
+          \ {% set currentLightLevel = (currentLightLevel / 2.55) | round(0) %}\n{%
+          endif %}\n\n{{ currentLightLevel }}\n"
+        brightnessDifferenceFromExpected:
+          "{{ ( (currentBrightness | int) - (endBrightness
+          | int) ) | abs }}
+
+          "
+        isBrightnessDifferenceAboveAutoCancelThreshold:
+          "{% if shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged
+          %}\n  {{ (brightnessDifferenceFromExpected | int) > (normalizedAutoCancelThreshold
+          | int) }}\n{% else %}\n  {{ false }}\n{% endif %}\n"
+        currentColorTemperature:
+          "{## init ##} {% set currentColorTemperature = -1 %}
+          {% if isColorFadeEnabled %}\n  {% set rawColorTemperature = state_attr(light,
+          'color_temp_kelvin') %}\n  \n  {## If a light is off or if its color temperature
+          is defined using a non-Kelvin color system, its color temperature will return
+          \"None\"? So first check if there's a valid color temperature ##}\n  {% if
+          rawColorTemperature %}\n  \n    {% if is_number(rawColorTemperature) %}\n
+          \     {% set currentColorTemperature = rawColorTemperature | int %}\n    {%
+          endif %}\n  {% endif %}\n{% endif %}\n{{ currentColorTemperature }}\n"
+    - if:
+        - condition: template
+          value_template:
+            "{{ (\n      (not shouldAutoCancelTheFadeIfTheLampBrightnessIsManuallyChanged)
+            or \n      (not isBrightnessDifferenceAboveAutoCancelThreshold)\n    ) \n
+            \   and\n    (\n      (not (shouldStopIfTheLampIsTurnedOffDuringTheFade is
+            defined)) or\n      (not shouldStopIfTheLampIsTurnedOffDuringTheFade) or\n
+            \     ((currentBrightness | int) != 0)\n    )\n    }}\n"
+      then:
+        - if:
+            - condition: template
+              value_template:
+                "{{ isColorFadeEnabled and isBrightnessFadeEnabled \nand\n(\n
+                \ (isBrightnessFadeEnabled and ((currentBrightness | int) != (endBrightness
+                | int)) )\n  or (isColorFadeEnabled and ((currentColorTemperature | int)
+                != (endColorTemperature | int)) )\n)\n}}\n"
+          then:
+            - if:
+                - condition: template
+                  value_template:
+                    '{{ (lampBrightnessScale == "zeroToTwoFiftyFive") }}
+
+                    '
+              then:
+                - target:
+                    entity_id: "{{ light }}"
+                  data:
+                    brightness: "{{ endBrightness }}"
+                    kelvin: "{{ endColorTemperature }}"
+                  action: light.turn_on
+              else:
+                - target:
+                    entity_id: "{{ light }}"
+                  data:
+                    brightness_pct: "{{ endBrightness }}"
+                    kelvin: "{{ endColorTemperature }}"
+                  action: light.turn_on
+          else:
+            - if:
+                - condition: template
+                  value_template:
+                    "{{ isBrightnessFadeEnabled and ((currentBrightness | int)
+                    != (endBrightness | int)) }}
+
+                    "
+              then:
+                - if:
+                    - condition: template
+                      value_template:
+                        '{{ (lampBrightnessScale == "zeroToTwoFiftyFive") }}
+
+                        '
+                  then:
+                    - target:
+                        entity_id: "{{ light }}"
+                      data:
+                        brightness: "{{ endBrightness }}"
+                      action: light.turn_on
+                  else:
+                    - target:
+                        entity_id: "{{ light }}"
+                      data:
+                        brightness_pct: "{{ endBrightness }}"
+                      action: light.turn_on
+              else:
+                - if:
+                    - condition: template
+                      value_template:
+                        "{{ isColorFadeEnabled and ((currentColorTemperature |
+                        int) != (endColorTemperature | int)) }}
+
+                        "
+                  then:
+                    - target:
+                        entity_id: "{{ light }}"
+                      data:
+                        kelvin: "{{ endColorTemperature }}"
+                      action: light.turn_on
+        - if:
+            - condition: template
+              value_template: "{{ isDebugMode }}
+
+                "
+          then:
+            - if:
+                - condition: template
+                  value_template:
+                    "{{ isColorFadeEnabled and isBrightnessFadeEnabled }}
+
+                    "
+              then:
+                - data_template:
+                    message:
+                      "Set {{ lightFriendlyName }} to {{ endBrightness | int }} brightness
+                      and {{ endColorTemperature | int }}°K. Elapsed time is {{ (as_timestamp(now())
+                      - startTimestamp) | round(2) }} seconds.
+
+                      "
+                    level: warning
+                  action: system_log.write
+              else:
+                - if:
+                    - condition: template
+                      value_template: "{{ isBrightnessFadeEnabled }}
+
+                        "
+                  then:
+                    - data_template:
+                        message:
+                          "Set {{ lightFriendlyName }} to {{ endBrightness | int }} brightness.
+                          Elapsed time is {{ (as_timestamp(now()) - startTimestamp) | round(2)
+                          }} seconds.
+
+                          "
+                        level: warning
+                      action: system_log.write
+                  else:
+                    - if:
+                        - condition: template
+                          value_template: "{{ isColorFadeEnabled }}
+
+                            "
+                      then:
+                        - data_template:
+                            message:
+                              "Set {{ lightFriendlyName }} to {{ endColorTemperature |
+                              int }}°K. Elapsed time is {{ (as_timestamp(now()) - startTimestamp)
+                              | round(2) }} seconds.
+
+                              "
+                            level: warning
+                          action: system_log.write
   mode: parallel
   max: 15
   icon: mdi:lightbulb-on-50
 llm_web_search:
   sequence:
-  - action: conversation.process
-    metadata: {}
-    data:
-      text: '{{ query }}'
-      agent_id: conversation.gemini_web_search
-    response_variable: response
-  - stop: ''
-    response_variable: response
+    - action: conversation.process
+      metadata: {}
+      data:
+        text: "{{ query }}"
+        agent_id: conversation.gemini_web_search
+      response_variable: response
+    - stop: ""
+      response_variable: response
   fields:
     query:
       selector:
         text:
           multiline: true
       name: Query
-      description: The search query which needs to be used to find the information
+      description:
+        The search query which needs to be used to find the information
         on the web
       required: true
   alias: LLM Web search
-  description: Makes a Google search to answer questions that are completely unrelated
+  description:
+    Makes a Google search to answer questions that are completely unrelated
     with the smart home and are exclusively about current events or information in
     real-time like the current president, results of last night's game, release dates,
     etc.
-test_object_selector:
-  sequence:
-  - delay:
-      hours: 1
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  fields:
-    weight:
-      selector:
-        object:
-          label_field: entity_id
-          multiple: true
-          fields:
-            entity_id:
-              label: Weather entity
-              selector:
-                entity:
-                  filter:
-                    domain: weather
-            forecast_type:
-              label: Forecast type
-              selector:
-                select:
-                  options:
-                  - label: Current weather
-                    value: current
-                  - label: Hourly Forecast
-                    value: hourly
-                  - label: Twice Daily forecast
-                    value: twice_daily
-                  - label: Daily forecast
-                    value: daily
-            weight:
-              label: Weight
-              selector:
-                number:
-                  min: 0
-                  max: 5
-                  step: 1
-                  mode: slider
-      name: Weight data
-      description: Provide weight data so integrations you trust more have a bigger
-        impact
-  alias: TEst object selector
-  description: ''
