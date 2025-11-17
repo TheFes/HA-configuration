@@ -14,7 +14,7 @@ blueprint:
 
     Provide the settings as described below.
 
-    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_assist.md>).
+    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/telegram/telegram_assist.md>).
 
     ## ☕ Coffee
 
@@ -48,10 +48,10 @@ blueprint:
       name: LLM conversation entity
       description:
         The LLM conversation entities to be used as fallback of the local.
-        
+
         They will be processed in order, and the first result which isn't an error
         will be returned.
-        
+
         Leave empty to use local handling only.
       selector:
         entity:
@@ -71,8 +71,12 @@ variables:
   telegram_event: !input telegram_event
   prefer_local: !input prefer_local
   llm_entity: !input llm_entity
+  config_entry: "{{ trigger.event.data.bot.config_entry_id }}"
   chat_id: "{{ trigger.event.data.chat_id }}"
-  allowed_chats: "{{ telegram_event | map('state_attr', 'chat_id') | list }}"
+  allowed_chats: >
+    {% set config_entry_list = telegram_event | map('config_entry_id') | list %}
+    {% set chat_id_list = telegram_event | map('state_attr', 'chat_id') | list %}
+    {{ zip(config_entry_list, chat_id_list) | map('list') | list }}
 triggers:
   - alias: Trigger on the Telegram text event
     trigger: event
@@ -80,7 +84,7 @@ triggers:
 conditions:
   - alias: Check if the message was sent in an allowed chat
     condition: template
-    value_template: "{{ chat_id in allowed_chats }}"
+    value_template: "{{ [config_entry, chat_id] in allowed_chats }}"
 actions:
   - alias: Use local handling first if set
     if: "{{ prefer_local or llm_entity | count == 0 }}"
@@ -104,17 +108,17 @@ actions:
           )
         }}
       sequence:
-      - alias: Ask LLM to process the telegram chat text
-        action: conversation.process
-        data:
-          text: "{{ trigger.event.data.text }}"
-          conversation_id: telegram_assist
-          agent_id: "{{ llm_entity[repeat.index-1] }}"
-        response_variable: response
+        - alias: Ask LLM to process the telegram chat text
+          action: conversation.process
+          data:
+            text: "{{ trigger.event.data.text }}"
+            conversation_id: telegram_assist
+            agent_id: "{{ llm_entity[repeat.index-1] }}"
+          response_variable: response
   - alias: Send respone to Telegram chat
     action: telegram_bot.send_message
     data:
-      config_entry_id: "{{ trigger.event.data.bot.config_entry_id }}"
+      config_entry_id: "{{ config_entry }}"
       target: "{{ chat_id }}"
       message: "{{ response.response.speech.plain.speech }}"
       message_tag: conversation_response

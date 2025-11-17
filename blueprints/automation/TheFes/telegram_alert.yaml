@@ -386,6 +386,12 @@ actions:
       tag: "{{ this.entity_id | replace('automation.', '') }}"
       alert_sensor_data: >
         {{ (state_attr(alert_data_sensor | default('', true), 'alert_data') | default({}, true)).get(tag, {}) }}
+      alert_start: >
+        {{
+          alert_sensor_data.get('alert_start', now().isoformat())
+          if restart
+          else now().isoformat()
+        }}
       message_data: >
         {{
           alert_sensor_data.get('message_data', [])
@@ -462,15 +468,18 @@ actions:
         - alias: Send alert data to sensor if provided
           if: "{{ alert_data_sensor is not none }}"
           then:
-            - alias: Send event to update alert data
+            - &update_alert_data
+              alias: Send event to update alert data
               event: !input alert_event
               event_data:
                 alert_data: >
                   {{
                     { 
                       tag: {
+                            'alert_title': alert_title,
                             'message_data': message_data,
                             'alert_count': alert_count,
+                            'alert_start': alert_start,
                             'repeat_start': repeat_start,
                             'next_alert': repeat_end,
                             'target': target
@@ -522,21 +531,7 @@ actions:
         - alias: Send alert data to sensor if provided
           if: "{{ alert_data_sensor is not none }}"
           then:
-            - alias: Send event to update alert data
-              event: !input alert_event
-              event_data:
-                alert_data: >
-                  {{
-                    { 
-                      tag: {
-                            'message_data': message_data,
-                            'alert_count': alert_count,
-                            'repeat_start': repeat_start,
-                            'next_alert': repeat_end,
-                            'target': target
-                        }
-                    }
-                  }}
+            - *update_alert_data
         - alias: Check if there still is a problem
           variables:
             is_problem: *is_problem
@@ -613,20 +608,7 @@ actions:
                       - alias: Send alert data to sensor if provided
                         if: "{{ alert_data_sensor is not none }}"
                         then:
-                          - alias: Send event to update alert data
-                            event: !input alert_event
-                            event_data:
-                              alert_data: >
-                                {{
-                                  { 
-                                    tag: {
-                                          'message_data': message_data,
-                                          'alert_count': alert_count,
-                                          'repeat_end': repeat_end,
-                                          'target': target
-                                      }
-                                  }
-                                }}
+                          - *update_alert_data
                       - alias: Send acknowledge message if provided
                         if: "{{ acknowledge_message != '' }}"
                         then:

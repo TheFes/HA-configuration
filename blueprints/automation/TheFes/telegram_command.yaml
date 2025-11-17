@@ -1,0 +1,633 @@
+blueprint:
+  domain: automation
+  name: Create commands for Telegram bot
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_command.yaml
+  description: >
+    ![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+    # 💬 Telegram Command
+
+    This blueprint creates an automation to use custom commands in Telegram, including a `/help` command to show all available commands,
+    and commands to restart and update Home Assistant components.
+
+    ## ❓How to use
+
+    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/telegram/telegram_command.md>).
+
+    ## ☕ Coffee
+
+    If you think I deserve a coffe, please feel free to buy me one (I might spend it on another beverage though).
+
+    In case you decide to do so, thanks a lot!
+
+    <a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
+
+
+    Or you can do a small donation using PayPal.
+
+    [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/paypalme/thefes)
+
+    ```
+  homeassistant:
+    min_version: 2025.11.0
+  input:
+    chat_settings:
+      name: Chat settings
+      icon: mdi:chat
+      description: Settings to determine which chats can use the commands
+      input:
+        telegram_event:
+          name: Telegram event entity
+          description:
+            The event entity from the Telegram Bot integration which referencing the chat in which you want
+            to give the commands.
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - integration: telegram_bot
+                  domain: event
+    generic_settings:
+      name: Generic settings
+      icon: mdi:cog
+      description: Generic settings for the messages sent using the commands.
+      input:
+        parse_mode:
+          name: Parse mode
+          description: "Parser for the message text: `markdownv2`, `html`, `markdown` or `plain_text` ."
+          selector:
+            select:
+              options:
+                - markdownv2
+                - html
+                - markdown
+                - plain_text
+          default: markdown
+        disable_web_page_preview:
+          name: Disable web page preview
+          description: Enable to disable link previews for links in the message.
+          selector:
+            boolean:
+          default: true
+        invalid_command_text:
+          name: Invalid command text
+          description: Text in case an invalid command is given
+          default: Invalid command, use /help for a list of valid commands.
+          selector:
+            text:
+        press_timeout:
+          name: Button press timeout
+          description: Period to wait before a button pressed in minutes
+          default: 10
+          selector:
+            number:
+              min: 0
+              max: 60
+              unit_of_measurement: minutes
+        timeout_message:
+          name: Timeout message
+          description: Text to be shown after the wait period for a button press is over.
+          default: Button press timeout for {{ command }} exceeded. The command is stopped.
+          selector:
+            template:
+    custom_command_settings:
+      name: Custom command settings
+      icon: mdi:puzzle
+      description: Generic settings for the messages sent using the commands.
+      input:
+        custom_commands:
+          name: Custom commands
+          description: Create custom commands which return a message and or perform actions.
+          selector:
+            object:
+              label_field: command
+              description_field: description
+              multiple: true
+              fields:
+                command:
+                  label: Command
+                  selector:
+                    text: null
+                description:
+                  label: Text to show in the `/help` command
+                  selector:
+                    text: null
+                text:
+                  label: Message text
+                  selector:
+                    template: null
+                actions:
+                  label: Actions
+                  selector:
+                    action: null
+          default:
+            - command: /ping
+              description: Pong!
+              text: Pong 🏓
+              actions: []
+    restart_settings:
+      name: Restart settings
+      icon: mdi:restart
+      description: Select which components can be restarted using the command
+      input:
+        restart:
+          name: Restart Command
+          description: Defines which options show up for the restart command
+          selector:
+            object:
+              label_field: name
+              description_field: arg
+              multiple: true
+              fields:
+                name:
+                  label: Name
+                  selector:
+                    text: null
+                arg:
+                  label: Argument
+                  selector:
+                    text: null
+                actions:
+                  label: Actions
+                  selector:
+                    action: null
+          default:
+            - name: Home Assistant core
+              arg: core
+              actions:
+                - action: homeassistant.restart
+                  data: {}
+        ask_verification:
+          name: Ask verification
+          description: Ask for verification before performing a restert
+          default: true
+          selector:
+            boolean:
+    restart_button_texts:
+      name: Restart button texts
+      icon: mdi:text-box-check
+      description: Texts for the buttons related to the /restart command
+      collapsed: true
+      input:
+        restart_description:
+          name: Restart description
+          description: Description which will be shown for the `/restart` command in the `/help` command
+          default: "Restart a Home Assistant related component"
+          selector:
+            text:
+        restart_message:
+          name: Restart message
+          description: Text to be shown in the message after the restart command
+          default: Which component do you want to restart?
+          selector:
+            text:
+        restart_text:
+          name: Restart text
+          description: The text to show when a restart has started
+          default: "{{ restart_name}} will now restart"
+          selector:
+            template:
+        restart_verify_message:
+          name: Restart verify message
+          description: Text to be shown in the message for restart verification
+          default: Are you sure?
+          selector:
+            template:
+        restart_verify_confirm:
+          name: Restart confirm button label
+          description: Button label to confirm restart
+          default: "Yes"
+          selector:
+            text:
+        restart_verify_cancel:
+          name: Restart cancel button label
+          description: Button label to cancel restart
+          default: "No"
+          selector:
+            text:
+    update_settings:
+      name: Update settings
+      icon: mdi:update
+      description: Settings for the `/update` command
+      input:
+        use_update:
+          name: Use update
+          description: Disable if you don't want to use the `/update` command to update any pending update entity
+          default: true
+          selector:
+            boolean:
+        ignore_entities:
+          name: Ignore enitities
+          description: Entities which can not be updated using the `/update` command
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+                - domain: update
+        ignore_integrations:
+          name: Ignore enitities
+          description: Integrations which can not be updated using the `/update` command
+          default: []
+          selector:
+            object:
+    update_button_texts:
+      name: Update button texts
+      icon: mdi:text-box-check
+      description: Texts for the buttons related to the `/update` command
+      collapsed: true
+      input:
+        update_description:
+          name: Update description
+          description: Description which will be shown for the `/update` command in the `/help` command
+          default: "List pending updates"
+          selector:
+            text:
+        no_update_text:
+          name: No update text
+          description: Text in case an invalid command is given
+          default: There are currently no updates pending.
+          selector:
+            text:
+        update_skipped_text:
+          name: Update skipped text
+          description: Text to use in case an update is skipped
+          default: Update for {{ update_name }} skipped
+          selector:
+            template:
+        update_success_text:
+          name: Update success text
+          description: Text to use in case an update is performed
+          default: Update for {{ update_name }} performed
+          selector:
+            template:
+        update_fail_text:
+          name: No update text
+          description: Text to use in case an update failed
+          default: Update for {{ update_name }} falied
+          selector:
+            template:
+        update_text:
+          name: Update text
+          description: The text shown for each pending update
+          default: |
+            **{{ update_name }}**
+            Installed version: {{ installed_version }}
+            Latest version: {{ latest_version }}
+            {{ ('[Release notes]('~release_url~')') if notes is not none }}
+          selector:
+            template:
+        update_label:
+          name: Update label
+          description: Label to show on the button to update
+          default: Update
+          selector:
+            text:
+        skip_label:
+          name: Skip label
+          description: Label to show on the button to skip
+          default: Skip
+          selector:
+            text:
+
+variables:
+  args: "{{ trigger.event.data.args }}"
+  custom_commands: !input custom_commands
+  restart: !input restart
+  restart_description: !input restart_description
+  update_description: !input update_description
+  use_update: !input use_update
+  telegram_event: !input telegram_event
+  press_timeout: !input press_timeout
+  parse_mode: !input parse_mode
+  disable_web_page_preview: !input disable_web_page_preview
+  config_entry: "{{ trigger.event.data.bot.config_entry_id }}"
+  chat_id: "{{ trigger.event.data.chat_id }}"
+  tag: "{{ [this.entity_id.split('.')[1], chat_id] | join('_') }}"
+  command: "{{ trigger.event.data.command }}"
+  custom_command_list: >
+    {{ custom_commands | map(attribute='command') | list }}
+  allowed_chats: >
+    {% set config_entry_list = telegram_event | map('config_entry_id') | list %}
+    {% set chat_id_list = telegram_event | map('state_attr', 'chat_id') | list %}
+    {{ zip(config_entry_list, chat_id_list) | map('list') | list }}
+triggers:
+  - alias: Trigger on the Telegram command event
+    trigger: event
+    event_type: telegram_command
+conditions:
+  - alias: Check if the message was sent in an allowed chat
+    condition: template
+    value_template: "{{ [config_entry, chat_id] in allowed_chats }}"
+actions:
+  - alias: Select the right response based on the command issued
+    choose:
+      - alias: Actions for /help command
+        conditions: "{{ command == '/help'}}"
+        sequence:
+          - alias: Set variables for help text
+            variables:
+              command_list: >
+                {{
+                  custom_command_list
+                  + (['/restart'] if restart | count > 0 else [])
+                  + (['/update'] if use_update else [])
+                }}
+              description_list: >
+                {{
+                  custom_commands | map(attribute='description') | map('default', 'no description') | list
+                  + ([restart_description] if restart | count > 0 else [])
+                  + ([update_description] if use_update else [])
+                }}
+              message: >
+                {{ zip(command_list, description_list) | map('join', ': ') | join('\n') }}
+          - &send_message
+            alias: Send message to chat
+            action: telegram_bot.send_message
+            data:
+              config_entry_id: "{{ config_entry }}"
+              chat_id: "{{ chat_id }}"
+              message: "{{ message }}"
+              inline_keyboard: "{{ inline_keyboard | default([]) }}"
+              parse_mode: "{{ 'plain_text' if command == '/help' else parse_mode }}"
+              disable_web_page_preview: "{{ disable_web_page_preview }}"
+      - alias: Actions for custom commands
+        conditions: "{{ command in custom_command_list }}"
+        sequence:
+          - alias: Set variables for custom command
+            variables:
+              item: "{{ custom_commands | selectattr('command', 'eq', command) | first }}"
+              message: "{{ item.text | default }}"
+          - alias: Send message if provided
+            if: "{{ iif(message) }}"
+            then:
+              - *send_message
+          - &perform_actions
+            alias: Perform the selected actions
+            repeat:
+              for_each: "{{ item.actions | default([]) }}"
+              sequence:
+                - alias: >
+                    Select only the "action:" items, ignore other items
+                  if: "{{ 'action' in repeat.item or 'service' in repeat.item }}"
+                  then:
+                    - alias: Perform action
+                      action: "{{ repeat.item.action or reapeat.item.serivce }}"
+                      data: "{{ repeat.item.target | default({}) | combine(repeat.item.data | default({})) }}"
+      - conditions: "{{ command == '/restart' and restart | count > 0 }}"
+        sequence:
+          - alias: Set variables for restart command
+            variables:
+              valid_args: "{{ restart | map(attribute='arg') | list }}"
+              restart_message: !input restart_message
+              ask_verification: !input ask_verification
+              restart_verify_confirm: !input restart_verify_confirm
+              restart_verify_cancel: !input restart_verify_cancel
+          - alias: Ask which component to restart if not already provided
+            if: "{{ args | first | default not in valid_args }}"
+            then:
+              - alias: Set variables for restart message
+                variables:
+                  message: !input restart_message
+                  inline_keyboard: >
+                    {% set ns = namespace(keyboard=[]) %}
+                    {% for r in restart %}
+                      {% set ns.keyboard = ns.keyboard +
+                        [r.name~':/'~r.arg~tag]
+                      %}
+                    {% endfor %}
+                    {{ ns.keyboard }}
+                  end_timeout: "{{ now() + timedelta(minutes=press_timeout) }}"
+                  repeat_button_pressed: false
+                  repeat_timeout: false
+              - *send_message
+              - alias: Wait for valid button presses
+                repeat:
+                  while: >
+                    {{
+                      not repeat_button_pressed
+                      and not repeat_timeout
+                    }}
+                  sequence:
+                    - alias: Wait for button press
+                      wait_for_trigger:
+                        - alias: Trigger on telegram callback event
+                          trigger: event
+                          event_type: telegram_callback
+                      timeout:
+                        seconds: "{{ [(end_timeout | as_datetime - now()).total_seconds(), 0] | max }}"
+                    - alias: Set variables to determine if button press is correct
+                      variables:
+                        valid_press: >
+                          {{
+                            wait.trigger is not none
+                            and tag in wait.trigger.event.data.data
+                          }}
+                        arg: "{{ wait.trigger.event.data.data | regex_replace('^/|'~tag, '') if valid_press else none }}"
+                    - alias: Perform right actions
+                      choose:
+                        - alias: Timeout exceeded
+                          conditions: "{{ not wait.completed }}"
+                          sequence:
+                            - alias: Set variables for message and to prevent further wait
+                              variables:
+                                repeat_timeout: true
+                                message: !input timeout_message
+                                inline_keyboard: []
+                            - *send_message
+                            - alias: Stop the sequence
+                              stop: Button press timeout
+                        - alias: Continue on valid button press
+                          conditions: "{{ valid_press }}"
+                          sequence:
+                            - alias: Set variables to continue to next step
+                              variables:
+                                args: "{{ [arg] + args }}"
+                                repeat_button_pressed: true
+          - alias: Ask for verification in case valid argument is provided and verification is requested
+            if: >
+              {{
+                args | first | default in valid_args 
+                and ask_verification
+                and args | last | default != 'yes'
+              }}
+            then:
+              - alias: Set variables for verification message and for while loop
+                variables:
+                  message: !input restart_verify_message
+                  inline_keyboard:
+                    - "{{ restart_verify_confirm ~ ':/yes' ~ tag }}"
+                    - "{{ restart_verify_cancel ~ ':/no' ~ tag }}"
+                  end_timeout: "{{ now() + timedelta(minutes=press_timeout) }}"
+                  repeat_button_pressed: false
+                  repeat_timeout: false
+              - *send_message
+              - alias: Wait for button verification button press
+                repeat:
+                  while: >
+                    {{
+                      not repeat_button_pressed
+                      and not repeat_timeout
+                    }}
+                  sequence:
+                    - alias: Wait for telegram callback message
+                      wait_for_trigger:
+                        - trigger: event
+                          event_type: telegram_callback
+                      timeout:
+                        seconds: "{{ [(end_timeout | as_datetime - now()).total_seconds(), 0] | max }}"
+                    - alias: Choose how to proceed
+                      choose:
+                        - alias: Actions when timeout is exceeded
+                          conditions: "{{ not wait.completed }}"
+                          sequence:
+                            - alias: Set variables for message and to prevent further wait
+                              variables:
+                                repeat_timeout: true
+                                message: !input timeout_message
+                                inline_keyboard: []
+                            - *send_message
+                            - stop: Button press timeout
+                        - alias: Actions when button is pressed
+                          conditions: "{{ wait.trigger.event.data.data in ['/yes'~tag, '/no'~tag] }}"
+                          sequence:
+                            - alias: Set variables for further steps
+                              variables:
+                                perform_restart: "{{ 'yes' in wait.trigger.event.data.data }}"
+                                repeat_button_pressed: true
+          - alias: Perform restart actions if everything is correct
+            if: >
+              {{
+                args | first | default in valid_args 
+                and
+                  (
+                    not ask_verification 
+                    or perform_restart | default(false)
+                    or args | last | default == 'yes'
+                  )
+              }}
+            then:
+              - alias: Set variables for message
+                variables:
+                  item: "{{ restart | selectattr('arg', 'eq', args | first) | first }}"
+                  restart_name: "{{ item.name }}"
+                  message: !input restart_text
+                  inline_keyboard: []
+              - *send_message
+              - *perform_actions
+      - alias: Perform actions for update command
+        conditions: "{{ command == '/update' and use_update }}"
+        sequence:
+          - alias: Set variables for update messages
+            variables:
+              ignore_entities: !input ignore_entities
+              ignore_integrations: !input ignore_integrations
+              to_ignore: "{{ ignore_entities + ignore_integrations | map('integration_entities') | flatten(1) | select('search', '^up') | list if ignore_entities is list else [] }}"
+              updates: >
+                {{ states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | reject('in', to_ignore) | list }}
+              number_of_updates: "{{ updates | count }}"
+          - alias: Send update messages
+            if: "{{ number_of_updates > 0 }}"
+            then:
+              - alias: Send message for each pending update
+                repeat:
+                  for_each: "{{ updates }}"
+                  sequence:
+                    - alias: Set variables for update message
+                      variables:
+                        update_entity: "{{ repeat.item }}"
+                        update_name: "{{ state_attr(update_entity, 'title') | default(state_attr(update_entity, 'friendly_name') | regex_replace('Update|update', ''), true) | trim }}"
+                        installed_version: "{{ state_attr(repeat.item, 'installed_version') }}"
+                        latest_version: "{{ state_attr(repeat.item, 'latest_version') }}"
+                        release_url: "{{ state_attr(repeat.item, 'release_url') }}"
+                        message: !input update_text
+                        item: "{{ repeat.index - 1 }}"
+                        update_label: !input update_label
+                        skip_label: !input skip_label
+                        inline_keyboard:
+                          - "{{ update_label ~ ':/update_' ~ item ~ '_' ~ tag ~', ' ~ skip_label ~ ':/skip_' ~ item ~ '_' ~ tag }}"
+                        end_timeout: "{{ now() + timedelta(minutes=press_timeout) }}"
+                        repeat_timeout: false
+                    - *send_message
+              - alias: Reset message variables
+                variables:
+                  parse_mode: !input parse_mode
+                  inline_keyboard: []
+              - alias: Wait for button presses
+                repeat:
+                  while: "{{ not repeat_timeout and number_of_updates > 0 }}"
+                  sequence:
+                    - alias: Wait for telegram callback event
+                      wait_for_trigger:
+                        - trigger: event
+                          event_type: telegram_callback
+                      timeout:
+                        seconds: "{{ [(end_timeout | as_datetime - now()).total_seconds(), 0] | max }}"
+                    - alias: Set variables to check for valid messages
+                      variables:
+                        callback: "{{ wait.trigger.event.data.data if wait.trigger is not none else '' }}"
+                        valid: >
+                          {{
+                            callback is search '/update|/skip'
+                            and tag in callback
+                          }}
+                    - alias: Perform the right actions
+                      choose:
+                        - alias: Perform actions when timeout is exceeded
+                          conditions: "{{ not wait.completed }}"
+                          sequence:
+                            - alias: Set variables for timeout message
+                              variables:
+                                repeat_timeout: true
+                                message: !input timeout_message
+                                inline_keyboard: []
+                            - *send_message
+                            - alias: Stop sequence
+                              stop: Button press timeout
+                        - alias: Actions when right button is pressed
+                          conditions: "{{ valid }}"
+                          sequence:
+                            - alias: Set variables to perform update action
+                              variables:
+                                update_action: "{{ 'skip' if callback is search '^/skip' else 'install' }}"
+                                update_entity: >
+                                  {% set item = callback.split('_')[1] | int(0) %}
+                                  {{ updates[item] }}
+                                update_name: "{{ state_attr(update_entity, 'title') | default(state_attr(update_entity, 'friendly_name') | regex_replace('Update|update', ''), true) | trim }}"
+                            - alias: Perform the update action
+                              action: update.{{ update_action }}
+                              target:
+                                entity_id: "{{ update_entity }}"
+                            - alias: Set variables for update message
+                              variables:
+                                update_skipped_text: !input update_skipped_text
+                                update_success_text: !input update_success_text
+                                update_failed_text: !input update_fail_text
+                                message: >
+                                  {% if update_action == 'skip' %}
+                                    {{ update_skipped_text }}
+                                  {% elif states(update_entity, 'off') %}
+                                    {{ update_success_text }}
+                                  {% else %}
+                                    {{ update_fail_text }}
+                                  {% endif %}
+                                inline_keyboarc: []
+                                updates: >
+                                  {{ states.update | selectattr('state', 'eq', 'on') | map(attribute='entity_id') | list }}
+                                number_of_updates: "{{ updates | count }}"
+                            - *send_message
+            else:
+              - alias: Set variables for message
+                variables:
+                  message: !input no_update_text
+                  inline_keyboard: []
+              - *send_message
+    default:
+      - alias: Set variables for message
+        variables:
+          message: !input invalid_command_text
+          inline_keyboard: []
+          parse_mode: plain_text
+      - *send_message
+mode: parallel
