@@ -201,8 +201,10 @@ automation:
           {{ now() - this.attributes.last_triggered | default(as_datetime(0), true) > timedelta(hours=1) }}
     actions:
       - alias: "Send fridge power warning notification"
-        action: notify.phone_martijn
+        action: notify.mobile_app_pixel_10_pro
         data:
+          ttl: 0
+          priority: high
           title: "Stroomverbruik koelkast"
           message: "De koelkast verbruikt verdacht veel stroom, check of hij niet open staat"
           data:

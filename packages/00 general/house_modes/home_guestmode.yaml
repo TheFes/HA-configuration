@@ -13,11 +13,13 @@ automation:
         state: "on"
     actions:
       - alias: Send guest mode notification
-        action: notify.phone_martijn
+        action: notify.mobile_app_pixel_10_pro
         data:
           title: "🏡 Welkom thuis"
           message: "Mag de gastmodus uit?"
           data:
+            ttl: 0
+            priority: high
             channel: Guest
             notification_icon: mdi:home
             tag: Guest

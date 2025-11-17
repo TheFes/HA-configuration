@@ -50,10 +50,13 @@ automation:
           {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_10_pro_last_notification') }}
     actions:
       - alias: "Send notification to Marleen"
-        action: notify.phone_marleen
+        action: notify.mobile_app_pixel_8_marleen
         data:
           title: "DigiD code"
           message: "{{ trigger.to_state.state }}"
+          data:
+            ttl: 0
+            priority: high
 
   # From: open_music_app.yaml
   - id: 35106a4b-1055-44db-958c-99b9d9cf721b
@@ -98,18 +101,22 @@ automation:
             value_template: "{{ bt_mac == '14:6C:27:1A:A7:94' }}"
         then:
           - alias: Start TuneIn
-            action: notify.phone_martijn
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_launch_app"
               data:
                 package_name: "tunein.player"
+                ttl: 0
+                priority: high
         else:
           - alias: "Send music app selection notification"
-            action: notify.phone_martijn
+            action: notify.notify.mobile_app_pixel_10_pro
             data:
               title: Muziekje of filmpje?
               message: Wil je iets luisteren of zien?
               data:
+                package_name: "tunein.player"
+                ttl: 0
                 tag: "music_choose"
                 notification_icon: mdi:music
                 actions:
@@ -126,7 +133,7 @@ automation:
             delay:
               minutes: 10
           - alias: "Clear music app selection notification"
-            action: notify.phone_martijn
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "clear_notification"
               data:
@@ -154,24 +161,24 @@ automation:
             id: home
         then:
           - alias: "Set phone to normal sound mode"
-            action: notify.phone_martijn
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ringer_mode"
               data:
                 command: "normal"
-          - action: notify.phone_martijn
+          - action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ble_transmitter"
               data:
                 command: "turn_on"
         else:
           - alias: "Set phone to vibrate mode"
-            action: notify.phone_martijn
+            action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ringer_mode"
               data:
                 command: "vibrate"
-          - action: notify.phone_martijn
+          - action: notify.mobile_app_pixel_10_pro
             data:
               message: "command_ble_transmitter"
               data:

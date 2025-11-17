@@ -222,11 +222,13 @@ automation:
                 state: "on"
             sequence:
               - alias: "Send vacuum bin full notification to Martijn"
-                action: notify.phone_martijn
+                action: notify.mobile_app_pixel_10_pro
                 data:
                   title: Bakje vol
                   message: Maak het bakje van de stofzuiger leeg!
                   data:
+                    ttl: 0
+                    priority: high
                     channel: Vacuum
                     notification_icon: mdi:robot-vacuum
                     actions:

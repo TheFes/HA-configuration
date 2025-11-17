@@ -14,8 +14,10 @@ alert:
     can_acknowledge: true
     skip_first: false
     notifiers:
-      - phone_martijn
+      - mobile_app_pixel_10_pro
     data:
+      ttl: 0
+      priority: high
       tag: holiday_alert
       channel: Holiday
       notification_icon: mdi:sunglasses
@@ -77,11 +79,13 @@ automation:
               - action: input_boolean.turn_on
                 target:
                   entity_id: input_boolean.vakantie
-              - action: notify.phone_martijn
+              - action: notify.mobile_app_pixel_10_pro
                 data:
                   title: "☀️ Fijne vakantie! ☀️"
                   message: "Vakantiemodus is nu actief"
                   data:
+                    ttl: 0
+                    priority: high
                     channel: Holiday
                     notification_icon: mdi:sunglasses
           - conditions:
