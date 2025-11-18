@@ -606,34 +606,6 @@ template:
         attributes:
           text: >
             {{ states('sensor.extractor_hood_status') if is_state('switch.afzuigkap', 'on') else 'Uit' }} {{ (' | ' ~ states('sensor.afzuigkap_power', with_unit=true)) if is_state('switch.afzuigkap', 'on') }}
-      - unique_id: 9ee78bc8-1810-460a-9621-0fb5455c7558
-        name: Dashboard Espresso
-        icon: "{{ 'mdi:coffee-maker' if states('sensor.espresso_power') | float(0) > 0 else 'mdi:coffee-maker-outline' }}"
-        state: "{{ is_state('switch.espresso', 'on') }}"
-        attributes:
-          text: >
-            {% set power = states('sensor.espresso_power') | float(0) | round(0) %}
-            {% if is_state('switch.espresso', 'on') and power > 0 %}
-              Actief | {{ power }} W
-            {% elif is_state('switch.espresso', 'on') %}
-              Inactief | {{ power }} W
-            {% else %}
-              Uit
-            {% endif %}
-      - unique_id: 82976f0d-c03a-4b2d-9a6c-1af7cda11946
-        name: Dashboard Waterkoker
-        icon: "{{ 'mdi:kettle' if states('sensor.waterkoker_power') | float(0) > 0 else 'mdi:kettle-outline' }}"
-        state: "{{ is_state('switch.waterkoker', 'on') }}"
-        attributes:
-          text: >
-            {% set power = states('sensor.waterkoker_power') | float(0) | round(0) %}
-            {% if is_state('switch.waterkoker', 'on') and power > 0 %}
-              Actief | {{ power }} W
-            {% elif is_state('switch.waterkoker', 'on') %}
-              Inactief | {{ power }} W
-            {% else %}
-              Uit
-            {% endif %}
 
       # binary sensor for dasbboard messages
       - unique_id: 262f459f-0d43-4b72-b8b1-67667fe73f5f
@@ -751,31 +723,6 @@ template:
         name: Dashboard Werkkamer Martijn Satellite Available
         state: "{{ 'media_player.martijn' | has_value }}"
         icon: mdi:cast
-
-  - switch:
-      - unique_id: 98efcbde-ffbe-4050-98f9-cf60275a8f81
-        name: Kitchen Appliances
-        state: >
-          {{ is_state('switch.groep_keuken', 'on') }}
-        icon: >
-          {% if is_state('switch.espresso', 'on') and is_state('switch.waterkoker', 'on') %}
-            mdi:coffee
-          {% elif is_state('switch.espresso', 'on') %}
-            mdi:coffee-maker
-          {% elif is_state('switch.waterkoker', 'on') %}
-            mdi:kettle
-          {% else %}
-            mdi:coffee-outline
-          {% endif %}
-        turn_on:
-          - action: switch.turn_on
-            target:
-              entity_id: switch.groep_keuken
-        turn_off:
-          - action: switch.turn_off
-            target:
-              entity_id: switch.groep_keuken
-        availability: "{{ 'switch.groep_keuken' | has_value }}"
 
 # small script to toggle vacuum
 script:
