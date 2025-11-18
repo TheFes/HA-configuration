@@ -218,9 +218,11 @@
         description: Father of the house
         notifiers:
         - alias: Send mobile notification to Martijn
-          action: notify.phone_martijn
+          action: notify.mobile_app_pixel_10_pro
           data:
             data:
+              ttl: 0
+              priority: high
               channel: Reminders
               notification_icon: mdi:reminder
           condition: '{{ is_state(''input_boolean.test'', ''on'') }}'
@@ -236,9 +238,11 @@
         description: Mother of the house
         notifiers:
         - alias: Send mobile notification to Marleen
-          action: notify.phone_marleen
+          action: notify.mobile_app_pixel_8_marleen
           data:
             data:
+              ttl: 0
+              priority: high
               channel: Reminders
               notification_icon: mdi:reminder
       llm_agent: conversation.chatgpt
@@ -257,10 +261,10 @@
       trigger_entity: binary_sensor.studio_code_server_running
       problem_state: 'on'
       repeat:
-      - 120
-      alert_title: "\U0001F6A8 Studio Code Server addon is al even actief!"
-      alert_message: De Studio Code Server add-on is actief. Ben je nog steeds aan
-        het coderen?
+      - 90
+      alert_title: "\U0001F6A8 Studio Code Server addon alert"
+      alert_message: De Studio Code Server add-on is al even actief. Ben je nog steeds
+        aan het coderen?
       done_message: De Studio Code Server add-on is niet meer actief.
       acknowledge_button_label: Stop met deze onzin
       can_acknowledge: false
@@ -335,7 +339,7 @@
     path: TheFes/telegram_alert.yaml
     input:
       trigger_entity: sensor.server_boot_status
-      problem_state: Manual Boot
+      problem_state: Manual boot
       repeat: 30
       skip_first: true
       target:
@@ -368,3 +372,126 @@
       alert_data_sensor: sensor.thefes_alert_data
       can_acknowledge: true
       attribute_key: attribute
+- id: '1763123011049'
+  alias: Telegram alert for trash collection
+  description: ''
+  use_blueprint:
+    path: TheFes/telegram_alert.yaml
+    input:
+      trigger_entity: binary_sensor.container_alert
+      problem_state: 'on'
+      repeat: 60
+      target:
+      - event.thefes_casa_alert_update_event
+      alert_title: ♻️ Container alert
+      alert_message: De {{ state_attr(state_attr('sensor.dashboard_next_trash', 'next'),
+        'friendly_name') }} container moet naar buiten!
+      done_message: De container staat buiten!
+      button_1_actions:
+      - event: trash_is_outside
+        event_data: {}
+      button_1_label: Container staat buiten
+- id: '1763134334243'
+  alias: Telegram Commands Automation
+  description: ''
+  use_blueprint:
+    path: TheFes/telegram_command.yaml
+    input:
+      telegram_event:
+      - event.thefes_update_event
+      - event.thefes_casa_alert_update_event
+      restart_description: Herstart Home Assistant gerelateerd component
+      update_description: Lijst van updates
+      custom_commands:
+      - command: /ping
+        description: Pong!
+        text: "Pong \U0001F3D3"
+        actions: []
+      - command: /status
+        description: Laat de status van het systeem zien
+        text: "{% from 'relative_time_plus.jinja' import relative_time_plus as rtp
+          %}\n\n\U0001F525 {{ states('sensor.processor_use', with_unit=true) }} CPU
+          load.\n\U0001F9E0 {{ states('sensor.memory_use', with_unit=true) }} ({{
+          states('sensor.memory_use_percent', with_unit=true) }}) gebruikt.\n\U0001F4BD
+          {{ states('sensor.disk_use', with_unit=true) }} ({{\nstates('sensor.disk_use_percent',
+          with_unit=true) }}) gebruikt, nog {{ states('sensor.disk_free', with_unit=true)
+          }} vrij.\n\n\U0001F6E2️ De database is nu {{ states('sensor.database_size_sqlite',
+          with_unit=true) }}.\n\n\U0001F680 HA is {{ rtp(states('sensor.home_assistant_uptime'),
+          parts=2, language='nl') }} geleden opgestart, en de host {{ rtp(states('sensor.last_boot'),
+          parts=2, language='nl') }} geleden.\n\n\U0001F4BE De laatse backup is {{
+          rtp(states('sensor.backup_last_successful_automatic_backup'), language='nl')
+          }} geleden, en de volgende is gepland over {{ rtp(states('sensor.backup_next_scheduled_automatic_backup'),
+          language='nl') }}.\n"
+      - command: /home
+        description: Laat de status van het huis zien
+        text: "{% set lights_on = label_entities('off_long_press') | select('match',
+          'light.') | select('is_state', 'on') | list  | count %}\n{% set players_on
+          = label_entities('off_long_press') | select('match', 'media_player.') |
+          reject('is_state', ['off', 'idle']) | list  | count %}\n{% set switches_on
+          = label_entities('area_data') | select('match', 'switch.') | select('is_state',
+          'on') | list  | count %}\n\U0001F3E0 Huis status: {{ states('sensor.house_mode')
+          }}\n\U0001F636 {{ states('zone.home') }} {{ 'persoon' if states('zone.home')
+          == '1' else  'personen' }} thuis\n\U0001F4A1 {{ lights_on }} lamp{{ 'en'
+          if lights_on != 1 }} aan\n\U0001F39A️ {{ switches_on }} schakelaar{{ 's'
+          if switches_on != 1 }} aan\n\U0001F4FB {{ players_on }} media player{{ 's'
+          if players_on != 1 }} aan"
+      - command: /alert
+        description: Laat de status van de Telegram alerts zien
+        text: "{% from 'relative_time_plus.jinja' import relative_time_plus %}\nActieve
+          alerts: {{ states('sensor.thefes_alert_data') }}\n{% for k, v in state_attr('sensor.thefes_alert_data',
+          'alert_data').items() if v -%}\n- **{{ v.alert_title }}**\n  Sinds: {{ relative_time_plus(v.alert_start,
+          2, language='nl') }}\n  Volgende melding over {{ relative_time_plus(v.next_alert,
+          2, language='nl') }}\n  Aantal verstuurde meldingen: {{ v.alert_count }}\n{%
+          endfor %}"
+      restart:
+      - name: Home Assistant core
+        arg: core
+        actions:
+        - action: homeassistant.restart
+          data: {}
+      - name: Home Assistant OS
+        arg: haos
+        actions:
+        - action: hassio.host_reboot
+          metadata: {}
+          data: {}
+      - name: Zigbee2MQTT
+        arg: /z2m
+        actions:
+        - action: hassio.addon_restart
+          metadata: {}
+          data:
+            addon: 9336c2b0_zigbee2mqtt
+      - name: Test
+        arg: test
+        actions:
+        - action: light.toggle
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.wc
+      update_text: '**{{ update_name }}**
+
+        Huidige versie: {{ installed_version }}
+
+        Nieuwe versie: {{ latest_version }}
+
+        {{ (''[Release notes](''~release_url~'')'') if notes is not none }}
+
+        '
+      restart_text: '{{ restart_name}} wordt opnieuwe gestart'
+      update_fail_text: Update voor {{ update_name }} mislukt
+      update_success_text: Update voor {{ update_name }} uitgevoerd
+      update_skipped_text: Update voor {{ update_name }} overgeslagen
+      no_update_text: Er zijn nu geen updates
+      invalid_command_text: Ongeldig commando, gebruik /help voor een lijst van commando's
+      timeout_message: De tijd om een knop in te drukken voor {{ command }} is voorbij.
+        Het commando is gestopt.
+      restart_verify_cancel: Nee
+      restart_verify_confirm: Ja
+      restart_verify_message: Weet je het zeker?
+      restart_message: Wat wil je herstarten?
+      skip_label: Overslaan
+      update_label: Installeren
+      ignore_integrations:
+      - esphome
