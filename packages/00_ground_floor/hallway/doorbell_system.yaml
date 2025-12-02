@@ -63,7 +63,10 @@ automation:
               - alias: "Someone home?"
                 condition: state
                 entity_id: sensor.house_mode
-                state: "Thuis"
+                state: 
+                  - "Thuis"
+                  - "Relax"
+                  - "Gast"
             sequence:
               - parallel:
                   - sequence:
