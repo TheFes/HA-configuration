@@ -1,18 +1,18 @@
 blueprint:
   domain: automation
-  name: Send alerts using Telegram
+  name: Send alerts using Home Assistant Companion app
   author: TheFes
-  source_url: https://github.com/TheFes/ha-blueprints/blob/main/telegram/telegram_alert.yaml
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/mobile_app/mobile_app_alert.yaml
   description: >
     ![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
 
-    # 🚨 Telegram Alert
+    # 🚨 Home Assistant Companion App alert
 
     This is a replacement for the alert integration which sends alerts through Telegram.
 
     ## ❓How to use
 
-    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_alert.md>).
+    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/mobile_app/mobile_app_alert.md>).
 
     ## ☕ Coffee
 
@@ -101,46 +101,19 @@ blueprint:
       description: Settings regarding the messages sent by the alert
       input:
         target:
-          name: Target
+          name: Action
           description:
-            Select the telegram chats you want to target in this alert. The blueprint uses the event entities and
-            takes the chat_id from the attribute of these entities.
+            Proivde the notify actions from the mobile app integration you want to use. Provide all details, including additional data for e.g. priority.
+            Message can be anything, it will be overwritten by the alert message, done message or acknowledgement message
+            Include a tag if you want the notifications to overwrite each other.
           selector:
-            entity:
-              multiple: true
-              filter:
-                - integration: telegram_bot
-                  domain: event
-        parse_mode:
-          name: Parse mode
-          description: "Parser for the message text: `markdownv2`, `html`, `markdown` or `plain_text` ."
-          selector:
-            select:
-              options:
-                - markdownv2
-                - html
-                - markdown
-                - plain_text
-          default: markdown
-        alert_title:
-          name: Alert title
-          description:
-            The title for the message which is sent on every repeat of the alert.
-            You can use templates in this title.
-          selector:
-            template:
+            action:
         alert_message:
           name: Alert message
           description: The message which is sent on every repeat of the alert.
             You can use templates in this message.
           selector:
             template:
-        disable_web_page_preview:
-          name: Disable web page preview
-          description: Enable to disable link previews for links in the message.
-          selector:
-            boolean:
-          default: false
     done_settings:
       name: Done message settings
       icon: mdi:check-all
@@ -192,36 +165,6 @@ blueprint:
           selector:
             template:
           default: ""
-        use_ack_title:
-          name: Use alert title on acknowledgement
-          description:
-            When enabled it will add the alert title as title to the acknowlege
-            message
-          selector:
-            boolean:
-          default: true
-    message_cleanup:
-      name: Message cleanup settings
-      icon: mdi:broom
-      description:
-        Settings to remove the messages from the chat after sending a new alert
-        or when the alert is no longer needed.
-      collapsed: true
-      input:
-        remove_previous_message:
-          name: Remove previous message
-          description: Automatically remove the previous alert message when a new message is sent
-          selector:
-            boolean:
-          default: true
-        remove_when_done:
-          name: Remove when done
-          description:
-            Automatically remove the alert messages when a the trigger entity is no longer in de problem
-            state or when the alert is acknowledged
-          selector:
-            boolean:
-          default: true
     actionable_buttons:
       name: Actionable button settings
       icon: mdi:list-box
@@ -267,32 +210,6 @@ blueprint:
           default: ""
         button_3_actions:
           name: Button 3 actions
-          description: The actions to be performed when the button is pressed
-          selector:
-            action:
-          default: []
-        button_4_label:
-          name: Button 4 label
-          description: The text to be shown on the button. Leave empty to not use this button.
-          selector:
-            text:
-              multiline: false
-          default: ""
-        button_4_actions:
-          name: Button 4 actions
-          description: The actions to be performed when the button is pressed
-          selector:
-            action:
-          default: []
-        button_5_label:
-          name: Button 5 label
-          description: The text to be shown on the button. Leave empty to not use this button.
-          selector:
-            text:
-              multiline: false
-          default: ""
-        button_5_actions:
-          name: Button 5 actions
           description: The actions to be performed when the button is pressed
           selector:
             action:
@@ -364,7 +281,6 @@ triggers:
     id: restart
 variables:
   target: !input target
-  alert_title: !input alert_title
   skip_first: !input skip_first
   can_acknowledge: !input can_acknowledge
   done_message: !input done_message
@@ -372,8 +288,6 @@ variables:
   remove_previous_message: !input remove_previous_message
   remove_when_done: !input remove_when_done
   ack_label: !input acknowledge_button_label
-  use_ack_title: !input use_ack_title
-  use_done_title: !input use_done_title
   repeat: !input repeat
   alert_data_sensor: !input alert_data_sensor
   repeat_list: >
@@ -639,7 +553,7 @@ actions:
                           for_each: "{{ message_data if remove_when_done else [] }}"
                           sequence: *delete_message
                       - alias: Send done message if provided
-                        if: "{{ message_data | count > 0 and done_message != '' }}"
+                        if: "{{ alert_count > 0 and done_message != '' }}"
                         then:
                           - alias: Send done message to each chat
                             repeat: &send_done_message

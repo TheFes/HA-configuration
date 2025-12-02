@@ -2,157 +2,48 @@
 # This package combines all holiday-related automations and alerts
 # for comprehensive holiday mode management
 
-# Holiday Mode Alert
-alert:
-  holiday_mode:
-    name: "Activate Holiday Mode?"
-    title: "❓ Op vakantie?"
-    message: "Jullie zijn al even niet thuis, zijn jullie op vakantie?"
-    entity_id: input_boolean.op_vakantie
-    state: "on"
-    repeat: 60
-    can_acknowledge: true
-    skip_first: false
-    notifiers:
-      - mobile_app_pixel_10_pro
-    data:
-      ttl: 0
-      priority: high
-      tag: holiday_alert
-      channel: Holiday
-      notification_icon: mdi:sunglasses
-      actions:
-        - action: "vakantie"
-          title: "Yep ☀️"
-        - action: "no_holiday"
-          title: "Nope 😞"
-    done_message: "clear_notification"
+# binary sensor to initiate alert
+template:
+  - triggers:
+      - trigger: numeric_state
+        entity_id: zone.home
+        below: 1
+        for:
+          hours: 12
+        id: "on"
+      - trigger: state
+        entity_id: input_boolean.vakantie
+        to: "on"
+        id: "off"
+      - trigger: event
+        event_type: stop_holiday_alert
+        id: "off"
+    binary_sensor:
+      - unique_id: baff314b-9d3a-4607-92a9-99279c874d5b
+        name: Holiday Alert
+        icon: mdi:palm-tree
+        state: "{{ trigger.id | bool }}"
+      
 
 # Holiday Mode Automations
 automation:
-  # From holiday_mode_on_off.yaml - Turn on/off holiday mode and send notifications
   - id: 6cdd3311-fb90-47ea-a796-f679091021f2
-    alias: "Turn on holiday mode and send notification"
+    alias: "Turn on holiday mode"
     mode: queued
     max_exceeded: silent
     triggers:
-      - trigger: state
-        entity_id: zone.home
-        to: "0"
-        for: "12:00:00"
-        id: boolean_on
-      - trigger: event
-        id: holiday_on
-        event_type: mobile_app_notification_action
-        event_data:
-          action: "vakantie"
-      - trigger: state
-        id: holiday_house
-        entity_id: sensor.house_mode
-        to: "Vakantie"
-      - trigger: event
-        id: no_holiday
-        event_type: mobile_app_notification_action
-        event_data:
-          action: "no_holiday"
       - trigger: numeric_state
         id: holiday_over
         entity_id: sensor.thuis_martijn_distance
         below: 10000
+    conditions:
+      - condition: state
+        entity_id: input_boolean.vakantie
+        state: "on"
     actions:
-      - alias: "Actions holiday mode"
-        choose:
-          - conditions:
-              condition: trigger
-              id: boolean_on
-            sequence:
-              - action: input_boolean.turn_on
-                target:
-                  entity_id: input_boolean.op_vakantie
-          - conditions:
-              condition: trigger
-              id: holiday_on
-            sequence:
-              - action: input_boolean.turn_off
-                target:
-                  entity_id: input_boolean.op_vakantie
-              - action: input_boolean.turn_on
-                target:
-                  entity_id: input_boolean.vakantie
-              - action: notify.mobile_app_pixel_10_pro
-                data:
-                  title: "☀️ Fijne vakantie! ☀️"
-                  message: "Vakantiemodus is nu actief"
-                  data:
-                    ttl: 0
-                    priority: high
-                    channel: Holiday
-                    notification_icon: mdi:sunglasses
-          - conditions:
-              condition: trigger
-              id: holiday_house
-            sequence:
-              - alias: "Placeholder to prevent empty sequence"
-                delay: 0
-              # Commented out ESPHome switch turn off action
-              # - variables:
-              #     switches: >
-              #       {{
-              #         integration_entities('esphome')
-              #           | select('is_state', 'Detached')
-              #           | map('replace', 'select', 'switch')
-              #           | map('replace', '_button_type', '')
-              #           | select('has_value')
-              #           | list
-              #       }}
-              # - action: switch.turn_off
-              #   target:
-              #     entity_id: "{{ switches }}"
-          - conditions:
-              condition: trigger
-              id: no_holiday
-            sequence:
-              - action: input_boolean.turn_off
-                target:
-                  entity_id: input_boolean.op_vakantie
-          - conditions:
-              condition: trigger
-              id: holiday_over
-            sequence:
-              - action: input_boolean.turn_off
-                target:
-                  entity_id: input_boolean.vakantie
-              - if:
-                  - alias: "No guest"
-                    condition: state
-                    entity_id: input_boolean.gast
-                    state: "off"
-                then:
-                  - variables:
-                      switches: >
-                        {{
-                          integration_entities('esphome')
-                            | select('is_state', 'Detached')
-                            | map('replace', 'select', 'switch')
-                            | map('replace', '_button_type', '')
-                            | select('has_value')
-                            | list
-                        }}
-                  - action: switch.turn_on
-                    target:
-                      entity_id: "{{ switches }}"
-                  - delay: 20
-                  - variables:
-                      lights: >
-                        {{
-                          switches
-                            | map('regex_replace', '^switch.shelly1_|^switch.sonoff_', 'light.')
-                            | select('has_value')
-                            | list
-                        }}
-                  - action: light.turn_off
-                    target:
-                      entity_id: "{{ lights }}"
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.vakantie
 
   # From holiday_lights_morning.yaml - Morning light simulation
   - id: 6d6452d1-f65e-49c5-9ed6-3c6c8754911a

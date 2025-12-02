@@ -253,7 +253,7 @@
         minutes: /5
       after_notification: Mark as completed
 - id: '1762721132649'
-  alias: Studio Code Server alert using Telegram
+  alias: Telegram alert for Studio Code Server add-on
   description: ''
   use_blueprint:
     path: TheFes/telegram_alert.yaml
@@ -280,48 +280,6 @@
       - event.thefes_casa_alert_update_event
       parse_mode: markdown
       alert_data_sensor: sensor.thefes_alert_data
-- id: '1762784076225'
-  alias: TEST ALERT TELEGRAM
-  description: ''
-  use_blueprint:
-    path: TheFes/telegram_alert.yaml
-    input:
-      trigger_entity: input_boolean.test
-      problem_state: 'on'
-      repeat:
-      - 0.5
-      config_entry: 01K9CHBP94KXC847V9Z7KB8EVY
-      target:
-      - event.thefes_casa_alert_update_event
-      - event.thefes_update_event
-      parse_mode: markdown
-      alert_title: "❄️ Freezer door alert \U0001F6A8"
-      alert_message: "The freezer door has been open for over 15 minutes! Quickly
-        close it before everything gets spoiled. \U0001F4A6"
-      done_message: "The freezer door is closed again. Your food is safe! \U0001F389"
-      acknowledge_button_label: Stop bugging me!
-      acknowledge_message: I will stop bugging you about the freezer door.
-      button_1_label: Announce over speakers
-      button_1_actions:
-      - action: input_boolean.toggle
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.test
-      can_acknowledge: true
-      remove_previous_message: true
-      remove_when_done: true
-      disable_web_page_preview: true
-      button_2_label: Send message to wife
-      button_2_actions:
-      - action: light.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: light.groep_buiten
-      use_done_title: false
-      use_ack_title: false
-      alert_data_sensor: sensor.thefes_alert_data
 - id: '1762897506680'
   alias: Send Assist command using Telegram
   description: ''
@@ -347,12 +305,18 @@
       alert_title: "\U0001F37F Media Server alert"
       alert_message: De server staat op "Manual boot". Moet ie aanblijven?
       done_message: Media Server gaat nu vanzelf weer uit!
-      button_1_label: Zet maar uit!
+      button_1_label: Zet meteen uit (wanneer inactief)
       button_1_actions:
       - action: switch.turn_off
         target:
           entity_id: switch.server_start
+        data: {}
       alert_data_sensor: sensor.thefes_alert_data
+      button_2_label: Zet naar "Automatic boot"
+      button_2_actions:
+      - event: proxmox_server_state
+        event_data:
+          type: Automatic boot
 - id: '1763041373153'
   alias: Alert numeric test
   description: ''
@@ -391,6 +355,7 @@
       - event: trash_is_outside
         event_data: {}
       button_1_label: Container staat buiten
+      alert_data_sensor: sensor.thefes_alert_data
 - id: '1763134334243'
   alias: Telegram Commands Automation
   description: ''
@@ -495,3 +460,80 @@
       update_label: Installeren
       ignore_integrations:
       - esphome
+- id: '1763653411810'
+  alias: Telegram alert for unavailable covers
+  description: ''
+  use_blueprint:
+    path: TheFes/telegram_alert.yaml
+    input:
+      trigger_entity: binary_sensor.cover_unavailable
+      problem_state: 'on'
+      repeat: 30
+      skip_first: true
+      target:
+      - event.thefes_casa_alert_update_event
+      alert_title: "{%- set names = state_attr('binary_sensor.cover_unavailable',
+        'name') %}\n{%- set names = iif(names, names, []) %}\n\U0001F6A8 Screen{{
+        iif(names | count == 1, '', 's') }} niet beschikbaar"
+      alert_message: '{%- set names = state_attr(''binary_sensor.cover_unavailable'',
+        ''name'') %}
+
+        {%- set names = iif(names, names, []) %}
+
+        De volgende screens zijn niet beschikbaar: {{ names | join('', '') }}'
+      can_acknowledge: true
+      acknowledge_button_label: Stop meldingen
+      button_1_label: Reload integratie
+      button_1_actions:
+      - action: homeassistant.reload_config_entry
+        metadata: {}
+        data: {}
+        target:
+          entity_id: cover.veranda
+      use_done_title: false
+      alert_data_sensor: sensor.thefes_alert_data
+- id: '1763653648602'
+  alias: Telegram Alert for tablet battery
+  description: ''
+  use_blueprint:
+    path: TheFes/telegram_alert.yaml
+    input:
+      trigger_entity: binary_sensor.charge_tablet
+      problem_state: 'on'
+      repeat: 120
+      target:
+      - event.thefes_casa_alert_update_event
+      alert_message: "{% if states('sensor.tablet_battery_level') | float(0) == 100
+        %}\n  De batterij van de tablet is weer vol!\n{% else %}\n  De batterij van
+        de tablet is nog maar {{ states('sensor.tablet_battery_level') | int }}%.
+        Hang hem snel aan de lader!\n{% endif %}"
+      alert_title: "{{ '\U0001FAAB' if states('sensor.tablet_battery_level') | float(0)
+        < 100 else '\U0001F50B' }} Batterij tablet"
+      acknowledge_button_label: Stop meldingen
+      alert_data_sensor: sensor.thefes_alert_data
+- id: '1764066571964'
+  alias: Telegram alert for Holiday
+  description: ''
+  use_blueprint:
+    path: TheFes/telegram_alert.yaml
+    input:
+      trigger_entity: binary_sensor.holiday_alert
+      problem_state: 'on'
+      repeat: 60
+      target:
+      - event.thefes_casa_alert_update_event
+      alert_title: "\U0001F334 Vakantie modus alert"
+      alert_message: Jullie zijn al even niet thuis, zijn jullie op vakantie?
+      use_done_title: false
+      button_1_label: Yep ☀️
+      button_1_actions:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.vakantie
+      button_2_label: "Nope \U0001F61E"
+      button_2_actions:
+      - event: stop_holiday_alert
+        event_data: {}
+      alert_data_sensor: sensor.thefes_alert_data
