@@ -124,7 +124,7 @@ automation:
               - alias: "Turn on play area light"
                 action: light.turn_on
                 entity_id:
-                  - light.speelhoek
+                  - light.speelhoek_template
                 data:
                   brightness: 80
               - alias: "Turn on bookcase led"
@@ -158,7 +158,7 @@ automation:
                         action: light.turn_on
                         target:
                           entity_id:
-                            - light.speelhoek
+                            - light.speelhoek_template
                         data:
                           brightness_pct: "{{ states('number.speelhoek_start_brightness') }}"
 

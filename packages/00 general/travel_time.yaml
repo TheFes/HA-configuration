@@ -1,0 +1,172 @@
+template:
+  - trigger:
+      - trigger: event
+        event_type: update_travel_time_sensors
+    sensor:
+      - unique_id: 7937b258-dced-46f7-9efa-4614df863233
+        name: Travel Start Location
+        state: Start
+        attributes:
+          latitude: "{{ trigger.event.data.start_latitude }}"
+          longitude: "{{ trigger.event.data.start_longitude }}"
+      - unique_id: b18871a1-afbb-4fb4-8343-78151f5a6796
+        name: Travel Destination
+        state: End
+        attributes:
+          latitude: "{{ trigger.event.data.end_latitude }}"
+          longitude: "{{ trigger.event.data.end_longitude }}"
+
+script:
+  get_travel_time:
+    alias: Get travel time
+    description: >
+      This script is used to get the travel time from a location to another location
+      It can be used to get the time walking, on bike, by car and by public transport
+      If a query is provided to request travel to to a location, use this script as a tool.
+    fields:
+      destination_location:
+        required: true
+        selector:
+          text: null
+        name: Location
+        description: >-
+          The location of the destination as provided in the search query, this can
+          be a street and street number (like Villagestreet 25) or a building (like
+          Empire State Building) or a restaurant like Pizza Hut.
+      destination_city:
+        required: true
+        selector:
+          text: null
+        name: Destination City
+        description: >-
+          The city in which the location is located. In case the search query is for
+          a generic location like a restaurant chain, use the closest one.
+      destination_country:
+        required: true
+        selector:
+          text: null
+        name: Destination country
+        description: The country of the destination as provided in the search query.
+      start_location:
+        selector:
+          text: null
+        name: Location
+        description: >-
+          The location of the start location as provided in the search query, this
+          can be a street and street number (like Villagestreet 25) or a building
+          (like Empire State Building) or a restaurant like Pizza Hut. In case no
+          start location is provided, use "home" as the default value. Only ask for
+          clarifaction if a start location is given in the search query, but it is not
+          clear what this location is.
+        default: home
+      start_city:
+        selector:
+          text: null
+        name: Destination City
+        description: >-
+          The city in which the start location is located. In case the search query
+          is for a generic location like a restaurant chain, use the closest one. In
+          case no start location is provided, use "home"
+      start_country:
+        selector:
+          text: null
+        name: Destination country
+        description: >-
+          The country of the start location as provided in the search query. In case
+          no start location is provided, use "home"
+      mode_of_transport:
+        required: true
+        description: >-
+          The mode of transport which is used to travel as provided in the search
+          query. Valid  options are "walking", "car", "bicylce" and "public
+          transport". In case no mode of transport can be derived from the search
+          query, use "car" as the default value.
+        selector:
+          select:
+            options:
+              - walking
+              - car
+              - bicycle
+              - public transport
+        default: car
+    sequence:
+      - variables:
+          home: "{{ start_location is undefined or 'home' in [start_location, start_city, start_country] }}"
+      - if:
+          - condition: template
+            value_template: "{{ home }}"
+        then:
+          - variables:
+              start_latitude: "{{ state_attr('zone.home', 'latitude') }}"
+              start_longitude: "{{ state_attr('zone.home', 'longitude') }}"
+        else:
+          - action: ai_task.generate_data
+            data:
+              task_name: Get coordinates
+              instructions: >-
+                return the longitude and latitude {{ start_location }}, {{
+                start_city }}, {{ start_country }}
+              structure:
+                longitude:
+                  description: the longitude of the requested location
+                  selector:
+                    number:
+                      min: 0
+                      max: 99
+                latitude:
+                  description: the latitude of the requested location
+                  selector:
+                    number:
+                      min: 0
+                      max: 99
+            response_variable: response
+          - variables:
+              start_latitude: "{{ response.data.latitude }}"
+              start_longitude: "{{ response.data.longitude }}"
+      - action: ai_task.generate_data
+        data:
+          task_name: Get coordinates
+          instructions: >-
+            return the longitude and latitude {{ destination_location }}, {{
+            destination_city }}, {{ destination_country }}
+          structure:
+            longitude:
+              description: the longitude of the requested location
+              selector:
+                number:
+                  min: 0
+                  max: 99
+            latitude:
+              description: the latitude of the requested location
+              selector:
+                number:
+                  min: 0
+                  max: 99
+        response_variable: response
+      - variables:
+          end_latitude: "{{ response.data.latitude }}"
+          end_longitude: "{{ response.data.longitude }}"
+      - event: update_travel_time_sensors
+        event_data:
+          start_latitude: "{{ start_latitude }}"
+          start_longitude: "{{ start_longitude }}"
+          end_latitude: "{{ end_latitude }}"
+          end_longitude: "{{ end_longitude }}"
+      - delay: 0.2
+      - variables:
+          mapping:
+            car: sensor.travel_time_car
+            bicycle: sensor.travel_time_cycling
+            walking: sensor.travel_time_walking
+            public transport: sensor.travel_time_public_transport
+          entity: "{{ mapping[mode_of_transport | default('car', true)] }}"
+      - action: homeassistant.update_entity
+        data:
+          entity_id: "{{ entity }}"
+      - delay: 1
+      - variables:
+          response:
+            travel_time: >
+              The travel time to {{ destination_location }} in {{ destination_city }} {{ ('from ' ~ start_location ~ ' in ' ~ start_city) if not home else '' }} is {{ timedelta(minutes=states(entity) | int) | string }}.
+      - stop:
+        response_variable: "response"

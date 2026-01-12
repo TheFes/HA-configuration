@@ -53,11 +53,11 @@ automation:
       - alias: "Light brightness changed"
         trigger: state
         entity_id:
-          - light.eettafel
-          - light.pepijn
-          - light.floris
-          - light.speelhoek
-          - light.bedside_lamp
+          - light.eettafel_template
+          - light.pepijn_template
+          - light.floris_template
+          - light.speelhoek_template
+          - light.bedside_lamp_template
         attribute: brightness
     variables:
       name: "{{ trigger.to_state.object_id }}"

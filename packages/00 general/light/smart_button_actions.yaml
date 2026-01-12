@@ -1,0 +1,51 @@
+automation:
+  - id: e3bdd01c-27c4-4212-8747-3f84fa70701f
+    alias: "Actions with smart buttons"
+    mode: parallel
+    max_exceeded: silent
+    variables:
+      mapper:
+        - object_id: knop_bed_floris_action
+          light: light.floris_template
+          brightness: true
+        - object_id: knop_booglamp_pepijn_action
+          light: light.booglamp
+          brightness: false
+    triggers:
+      - alias: Trigger on button press event entity
+        trigger: state
+        entity_id:
+          - event.knop_bed_floris_action
+          - event.knop_booglamp_pepijn_action
+        not_from: unavailable
+        variables:
+          object_id: "{{ trigger.entity_id.split('.')[1] }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          area: "{{ area_id(trigger.entity_id) }}"
+    actions:
+      - choose:
+          - conditions: "{{ event == 'single' }}"
+            sequence:
+              - action: light.toggle
+                target:
+                  entity_id: "{{ mapper | selectattr('object_id', 'eq', object_id) | map(attribute='light') | list | first }}"
+          - conditions: "{{ event == 'double' }}"
+            sequence:
+              - if: "{{ mapper | selectattr('object_id', 'eq', object_id) | map(attribute='brightness') | list | first }}"
+                then:
+                  - action: light.toggle
+                    target:
+                      entity_id: "{{ mapper | selectattr('object_id', 'eq', object_id) | map(attribute='light') | list | first }}"
+                    data:
+                      brightness: 255
+          - conditions: "{{ event == 'hold' }}"
+            sequence:
+              - action: light.turn_off
+                target:
+                  entity_id: >
+                    {{
+                      area_entities(area)
+                        | select('in', label_entities('off_long_press'))
+                        | select('is_state', 'on')
+                        | list
+                    }}

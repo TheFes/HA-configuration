@@ -4,6 +4,7 @@ automation:
     variables:
       allowed_callers:
         - "**621"
+        - "**622"
     triggers:
       - alias: "SIP call webhook received"
         trigger: webhook
@@ -93,6 +94,18 @@ automation:
                                 to_call: grandma_cat
                                 number_calling: "{{ number_calling }}"
                           post_action: noop
+                        "5":
+                          id: home_assistant
+                          message: Home Assistant wordt gebeld
+                          action:
+                            domain: script
+                            service: turn_on
+                            entity_id: script.make_call
+                            service_data:
+                              variables:
+                                to_call: home_assistant
+                                number_calling: "{{ number_calling }}"
+                          post_action: noop
                         "8":
                           id: alarm
                           message: 112 wordt gebeld
@@ -131,6 +144,7 @@ script:
         grandma_dog: !secret sip_grandma_dog
         grandma_cat: !secret sip_grandma_cat
         alarm: sip:+31112@192.168.2.100
+        home_assistant: "sip:homeassistant@192.168.2.94:5060"
       internal_phonebook:
         dad: "sip:**624@192.168.2.100"
       wifi_connection:
@@ -207,3 +221,80 @@ script:
                             {% set to_end = to_end | first %}
                             {{ number if to_end == parsed else to_end }}
                     - stop: "Call disconnected"
+
+  sip_play_audio_file:
+    alias: Send media file to phone
+    description: ""
+    fields:
+      audio_file:
+        description: "File to play"
+        required: true
+        selector:
+          text:
+            multiple: false
+            multiline: false
+        default: /config/www/SinterklaasTelefoon.mp3
+      target_area:
+        description: "Which area to target"
+        required: true
+        selector:
+          select:
+            options:
+              - "Werkkamer Martijn"
+              - "Woonkamer"
+    variables:
+      number_mapper:
+        Werkkamer Martijn: sip:**622@192.168.2.100
+        Woonkamer: sip:**621@192.168.2.100
+      number: "{{ number_mapper.get(target_area | default('none'), 'sip:**622@192.168.2.100') }}"
+    sequence:
+      - alias: Dial the phone
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: dial
+            number: "{{ number }}"
+            audio_file: "{{ audio_file }}"
+            cache_audio: true
+            wait_for_audio_to_finish: true
+            webhook_to_call:
+              playback_done: audio_call_finished
+              call_established: audio_call_established
+      - alias: Wait for call connection
+        wait_for_trigger:
+          - alias: Call established webhook
+            trigger: webhook
+            local_only: true
+            webhook_id: audio_call_established
+      - alias: Play mp3
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: play_audio_file
+            number: "{{ number }}"
+            audio_file: "{{ audio_file }}"
+            cache_audio: true
+            wait_for_audio_to_finish: true
+      - alias: Wait for sound to finish
+        wait_for_trigger:
+          - alias: Call established webhook
+            trigger: webhook
+            local_only: true
+            webhook_id: audio_call_finished
+      - alias: Hang up the HA SIP number
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: hangup
+            number: sip:**620@192.168.2.100
+      - alias: Hang up the called phone
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: hangup
+            number: "{{ number }}"
+    mode: restart

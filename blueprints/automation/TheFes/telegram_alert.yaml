@@ -3,31 +3,14 @@ blueprint:
   name: Send alerts using Telegram
   author: TheFes
   source_url: https://github.com/TheFes/ha-blueprints/blob/main/telegram/telegram_alert.yaml
-  description: >
-    ![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
-
-    # 🚨 Telegram Alert
-
-    This is a replacement for the alert integration which sends alerts through Telegram.
-
-    ## ❓How to use
-
-    For more information on all settings, see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/alert/telegram_alert.md>).
-
-    ## ☕ Coffee
-
-    If you think I deserve a coffe, please feel free to buy me one (I might spend it on another beverage though).
-
-    In case you decide to do so, thanks a lot!
-
-    <a href="https://www.buymeacoffee.com/thefes" target="_blank">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>
-
-
-    Or you can do a small donation using PayPal.
-
-    [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/paypalme/thefes)
-
-    ```
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n#
+    \U0001F6A8 Telegram Alert\nThis is a replacement for the alert integration which
+    sends alerts through Telegram.\n## ❓How to use\nFor more information on all settings,
+    see the [documentation](<https://github.com/TheFes/ha-blueprints/blob/main/telegram/telegram_alert.md>).\n##
+    ☕ Coffee\nIf you think I deserve a coffe, please feel free to buy me one (I might
+    spend it on another beverage though).\nIn case you decide to do so, thanks a lot!\n<a
+    href=\"https://www.buymeacoffee.com/thefes\" target=\"_blank\">![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)</a>\n\nOr
+    you can do a small donation using PayPal.\n[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/paypalme/thefes)\n```\n"
   homeassistant:
     min_version: 2025.11.0
   input:
@@ -40,40 +23,49 @@ blueprint:
           name: Trigger entity
           description: The entity_id of the entity on which the alert should trigger
           selector:
-            entity: {}
+            entity:
+              reorder: false
+              multiple: false
         problem_state:
           name: Problem state
-          description: The state on which the enitity should be for the alert to be actvie
+          description: The state on which the enitity should be for the alert to be
+            actvie
           selector:
             text:
+              multiple: false
+              multiline: false
         attribute_key:
           name: Attribute name
-          description:
-            The name of the attribute which should be used in the trigger. Only used when the
-            Use attribute setting is enabled.
+          description: 'The name of the attribute which should be used in the trigger.
+            Only used when the Use attribute setting is enabled.
 
-            Make sure to use the key as shown in developer tools > states, not the one shown in e.g.
-            the more-info card.
+            Make sure to use the key as shown in developer tools > states, not the
+            one shown in e.g. the more-info card.
 
-            Leave empty to use the state of the entity.
+            Leave empty to use the state of the entity.'
           selector:
             text:
-          default: ""
+              multiple: false
+              multiline: false
+          default: ''
         problem_type:
           name: Problem type
-          description:
-            Indicate if the entity state should exactly match the problem state, or if should be above or below.
+          description: 'Indicate if the entity state should exactly match the problem
+            state, or if should be above or below.
 
-            In case above or below is used, the problem state needs to be numeric.
+            In case above or below is used, the problem state needs to be numeric.'
           selector:
             select:
               options:
-                - label: Entity state equal to problem state
-                  value: equal
-                - label: Entity state below problem state
-                  value: below
-                - label: Entity state above problem state
-                  value: above
+              - label: Entity state equal to problem state
+                value: equal
+              - label: Entity state below problem state
+                value: below
+              - label: Entity state above problem state
+                value: above
+              multiple: false
+              custom_value: false
+              sort: false
           default: equal
     repeat_settings:
       name: Repeat settings
@@ -82,16 +74,15 @@ blueprint:
       input:
         repeat:
           name: Repeat
-          description:
-            Number of minutes before the notification should be repeated.
+          description: Number of minutes before the notification should be repeated.
             Can be either a number or a list of numbers.
           selector:
-            object: {}
+            object:
+              multiple: false
         skip_first:
           name: Skip first
-          description:
-            Controls whether the notification should be sent immediately or after
-            the first delay.
+          description: Controls whether the notification should be sent immediately
+            or after the first delay.
           selector:
             boolean: {}
           default: false
@@ -102,208 +93,216 @@ blueprint:
       input:
         target:
           name: Target
-          description:
-            Select the telegram chats you want to target in this alert. The blueprint uses the event entities and
-            takes the chat_id from the attribute of these entities.
+          description: Select the telegram chats you want to target in this alert.
+            The blueprint uses the event entities and takes the chat_id from the attribute
+            of these entities.
           selector:
             entity:
               multiple: true
               filter:
-                - integration: telegram_bot
-                  domain: event
+              - integration: telegram_bot
+                domain:
+                - event
+              reorder: false
         parse_mode:
           name: Parse mode
-          description: "Parser for the message text: `markdownv2`, `html`, `markdown` or `plain_text` ."
+          description: 'Parser for the message text: `markdownv2`, `html`, `markdown`
+            or `plain_text` .'
           selector:
             select:
               options:
-                - markdownv2
-                - html
-                - markdown
-                - plain_text
+              - markdownv2
+              - html
+              - markdown
+              - plain_text
+              multiple: false
+              custom_value: false
+              sort: false
           default: markdown
         alert_title:
           name: Alert title
-          description:
-            The title for the message which is sent on every repeat of the alert.
-            You can use templates in this title.
+          description: The title for the message which is sent on every repeat of
+            the alert. You can use templates in this title.
           selector:
-            template:
+            template: {}
         alert_message:
           name: Alert message
-          description: The message which is sent on every repeat of the alert.
-            You can use templates in this message.
+          description: The message which is sent on every repeat of the alert. You
+            can use templates in this message.
           selector:
-            template:
+            template: {}
         disable_web_page_preview:
           name: Disable web page preview
           description: Enable to disable link previews for links in the message.
           selector:
-            boolean:
+            boolean: {}
           default: false
     done_settings:
       name: Done message settings
       icon: mdi:check-all
-      description: Settings related to the message which will be sent when the alert is done
+      description: Settings related to the message which will be sent when the alert
+        is done
       input:
         done_message:
           name: Done message
-          description: The message which should be sent in case the alert is no longer active
+          description: The message which should be sent in case the alert is no longer
+            active
           selector:
-            template:
-          default: ""
+            template: {}
+          default: ''
         use_done_title:
           name: Use alert title on done message
-          description:
-            When enabled it will add the alert title as title to the done
+          description: When enabled it will add the alert title as title to the done
             message
           selector:
-            boolean:
+            boolean: {}
           default: true
     acknowledge_settings:
       name: Acknowledge settings
       icon: mdi:check
-      description:
-        You can use this to enable the option to acknowledge the alert and
-        other settings related to that.
+      description: You can use this to enable the option to acknowledge the alert
+        and other settings related to that.
       collapsed: true
       input:
         can_acknowledge:
-          name: "Can acknowledge"
-          description:
-            When enabled it shows a button below the alert message to turn the
-            alert off until it's triggered again.
+          name: Can acknowledge
+          description: When enabled it shows a button below the alert message to turn
+            the alert off until it's triggered again.
           selector:
-            boolean:
+            boolean: {}
           default: false
         acknowledge_button_label:
           name: Acknowlegde button label
-          description:
-            The text to be shown on the button to acknowledge the alert.
+          description: The text to be shown on the button to acknowledge the alert.
             For example "Stop bugging me"
           selector:
             text:
+              multiple: false
+              multiline: false
           default: Acknowlegde alert
         acknowledge_message:
           name: Acknowledge message
-          description:
-            Message which will be sent as confirmation that the alert is now
-            acknowledged. Leave empty when you don't want a message sent.
+          description: Message which will be sent as confirmation that the alert is
+            now acknowledged. Leave empty when you don't want a message sent.
           selector:
-            template:
-          default: ""
+            template: {}
+          default: ''
         use_ack_title:
           name: Use alert title on acknowledgement
-          description:
-            When enabled it will add the alert title as title to the acknowlege
+          description: When enabled it will add the alert title as title to the acknowlege
             message
           selector:
-            boolean:
+            boolean: {}
           default: true
     message_cleanup:
       name: Message cleanup settings
       icon: mdi:broom
-      description:
-        Settings to remove the messages from the chat after sending a new alert
-        or when the alert is no longer needed.
+      description: Settings to remove the messages from the chat after sending a new
+        alert or when the alert is no longer needed.
       collapsed: true
       input:
         remove_previous_message:
           name: Remove previous message
-          description: Automatically remove the previous alert message when a new message is sent
+          description: Automatically remove the previous alert message when a new
+            message is sent
           selector:
-            boolean:
+            boolean: {}
           default: true
         remove_when_done:
           name: Remove when done
-          description:
-            Automatically remove the alert messages when a the trigger entity is no longer in de problem
-            state or when the alert is acknowledged
+          description: Automatically remove the alert messages when a the trigger
+            entity is no longer in de problem state or when the alert is acknowledged
           selector:
-            boolean:
+            boolean: {}
           default: true
     actionable_buttons:
       name: Actionable button settings
       icon: mdi:list-box
-      description:
-        You can optionally add buttons and assign actions to those buttons.
-        If you for example have an alert when a light is on, you can add a button to
-        turn that light off.
-        You can add a maximum of 5 buttons
+      description: You can optionally add buttons and assign actions to those buttons.
+        If you for example have an alert when a light is on, you can add a button
+        to turn that light off. You can add a maximum of 5 buttons
       collapsed: true
       input:
         button_1_label:
           name: Button 1 label
-          description: The text to be shown on the button. Leave empty to not use this button.
+          description: The text to be shown on the button. Leave empty to not use
+            this button.
           selector:
             text:
               multiline: false
-          default: ""
+              multiple: false
+          default: ''
         button_1_actions:
           name: Button 1 actions
           description: The actions to be performed when the button is pressed
           selector:
-            action:
+            action: {}
           default: []
         button_2_label:
           name: Button 2 label
-          description: The text to be shown on the button. Leave empty to not use this button.
+          description: The text to be shown on the button. Leave empty to not use
+            this button.
           selector:
             text:
               multiline: false
-          default: ""
+              multiple: false
+          default: ''
         button_2_actions:
           name: Button 2 actions
           description: The actions to be performed when the button is pressed
           selector:
-            action:
+            action: {}
           default: []
         button_3_label:
           name: Button 3 label
-          description: The text to be shown on the button. Leave empty to not use this button.
+          description: The text to be shown on the button. Leave empty to not use
+            this button.
           selector:
             text:
               multiline: false
-          default: ""
+              multiple: false
+          default: ''
         button_3_actions:
           name: Button 3 actions
           description: The actions to be performed when the button is pressed
           selector:
-            action:
+            action: {}
           default: []
         button_4_label:
           name: Button 4 label
-          description: The text to be shown on the button. Leave empty to not use this button.
+          description: The text to be shown on the button. Leave empty to not use
+            this button.
           selector:
             text:
               multiline: false
-          default: ""
+              multiple: false
+          default: ''
         button_4_actions:
           name: Button 4 actions
           description: The actions to be performed when the button is pressed
           selector:
-            action:
+            action: {}
           default: []
         button_5_label:
           name: Button 5 label
-          description: The text to be shown on the button. Leave empty to not use this button.
+          description: The text to be shown on the button. Leave empty to not use
+            this button.
           selector:
             text:
               multiline: false
-          default: ""
+              multiple: false
+          default: ''
         button_5_actions:
           name: Button 5 actions
           description: The actions to be performed when the button is pressed
           selector:
-            action:
+            action: {}
           default: []
     alert_sensor_data:
       name: Alert sensor data
       icon: mdi:robot
-      description:
-        To ensure the alert will continue as it should after a HA restart, you can set up an
-        alert data sensor. More instructions
-        [here](<https://github.com/TheFes/ha-blueprints/blob/main/other/alert_data_sensor.md>).
+      description: To ensure the alert will continue as it should after a HA restart,
+        you can set up an alert data sensor. More instructions [here](<https://github.com/TheFes/ha-blueprints/blob/main/other/alert_data_sensor.md>).
       collapsed: true
       input:
         alert_data_sensor:
@@ -313,55 +312,49 @@ blueprint:
             entity:
               multiple: false
               filter:
-                - domain: sensor
-                  integration: template
-                  device_class: current
-          default: null
+              - domain:
+                - sensor
+                integration: template
+                device_class:
+                - current
+              reorder: false
+          default:
         alert_event:
           name: Alert data sensor trigger event
-          description:
-            The manual event type on which the alert data sensor triggers.
+          description: 'The manual event type on which the alert data sensor triggers.
 
-            In case you didn't change this while setting up the alert data sensor, you can just
-            keep the default setting.
+            In case you didn''t change this while setting up the alert data sensor,
+            you can just keep the default setting.'
           selector:
             text:
+              multiple: false
+              multiline: false
           default: update_thefes_alert_sensor
 trigger_variables:
   attribute_key: !input attribute_key
   problem_type: !input problem_type
-  use_attribute: "{{ iif(attribute_key) }}"
+  use_attribute: '{{ iif(attribute_key) }}'
   trigger_entity: !input trigger_entity
   problem_state: !input problem_state
 triggers:
-  - alias: Start alert when trigger entity changes to the problem state
-    trigger: template
-    value_template: &is_problem >
-      {% set entity_value = state_attr(trigger_entity, attribute_key) if use_attribute else states(trigger_entity) %}
-      {% if problem_type == 'equal' %}
-        {% set is_problem = entity_value | string == problem_state %}
-      {% elif problem_type == 'below' %}
-        {% set is_problem =
-          entity_value | is_number
-          and problem_state | is_number
-          and entity_value | float < problem_state | float
-        %}
-      {% elif problem_type == 'above' %}
-        {% set is_problem =
-          entity_value | is_number
-          and problem_state | is_number
-          and entity_value | float > problem_state | float
-        %}
-      {% endif %}
-      {{ is_problem }}
-  - alias: Trigger on Home Assistant start to restart alerts where needed
-    trigger: homeassistant
-    event: start
-    id: restart
-  - alias: Trigger on automation reload in case the automation was changes
-    trigger: event
-    event_type: automation_reloaded
-    id: restart
+- alias: Start alert when trigger entity changes to the problem state
+  trigger: template
+  value_template: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+    if use_attribute else states(trigger_entity) %} {% if problem_type == 'equal'
+    %}\n  {% set is_problem = entity_value | string == problem_state %}\n{% elif problem_type
+    == 'below' %}\n  {% set is_problem =\n    entity_value | is_number\n    and problem_state
+    | is_number\n    and entity_value | float < problem_state | float\n  %}\n{% elif
+    problem_type == 'above' %}\n  {% set is_problem =\n    entity_value | is_number\n
+    \   and problem_state | is_number\n    and entity_value | float > problem_state
+    | float\n  %}\n{% endif %} {{ is_problem }}\n"
+- alias: Trigger on Home Assistant start to restart alerts where needed
+  trigger: homeassistant
+  event: start
+  id: restart
+- alias: Trigger on automation reload in case the automation was changes
+  trigger: event
+  event_type: automation_reloaded
+  id: restart
 variables:
   target: !input target
   alert_title: !input alert_title
@@ -376,330 +369,330 @@ variables:
   use_done_title: !input use_done_title
   repeat: !input repeat
   alert_data_sensor: !input alert_data_sensor
-  repeat_list: >
-    {{ (repeat if repeat is list else [repeat]) | select('is_number') | map('float') | list }}
+  repeat_list: '{{ (repeat if repeat is list else [repeat]) | select(''is_number'')
+    | map(''float'') | list }}
+
+    '
   repeat_needed: true
-  restart: "{{ trigger.id == 'restart' }}"
+  restart: '{{ trigger.id == ''restart'' }}'
 actions:
-  - alias: Set variables to be used for the inline keyboard and for data storage
-    variables:
-      tag: "{{ this.entity_id | replace('automation.', '') }}"
-      alert_sensor_data: >
-        {{ (state_attr(alert_data_sensor | default('', true), 'alert_data') | default({}, true)).get(tag, {}) }}
-      alert_start: >
-        {{
-          alert_sensor_data.get('alert_start', now().isoformat())
-          if restart
-          else now().isoformat()
-        }}
-      message_data: >
-        {{
-          alert_sensor_data.get('message_data', [])
-          if restart
-          else []
-        }}
-      alert_count: >
-        {{
-          alert_sensor_data.get('alert_count', 1)
-          if restart
-          else 1
-        }}
-      target: >
-        {{
-          alert_sensor_data.get('target', target)
-          if restart
-          else target
-        }}
-      acknowledge_button: >
-        {{ [ack_label~':/acknowledge_'~tag] if can_acknowledge else [] }}
-      button_1_label: !input button_1_label
-      button_1: >
-        {{ [button_1_label~':/button_1_'~tag] if button_1_label else [] }}
-      button_2_label: !input button_2_label
-      button_2: >
-        {{ [button_2_label~':/button_2_'~tag] if button_2_label else [] }}
-      button_3_label: !input button_3_label
-      button_3: >
-        {{ [button_3_label~':/button_3_'~tag] if button_3_label else [] }}
-      button_4_label: !input button_4_label
-      button_4: >
-        {{ [button_4_label~':/button_4_'~tag] if button_4_label else [] }}
-      button_5_label: !input button_5_label
-      button_5: >
-        {{ [button_5_label~':/button_5_'~tag] if button_5_label else [] }}
-      inline_keyboard: >
-        {{
-          button_1
-          + button_2
-          + button_3
-          + button_4
-          + button_5
-          + acknowledge_button
-        }}
-      is_problem: *is_problem
-  - alias: Sends the alert messages based on the repeat list provided in the blueprint
-    repeat:
-      while: "{{ repeat_needed and is_problem }}"
-      sequence:
-        - alias: Delete previously sent alerts if there were any
-          repeat:
-            for_each: "{{ message_data if remove_previous_message and not restart else [] }}"
-            sequence: &delete_message
-              - alias: Delete message
-                action: telegram_bot.delete_message
+- alias: Set variables to be used for the inline keyboard and for data storage
+  variables:
+    tag: '{{ this.entity_id | replace(''automation.'', '''') }}'
+    alert_sensor_data: '{{ (state_attr(alert_data_sensor | default('''', true), ''alert_data'')
+      | default({}, true)).get(tag, {}) }}
+
+      '
+    alert_start: "{{\n  alert_sensor_data.get('alert_start', now().isoformat())\n
+      \ if restart\n  else now().isoformat()\n}}\n"
+    message_data: "{{\n  alert_sensor_data.get('message_data', [])\n  if restart\n
+      \ else []\n}}\n"
+    alert_count: "{{\n  alert_sensor_data.get('alert_count', 1)\n  if restart\n  else
+      1\n}}\n"
+    target: "{{\n  alert_sensor_data.get('target', target)\n  if restart\n  else target\n}}\n"
+    acknowledge_button: '{{ [ack_label~'':/acknowledge_''~tag] if can_acknowledge
+      else [] }}
+
+      '
+    button_1_label: !input button_1_label
+    button_1: '{{ [button_1_label~'':/button_1_''~tag] if button_1_label else [] }}
+
+      '
+    button_2_label: !input button_2_label
+    button_2: '{{ [button_2_label~'':/button_2_''~tag] if button_2_label else [] }}
+
+      '
+    button_3_label: !input button_3_label
+    button_3: '{{ [button_3_label~'':/button_3_''~tag] if button_3_label else [] }}
+
+      '
+    button_4_label: !input button_4_label
+    button_4: '{{ [button_4_label~'':/button_4_''~tag] if button_4_label else [] }}
+
+      '
+    button_5_label: !input button_5_label
+    button_5: '{{ [button_5_label~'':/button_5_''~tag] if button_5_label else [] }}
+
+      '
+    inline_keyboard: "{{\n  button_1\n  + button_2\n  + button_3\n  + button_4\n  +
+      button_5\n  + acknowledge_button\n}}\n"
+    is_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key) if
+      use_attribute else states(trigger_entity) %} {% if problem_type == 'equal' %}\n
+      \ {% set is_problem = entity_value | string == problem_state %}\n{% elif problem_type
+      == 'below' %}\n  {% set is_problem =\n    entity_value | is_number\n    and
+      problem_state | is_number\n    and entity_value | float < problem_state | float\n
+      \ %}\n{% elif problem_type == 'above' %}\n  {% set is_problem =\n    entity_value
+      | is_number\n    and problem_state | is_number\n    and entity_value | float
+      > problem_state | float\n  %}\n{% endif %} {{ is_problem }}\n"
+- alias: Sends the alert messages based on the repeat list provided in the blueprint
+  repeat:
+    while: '{{ repeat_needed and is_problem }}'
+    sequence:
+    - alias: Delete previously sent alerts if there were any
+      repeat:
+        for_each: '{{ message_data if remove_previous_message and not restart else
+          [] }}'
+        sequence: &id002
+        - alias: Delete message
+          action: telegram_bot.delete_message
+          data:
+            message_id: '{{ repeat.item.message_id }}'
+            chat_id: '{{ repeat.item.chat_id }}'
+            config_entry_id: '{{ repeat.item.config_entry_id }}'
+        - alias: Clean up message from list
+          variables:
+            message_data: '{{ message_data | rejectattr(''id'', ''eq'', repeat.item.id)
+              | list }}'
+    - alias: Set variables to determine how long to wait for the next alert message
+      variables:
+        repeat_minutes: '{{ repeat_list[alert_count-1] | default(repeat_list | last)
+          }}'
+        repeat_start: "{{\n  alert_sensor_data.get('repeat_start', now())\n  if restart\n
+          \ else now()\n}}\n"
+        repeat_end: '{{ repeat_start | as_datetime + timedelta(minutes=repeat_minutes)
+          }}
+
+          '
+    - alias: Send alert data to sensor if provided
+      if: '{{ alert_data_sensor is not none }}'
+      then:
+      - &id001
+        alias: Send event to update alert data
+        event: !input alert_event
+        event_data:
+          alert_data: "{{\n  { \n    tag: {\n          'alert_title': alert_title,\n
+            \         'message_data': message_data,\n          'alert_count': alert_count,\n
+            \         'alert_start': alert_start,\n          'repeat_start': repeat_start,\n
+            \         'next_alert': repeat_end,\n          'target': target\n      }\n
+            \ }\n}}\n"
+    - alias: Check if there still is a problem
+      variables:
+        is_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+          if use_attribute else states(trigger_entity) %} {% if problem_type == 'equal'
+          %}\n  {% set is_problem = entity_value | string == problem_state %}\n{%
+          elif problem_type == 'below' %}\n  {% set is_problem =\n    entity_value
+          | is_number\n    and problem_state | is_number\n    and entity_value | float
+          < problem_state | float\n  %}\n{% elif problem_type == 'above' %}\n  {%
+          set is_problem =\n    entity_value | is_number\n    and problem_state |
+          is_number\n    and entity_value | float > problem_state | float\n  %}\n{%
+          endif %} {{ is_problem }}\n"
+    - alias: Check if alert needs to be sent, skip the first alert if skip_first is
+        set to false
+      if: "{{\n  (alert_count > 1 or not skip_first) \n  and (not restart or message_data
+        | count == 0)\n  and is_problem\n}}\n"
+      then:
+      - repeat:
+          for_each: '{{ target }}'
+          sequence:
+          - alias: Send the alert to the provided chat id
+            action: telegram_bot.send_message
+            data:
+              config_entry_id: '{{ config_entry_id(repeat.item) }}'
+              target: '{{ state_attr(repeat.item, ''chat_id'')}}'
+              title: !input alert_title
+              message: !input alert_message
+              inline_keyboard: '{{ inline_keyboard }}'
+              parse_mode: !input parse_mode
+              disable_web_page_preview: !input disable_web_page_preview
+            response_variable: response
+          - alias: Store message info
+            variables:
+              message_data: "{{\n  message_data\n  + [\n      response.chats\n        |
+                first\n        | combine(\n            dict(\n              config_entry_id=config_entry_id(repeat.item),\n
+                \             event_entity=repeat.item,\n              id=message_data
+                | count +1\n            )\n          )\n    ]\n}}\n"
+    - alias: Send alert data to sensor if provided
+      if: '{{ alert_data_sensor is not none }}'
+      then:
+      - *id001
+    - alias: Check if there still is a problem
+      variables:
+        is_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+          if use_attribute else states(trigger_entity) %} {% if problem_type == 'equal'
+          %}\n  {% set is_problem = entity_value | string == problem_state %}\n{%
+          elif problem_type == 'below' %}\n  {% set is_problem =\n    entity_value
+          | is_number\n    and problem_state | is_number\n    and entity_value | float
+          < problem_state | float\n  %}\n{% elif problem_type == 'above' %}\n  {%
+          set is_problem =\n    entity_value | is_number\n    and problem_state |
+          is_number\n    and entity_value | float > problem_state | float\n  %}\n{%
+          endif %} {{ is_problem }}\n"
+    - alias: Keep waiting for the right button presses until this repeat period ends
+        or the entity is no longer in the problem state
+      repeat:
+        while: "{{\n  repeat_needed\n  and is_problem\n  and (now() < repeat_end |
+          as_datetime or restart)\n}}\n"
+        sequence:
+        - alias: Wait for button presses on the inline keyboard or when until the
+            entity changes state
+          wait_for_trigger:
+          - alias: button press on inline keyboard
+            trigger: event
+            event_type: telegram_callback
+            id: button_press
+          - trigger: template
+            value_template: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+              if use_attribute else states(trigger_entity) %} {% if problem_type ==
+              'equal' %}\n  {% set is_problem = entity_value | string == problem_state
+              %}\n{% elif problem_type == 'below' %}\n  {% set is_problem =\n    entity_value
+              | is_number\n    and problem_state | is_number\n    and entity_value
+              | float < problem_state | float\n  %}\n{% elif problem_type == 'above'
+              %}\n  {% set is_problem =\n    entity_value | is_number\n    and problem_state
+              | is_number\n    and entity_value | float > problem_state | float\n
+              \ %}\n{% endif %} {{ not is_problem }}\n"
+            id: done
+          timeout:
+            seconds: "{{\n  [(repeat_end | as_datetime - now()).total_seconds(), 0]
+              | max\n  if is_problem\n  else 0\n}}\n"
+        - choose:
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/button_1_''~tag }}'
+            sequence: !input button_1_actions
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/button_2_''~tag }}'
+            sequence: !input button_2_actions
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/button_3_''~tag }}'
+            sequence: !input button_3_actions
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/button_4_''~tag }}'
+            sequence: !input button_4_actions
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/button_5_''~tag }}'
+            sequence: !input button_5_actions
+          - conditions: '{{ wait.trigger.id == ''button_press'' and wait.trigger.event.data.data
+              == ''/acknowledge_''~tag }}'
+            sequence:
+            - variables:
+                config_entry: '{{ wait.trigger.event.data.bot.config_entry_id }}'
+                chat_id: '{{ wait.trigger.event.data.chat_id }}'
+                event_entity: "{% set ns = namespace(mapping=[]) %} {% for event in
+                  target %}\n  {% set ns.mapping = ns.mapping + [dict(event=event,
+                  test=config_entry_id(event)~state_attr(event, 'chat_id'))] %}\n{%
+                  endfor %} {{ ns.mapping | selectattr('test', 'eq', config_entry~chat_id)
+                  | map(attribute='event') | first | default }}\n"
+            - alias: Delete previously for this chat if there were any
+              repeat:
+                for_each: '{{ message_data | selectattr(''event_entity'', ''eq'',
+                  event_entity) | list if remove_when_done else [] }}'
+                sequence: *id002
+            - alias: Send alert data to sensor if provided
+              if: '{{ alert_data_sensor is not none }}'
+              then:
+              - *id001
+            - alias: Send acknowledge message if provided
+              if: '{{ acknowledge_message != '''' }}'
+              then:
+              - variables:
+                  config_entry: '{{ wait.trigger.event.data.bot.config_entry_id }}'
+                  chat_id: '{{ wait.trigger.event.data.chat_id }}'
+              - alias: Send acknowledge message
+                action: telegram_bot.send_message
                 data:
-                  message_id: "{{ repeat.item.message_id }}"
-                  chat_id: "{{ repeat.item.chat_id }}"
-                  config_entry_id: "{{ repeat.item.config_entry_id }}"
-              - alias: Clean up message from list
-                variables:
-                  message_data: "{{ message_data | rejectattr('id', 'eq', repeat.item.id) | list }}"
-        - alias: Set variables to determine how long to wait for the next alert message
-          variables:
-            repeat_minutes: "{{ repeat_list[alert_count-1] | default(repeat_list | last) }}"
-            repeat_start: >
-              {{
-                alert_sensor_data.get('repeat_start', now())
-                if restart
-                else now()
-              }}
-            repeat_end: >
-              {{ repeat_start | as_datetime + timedelta(minutes=repeat_minutes) }}
-        - alias: Send alert data to sensor if provided
-          if: "{{ alert_data_sensor is not none }}"
-          then:
-            - &update_alert_data
-              alias: Send event to update alert data
-              event: !input alert_event
-              event_data:
-                alert_data: >
-                  {{
-                    { 
-                      tag: {
-                            'alert_title': alert_title,
-                            'message_data': message_data,
-                            'alert_count': alert_count,
-                            'alert_start': alert_start,
-                            'repeat_start': repeat_start,
-                            'next_alert': repeat_end,
-                            'target': target
-                        }
-                    }
-                  }}
-        - alias: Check if there still is a problem
-          variables:
-            is_problem: *is_problem
-        - alias: Check if alert needs to be sent, skip the first alert if skip_first is set to false
-          if: >
-            {{
-              (alert_count > 1 or not skip_first) 
-              and (not restart or message_data | count == 0)
-              and is_problem
-            }}
-          then:
-            - repeat:
-                for_each: "{{ target }}"
-                sequence:
-                  - alias: Send the alert to the provided chat id
+                  config_entry_id: '{{ config_entry }}'
+                  target: '{{ chat_id }}'
+                  title: '{{ alert_title if use_ack_title else '''' }}'
+                  message: '{{ acknowledge_message }}'
+                  parse_mode: !input parse_mode
+                  disable_web_page_preview: !input disable_web_page_preview
+            - alias: Remove this entry for the recipent list
+              variables:
+                target: '{{ target | reject(''eq'', event_entity) | list }}'
+                repeat_needed: '{{ target | count > 0 }}'
+            - if: '{{ not repeat_needed }}'
+              then:
+              - alias: Stop the repeat loop waiting for the button presses and entity
+                  state change
+                stop: Alert ({{ alert_title }}) acknowlwedged
+          - conditions: '{{ wait.trigger.id == ''done'' }}'
+            sequence:
+            - alias: Delete previously sent alerts if there were any
+              repeat:
+                for_each: '{{ message_data if remove_when_done else [] }}'
+                sequence: *id002
+            - alias: Send done message if provided
+              if: '{{ message_data | count > 0 and done_message != '''' }}'
+              then:
+              - alias: Send done message to each chat
+                repeat: &id003
+                  for_each: '{{ target }}'
+                  sequence:
+                  - alias: Send done message
                     action: telegram_bot.send_message
                     data:
-                      config_entry_id: "{{ config_entry_id(repeat.item) }}"
-                      target: "{{ state_attr(repeat.item, 'chat_id')}}"
-                      title: !input alert_title
-                      message: !input alert_message
-                      inline_keyboard: "{{ inline_keyboard }}"
+                      config_entry_id: '{{ config_entry_id(repeat.item) }}'
+                      target: '{{ state_attr(repeat.item, ''chat_id'')}}'
+                      title: '{{ alert_title if use_done_title else '''' }}'
+                      message: '{{ done_message }}'
                       parse_mode: !input parse_mode
                       disable_web_page_preview: !input disable_web_page_preview
-                    response_variable: response
-                  - alias: Store message info
-                    variables:
-                      message_data: >
-                        {{
-                          message_data
-                          + [
-                              response.chats
-                                | first
-                                | combine(
-                                    dict(
-                                      config_entry_id=config_entry_id(repeat.item),
-                                      event_entity=repeat.item,
-                                      id=message_data | count +1
-                                    )
-                                  )
-                            ]
-                        }}
-        - alias: Send alert data to sensor if provided
-          if: "{{ alert_data_sensor is not none }}"
-          then:
-            - *update_alert_data
+            - alias: Remove data from the sensor
+              if: '{{ alert_data_sensor is not none }}'
+              then:
+              - alias: Send event to update alert data
+                event: !input alert_event
+                event_data:
+                  alert_data: '{{ {tag: {}} }}'
+            - alias: Inidcate that alert is no londer needed
+              variables:
+                repeat_needed: false
+            - alias: Stop the repeat loop waiting for the button presses and entity
+                state change
+              stop: 'Trigger entity for alert "{{ alert_title }}" no longer in problem
+                state "{{ problem_state }}".
+
+                '
         - alias: Check if there still is a problem
           variables:
-            is_problem: *is_problem
-        - alias:
-            Keep waiting for the right button presses until this repeat period ends or the entity
-            is no longer in the problem state
-          repeat:
-            while: >
-              {{
-                repeat_needed
-                and is_problem
-                and (now() < repeat_end | as_datetime or restart)
-              }}
-            sequence:
-              - alias: Wait for button presses on the inline keyboard or when until the entity changes state
-                wait_for_trigger:
-                  - alias: button press on inline keyboard
-                    trigger: event
-                    event_type: telegram_callback
-                    id: button_press
-                  - trigger: template
-                    value_template: &is_not_problem >
-                      {% set entity_value = state_attr(trigger_entity, attribute_key) if use_attribute else states(trigger_entity) %}
-                      {% if problem_type == 'equal' %}
-                        {% set is_problem = entity_value | string == problem_state %}
-                      {% elif problem_type == 'below' %}
-                        {% set is_problem =
-                          entity_value | is_number
-                          and problem_state | is_number
-                          and entity_value | float < problem_state | float
-                        %}
-                      {% elif problem_type == 'above' %}
-                        {% set is_problem =
-                          entity_value | is_number
-                          and problem_state | is_number
-                          and entity_value | float > problem_state | float
-                        %}
-                      {% endif %}
-                      {{ not is_problem }}
-                    id: done
-                timeout:
-                  seconds: >
-                    {{
-                      [(repeat_end | as_datetime - now()).total_seconds(), 0] | max
-                      if is_problem
-                      else 0
-                    }}
-              - choose:
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/button_1_'~tag }}"
-                    sequence: !input button_1_actions
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/button_2_'~tag }}"
-                    sequence: !input button_2_actions
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/button_3_'~tag }}"
-                    sequence: !input button_3_actions
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/button_4_'~tag }}"
-                    sequence: !input button_4_actions
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/button_5_'~tag }}"
-                    sequence: !input button_5_actions
-                  - conditions: "{{ wait.trigger.id == 'button_press' and wait.trigger.event.data.data == '/acknowledge_'~tag }}"
-                    sequence:
-                      - variables:
-                          config_entry: "{{ wait.trigger.event.data.bot.config_entry_id }}"
-                          chat_id: "{{ wait.trigger.event.data.chat_id }}"
-                          event_entity: >
-                            {% set ns = namespace(mapping=[]) %}
-                            {% for event in target %}
-                              {% set ns.mapping = ns.mapping + [dict(event=event, test=config_entry_id(event)~state_attr(event, 'chat_id'))] %}
-                            {% endfor %}
-                            {{ ns.mapping | selectattr('test', 'eq', config_entry~chat_id) | map(attribute='event') | first | default }}
-                      - alias: Delete previously for this chat if there were any
-                        repeat:
-                          for_each: "{{ message_data | selectattr('event_entity', 'eq', event_entity) | list if remove_when_done else [] }}"
-                          sequence: *delete_message
-                      - alias: Send alert data to sensor if provided
-                        if: "{{ alert_data_sensor is not none }}"
-                        then:
-                          - *update_alert_data
-                      - alias: Send acknowledge message if provided
-                        if: "{{ acknowledge_message != '' }}"
-                        then:
-                          - variables:
-                              config_entry: "{{ wait.trigger.event.data.bot.config_entry_id }}"
-                              chat_id: "{{ wait.trigger.event.data.chat_id }}"
-                          - alias: Send acknowledge message
-                            action: telegram_bot.send_message
-                            data:
-                              config_entry_id: "{{ config_entry }}"
-                              target: "{{ chat_id }}"
-                              title: "{{ alert_title if use_ack_title else '' }}"
-                              message: "{{ acknowledge_message }}"
-                              pase_mode: !input parse_mode
-                              disable_web_page_preview: !input disable_web_page_preview
-                      - alias: Remove this entry for the recipent list
-                        variables:
-                          target: "{{ target | reject('eq', event_entity) | list }}"
-                          repeat_needed: "{{ target | count > 0 }}"
-                      - if: "{{ not repeat_needed }}"
-                        then:
-                          - alias: Stop the repeat loop waiting for the button presses and entity state change
-                            stop: "Alert ({{ alert_title }}) acknowlwedged"
-                  - conditions: "{{ wait.trigger.id == 'done' }}"
-                    sequence:
-                      - alias: Delete previously sent alerts if there were any
-                        repeat:
-                          for_each: "{{ message_data if remove_when_done else [] }}"
-                          sequence: *delete_message
-                      - alias: Send done message if provided
-                        if: "{{ message_data | count > 0 and done_message != '' }}"
-                        then:
-                          - alias: Send done message to each chat
-                            repeat: &send_done_message
-                              for_each: "{{ target }}"
-                              sequence:
-                                - alias: Send done message
-                                  action: telegram_bot.send_message
-                                  data:
-                                    config_entry_id: "{{ config_entry_id(repeat.item) }}"
-                                    target: "{{ state_attr(repeat.item, 'chat_id')}}"
-                                    title: "{{ alert_title if use_done_title else '' }}"
-                                    message: "{{ done_message }}"
-                                    pase_mode: !input parse_mode
-                                    disable_web_page_preview: !input disable_web_page_preview
-                      - alias: Remove data from the sensor
-                        if: "{{ alert_data_sensor is not none }}"
-                        then:
-                          - alias: Send event to update alert data
-                            event: !input alert_event
-                            event_data:
-                              alert_data: "{{ {tag: {}} }}"
-                      - alias: Inidcate that alert is no londer needed
-                        variables:
-                          repeat_needed: false
-                      - alias: Stop the repeat loop waiting for the button presses and entity state change
-                        stop: >
-                          Trigger entity for alert "{{ alert_title }}" no longer in problem state "{{ problem_state }}".
-              - alias: Check if there still is a problem
-                variables:
-                  restart: false
-                  is_problem: *is_problem
-        - alias: Update alert count and is_problem variable
-          variables:
-            alert_count: "{{ alert_count + 1 }}"
-            is_problem: *is_problem
-  - alias: Check if there is no longer a problem
-    variables:
-      is_not_problem: *is_not_problem
-  - alias: Send done message and cleanup data if while loop ended and this was not done yet
-    if: >
-      {{ 
-        message_data | count > 0
-        and repeat_needed
-        and is_not_problem
-      }}
+            restart: false
+            is_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+              if use_attribute else states(trigger_entity) %} {% if problem_type ==
+              'equal' %}\n  {% set is_problem = entity_value | string == problem_state
+              %}\n{% elif problem_type == 'below' %}\n  {% set is_problem =\n    entity_value
+              | is_number\n    and problem_state | is_number\n    and entity_value
+              | float < problem_state | float\n  %}\n{% elif problem_type == 'above'
+              %}\n  {% set is_problem =\n    entity_value | is_number\n    and problem_state
+              | is_number\n    and entity_value | float > problem_state | float\n
+              \ %}\n{% endif %} {{ is_problem }}\n"
+    - alias: Update alert count and is_problem variable
+      variables:
+        alert_count: '{{ alert_count + 1 }}'
+        is_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+          if use_attribute else states(trigger_entity) %} {% if problem_type == 'equal'
+          %}\n  {% set is_problem = entity_value | string == problem_state %}\n{%
+          elif problem_type == 'below' %}\n  {% set is_problem =\n    entity_value
+          | is_number\n    and problem_state | is_number\n    and entity_value | float
+          < problem_state | float\n  %}\n{% elif problem_type == 'above' %}\n  {%
+          set is_problem =\n    entity_value | is_number\n    and problem_state |
+          is_number\n    and entity_value | float > problem_state | float\n  %}\n{%
+          endif %} {{ is_problem }}\n"
+- alias: Check if there is no longer a problem
+  variables:
+    is_not_problem: "{% set entity_value = state_attr(trigger_entity, attribute_key)
+      if use_attribute else states(trigger_entity) %} {% if problem_type == 'equal'
+      %}\n  {% set is_problem = entity_value | string == problem_state %}\n{% elif
+      problem_type == 'below' %}\n  {% set is_problem =\n    entity_value | is_number\n
+      \   and problem_state | is_number\n    and entity_value | float < problem_state
+      | float\n  %}\n{% elif problem_type == 'above' %}\n  {% set is_problem =\n    entity_value
+      | is_number\n    and problem_state | is_number\n    and entity_value | float
+      > problem_state | float\n  %}\n{% endif %} {{ not is_problem }}\n"
+- alias: Send done message and cleanup data if while loop ended and this was not done
+    yet
+  if: "{{ \n  message_data | count > 0\n  and repeat_needed\n  and is_not_problem\n}}\n"
+  then:
+  - alias: Send done message to each chat
+    if: '{{ done_message != ''''}}'
     then:
-      - alias: Send done message to each chat
-        if: "{{ done_message != ''}}"
-        then:
-          repeat: *send_done_message
-      - alias: Delete previously sent alerts if there were any
-        repeat:
-          for_each: "{{ message_data if remove_when_done else [] }}"
-          sequence: *delete_message
-      - alias: Remove data from the sensor
-        if: "{{ alert_data_sensor is not none }}"
-        then:
-          - alias: Send event to update alert data
-            event: !input alert_event
-            event_data:
-              alert_data: "{{ {tag: {}} }}"
+      repeat: *id003
+  - alias: Delete previously sent alerts if there were any
+    repeat:
+      for_each: '{{ message_data if remove_when_done else [] }}'
+      sequence: *id002
+  - alias: Remove data from the sensor
+    if: '{{ alert_data_sensor is not none }}'
+    then:
+    - alias: Send event to update alert data
+      event: !input alert_event
+      event_data:
+        alert_data: '{{ {tag: {}} }}'
 mode: single
 max_exceeded: silent

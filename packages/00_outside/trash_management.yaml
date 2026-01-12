@@ -83,7 +83,7 @@ automation:
       sensor: "sensor.afvalwijzer_{{ when_en }}"
       trash_descr:
         restgft: "rest- en GFT-bak"
-        dhm: "papier- en PMD-bak"
+        papier-pmd: "papier- en PMD-bak"
         papier: "papier- en PMD-bak"
         kerstbomen: "kerstboom"
       trash_pickup: >
@@ -148,7 +148,7 @@ template:
   - triggers:
       - alias: "Rest & GFT collection date updated"
         trigger: state
-        entity_id: sensor.afvalwijzer_restgft
+        entity_id: sensor.afvalwijzer_rest_gft
         attribute: days_until_collection_date
         not_to: none
     sensor:
@@ -175,7 +175,7 @@ template:
   - triggers:
       - alias: "Paper & PMD collection date updated"
         trigger: state
-        entity_id: sensor.afvalwijzer_dhm
+        entity_id: sensor.afvalwijzer_papier_pmd
         attribute: days_until_collection_date
         not_to: none
     sensor:

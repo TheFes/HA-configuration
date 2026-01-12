@@ -60,13 +60,13 @@ automation:
               - alias: "Turn christmas tree and star on"
                 action: switch.turn_on
                 target:
-                  entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerstbal'] }}"
+                  entity_id: "{{['switch.kerstboom', 'switch.kerstster'] }}"
           - conditions: "{{ trigger.id == 'to_bed'}}"
             sequence:
               - alias: "Turn christmas tree and star off"
                 action: switch.turn_off
                 target:
-                  entity_id: "{{['switch.kerstboom', 'switch.kerstster', 'switch.kerstbal'] }}"
+                  entity_id: "{{['switch.kerstboom', 'switch.kerstster'] }}"
 
   # From disable_integrations_xmas.yaml - Christmas integrations management
   - id: f540e546-ae22-4535-958f-35693ba636e5
@@ -81,8 +81,8 @@ automation:
       - action: "homeassistant.{{ 'disable' if trigger.to_state.state == 'off' else 'enable' }}_config_entry"
         data:
           config_entry_id:
-            - 48b8951b1855b53bba5a91888055fa5f
-            - 924ced5da4fa886ac83bcfdab71dddb6
-            - 9118fe1fd50a9108740ac05c000f4f04
-            - 29e8c93c5cfff4b86c1e87698d4efe61
-            - 082d600e428cc075a9f6575c05ac535a
+            # - 48b8951b1855b53bba5a91888055fa5f # kerstbal, not in use 2025
+            - 924ced5da4fa886ac83bcfdab71dddb6 # kerstboom
+            - 9118fe1fd50a9108740ac05c000f4f04 # lantaarn
+            - 29e8c93c5cfff4b86c1e87698d4efe61 # kerstster
+            # - 082d600e428cc075a9f6575c05ac535a # ijspegels, not in use 2025

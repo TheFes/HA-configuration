@@ -310,14 +310,17 @@ automation:
 template:
   - switch:
       - unique_id: 3eafb3f9-f884-40cb-9095-5a5da3476cb4
-        name: Bureau Martijn Template
+        name: Bureau
+        default_entity_id: switch.bureau_martijn_template
         state: "{{ is_state('switch.shelly1pm_bureau_martijn_relay', 'on') }}"
         turn_on:
           - service: switch.turn_on
             target:
               entity_id: switch.shelly1pm_bureau_martijn_relay
         turn_off:
-          - service: script.computer_martijn_off
+          - service: switch.turn_on
+            target:
+              entity_id: script.computer_martijn_off
           - service: switch.turn_off
             target:
               entity_id: switch.shelly1pm_bureau_martijn_relay
