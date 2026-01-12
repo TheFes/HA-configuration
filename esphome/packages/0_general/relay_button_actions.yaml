@@ -46,7 +46,7 @@ select:
       then:
         - text_sensor.template.publish:
             id: button_type_state
-            state: !lambda "return id(button_type_select).state;"
+            state: !lambda "return {id(button_type_select).current_option()};"
   - platform: template
     name: Connected Light Type
     id: light_type_select
@@ -238,7 +238,7 @@ text_sensor:
     internal: true
     id: button_type_state
     lambda: |-
-      return id(button_type_select).state;
+      return {id(button_type_select).current_option()};
 
 # globals for dim action
 globals:

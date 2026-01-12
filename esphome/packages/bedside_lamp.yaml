@@ -9,11 +9,31 @@ packages:
     refresh: 0s
   minimal: !include 0_general/minimal.yaml # defines wifi, ota and api settings
   basic: !include 0_general/basic.yaml # defines some basic sensors I use for all my ESPHome devices
+  button_press_defaults: !include 0_general/button_press_defaults.yaml
+  
+external_components:
+  source:
+    type: git
+    url: https://github.com/mmakaay/esphome-xiaomi_bslamp2
+    ref: e9eece7ef7a23bf3a6d458fd27609926b876d9a4
 
 globals:
   - id: current_brightness
     type: float
     initial_value: "0.0"
+
+event:
+  - platform: template
+    name: ""
+    id: event_entity
+    event_types:
+      - "single_press"
+      - "double_press"
+      - "triple_press"
+      - "quintuple_press"
+      - "long_press"
+      - "single_long_press"
+      - "release"
 
 script:
   - id: update_front_panel
@@ -113,29 +133,133 @@ binary_sensor:
     for: POWER_BUTTON
     on_multi_click:
       - timing:
-          - ON for at most 0.8s
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
         then:
+          - event.trigger:
+              id: event_entity
+              event_type: "quintuple_press"
+          - button.press: restart_button
+      - timing:
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "triple_press"
+      - timing:
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: 0ms
+            max_length: ${short_press}
+          - state: false
+            min_length: ${press_wait}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "double_press"
+          - light.turn_on:
+              id: my_light
+              brightness: 100%
+      - timing:
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: 0ms
+            max_length: ${press_wait}
+          - state: true
+            min_length: ${long_press}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "single_long_press"
+      - timing:
+          - state: true
+            min_length: 0ms
+            max_length: ${first_press}
+          - state: false
+            min_length: ${press_wait}
+        then:
+          - event.trigger:
+              id: event_entity
+              event_type: "single_press"
           - if:
               condition:
-                - and:
-                    - or:
-                        - lambda: "return id(time_homeassistant).now().hour >= 22;"
-                        - lambda: "return id(time_homeassistant).now().hour <= 6;"
-                    - text_sensor.state:
-                        id: my_light_mode
-                        state: "off"
+                - text_sensor.state:
+                    id: my_light_mode
+                    state: "off"
               then:
                 - light.turn_on:
                     id: my_light
-                    brightness: 1%
+                    brightness: !lambda |-
+                      return id(start_brightness).state / 100;
               else:
-                - light.toggle: my_light
+                - light.turn_off:
+                    id: my_light
       - timing:
-          - ON for at least 0.8s
+          - state: true
+            min_length: ${long_press}
         then:
-          - light.turn_on:
-              id: my_light
-              brightness: 1%
+          - event.trigger:
+              id: event_entity
+              event_type: "long_press"
+          - homeassistant.action:
+              action: light.turn_off
+              data:
+                entity_id: light.groep_slaapkamer_zolder
+    on_release:
+      then:
+        - event.trigger:
+            id: event_entity
+            event_type: "release"
 
   # When tapping the color button, activate the next preset.
   # When holding the color button, activate the next preset group.
@@ -172,19 +296,36 @@ sensor:
             condition:
               - and:
                   - or:
-                      - lambda: "return id(time_homeassistant).now().hour >= 22;"
                       - lambda: "return id(time_homeassistant).now().hour <= 6;"
+                      - lambda: "return id(time_homeassistant).now().hour >= 22;"
                   - text_sensor.state:
                       id: my_light_mode
                       state: "off"
             then:
               - light.turn_on:
                   id: my_light
-                  brightness: 1%
+                  brightness: !lambda |-
+                    return id(start_brightness).state / 100;
             else:
               - light.turn_on:
                   id: my_light
                   brightness: !lambda return x;
+  # get the house mode to automate the start brightness
+
+
+time:
+  # Sync time with HA for automation
+  - platform: homeassistant
+    id: time_homeassistant_2
+    timezone: "Europe/Amsterdam"
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - number.set:
+              id: start_brightness
+              value: 1
 
 # This text sensor propagates the currently active light mode.
 # The possible light modes are: "off", "rgb", "white" and "night".
@@ -192,6 +333,28 @@ text_sensor:
   - platform: xiaomi_bslamp2
     name: ${light_mode_text_sensor_name}
     id: my_light_mode
+  - platform: homeassistant
+    id: house_mode
+    entity_id: sensor.house_mode
+    on_value:
+      then:
+        - if:
+            condition:
+              - or:
+                  - text_sensor.state:
+                      id: house_mode
+                      state: 'Tandenpoetsen'
+                  - text_sensor.state:
+                      id: house_mode
+                      state: 'Slapen'
+            then:
+              - number.set:
+                  id: start_brightness
+                  value: 2
+            else:
+              - number.set:
+                  id: start_brightness
+                  value: 100
 
 number:
   - platform: template
@@ -206,3 +369,4 @@ number:
     entity_category: config
     icon: mdi:brightness-percent
     unit_of_measurement: "%"
+
