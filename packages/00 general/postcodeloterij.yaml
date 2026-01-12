@@ -65,6 +65,7 @@ template:
               else
                 (now().replace(day=1) - timedelta(days=1)).strftime("%Y%m") | int
             }}
+          extra: "{{ month % 100 in [6, 12] }}"
           month_formatted: >
             {% set months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'october', 'november', 'december'] %}
             {{ months[month % 100 -1] ~ ' ' ~ month // 100 }}
@@ -73,16 +74,18 @@ template:
         data:
           month: "{{ month }}"
         response_variable: prizes
-      - alias: Issue rest command for the extra draws in June and December
-        action: rest_command.postcodeloterij
-        data:
-          extra: true
-          month: >
-            {% set y = month // 100 %}
-            {% set m = month % 100 %}
-            {% set mapping = {6: 13, 12: 14} %}
-            {{ y * 100 +  mapping[m] | default(m) }}
-        response_variable: prizes_extra
+      - if: "{{ extra }}"
+        then:
+          - alias: Issue rest command for the extra draws in June and December
+            action: rest_command.postcodeloterij
+            data:
+              extra: true
+              month: >
+                {% set y = month // 100 %}
+                {% set m = month % 100 %}
+                {% set mapping = {6: 13, 12: 14} %}
+                {{ y * 100 +  mapping[m] | default(m) }}
+            response_variable: prizes_extra
       - alias: Create variables for the results of the rest commands
         variables:
           # normal monthly draw
@@ -99,10 +102,10 @@ template:
               {{ m }} in de trekking van {{ month_formatted }}: {{ prizes | join(', ') }}
             {% endif %}
           # extra draw
-          prizecount_extra: "{{ prizes_extra.content.prizeCount }}"
+          prizecount_extra: "{{ prizes_extra.content.prizeCount if extra else 0 }}"
           prizes_extra: >
             {% set ns = namespace(prizes=[]) %}
-            {% for p in prizes_extra.content.wonPrizes %}
+            {% for p in (prizes_extra.content.wonPrizes if extra else []) %}
               {% set ns.prizes = ns.prizes + [p.description ~ ' (€ ' ~'{:.2f}'.format(p.prizeValue / 100) ~ ')'] %}
             {% endfor %}
             {{ ns.prizes }}
@@ -137,10 +140,10 @@ template:
       - name: Postcodeloterij
         unique_id: 12f71395-3d76-434a-a3d0-9f01a03b834c
         icon: "{{ 'mdi:gift' if prizecount > 0 else 'mdi:emoticon-cry' }}"
-        state: "{{ prizecount + prizecount_extra }}"
+        state: "{{ prizecount_total }}"
         attributes:
           prizes: "{{ prizes }}"
           month: "{{ month_formatted }}"
-          extra: "{{ month % 100 in [6, 12] }}"
+          extra: "{{ extra }}"
           prizes_extra: "{{ prizes_extra }}"
           last_updated: "{{ now().strftime('%d-%m-%Y %H:%M') }}"
