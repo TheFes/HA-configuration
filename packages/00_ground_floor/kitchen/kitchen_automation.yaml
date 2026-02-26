@@ -102,6 +102,14 @@ automation:
         trigger: state
         entity_id: light.groep_beneden
         to: "on"
+      - alias: "Ground floor lights turned on"
+        trigger: state
+        entity_id: light.groep_woonkamer
+        to: "on"
+      - alias: "Ground floor lights turned on"
+        trigger: state
+        entity_id: light.groep_keuken
+        to: "on"
     conditions:
       - alias: "Extractor hood off?"
         condition: state

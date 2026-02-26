@@ -82,8 +82,8 @@ automation:
     variables:
       sensor: "sensor.afvalwijzer_{{ when_en }}"
       trash_descr:
-        restgft: "rest- en GFT-bak"
-        papier-pmd: "papier- en PMD-bak"
+        rest, gft, rest, gft: "rest- en GFT-bak"
+        papier, pmd, papier, pmd: "papier- en PMD-bak"
         papier: "papier- en PMD-bak"
         kerstbomen: "kerstboom"
       trash_pickup: >
@@ -148,7 +148,7 @@ template:
   - triggers:
       - alias: "Rest & GFT collection date updated"
         trigger: state
-        entity_id: sensor.afvalwijzer_rest_gft
+        entity_id: sensor.afvalwijzer_rest
         attribute: days_until_collection_date
         not_to: none
     sensor:
@@ -158,7 +158,7 @@ template:
         <<: &config
           state: >-
             {%- from 'helpers.jinja' import date_week -%}
-            {{ date_week(trigger.to_state.state) }}
+            {{ date_week(trigger.to_state.state | as_datetime | as_local) }}
           availability: "{{ trigger.entity_id | has_value }}"
           attributes:
             waste_type: >
@@ -168,14 +168,14 @@ template:
                 else name | replace(' & ', ', ') ~ ' & 🌲'
               }}
             collection_date: >
-              {{ trigger.to_state.state }}
+              {{ trigger.to_state.state | as_datetime | as_local }}
             in_two_weeks: >
-              {{ now().date() - as_datetime(trigger.to_state.state).date() <= timedelta(weeks=2) }}
+              {{ now().date() - as_local(as_datetime(trigger.to_state.state)).date() <= timedelta(weeks=2) }}
 
   - triggers:
       - alias: "Paper & PMD collection date updated"
         trigger: state
-        entity_id: sensor.afvalwijzer_papier_pmd
+        entity_id: sensor.afvalwijzer_papier
         attribute: days_until_collection_date
         not_to: none
     sensor:

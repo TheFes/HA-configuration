@@ -213,11 +213,11 @@ automation:
       - alias: "Message to phone Martijn"
         action: notify.mobile_app_pixel_10_pro
         data:
-          ttl: 0
-          priority: high
           title: "Hoera!"
           message: "Marleen is bijna thuis"
           data:
+            ttl: 0
+            priority: high
             channel: ETA
             notification_icon: mdi:party-popper
       - alias: "Determine TTS target devices based on Martijn's activity"
