@@ -87,6 +87,8 @@ blueprint:
   author: TheFes
   source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/combined_weather.yaml
   domain: template
+  homeassistant:
+    min_version: 2026.1.99
   input:
     trigger_settings:
       name: Trigger settings
@@ -101,7 +103,7 @@ blueprint:
             trigger: {}
           default:
             - alias:
-                Update combined weather forecast every 5 minutes at 30 seconds 
+                Update combined weather forecast every 5 minutes at 30 seconds
                 past the minute
               trigger: time_pattern
               minutes: "/5"
@@ -600,23 +602,23 @@ actions:
             current_values: {{ current_values }}
 
 weather:
-  condition_template: "{{ current_values.get('condition', none) }}"
-  temperature_template: "{{ current_values.get('temperature', none) }}"
-  apparent_temperature_template: "{{ current_values.get('apparent_temperature', none) }}"
-  pressure_template: "{{ current_values.get('pressure', none) }}"
-  wind_speed_template: "{{ current_values.get('wind_speed', none) }}"
-  wind_gust_speed_template: "{{ current_values.get('wind_gust_speed', none) }}"
-  visibility_template: "{{ current_values.get('visibility', none) }}"
-  humidity_template: "{{ current_values.get('humidity', none) }}"
-  wind_bearing_template: "{{ current_values.get('wind_bearing', none) }}"
-  ozone_template: "{{ current_values.get('ozone', none) }}"
-  cloud_coverage_template: "{{ current_values.get('cloud_coverage', none) }}"
-  dew_point_template: "{{ current_values.get('dew_point', none) }}"
+  condition: "{{ current_values.get('condition', none) }}"
+  temperature: "{{ current_values.get('temperature', none) }}"
+  apparent_temperature: "{{ current_values.get('apparent_temperature', none) }}"
+  pressure: "{{ current_values.get('pressure', none) }}"
+  wind_speed: "{{ current_values.get('wind_speed', none) }}"
+  wind_gust_speed: "{{ current_values.get('wind_gust_speed', none) }}"
+  visibility: "{{ current_values.get('visibility', none) }}"
+  humidity: "{{ state_attr('weather.knmi', 'humidity') }}"
+  wind_bearing: "{{ current_values.get('wind_bearing', none) }}"
+  ozone: "{{ current_values.get('ozone', none) }}"
+  cloud_coverage: "{{ current_values.get('cloud_coverage', none) }}"
+  dew_point: "{{ current_values.get('dew_point', none) }}"
   temperature_unit: !input temperature_unit
   pressure_unit: !input pressure_unit
   wind_speed_unit: !input wind_speed_unit
   visibility_unit: !input visibility_unit
   precipitation_unit: !input precipitation_unit
-  forecast_hourly_template: "{{ hourly }}"
-  forecast_daily_template: "{{ daily }}"
-  forecast_twice_daily_template: "{{ twice_daily }}"
+  forecast_hourly: "{{ hourly }}"
+  forecast_daily: "{{ daily }}"
+  forecast_twice_daily: "{{ twice_daily }}"
