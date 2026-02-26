@@ -1,0 +1,214 @@
+blueprint:
+  name: Anniversaries
+  description: >
+    Creates sensors for anniversaries
+  author: TheFes
+  source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/anniversaries.yaml
+  domain: template
+  input:
+    date:
+      name: Date
+      description: The date for the anniversary. Either in `YYYY-MM-DD` format or `MM-DD` when the year is not applicable
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: null
+    count_up:
+      name: Count up
+      description: >
+        `true` or `false` changes the state to count up from a date (can be useful for non-recurring events) Default: `false`
+      selector:
+        boolean:
+      default: false
+    one_time:
+      name: One time
+      description: >
+        `true` or `false`. For a one-time event (Non-recurring) Default: `false`
+      selector:
+        boolean:
+      default: false
+    show_half_anniversary:
+      name: Show half anniversary
+      description: >
+        `true` or `false`. Enables the `half_anniversary_date` and `days_until_half_anniversary` attributes. Default: `false`
+      selector:
+        boolean:
+      default: false
+    unit_of_measurement:
+      name: Unit of measurement
+      description: >
+        Your choice of label N.B. The sensor always returns Days, but this option allows you to express this in the language of your choice without needing a customization
+      selector:
+        text:
+          multiline: false
+          multiple: false
+      default: Days
+    icon_normal:
+      name: Normal icon
+      description: >
+        Default icon Default: `mdi:calendar-blank`
+      selector:
+        icon:
+          placeholder: mdi:calendar-blank
+      default: mdi:calendar-blank
+    icon_today:
+      name: Icon today
+      description: >
+        Icon if the anniversary is today Default: `mdi:calendar-star`
+      selector:
+        icon:
+          placeholder: mdi:calendar-star
+      default: mdi:calendar-star
+    days_as_soon:
+      name: Days as soon
+      description: >
+        Days in advance to display the icon defined in icon_soon Default: `1`
+      selector:
+        number:
+          min: 0
+          max: 366
+          step: 1
+          unit_of_measurement: days
+          mode: box
+      default: 1
+    icon_soon:
+      name: Icon today
+      description: >
+        Icon if the anniversary is 'soon' Default: `mdi:calendar`
+      selector:
+        icon:
+          placeholder: mdi:calendar
+      default: mdi:calendar
+    default_entity_id:
+      name: Default entity_id
+      description: The default entity id to use
+      selector:
+        text:
+          multiple: false
+          multiline: false
+
+triggers:
+  - trigger: time_pattern
+    hours: "/1"
+  - trigger: event
+    event_type: update_anniversaries
+
+variables:
+  date: !input date
+  count_up: !input count_up
+  one_time: !input one_time
+  show_half_anniversary: !input show_half_anniversary
+  icon_normal: !input icon_normal
+  icon_today: !input icon_today
+  days_as_soon: !input days_as_soon
+  icon_soon: !input icon_soon
+  current_date: >
+    {{ (now().date() | as_datetime | as_local).isoformat() }}
+  year_provided: >
+    {{ date | as_datetime is not none }}
+  date_this_year: >
+    {{ (date | as_datetime | as_local).replace(year=now().year).isoformat() if year_provided else ((now().year~'-'~date) | as_datetime| as_local).isoformat() }}
+  half_year_this_year: >
+    {% if show_half_anniversary %}
+      {% set month = (date_this_year | as_datetime).month %}
+      {% set day = (date_this_year | as_datetime).day %}
+      {% set month_half_year = month + 6 if month <= 6 else month - 6 %}
+      {% set max_day = ((('2001-01-01') | as_datetime).replace(month=month_half_year+1) - timedelta(days=1)).day %}
+      {{ ((date_this_year | as_datetime).replace(day=[day, max_day] | min, month=month_half_year)) }}
+    {% else %}
+      {{ none }}
+    {% endif %}
+  anniversary_list: >
+    {{
+      (
+        [
+          (date_this_year | as_datetime).replace(year=now().year-1).isoformat(),
+          (date_this_year | as_datetime).isoformat(),
+          (date_this_year | as_datetime).replace(year=now().year+1).isoformat()
+        ]
+        + [current_date]
+      ) | sort
+    }}
+  half_year_list: >
+    {{
+      (
+        [
+          as_local(as_datetime((half_year_this_year | default(date_this_year, true) | as_datetime).date().replace(year=now().year-1))).isoformat(),
+          as_local(as_datetime((half_year_this_year | default(date_this_year, true) | as_datetime).date())).isoformat(),
+          as_local(as_datetime((half_year_this_year | default(date_this_year, true) | as_datetime).replace(year=now().year+1).date())).isoformat()
+        ]
+        + [current_date]
+      ) | sort
+    }}
+  compare_date: >
+    {% if anniversary_list | select('eq', current_date) | list | count == 2 %}
+      {% set compare_date = current_date %}
+    {% else %}
+      {% set index_current = anniversary_list.index(current_date) %}
+      {% set compare_date = anniversary_list[index_current - 1 if count_up else index_current + 1] %}
+    {% endif %}
+    {{ compare_date }}
+  days: >
+    {% set date_list = [current_date | as_datetime, compare_date | as_datetime] %}
+    {{ ((date_list | max).date() - (date_list | min).date()).days }}
+  half_date: >
+    {% if show_half_anniversary %}
+      {% set index_current = half_year_list.index(current_date) %}
+      {{ half_year_list[index_current + 1] }}
+    {% else %}
+      {{ none }}
+    {% endif %}
+
+sensor:
+  state: "{{ days | int }}"
+  unit_of_measurement: !input unit_of_measurement
+  default_entity_id: !input default_entity_id
+  icon: >
+    {% if days == 0 %}
+      {{ icon_today }}
+    {% elif days <= days_as_soon %}
+      {{ icon_soon }}
+    {% else %}
+      {{ icon_normal }}
+    {% endif %}
+  attributes:
+    years_at_anniversary: >
+      {% if year_provided %}
+        {% set provided_date = date | as_datetime | as_local %}
+        {% set compare_date = compare_date | as_datetime %}
+        {% set year = (((compare_date - provided_date).days * 2) / 365) | round / 2 %}
+        {{ year | int if year | int == year else year }}
+      {% else %}
+        {{ none }}
+      {% endif %}
+    current_years: >
+      {% if year_provided %}
+        {% if anniversary_list | select('eq', current_date) | list | count == 2 %}
+          {% set compare_date = current_date | as_datetime %}
+        {% else %}
+          {% set index_current = anniversary_list.index(current_date) %}
+          {% set compare_date = anniversary_list[index_current - 1] | as_datetime %}
+        {% endif %}
+        {% set provided_date = date | as_datetime | as_local %}
+        {% set year = (((compare_date - provided_date).days * 2) / 365) | round / 2 %}
+        {{ year | int if year | int == year else year }}
+      {% else %}
+        {{ none }}
+      {% endif %}
+    weeks_remaining: >
+      {{ days // 7 }}
+    date: >
+      {{ date | as_datetime | as_local if year_provided else (compare_date | as_datetime).date() }}
+    next_date: >
+      {% if anniversary_list | select('eq', current_date) | list | count == 2 %}
+        {% set next_date = current_date | as_datetime %}
+      {% else %}
+        {% set index_current = anniversary_list.index(current_date) %}
+        {% set next_date = anniversary_list[index_current + 1] | as_datetime %}
+      {% endif %}
+      {{ next_date }}
+    half_anniversary_date: >
+      {{ half_date if show_half_anniversary else none }}
+    days_until_half_anniversary_date: >
+      {{ ((half_date | as_datetime).date() - (current_date | as_datetime).date()).days if show_half_anniversary else none }}
