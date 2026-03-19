@@ -90,19 +90,9 @@ variables:
   min_ct: "{{ [min_ct_kelvin, state_attr(source_light, 'min_color_temp_kelvin') | default(1, true)] | max }}"
   max_ct: "{{ [max_ct_kelvin, state_attr(source_light, 'max_color_temp_kelvin') | default(1, true)] | min }}"
   min_mireds: >
-    {{ 
-      [
-        (1000000/max_ct) | round | int,
-        state_attr(source_light, 'min_mireds') | default(100, true)
-      ] | max
-    }}
+    {{ (1000000/max_ct) | round | int }}
   max_mireds: >
-    {{ 
-      [
-        (1000000/min_ct) | round | int,
-        state_attr(source_light, 'max_mireds') | default(100, true)
-      ] | min
-    }}
+    {{ (1000000/min_ct) | round | int }}
 
 light:
   default_entity_id: !input default_entity_id
@@ -138,7 +128,7 @@ light:
               %}
               {% set brightness = (br_pct | float(100) * 2.25) %}
               {% set ct = (min_ct + (max_ct-min_ct) * (br_pct | float(100) / 100)) | round(0) | int %} 
-              {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
+              {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 255) + min_brightness) | round %}
               {{ dict(brightness=brightness, color_temp_kelvin=ct) if br_pct | is_number else dict() }}
             {% else %}
               {{ dict() }}
@@ -176,18 +166,18 @@ light:
         entity_id: "{{ source_light }}"
       data: >
         {% set ct = (min_ct + (max_ct-min_ct) * (brightness / 255)) | round(0) | int %} 
-        {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 225) + min_brightness) | round %}
+        {% set brightness = (brightness | float * ((max_brightness - min_brightness) / 255) + min_brightness) | round %}
         {{ dict(brightness=brightness, color_temp_kelvin=ct) }}
   temperature: >
-    {% set source = state_attr(source_light, 'color_temp') %}
-    {{ source if source is none else [min_mireds, source, max_mireds] | median }}
+    {% set source = state_attr(source_light, 'color_temp_kelvin') %}
+    {{ source if source is none else [min_mireds, 1000000/source, max_mireds] | median }}
   min_mireds: "{{ min_mireds }}"
   max_mireds: "{{ max_mireds }}"
   set_temperature:
     - action: light.turn_on
       data:
         entity_id: "{{ source_light }}"
-        color_temp_kelvin: "{{ (1000000 / color_temp) | int }}"
+        color_temp_kelvin: "{{ color_temp_kelvin }}"
   effect_list: >
     {% set effect = state_attr(source_light, 'effect_list') | default([], true) %}
     {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}

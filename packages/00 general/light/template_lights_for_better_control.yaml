@@ -13,16 +13,6 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.floris
-        relay_switch: switch.sonoff_floris_relay
-        icon_on: mdi:ceiling-light
-        icon_off: mdi:ceiling-light-outline
-        default_entity_id: light.floris_template
-    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
-
-  - use_blueprint:
-      path: TheFes/light_relay_effect_brightness.yaml
-      input:
         source_light: light.keuken
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
@@ -92,6 +82,17 @@ template:
         icon_off: mdi:led-strip-variant-off
         default_entity_id: light.boekenkast_template
     unique_id: ab1d64cb-58c3-45a8-ae6f-03d1205df543
+
+  - use_blueprint:
+      path: TheFes/light_relay_effect_colortemp.yaml
+      input:
+        source_light: light.floris
+        relay_switch: switch.sonoff_floris_relay
+        max_ct_kelvin: 6000
+        icon_on: mdi:ceiling-light
+        icon_off: mdi:ceiling-light-outline
+        default_entity_id: light.floris_template
+    unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
 
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
