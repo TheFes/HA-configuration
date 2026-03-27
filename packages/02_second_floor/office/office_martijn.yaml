@@ -54,31 +54,34 @@ automation:
     triggers:
       - trigger: state
         entity_id:
-          - binary_sensor.computer_zolder
-          - binary_sensor.laptop_werk_martijn_lan
-          - binary_sensor.laptop_werk_martijn_wifi
+          - device_tracker.martijn_desktop
+          - device_tracker.nb105516
           - media_player.martijn
         to:
           - "idle"
-          - "off"
+          - "not_home"
         for: "00:30:00"
     conditions:
       - alias: "Everyting off?"
         condition: state
         entity_id:
-          - binary_sensor.computer_zolder
-          - binary_sensor.laptop_werk_martijn_lan
-          - binary_sensor.laptop_werk_martijn_wifi
+          - device_tracker.martijn_desktop
+          - device_tracker.nb105516
           - media_player.martijn
         state:
           - "idle"
           - "off"
+          - "not_home"
         for: "00:30:00"
     actions:
       - alias: "Turn off desk plug when devices are idle"
         action: switch.turn_off
         target:
           entity_id: switch.shelly1pm_bureau_martijn_relay
+      - alias: "Turn off Ulanzi clock"
+        action: light.turn_off
+        target:
+          entity_id: light.awtrix_martijn_matrix
 
   # From start_vacuum.yaml
   - id: 43077f87-25be-4516-b241-0db9d1e4ff98

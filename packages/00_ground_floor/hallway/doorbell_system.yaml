@@ -63,7 +63,7 @@ automation:
               - alias: "Someone home?"
                 condition: state
                 entity_id: sensor.house_mode
-                state: 
+                state:
                   - "Thuis"
                   - "Relax"
                   - "Gast"
@@ -132,7 +132,7 @@ automation:
                   message: >
                     {{ ('Is dit misschien visite voor ' ~ name ~ '?!') if birthday_today else ' ' }}
                   sat_id: >
-                    {% set reject_list = ['assist_satellite.m5stack_atom_echo_d4e7f8_assist_satellite', 'assist_satellite.grandstream'] %}
+                    {% set reject_list = ['assist_satellite.m5stack_atom_echo_d4e7f8_assist_satellite', 'assist_satellite.grandstream_woonkamer', 'assist_satellite.grandstream_martijn'] %}
                     {% set reject_list = (reject_list + ['assist_satellite.pepijn']) if is_state('binary_sensor.pepijn_sleeping', 'on') else reject_list %}
                     {% set reject_list = (reject_list + ['assist_satellite.floris']) if is_state('binary_sensor.floris_sleeping', 'on') else reject_list %}
                     {{
