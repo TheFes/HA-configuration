@@ -26,9 +26,8 @@ automation:
           minutes: 15
         id: stable
       - alias: "ECU reset switch turned off for 10 seconds"
-        trigger: state
-        entity_id: switch.ecu_reset
-        to: "off"
+        trigger: template
+        value_template: "{{ is_state(' switch.ecu_reset', 'off') }}"
         for:
           seconds: 10
         id: "on"
