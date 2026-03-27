@@ -128,11 +128,11 @@ light:
         brightness: >
           {{ (brightness | float * ((255 - min_brightness) / 255) + min_brightness) | round }}
   temperature: >
-    {{ (1000000 / state_attr(source_light, 'color_temp_kelvin')) | int }}
+    {{ none if state_attr(source_light, 'color_temp_kelvin') is none else (1000000 / state_attr(source_light, 'color_temp_kelvin')) | int }}
   min_mireds: >
-    {{ (100000 / state_attr(source_light, 'min_color_temp_kelvin') | default(100, true)) | int }}
+    {{ none if state_attr(source_light, 'min_color_temp_kelvin') is none else (100000 / state_attr(source_light, 'min_color_temp_kelvin') | default(100, true)) | int }}
   max_mireds: >
-    {{ (1000000 / state_attr(source_light, 'max_color_temp_kelvin') | default(150, true)) | int }}
+    {{ none if state_attr(source_light, 'max_color_temp_kelvin') is none else (1000000 / state_attr(source_light, 'max_color_temp_kelvin') | default(150, true)) | int }}
   set_temperature:
     - action: light.turn_on
       data:
