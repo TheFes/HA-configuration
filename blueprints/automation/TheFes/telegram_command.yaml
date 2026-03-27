@@ -537,7 +537,7 @@ actions:
                     - alias: Set variables for update message
                       variables:
                         update_entity: "{{ repeat.item }}"
-                        update_name: "{{ state_attr(update_entity, 'title') | default(state_attr(update_entity, 'friendly_name') | regex_replace('Update|update', ''), true) | trim }}"
+                        update_name: "{{ state_attr(update_entity, 'title') | default(update_entity | entity_name | regex_replace('Update|update', ''), true) | trim }}"
                         installed_version: "{{ state_attr(repeat.item, 'installed_version') }}"
                         latest_version: "{{ state_attr(repeat.item, 'latest_version') }}"
                         release_url: "{{ state_attr(repeat.item, 'release_url') }}"
@@ -594,7 +594,7 @@ actions:
                                 update_entity: >
                                   {% set item = callback.split('_')[1] | int(0) %}
                                   {{ updates[item] }}
-                                update_name: "{{ state_attr(update_entity, 'title') | default(state_attr(update_entity, 'friendly_name') | regex_replace('Update|update', ''), true) | trim }}"
+                                update_name: "{{ state_attr(update_entity, 'title') | default(update_entity |entity_name | regex_replace('Update|update', ''), true) | trim }}"
                             - alias: Perform the update action
                               action: update.{{ update_action }}
                               target:

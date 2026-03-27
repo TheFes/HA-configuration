@@ -259,8 +259,7 @@
       target:
       - event.thefes_casa_alert_update_event
       alert_title: ♻️ Container alert
-      alert_message: De {{ state_attr(state_attr('sensor.dashboard_next_trash', 'next'),
-        'friendly_name') }} container moet naar buiten!
+      alert_message: De {{ state_attr('sensor.dashboard_next_trash', 'next') | entity_name }} container moet naar buiten!
       done_message: De container staat buiten!
       button_1_actions:
       - event: trash_is_outside

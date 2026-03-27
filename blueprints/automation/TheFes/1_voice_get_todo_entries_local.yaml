@@ -126,7 +126,7 @@ variables:
   valid_request: '{{ list_entity_request is not none or request_name == ''use_default''
     }}'
   list_entity: '{{ list_entity_request or default_entity }}'
-  list_name: '{{ state_attr(list_entity, ''friendly_name'') }}'
+  list_name: '{{ list_entity | entity_name }}'
 actions:
 - if: '{{ valid_request }}'
   then:

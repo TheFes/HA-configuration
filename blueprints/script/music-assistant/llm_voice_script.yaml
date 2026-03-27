@@ -328,27 +328,29 @@ fields:
 sequence:
   - variables:
       default_player: !input default_player
-      player_data: "{% set ma = integration_entities('music_assistant') %} 
-        
-        {% set ma_names = ma | map('state_attr', 'friendly_name') | list %}
-        
-        {% set ns = namespace(players=[]) %} {% for player in media_player 
+      player_data: "{% set ma = integration_entities('music_assistant') %}
+
+        {% set ma_names = ma | map('entity_name') | list %}
+
+        {% set combi = zip(ma, ma_names) %}
+
+        {% set ns = namespace(players=[]) %} {% for player in media_player
         | default([], true) %}
 
-        {% if player in ma %} 
-        
-        {% set ns.players = ns.players + [player] %} 
-        
+        {% if player in ma %}
+
+        {% set ns.players = ns.players + [player] %}
+
         {% elif player in ma_names %}
-        
-        {% set entity = ma | select('is_state_attr', 'friendly_name', player) | list %}
-        
+
+        {% set entity = combi | selectattr('1', 'eq', player) | map(attribute='0') | list %}
+
         {% set ns.players = ns.players + entity %}
-        
-        {% endif %} 
-        
-        {% endfor %} 
-        
+
+        {% endif %}
+
+        {% endfor %}
+
         {{ ns.players }}"
       target_data:
         area_id: "{{ area | default('NA', true) }}"

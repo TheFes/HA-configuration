@@ -10,7 +10,7 @@ filter:
       options:
         type: custom:mushroom-template-card
         entity: this.entity_id
-        primary: "{{ state_attr(entity, 'friendly_name') }}"
+        primary: "{{ entity | entity_name }}"
         icon: "{{ state_attr(entity, 'icon') }}"
         secondary: "{{ states(entity) }}"
         icon_color: >

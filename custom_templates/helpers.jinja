@@ -98,7 +98,7 @@
         -%}
           {{- 'Bezet!' if area == 'WC' else 'Persoon aanwezig' -}}
         {%- else -%}
-          {%- set door_window = door_window_motion | map('state_attr', 'friendly_name') | list -%}
+          {%- set door_window = door_window_motion | map('entity_name') | list -%}
           {{- (door_window | join(', ') | regex_replace(',([^,]*)$', ' en ' ~ door_window[-1])) | trim ~ ' open'-}}
         {%- endif -%}
       {%- elif media and area_players | count > 0 -%}

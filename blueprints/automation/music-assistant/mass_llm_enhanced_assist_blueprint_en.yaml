@@ -503,8 +503,7 @@ actions:
         "{{ integration_entities('music_assistant')  | map('area_name')
         | join(', ') }}"
       player_names:
-        "{{ integration_entities('music_assistant') | map('state_attr',
-        'friendly_name') | join(', ') }}"
+        "{{ integration_entities('music_assistant') | map('entity_name') | join(', ') }}"
   - alias: Send the request to the LLM
     action: conversation.process
     data:
@@ -578,8 +577,7 @@ actions:
         "{{ area_list[:-1] | join(', ') ~ ' ' ~ combine ~ ' ' ~ area_list[-1]
         if area_list | count > 2 else area_list | join(' ' ~ combine ~ ' ') }}"
       player_list:
-        "{{ target.get('entity_id') | map('state_attr', 'friendly_name')
-        | list }}"
+        "{{ target.get('entity_id') | map('entity_name') | list }}"
       player_info:
         "{{ player_list[:-1] | join(', ') ~ ' ' ~ combine ~ ' ' ~ player_list[-1]
         if player_list | count > 2 else player_list | join(' ' ~ combine ~ ' ')
