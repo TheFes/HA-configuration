@@ -75,40 +75,35 @@ automation:
           when_nl: Vandaag
       - alias: "Evening trash reminder (8:00 PM)"
         trigger: time
-        at: "20:00:00"
+        at: "20:17:00"
         variables:
           when_en: tomorrow
           when_nl: Morgen
     variables:
       sensor: "sensor.afvalwijzer_{{ when_en }}"
-      trash_descr:
-        rest, gft, rest, gft: "rest- en GFT-bak"
-        papier, pmd, papier, pmd: "papier- en PMD-bak"
-        papier: "papier- en PMD-bak"
-        kerstbomen: "kerstboom"
+      trash_descr: "{{ states(sensor) }}"
       trash_pickup: >
-        {%- set trash = states(sensor).split(', ') %}
-        {{ trash_descr.items() | list | selectattr('0', 'in', trash) | map(attribute='1') | list }}
+        {{
+          'Rest & GFT container' 
+          if 'rest' in trash_descr 
+          else 'Papier & PMD container'
+        }}
     conditions:
       - alias: "Notification needed?"
         condition: template
         value_template: "{{ states(sensor) != 'geen' }}"
+      - alias: "Alert required"
+        condition: state
+        entity_id: binary_sensor.container_alert
+        state: "on"
     actions:
       - alias: "Notification phones"
         action: notify.all_phones
         data:
           title: >
-            {%- if trash_pickup | length > 1 %}
-              Denk aan de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }}!
-            {%- else %}
-              Denk aan de {{ trash_pickup[0] }}!
-            {%- endif %}
+            Denk aan de {{ trash_pickup }}!
           message: >
-            {%- if trash_pickup | length > 1 %}
-              {{ when_nl }} moeten de {{ trash_pickup[:-1] | join(', ') }} en {{ trash_pickup[-1] }} buiten.
-            {%- else %}
-              {{ when_nl }} moet de {{ trash_pickup[0] }} buiten.
-            {%- endif %}
+            {{ when_nl }} moet de {{ trash_pickup }} buiten.
           data:
             channel: Trash
             notification_icon: mdi:trash-can-outline
