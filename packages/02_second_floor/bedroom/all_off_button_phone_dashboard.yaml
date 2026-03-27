@@ -1,0 +1,17 @@
+automation:
+  - id: "1772121051687"
+    alias: Alles uit knop slaapkamer dashboard
+    description: ""
+    triggers:
+      - trigger: state
+        entity_id:
+          - input_button.alles_uit
+        to:
+    actions:
+      - action: homeassistant.turn_off
+        target:
+          entity_id: "{{ label_entities('off_long_press') }}"
+      - action: switch.turn_off
+        target:
+          entity_id: switch.bureau_martijn_template
+    mode: single
