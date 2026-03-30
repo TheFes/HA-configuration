@@ -62,6 +62,9 @@ template:
               round: 0
           forecast_twice_daily:
             - attr: is_daytime
+          ignore_entities: []
+          ignore_current:
+            - weather.weer_thuis_verwachtingen
       - alias: Set right forecast type
         variables:
           type: hourly
@@ -77,6 +80,7 @@ template:
                     | selectattr('attributes.supported_features', 'in', supported)
                     | map(attribute='entity_id') 
                     | reject('in', integration_entities('template'))
+                    | reject('in', ignore_entities)
                     | select('has_value')
                     | list
                 }}
@@ -240,7 +244,7 @@ template:
           current_values: >
             {% set attr_all = forecast_all + forecast_daily %}
             {% set ns = namespace(attributes=['condition'], values={}) %}
-            {% for e in weather_entities %}
+            {% for e in weather_entities | reject('in', ignore_current) | list %}
               {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
             {% endfor %}
             {% set attributes = ns.attributes | unique | list %}
@@ -295,7 +299,7 @@ template:
         ozone: "{{ current_values.get('ozone', none) }}"
         cloud_coverage: "{{ current_values.get('cloud_coverage', none) }}"
         dew_point: "{{ current_values.get('dew_point', none) }}"
-        uv_index: "{{ current_values.get('uv_index', none) }}" 
+        uv_index: "{{ current_values.get('uv_index', none) }}"
         temperature_unit: &temp_unit "°C"
         pressure_unit: "hPa"
         wind_speed_unit: "km/h"

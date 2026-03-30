@@ -26,6 +26,8 @@ template:
             trigger: event
             event_type: update_combined_forecast
         ignore_entities: [] # empty list
+        ignore_current:
+          - weather.weer_thuis_verwachtingen
         precision_input:
           - attr: apparent_temperature
             round: 1

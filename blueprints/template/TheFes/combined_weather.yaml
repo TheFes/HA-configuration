@@ -182,6 +182,20 @@ blueprint:
               multiple: true
               reorder: false
           default: []
+        ignore_for_current:
+          name: Ignore entities for current
+          description:
+            Weather entities which should not be taken into account for the
+            current weather specifically, the entity will be used for the
+            forecast data
+          selector:
+            entity:
+              filter:
+                - domain:
+                    - weather
+              multiple: true
+              reorder: false
+          default: []
         precision_input:
           name: Precision for numberic values
           description:
@@ -384,6 +398,7 @@ actions:
                 | selectattr('attributes.supported_features', 'defined')
                 | selectattr('attributes.supported_features', 'in', supported)
                 | map(attribute='entity_id') 
+                | reject('in', ignore_entities)
                 | reject('in', integration_entities('template'))
                 | select('has_value')
                 | list
@@ -561,7 +576,7 @@ actions:
         }}
       current_values: >
         {% set ns = namespace(attributes=['condition'], values={}) %}
-        {% for e in weather_entities %}
+        {% for e in weather_entities | reject('in', ignore_current) | list %}
           {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
         {% endfor %}
         {% set attributes = ns.attributes | unique | list %}
