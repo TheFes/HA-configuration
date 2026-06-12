@@ -74,6 +74,9 @@ binary_sensor:
     pin:
       number: ${binary_sensor_pin}
       inverted: ${binary_inverted}
+    filters:
+      - delayed_on: ${delayed_on}
+      - delayed_off: ${delayed_off}
     on_state:
       - if:
           condition:

@@ -11,6 +11,8 @@ substitutions:
   gamma_correct: "0"
   light_icon: mdi:lightbulb
   model: thefes.shelly-dimmer-2
+  delayed_on: 50ms
+  delayed_off: 50ms
 
 # ESPhome generic config
 esphome:
@@ -277,6 +279,9 @@ binary_sensor:
       number: GPIO14
       mode: INPUT
     internal: false
+    filters:
+      - delayed_on: ${delayed_on}
+      - delayed_off: ${delayed_off}
     on_multi_click:
       - timing:
           - state: true
