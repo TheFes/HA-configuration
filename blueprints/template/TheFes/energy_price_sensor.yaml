@@ -1,0 +1,462 @@
+blueprint:
+  name: Cheapest Energy Hours price sensor
+  description: '# Cheapest Energy Hours price sensor
+
+
+    <img width="512" height="256" alt="dark_logo" src="https://github.com/user-attachments/assets/afee8c82-0367-42b0-ab3a-91e86079b48d" />
+
+
+    This blueprint creates a sensor with a `prices` attribute which contains the prices from yesterday, today and tomorrow (if available).
+    These prices can be used in the Cheapest Energy Hours macro.
+
+
+    The blueprint can be used with the following core Home Assistant integrations
+
+
+    - [EasyEnergy](<https://www.home-assistant.io/integrations/easyenergy/>)
+
+    - [EnergyZero](<https://www.home-assistant.io/integrations/energyzero/>)
+
+    - [Nordpool](<https://www.home-assistant.io/integrations/nordpool/>)
+
+    - [Tibber](https://www.home-assistant.io/integrations/tibber/)
+
+
+    Note that after importing the blueprint it will **<ins>not</ins>** be shown in Settings > Automations & Scenes > Blueprints.
+    Only automation and script blueprints will be shown there.
+
+
+    There is currently no GUI support for template blueprints, so you need to use them with YAML configuration. For the supported
+    integrations you will find examples below. After adding the YAML for the template sensor, you need to reload templates from
+    [Developer tools > YAML](<https://my.home-assistant.io/redirect/server_controls/>). The prices will appear after maximum 15 minutes,
+    or if you manually fire the `update_ceh_prices`  event in [Developer tools > Events](<https://my.home-assistant.io/redirect/developer_events/>)
+
+
+    When using the template sensor created by this blueprint there is no need to provide settings for `attr_today`, `attr_tomorrow`, `attr_all`,
+    `time_key` or `value_key` for the cheapest energy hours macro. The default settings will already be correct.
+
+
+    **<ins>Note:</ins>** This blueprint will create a template entity with a exceptionally large attribute with all the prices, especially when 15
+    minute prices are used. It will store 288 items (3 days with 96 items per day) with the date and time and the price for all those items. It is
+    advisable to exclude this sensor from being included in the database. You can do that using the [recorder integration](<https://www.home-assistant.io/integrations/recorder/>).
+    This can only be done using YAML, the below example excludes the template sensor from your database. For more information how to use includes and
+    excludes for the recorder integration, see the [documentation](<https://www.home-assistant.io/integrations/recorder/>).
+
+
+    ## Blueprint inputs
+
+
+    The following inputs can be used in this blueprint:
+
+
+    ### **<ins>entity_id</ins>** <span style="color:grey">_string (default: sensor.cheapest_energy_hour_prices)_</span>
+
+    The entity_id which will be used for the template sensor. It is important that the entity_id matches the actual entity_id
+    of the template sensor. So if you change it in the GUI, make sure to change it in the settings for the template sensor as
+    well.
+
+    ***
+
+    ### **<ins>source</ins>** <span style="color:grey">_string (default: null, possible options: easyenergy, energyzero, nordpool, tibber)_</span>
+
+    The source integration to be used by the blueprint. If no input is given, the blueprint will try to find one of the integrations.
+    Note that this can lead to issues if the custom Tibber or custom Nordpool integration is installed. It is advised to select the right
+    integration here.
+
+    ***
+
+    ### **<ins>config_entry</ins>** <span style="color:grey">_string (default: null)_</span>
+
+    The config entry id for the integration to be used by the blueprint. The blueprint will try to find this based on the source, but
+    as it takes the first config entry id it can find, it can be advised to enter it yourself if you have multiple instances of the same
+    integration. To find it the easiest method is to go to [Developer tools > Action](<https://my.home-assistant.io/redirect/developer_services/>)
+    and use one of the actions provided by the integration in GUI mode, select the config entry and then switch to YAML mode.
+
+    ***
+
+    ### **<ins>resolution</ins>** <span style="color:grey">_integer (default: 15, possible options: 15, 30, 60)_</span>
+
+    This setting is only used for Nordpool. By default 15 minute prices are fetched from Norpool, but you can set this to 30 or 60
+    to get the prices for those time periods. If you set it to any other value than 15, 30 or 60, then a 15 minute resolution will
+    be used.
+
+    ***
+
+    ### **<ins>add_vat</ins>** <span style="color:grey">_float (default: 0)_</span>
+
+    VAT percentage which will be added to the prices
+
+    ***
+
+    ### **<ins>add_fixed</ins>** <span style="color:grey">_float (default: 0)_</span>
+
+    Fixed price which will be added to the prices. This can be used to add the uplift from your energy provider in case you use
+    the Nordpool integration.
+
+    ***
+
+    ### **<ins>price_factor</ins>** <span style="color:grey">_float (default: 1 or 0.001)_</span>
+
+    All prices will be multiplied with this value. This will be applied before adding VAT or a fixed value.
+    For most integrations this is set to 1 by default, but for Nordpool this is set to 0.001 as the prices
+    provided by the Nordpool integration are for MWh instead of kWh.
+
+
+    ## More info
+
+
+    For more details on how to use the blueprint and examples for each integration,
+    see the [documentation](<https://github.com/TheFes/cheapest-energy-hours/blob/main/documentation/blueprints/energy_price_sensor.md>).
+    '
+  author: TheFes
+  source_url: https://github.com/TheFes/cheapest-energy-hours/blob/main/blueprints/energy_price_sensor.yaml
+  domain: template
+  input:
+    entity_id:
+      name: Entity id for template sensor
+      description: The entity_id which will be used for the template sensor created using this blueprint
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: sensor.cheapest_energy_hour_prices
+    source:
+      name: Source integration
+      description: The source integration used to provide the data
+      selector:
+        select:
+          options:
+            - label: EasyEnergy
+              value: easyenergy
+            - label: EnergyZero
+              value: energyzero
+            - label: NordPool
+              value: nordpool
+            - label: Tibber
+              value: tibber
+      default: null
+    config_entry:
+      name: The config entry id for the integration.
+      description: This is not required for Tibber, but for all other source integrations it is a required field
+      selector:
+        config_entry:
+      default: null
+    resolution:
+      name: Resolution time
+      description: >
+        The resolution used for the output of the price data for the Nordpool integration in minutes.
+        This can be used to force the output to hourly prices. Possible values are 15, 30 and 60.
+        By default 15 minutes will be used, this will also be used if a value other than 15, 30 or
+        60 is set.
+      selector:
+        number:
+          min: 15
+          max: 60
+          step: 15
+          mode: box
+          unit_of_measurement: min
+      default: 15
+    add_vat:
+      name: VAT % to add to the prices
+      description: Set a percentage here if you want to add VAT to the prices provided by the source integration
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: "any"
+          unit_of_measurement: "%"
+          mode: "box"
+      default: 0
+    add_fixed:
+      name: Fixed value to add to the price
+      description: >
+        Fixed value to be added to prices. Can be used to e.g. add a fixed price for your energy provided in
+        case you use Nordpool as the source. This fixed value should already include VAT if applicable.
+      selector:
+        number:
+          step: "any"
+          mode: "box"
+      default: 0
+    price_factor:
+      name: Price Factor
+      description:
+        Value which will be used to multiply the prices with. If the source integration e.g. provides the prices
+        in cents, but you want them in EUR, you can use 0.01 as price factor.
+        By default 1 is used, only for Nordpool the default is 0.001 as the integration provides the prices in MWh.
+      selector:
+        number:
+          step: "any"
+          mode: "box"
+      default: null
+    precision:
+      name: precision
+      description: Precision to be used when rounding the prices. Defaults to 5 decimals.
+      selector:
+        number:
+          step: 1
+          mode: slider
+          min: 0
+          max: 8
+      default: 5
+    debug:
+      name: Debug
+      description: Creates a persistent notification on each update of the prices with debug data.
+      selector:
+        boolean:
+      default: false
+
+variables:
+  entity_id: !input entity_id
+  resolution: !input resolution
+  source_input: !input source
+  source: >
+    {% if source_input is not none %}
+      {{ source_input }}
+    {% elif integration_entities('easyenergy') | count > 0 %}
+      easyenergy
+    {% elif integration_entities('energyzero') | count > 0 %}
+      energyzero
+    {% elif integration_entities('nordpool') | count > 0 %}
+      nordpool
+    {% elif integration_entities('tibber') | count > 0 %}
+      tibber
+    {% else %}
+      {{ none }}
+    {% endif %}
+  config_entry_input: !input config_entry
+  config_entry: >
+    {{ config_entry
+        | default(integration_entities(source)
+          | first
+          | default
+          | config_entry_id, true)
+    }}
+  price_factor_input: !input price_factor
+  price_factor: "{{ price_factor_input | default(0.001 if source == 'nordpool' else 1, true) }}"
+  add_vat: !input add_vat
+  add_fixed: !input add_fixed
+  precision: !input precision
+  old_prices: "{{ state_attr(entity_id, 'prices') | default([], true) }}"
+  debug: !input debug
+  fetch: >
+    {% set yesterday = old_prices 
+        | selectattr('start', 'search', (now().date()-timedelta(days=1)).isoformat())
+        | list
+        | count < 23
+        or trigger.id == 'event' %}
+    {% set today = old_prices 
+        | selectattr('start', 'search', now().date().isoformat())
+        | list
+        | count < 23
+        or trigger.id == 'event' %}
+    {% set tomorrow = (old_prices 
+        | selectattr('start', 'search', (now().date()+timedelta(days=1)).isoformat())
+        | list
+        | count < 23 
+        or trigger.id =='event')
+        and now() > today_at('13:00') %}
+    {{ dict(yesterday=yesterday, today=today, tomorrow=tomorrow) }}
+  should_fetch: >
+    {{ fetch.yesterday or fetch.today or fetch.tomorrow }}
+  fetch_period_start: >
+    {% if fetch.yesterday %}
+      {% set delta = -1 %}
+    {% elif fetch.today %}
+      {% set delta = 0 %}
+    {% else %}
+      {% set delta = 1 %}
+    {% endif %}
+    {{ (today_at('00:00') + timedelta(days=delta)).strftime('%Y-%m-%d %H:%M:%S') }}
+  fetch_period_end: >
+    {% if fetch.tomorrow %}
+      {% set delta = 2 %}
+    {% elif fetch.today %}
+      {% set delta = 1 %}
+    {% else %}
+      {% set delta = 0 %}
+    {% endif %}
+    {{ (today_at('00:00') + timedelta(days=delta)).strftime('%Y-%m-%d %H:%M:%S') }}
+  mapping:
+    easyenergy:
+      time_key: timestamp
+      value_key: price
+    energyzero:
+      time_key: timestamp
+      value_key: price
+    nordpool:
+      time_key: start
+      value_key: price
+    tibber:
+      time_key: start_time
+      value_key: price
+
+triggers:
+  - alias: Triggers every 15 minutes
+    trigger: time_pattern
+    minutes: "/15"
+  - alias: Triggers on home assistant startup
+    trigger: homeassistant
+    event: start
+  - alias: Custom event to update prices
+    trigger: event
+    event_type: update_ceh_prices
+    id: event
+
+actions:
+  - alias: "Fetch new prices if needed"
+    if: "{{ should_fetch }}"
+    then:
+      - alias: Short delay to avoid everyone calling the API at the same time
+        delay:
+          seconds: "{{ range(0, 15) | random }}"
+      - choose:
+          - conditions: "{{ source in ['easyenergy', 'energyzero'] }}"
+            sequence:
+              - alias: Collects the price information and stores this in a response variable
+                action: >
+                  {{
+                    'easyenergy.get_energy_usage_prices'
+                    if source == 'easyenergy'
+                    else 'energyzero.get_energy_prices'
+                  }}
+                data:
+                  incl_vat: false
+                  config_entry: "{{ config_entry }}"
+                  start: "{{ fetch_period_start }}"
+                  end: "{{ fetch_period_end }}"
+                response_variable: prices
+                continue_on_error: true
+              - variables:
+                  prices: "{{ prices.prices if prices is defined else [] }}"
+          - conditions: "{{ source == 'tibber' }}"
+            sequence:
+              - alias: "Fetch the prices for yesterday, today and tomorrow"
+                action: tibber.get_prices
+                data:
+                  start: "{{ fetch_period_start }}"
+                  end: "{{ fetch_period_end }}"
+                response_variable: prices
+              - variables:
+                  prices: "{{ prices.prices.values() | first | default([], true) }}"
+          - conditions: "{{ source == 'nordpool' }}"
+            sequence:
+              - if: "{{ fetch.yesterday }}"
+                then:
+                  - action: nordpool.get_price_indices_for_date
+                    data:
+                      config_entry: "{{ config_entry}}"
+                      date: "{{ now().date() - timedelta(days=1) }}"
+                      resolution: "{{ resolution }}"
+                    response_variable: yesterday
+                  - variables:
+                      yesterday: "{{ yesterday.values() | first }}"
+              - if: "{{ fetch.today }}"
+                then:
+                  - action: nordpool.get_price_indices_for_date
+                    data:
+                      config_entry: "{{ config_entry}}"
+                      date: "{{ now().date() }}"
+                      resolution: "{{ resolution }}"
+                    response_variable: today
+                  - variables:
+                      today: "{{ today.values() | first }}"
+              - if: "{{ fetch.tomorrow }}"
+                then:
+                  - action: nordpool.get_price_indices_for_date
+                    data:
+                      config_entry: "{{ config_entry}}"
+                      date: "{{ now().date() + timedelta(days=1) }}"
+                      resolution: "{{ resolution }}"
+                    response_variable: tomorrow
+                  - variables:
+                      tomorrow: "{{ tomorrow.values() | first }}"
+              - variables:
+                  prices: "{{ [yesterday, today, tomorrow] | select('defined') | flatten(1) }}"
+      - alias: Update result to generic format and apply VAT and fixed price if needed
+        variables:
+          new_prices: >
+            {% set time_key = mapping[source].time_key %}
+            {% set value_key = mapping[source].value_key %}
+            {% set ns = namespace(prices=[]) %}
+            {% for price in prices %}
+              {% set t = (price[time_key] | as_datetime | as_local).isoformat() %}
+              {% set p = price[value_key] * price_factor * (1 + add_vat / 100) + add_fixed %}
+              {% set ns.prices = ns.prices + [dict(start=t, price=p | round(precision|int))] %}
+            {% endfor %}
+            {{ ns.prices }}
+  - alias: "Set variables to be used in sensor"
+    variables:
+      updated_prices: >
+        {{
+          (old_prices
+            | selectattr('start', '>=', (today_at('00:00') - timedelta(days=1)).isoformat())
+            | list + new_prices | default([]))
+              | unique(attribute='start')
+              | list
+              | sort(attribute='start')
+        }}
+      fetch_time: "{{ now() if should_fetch else state_attr(entity_id, 'last_fetch_time') }}"
+      prices_today: >
+        {{
+          updated_prices
+            | selectattr('start', 'search', now().date().isoformat())
+            | map(attribute='price')
+            | list
+            | count
+        }}
+  - if: "{{ debug }}"
+    then:
+      - alias: Output data using persistent notification
+        action: persistent_notification.create
+        data:
+          message: |-
+            time: {{ now().replace(microsecond=0).isoformat() }}
+            entity_id: {{ entity_id }}
+            source: {{ source }}
+            config_entry: {{ config_entry }}
+            price_factor: {{ price_factor }}
+            count_old_prices: {{ old_prices | count }}
+            count_old_yesterday: {{
+                old_prices 
+                  | selectattr('start', 'search', (now().date()-timedelta(days=1)).isoformat())
+                  | list
+                  | count
+              }}
+            count_old_today: {{
+                old_prices 
+                  | selectattr('start', 'search', now().date().isoformat())
+                  | list
+                  | count
+              }}
+            count_old_tomorrow: {{
+                old_prices 
+                  | selectattr('start', 'search', (now().date()+timedelta(days=1)).isoformat())
+                  | list
+                  | count
+              }}
+            fetch_yesterday: {{ fetch.yesterday }}
+            fetch_today: {{ fetch.today }}
+            fetch_tomorrow: {{ fetch.tomorrow }}
+            should_fetch: {{ should_fetch }}
+            fetch_period_start: {{ fetch_period_start if should_fetch else 'N/A'}}
+            fetch_period_end: {{ fetch_period_end if should_fetch else 'N/A' }}
+            fetched_prices_count: {{ prices | default([], true) | count }}
+            new_prices_count: {{ new_prices | default([], true) | count }}
+            updated_prices_count: {{ updated_prices | count }}
+            prices_today_count: {{ prices_today }}
+            fetch_time: {{ fetch_time }}
+
+sensor:
+  default_entity_id: !input entity_id
+  icon: mdi:currency-eur
+  unit_of_measurement: EUR/kWh
+  state_class: measurement
+  state: >
+    {% set price = updated_prices | map(attribute='price') | list %}
+    {% set time = updated_prices | map(attribute='start') | map('as_datetime') | list %}
+    {{ zip(price, time) | selectattr('1', '<=', now()) | map(attribute='0') | list | last }}
+  attributes:
+    prices: "{{ updated_prices }}"
+    last_fetch_time: "{{ fetch_time }}"
+    blueprint_version: 202551107
+  availability: "{{ prices_today >= 23 }}"

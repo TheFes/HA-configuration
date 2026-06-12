@@ -1,0 +1,18 @@
+template:
+  - triggers:
+      - trigger: state
+        entity_id: sensor.solar_total_lifetime_energy_output
+        not_to:
+          - unavailable
+          - unknown
+    sensor:
+      - unique_id: ebac16eb-4865-4c6e-93ec-ed50567207a4
+        default_entity_id: sensor.solar_total_lifetime_energy_output
+        name: Solar Lifetime
+        state: >
+          {% set current = this.state | float(0) %}
+          {% set new = trigger.to_state.state | float(0) %}
+          {{ new if new > current else current }}
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh

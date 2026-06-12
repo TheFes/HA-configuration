@@ -132,13 +132,16 @@ template:
       # Energy High
       - name: Energy high tariff
         unique_id: 271b931a-9454-40f8-aa54-0af52b1077cb
-        state: &tariff_state >
+        state: >
           {{
             [
               state_attr(this.entity_id, 'delivery'),
               state_attr(this.entity_id, 'tax')
             ] | map('float', 0) | sum
+            if now().date() <= as_datetime('2026-06-01').date()
+            else states('sensor.zonneplan_current_electricity_tariff')
           }}
+        availability: "{{ 'sensor.zonneplan_current_electricity_tariff' | has_value or now().date() <= as_datetime('2026-06-01').date() }}"
         icon: mdi:cash
         unit_of_measurement: "€/kWh"
         state_class: measurement
@@ -149,7 +152,16 @@ template:
       # Energy Low
       - name: Energy low tariff
         unique_id: a89ba420-ee99-40df-8031-41986897b169
-        state: *tariff_state
+        state: >
+          {{
+            [
+              state_attr(this.entity_id, 'delivery'),
+              state_attr(this.entity_id, 'tax')
+            ] | map('float', 0) | sum
+            if now().date() <= as_datetime('2026-06-01').date()
+            else states('sensor.zonneplan_current_electricity_tariff')
+          }}
+        availability: "{{ 'sensor.zonneplan_current_electricity_tariff' | has_value or now().date() <= as_datetime('2026-06-01').date() }}"
         icon: mdi:cash
         unit_of_measurement: "€/kWh"
         state_class: measurement
@@ -160,7 +172,16 @@ template:
       # Gas
       - name: Gas tariff
         unique_id: e8e5e0e0-652e-4cca-9cc4-20b491ec585b
-        state: *tariff_state
+        state: >
+          {{
+            [
+              state_attr(this.entity_id, 'delivery'),
+              state_attr(this.entity_id, 'tax')
+            ] | map('float', 0) | sum
+            if now().date() <= as_datetime('2026-06-01').date()
+            else states('sensor.zonneplan_current_tariff_gas')
+          }}
+        availability: "{{ 'sensor.zonneplan_current_tariff_gas' | has_value or now().date() <= as_datetime('2026-06-01').date() }}"
         icon: mdi:cash
         unit_of_measurement: "€/m³"
         state_class: measurement

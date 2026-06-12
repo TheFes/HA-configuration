@@ -1,0 +1,118 @@
+template:
+  - sensor:
+      unique_id: 881b6558-26c6-44bb-81c5-d86c05451bd4
+      name: Zonneplan Energy Prices
+      state: "{{ states('sensor.zonneplan_current_electricity_tariff') }}"
+      state_class: measurement
+      unit_of_measurement: €/kWh
+      icon: mdi:cash
+      attributes:
+        prices: >
+          {% set forecast = state_attr('sensor.zonneplan_current_electricity_tariff', 'forecast') %}
+          {% set ns = namespace(forecast=[]) %}
+          {% for p in forecast %}
+            {% set start = (p.datetime | as_datetime | as_local).isoformat() %}
+            {% set price = (p.electricity_price / 10000000) | round(5) %}
+            {% set ns.forecast = ns.forecast + [dict(start=start, price=price)] %}
+          {% endfor %}
+          {{ ns.forecast }}
+        prices_tomorrow: >
+          {% set prices =  this.attributes.get('prices', []) %}
+          {{ prices | selectattr('start', '>=', (today_at() + timedelta(days=1)).isoformat())| list | count > 0 }}
+        today: >
+          {% set prices = this.attributes.get('prices', [])
+                              | selectattr('start', '>=', today_at().isoformat())
+                              | selectattr('start', '<', (today_at()+timedelta(days=1)).isoformat())
+                              | list
+          %}
+          {% if prices | count > 0 %}
+            {% set avg = prices | map(attribute='price') | list | average %}
+            {% set current = states('sensor.zonneplan_prices') | float %}
+            {% set lowest = prices | map(attribute='price') | list | min %}
+            {% set highest = prices | map(attribute='price') | list | max %}
+            {% set mid_low = [avg, lowest] | average %}
+            {% set mid_high = [avg, highest] | average %}
+            {# state #}
+            {% if current < 0 %}
+              {% set state = 'negative' %}
+            {% elif current < mid_low %}
+              {% set state  = 'low' %}
+            {% elif current < avg %}
+              {% set state  = 'below average' %}
+            {% elif current < mid_high %}
+              {% set state  = 'above avarage' %}
+            {% else %}
+              {% set state = 'high' %}
+            {% endif %}
+            {# negative #}
+              {% set negative = prices | map(attribute='price') | select('<', 0) | list | count > 0 %}
+            {# wasmaschine snel #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'turbowash') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24') %}
+              {% set ceh_now = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='is_now', time_format='time24') %}           
+              {% set wasmachine_snel = dict(start=ceh.start, costs=ceh.estimated_costs | round(5), is_now=ceh_now) %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', value_on_error={}) %}
+              {% set ceh_now = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='is_now', time_format='time24', value_on_error=false) %}           
+              {% set wasmachine_snel = dict(start=ceh.get('start'), costs=ceh.get('estimated_costs', 0) | round(5), is_now=ceh_now) %}
+              
+            {# wasmaschine lang #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'eco') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', value_on_error={}) %}
+              {% set ceh_now = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='is_now', time_format='time24', value_on_error=false) %}           
+              {% set wasmachine_lang = dict(start=ceh.get('start'), costs=ceh.get('estimated_costs', 0) | round(5), is_now=ceh_now) %}
+              
+            {# vaatwasser #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'vaatwasser') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', value_on_error={}) %}
+              {% set ceh_now = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='is_now', time_format='time24', value_on_error=false) %}           
+              {% set vaatwasser = dict(start=ceh.get('start'), costs=ceh.get('estimated_costs', 0) | round(5), is_now=ceh_now) %}
+              
+            {# data #}
+              {{ dict(average=avg | round(5), state=state, negative=negative, wasmachine_snel=wasmachine_snel, wasmachine_lang=wasmachine_lang, vaatwasser=vaatwasser) }}
+          {% else %}
+            'unknown'
+          {% endif %}
+        tomorrow: >
+          {% if this.attributes.get('prices_tomorrow', false) %}
+            {% set prices =  this.attributes.get('prices', [])
+                                | selectattr('start', '>=', (today_at()+timedelta(days=1)).isoformat())
+                                | list
+            %}
+            {% set avg = prices | map(attribute='price') | list | average %}
+            {% set current = states('sensor.zonneplan_prices') | float %}
+            {% set lowest  = prices | map(attribute='price') | list | min %}
+            {% set highest  = prices | map(attribute='price') | list | max %}
+            {% set mid_low = [avg, lowest] | average %}
+            {% set mid_high = [avg, highest] | average %}
+            {# negative #}
+              {% set negative = prices | map(attribute='price') | select('<', 0) | list | count > 0 %}
+            {# wasmaschine snel #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'turbowash') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', include_today=false, include_tomorrow=true) %}
+              {% set wasmachine_snel = dict(start=ceh.start, costs=ceh.estimated_costs | round(5)) %}
+            {# wasmaschine lang #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'eco') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', include_today=false, include_tomorrow=true) %}
+              {% set wasmachine_lang = dict(start=ceh.start, costs=ceh.estimated_costs | round(5)) %}
+            {# vaatwasser #}
+              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'vaatwasser') | map(attribute='1') | first %}
+              {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+              {% set hours = data.data | count / data.no_weight_points %}
+              {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', include_today=false, include_tomorrow=true) %}
+              {% set vaatwasser = dict(start=ceh.start, costs=ceh.estimated_costs | round(5)) %}
+            {# data #}
+              {{ dict(average=avg | round(5), negative=negative, wasmachine_snel=wasmachine_snel, wasmachine_lang=wasmachine_lang, vaatwasser=vaatwasser) }}
+          {% else %}
+            unknown
+          {% endif %}
+      availability: "{{ 'sensor.zonneplan_current_electricity_tariff' | has_value }}"
