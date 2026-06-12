@@ -19,7 +19,7 @@ script:
       - variables:
           phone_mapper:
             martijn: pixel_10_pro
-            marleen: pixel_8_marleen
+            marleen: mobile_app_iphone_van_marleen
           phone: "{{ phone_mapper[phone_owner | lower] | default('pixel_10_pro') }}"
           notify_service: "{{ 'notify.mobile_app_' ~ phone }}"
           current_vol: "{{ states('sensor.' ~ phone ~ '_volume_level_alarm') | int(4) }}"

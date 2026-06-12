@@ -1,35 +1,5 @@
 # From: device_tracker_updates.yaml
 automation:
-  - id: 6d0dc8bd-d264-42b8-8488-10e2e44d9393
-    alias: "Update device trackers for phone Martijn"
-    triggers:
-      - alias: "Martijn's phone location or battery changed"
-        trigger: state
-        entity_id:
-          - sensor.location_phone_martijn_bt
-          - sensor.pixel_10_pro_battery_level
-        from: ~
-      - alias: "Home Assistant started"
-        trigger: homeassistant
-        event: start
-    actions:
-      - alias: "Update Martijn's phone device tracker"
-        action: device_tracker.see
-        data:
-          dev_id: phone_martijn_bt
-          host_name: Phone Martijn BT
-          mac: "0C:C4:13:45:75:85"
-          battery: "{{ states('sensor.pixel_10_pro_battery_level') }}"
-          location_name: >
-            {% if is_state('sensor.location_phone_martijn_bt', 'Niet Thuis') %}
-              not_home
-            {% elif is_state('sensor.location_phone_martijn_bt', ['unavailable',
-            'unknown']) %}
-              {{ states('sensor.location_phone_martijn_bt') }}
-            {% else %}
-              home
-            {% endif %}
-
   # From: digid_code_kids.yaml
   - id: efac28d0-19f8-42d7-928f-04e09d1191a5
     alias: "Send Digid code for kids to Marleen"
@@ -50,7 +20,7 @@ automation:
           {{ 'Uw DigiD sms-code om in te loggen bij' in states('sensor.pixel_10_pro_last_notification') }}
     actions:
       - alias: "Send notification to Marleen"
-        action: notify.mobile_app_pixel_8_marleen
+        action: notify.mobile_app_iphone_van_marleen
         data:
           title: "DigiD code"
           message: "{{ trigger.to_state.state }}"
@@ -224,7 +194,7 @@ template:
         picture: "/api/image/serve/e261093701adc6a0bd34e9c96b5feacb/512x512"
         attributes:
           zone: "{{ states('person.marleen') }}"
-          wifi: "{{ states('sensor.pixel_8_marleen_wifi_bssid_2') }}"
+          wifi: "{{ states('sensor.iphone_van_marleen_bssid') }}"
           acivity: "{{ states('sensor.nog_invullen') }}"
 
       - unique_id: 11fde20f-113c-4d69-9995-e4a7ca5dd45d

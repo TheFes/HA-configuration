@@ -160,7 +160,6 @@ automation:
                 {% set area = 'slaapkamer_pepijn' %}
                 {{ 
                   intersect(label_entities('night_light'), area_entities(area))
-                    | select('is_state', 'on')
                     | list
                 }}
         else:
@@ -171,7 +170,6 @@ automation:
                 {% set area = 'slaapkamer_floris' %}
                 {{ 
                   intersect(label_entities('night_light'), area_entities(area))
-                    | select('is_state', 'on')
                     | list
                 }}
 

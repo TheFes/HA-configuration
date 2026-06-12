@@ -149,7 +149,7 @@
         description: Mother of the house
         notifiers:
         - alias: Send mobile notification to Marleen
-          action: notify.mobile_app_pixel_8_marleen
+          action: notify.mobile_app_iphone_van_marleen
           data:
             data:
               ttl: 0
@@ -259,7 +259,8 @@
       target:
       - event.thefes_casa_alert_update_event
       alert_title: ♻️ Container alert
-      alert_message: De {{ state_attr('sensor.dashboard_next_trash', 'next') | entity_name }} container moet naar buiten!
+      alert_message: De {{ state_attr('sensor.dashboard_next_trash', 'next') | entity_name
+        }} container moet naar buiten!
       done_message: De container staat buiten!
       button_1_actions:
       - event: trash_is_outside
@@ -539,32 +540,39 @@
       response_invalid_phrase: Ik kan geen weersvoorspelling ophalen voor {{ phrase
         }}
       response_no_data: Geen weersvoorspelling beschikbaar voor {{ phrase }}
-      response_forecast: Het {{ 'is' if current else 'wordt' }} {{ temperature }}
-        graden {{ condition_translated }}. {% if temperature != apparent_temperature
-        %}Het voelt als {{ apparent_temperature }} graden.{% endif %} {% if precipitation_probability
-        > rain_warning_threshold %}Er is {{ precipitation_probability }}% kans op
+      response_forecast: 'Het {{ ''is'' if current else ''wordt'' }} {{ temperature
+        }} graden {{ condition_translated }}.  {% if temperature != apparent_temperature
+        %}Het voelt als {{ apparent_temperature }} graden. {% endif %} {% if precipitation_probability
+        > rain_warning_threshold %}Er is {{ precipitation_probability }}%  kans op
         {{ precipitation }} milimeter regen, dus neem een paraplu mee als je naar
-        buiten gaat.{% endif %} {% if uv_index > 3 and condition in ['clear', 'partlycloudy']
-        %}De zon schijnt fel vandaag, dus doe zonnebrand op als je naar buiten gaat.{%
-        endif %} {% if wind_speed >= wind_threshold %} De wind wordt {{ wind_phrase
-        }} en komt uit het {{ wind_direction}}. {% endif %} {% if wind_speed >= wind_warning_threshold
-        %}Dus als je niet per se naar buiten hoeft, blijf dan vooral lekker binnen.{%
-        elif wind_speed >= wind_joke_threshold %}Dus zorg dat je {% if precipitation_probability
-        > 10 %}paraplu {% else %}'t{% endif %}niet weg waait!{% endif %}
-      response_current: "Het is nu {{ current_temperature }} graden en {{ current_condition_translated
-        }}. De temperatuur zal vandaag tussen de {{ templow }} en {{ temperature }}
-        graden zijn. {% if current_temperature != current_apparent_temperature %}Het
-        voelt nu als {{ current_apparent_temperature }} graden.{% endif %} {% if precipitation_probability
-        | float(-1) > rain_warning_threshold %}Er is  {{ precipitation_probability
-        }}% kans op {{ precipitation }} mm regen, dus neem een paraplu mee naar buiten.{%
-        endif %} {% if current_uv_index | float(-1) > 3 and current_condition in ['clear',
-        'partlycloudy'] %}De zon schijnt fel vandaag, dus doe zonnebrand op als je
-        naar buiten gaat.{% endif %} {%- if current_wind_speed is not none -%}\n  {%
-        if current_wind_speed >= wind_threshold %} De wind is {{ current_wind_phrase
-        }} en komt uit het {{ current_wind_direction }}.{% endif %}\n  {% if current_wind_speed
-        >= wind_warning_threshold %}Dus als je niet per se naar buiten hoeft, kun
-        je dat beter niet doen.{% elif current_wind_speed >= wind_joke_threshold %}Dus
-        houd je paraplu goed vast!{% endif %}\n{%- endif %}"
+        buiten gaat.{% endif %} {% if uv_index > 3 and condition in [''clear'', ''partlycloudy'']
+        %} De zon schijnt fel vandaag, dus doe zonnebrand op als je naar buiten gaat.{%
+        endif %}  {% if wind_speed >= wind_threshold %} De wind wordt {{ wind_phrase
+        }}{% if wind_direction is not none %}  en komt uit het {{ wind_direction}}{%
+        endif %}. {% endif %} {% if wind_speed >= wind_warning_threshold %} Dus als
+        je niet per se naar buiten hoeft, blijf dan vooral lekker binnen.{% elif wind_speed
+        >=  wind_joke_threshold %}Dus zorg dat je {% if precipitation_probability
+        > 10 %}paraplu {% else %}''t {% endif %}niet weg waait!{% endif %}
+
+        '
+      response_current: 'Het is nu {{ current_temperature }} graden en {{ current_condition_translated}}.  De
+        temperatuur zal vandaag tussen de {{ templow }} en {{ temperature }} graden
+        zijn. {% if current_temperature != current_apparent_temperature %} Het voelt
+        nu als {{ current_apparent_temperature }} graden.{% endif %}  {% if precipitation_probability
+        | float(-1) > rain_warning_threshold %} Er is {{ precipitation_probability
+        }}% kans op {{ precipitation }} mm regen,  dus neem een paraplu mee naar buiten.{%
+        endif %} {% if current_uv_index | float(-1)  > 3 and current_condition in
+        [''clear'',''partlycloudy''] %}De zon schijnt fel vandaag,  dus doe zonnebrand
+        op als je naar buiten gaat.{% endif %} {%- if current_wind_speed  is not none
+        -%} {% if current_wind_speed >= wind_threshold %} De wind is  {{ current_wind_phrase
+        }}{% if current_wind_direction is not none %} en komt uit  het {{ current_wind_direction}}{%
+        endif %}.{% endif %} {% if current_wind_speed >= wind_warning_threshold %}Dus
+        als je niet per se naar buiten hoeft, kun je dat beter niet doen.{% elif current_wind_speed
+        >= wind_joke_threshold %}Dus houd je paraplu goed vast!{% endif %}{%- endif
+        %}
+
+        '
+      wind_threshold: 0
 - id: '1774534626234'
   alias: TEst throw
   description: ''
@@ -577,4 +585,45 @@
       - fall
   conditions: []
   actions: []
+  mode: single
+- id: '1778596824719'
+  alias: Sync DND with watch
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.oneplus_watch_3_00gk_do_not_disturb_sensor
+    from:
+    - 'off'
+    - priority_only
+    to:
+    - 'off'
+    - priority_only
+  conditions: []
+  actions:
+  - action: notify.mobile_app_pixel_10_pro
+    metadata: {}
+    data:
+      data:
+        command: '{{ trigger.to_state.state }}'
+      message: command_dnd
+  mode: single
+- id: '1780088244111'
+  alias: Marleen Carplay Test
+  description: ''
+  triggers:
+  - trigger: event
+    event_type: marleen_carplay_disconnected
+    id: 'off'
+  - trigger: event
+    event_type: marleen_carplay_connected
+    event_data: {}
+    id: 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_{{ trigger.id }}
+    metadata: {}
+    target:
+      entity_id: input_boolean.marleen_carplay
+    data: {}
   mode: single

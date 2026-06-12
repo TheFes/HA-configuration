@@ -125,6 +125,26 @@ automation:
               temp-normal
             {% endif %}
 
+      - alias: Indicator for energy prices and washing machine
+        trigger: state
+        entity_id: sensor.zonneplan_prices
+        not_to: unavailable
+        variables:
+          app: wasmachine
+          text: >
+            {% set data = state_attr('sensor.zonneplan_prices', 'today') | default({}, true) %}
+            {% set is_now = data.get('wasmachine_lang', {}).get('is_now', false) %}
+            {% set tomorrow = state_attr('sensor.zonneplan_prices', 'tomorrow') | default({}, true) %}
+            {% set tomorrow = tomorrow if tomorrow is mapping else {} %}
+            {% set time = 'NU' if is_now else data.get('wasmachine_lang', {}).get('start', 'ONBEKEND') %}
+            {% set costs = data.get('wasmachine_lang', {}).get('costs', 0) %}
+            {% set time_tomorrow = tomorrow.get('wasmachine_lang', {}).get('start', 'ONBEKEND') %}
+            {% set costs_tomorrow = tomorrow.get('wasmachine_lang', {}).get('costs', 100) %}
+            {{ iif(time is not none and costs_tomorrow < costs, 'M ' ~ time_tomorrow ~ ' // ', '') ~ (time if time is not none else time_tomorrow)}}
+          icon: >
+            {{ (state_attr('sensor.zonneplan_prices', 'today') | default ({})).get('state', 'questionmark').split(' ') | join('_') }}
+          scrollSpeed: 35
+
       # notifications - text
       - alias: Monitor phone notification changes
         trigger: state
@@ -224,7 +244,8 @@ automation:
                                   pushIcon = pushIcon | default(none),
                                   textCase = textCase | default(none),
                                   color = color | default(none),
-                                  background = background | default(none)
+                                  background = background | default(none),
+                                  scrollSpeed = scrollSpeed | default(100)
                                   )
                 %}
                 {%- set data = dict(data.items() | rejectattr('1', 'none')) %}

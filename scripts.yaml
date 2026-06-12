@@ -165,6 +165,15 @@ voice_set_reminder_full_llm_script:
     path: TheFes/3_voice_reminder_full_llm.yaml
     input:
       todo_entity: todo.reminder
+      date_prompt: 'This argument is mandatory and must always be provided no matter
+        what!
+
+        Provide the date on which the reminder should be sent. In case only a time
+        is provided by the user, take the next occurance of that time. So if the request
+        is for a reminder at 6 o clock in the evening, and it''s already 8 o clock
+        in the evening set the reminder for tomorrow. The date needs be in the format
+        YYYY-MM-DD. The current date at this moment is {{ now().date() }}. Always
+        provide a date, and only provide a date, do not include a time.'
   description: Tool to set reminders based on voice commands. In case not recipient
     is provided ask for it, in case no clear date and time is provided ask for it,
     in case no recipient is provided ask for it
@@ -192,4 +201,3 @@ llm_web_search:
     with the smart home and are exclusively about current events or information in
     real-time like the current president, results of last night's game, release dates,
     etc.
-

@@ -1,135 +1,131 @@
 automation:
   - id: aef85bb7-d7c6-4727-84b7-c15f222d7f71
     alias: "Menu for Grandstream"
-    variables:
-      allowed_callers:
-        - "**621"
-        - "**622"
     triggers:
       - alias: "SIP call webhook received"
         trigger: webhook
         webhook_id: sip_call_webhook_id
         local_only: true
+    variables:
+      allowed_callers:
+        - "**621"
+        # - "**622"
+      number_calling: "{{ trigger.json.parsed_caller }}"
     conditions:
       - alias: "Check if webhook is for incoming call"
         condition: template
         value_template: "{{ trigger.json.event == 'incoming_call' }}"
+      - alias: "Check if caller is in allowed caller list"
+        condition: template
+        value_template: >
+          {{
+            number_calling in allowed_callers
+            if allowed_callers is defined and allowed_callers | length > 0
+            else true
+          }}
     actions:
-      - variables:
-          number_calling: "{{ trigger.json.parsed_caller }}"
-      - choose:
-          - conditions:
-              - alias: "Check if caller is in allowed caller list"
-                condition: template
-                value_template: >
-                  {{
-                    number_calling in allowed_callers
-                    if allowed_callers is defined and allowed_callers | length > 0
-                    else true
-                  }}
-            sequence:
-              - alias: "Start phone menu system"
-                action: hassio.addon_stdin
-                data:
-                  addon: c7744bff_ha-sip
-                  input:
-                    command: answer
-                    number: "{{ number_calling }}"
-                    menu:
-                      message: >
-                        Hallo! draai 1 om papa te bellen, 
-                        2 om mama te bellen, 
-                        3 om oma van Balloe te bellen 
-                        en 4 om oma van de Poes te bellen.
-                        Draai 8 om de alarmdiensten te bellen. 
-                        Gebruik dit alleen als er echt een noodgeval is.
-                        Draai 9 om te stoppen.
-                      timeout: 30
-                      choices:
-                        "1":
-                          id: papa
-                          message: Papa wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: dad
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "2":
-                          id: mama
-                          message: Mama wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: mom
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "3":
-                          id: grandma_dog
-                          message: Oma van Balloe wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: grandma_dog
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "4":
-                          id: grandma_dog
-                          message: Oma van de Poes wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: grandma_cat
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "5":
-                          id: home_assistant
-                          message: Home Assistant wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: home_assistant
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "8":
-                          id: alarm
-                          message: 112 wordt gebeld
-                          action:
-                            domain: script
-                            service: turn_on
-                            entity_id: script.make_call
-                            service_data:
-                              variables:
-                                to_call: alarm
-                                number_calling: "{{ number_calling }}"
-                          post_action: noop
-                        "9":
-                          id: bye
-                          message: Tot horens
-                          post_action: hangup
-                        default:
-                          id: wrong_code
-                          message: Dit nummer doet niets, probeer het opnieuw
-                          post_action: return
-                        timeout:
-                          id: timeout
-                          message: Er is geen keuze gemaakt. Tot horens
-                          post_action: hangup
+      - alias: "Start phone menu system"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: answer
+            number: "{{ number_calling }}"
+            menu:
+              message: >
+                Hallo! draai 1 om papa te bellen, 
+                2 om mama te bellen, 
+                3 om oma van Balloe te bellen 
+                en 4 om oma van de Poes te bellen.
+                Draai 8 om de alarmdiensten te bellen. 
+                Gebruik dit alleen als er echt een noodgeval is.
+                Draai 9 om te stoppen.
+              timeout: 30
+              choices:
+                "1":
+                  id: papa
+                  message: Papa wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: dad
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "2":
+                  id: mama
+                  message: Mama wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: mom
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "3":
+                  id: grandma_dog
+                  message: Oma van Balloe wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: grandma_dog
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "4":
+                  id: grandma_dog
+                  message: Oma van de Poes wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: grandma_cat
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "5":
+                  id: home_assistant
+                  message: Home Assistant wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: home_assistant
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "8":
+                  id: alarm
+                  message: 112 wordt gebeld
+                  action:
+                    domain: script
+                    service: turn_on
+                    entity_id: script.make_call
+                    service_data:
+                      variables:
+                        to_call: alarm
+                        number_calling: "{{ number_calling }}"
+                  post_action: noop
+                "9":
+                  id: bye
+                  message: Tot horens
+                  post_action: hangup
+                default:
+                  id: wrong_code
+                  message: Dit nummer doet niets, probeer het opnieuw
+                  post_action: return
+                timeout:
+                  id: timeout
+                  message: Er is geen keuze gemaakt. Tot horens
+                  post_action: hangup
     mode: restart
 
 script:

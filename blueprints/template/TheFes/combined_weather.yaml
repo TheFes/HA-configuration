@@ -362,6 +362,8 @@ actions:
       start_daytime: !input start_daytime
       start_night: !input start_night
       precision: !input precision_input
+      ignore_entities: !input ignore_entities
+      ignore_for_current: !input ignore_for_current
       forecast_all:
         - condition
         - wind_bearing
@@ -398,8 +400,7 @@ actions:
                 | selectattr('attributes.supported_features', 'defined')
                 | selectattr('attributes.supported_features', 'in', supported)
                 | map(attribute='entity_id') 
-                | reject('in', ignore_entities)
-                | reject('in', integration_entities('template'))
+                | reject('in', integration_entities('template') + ignore_entities)
                 | select('has_value')
                 | list
             }}
@@ -570,13 +571,13 @@ actions:
         {{
           states.weather
             | map(attribute='entity_id')
-            | reject('in', integration_entities('template'))
+            | reject('in', integration_entities('template') + ignore_for_current)
             | select('has_value')
             | list
         }}
       current_values: >
         {% set ns = namespace(attributes=['condition'], values={}) %}
-        {% for e in weather_entities | reject('in', ignore_current) | list %}
+        {% for e in weather_entities | list %}
           {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
         {% endfor %}
         {% set attributes = ns.attributes | unique | list %}

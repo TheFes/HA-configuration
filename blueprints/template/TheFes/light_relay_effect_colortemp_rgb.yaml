@@ -70,6 +70,14 @@ blueprint:
           min: 0
           max: 10000
       default: 10000
+    name:
+      name: Name
+      description: The name of the new light
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: null
     default_entity_id:
       name: Default entity_id
       description: The default entity id to use
@@ -93,10 +101,11 @@ variables:
     {{ (1000000/max_ct) | round | int }}
   max_mireds: >
     {{ (1000000/min_ct) | round | int }}
+  provided_name: !input name
 
 light:
   default_entity_id: !input default_entity_id
-  name: "{{ source_light | entity_name | default('Not ready', true) }}"
+  name: "{{ provided_name or source_light | entity_name | default('Not ready', true) }}"
   icon: "{{ icon_on if is_state(source_light, 'on') else icon_off }}"
   state: >
     {{

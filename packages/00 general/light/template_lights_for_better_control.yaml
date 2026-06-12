@@ -8,6 +8,7 @@ template:
         icon_on: mdi:bulkhead-light
         icon_off: mdi:bulkhead-light
         default_entity_id: light.trapkast_template
+        name: Trapkast
     unique_id: b1692c6c-72ac-4f36-b206-d61f7dbc9779
 
   - use_blueprint:
@@ -17,6 +18,7 @@ template:
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.keuken_template
+        name: Keuken Plafond
     unique_id: 3b6a08d8-b6d1-4549-bc10-cd018a6aaa0f
 
   - use_blueprint:
@@ -26,6 +28,7 @@ template:
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.woonkamer_plafond_template
+        name: Woonkamer Plafond
     unique_id: 8bb4f274-2577-44ca-8c11-52b2d8551f50
 
   - use_blueprint:
@@ -35,6 +38,7 @@ template:
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.hal_template
+        name: Hal
     unique_id: 57d3327c-f4dd-4f7d-8a1f-7cb38b579a6a
 
   - use_blueprint:
@@ -44,6 +48,7 @@ template:
         icon_on: mdi:ceiling-light-multiple
         icon_off: mdi:ceiling-light-multiple-outline
         default_entity_id: light.badkamer_template
+        name: Badkamer Plafond
     unique_id: 075af7f8-33f2-4965-91e7-0cdea360acc6
 
   - use_blueprint:
@@ -53,6 +58,7 @@ template:
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.overloop_template
+        name: Overloop
     unique_id: 249fed5a-76b7-400d-890d-c15d3202ea35
 
   - use_blueprint:
@@ -62,6 +68,7 @@ template:
         icon_on: mdi:bulkhead-light
         icon_off: mdi:bulkhead-light
         default_entity_id: light.zolder_template
+        name: Zolder
     unique_id: d86446ee-6857-4556-903b-72dd2e3a9b41
 
   - use_blueprint:
@@ -71,6 +78,7 @@ template:
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.veranda_template
+        name: Veranda
     unique_id: 83b9379d-81d9-4759-b81f-1338165547c8
 
   # brightness and color temp
@@ -81,6 +89,7 @@ template:
         icon_on: mdi:led-strip-variant
         icon_off: mdi:led-strip-variant-off
         default_entity_id: light.boekenkast_template
+        name: Boekenkast
     unique_id: ab1d64cb-58c3-45a8-ae6f-03d1205df543
 
   - use_blueprint:
@@ -89,9 +98,11 @@ template:
         source_light: light.floris
         relay_switch: switch.sonoff_floris_relay
         max_ct_kelvin: 4000
+        max_brightness: 254
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.floris_template
+        name: Floris Plafond
     unique_id: ced86365-57a8-43bb-bbdb-e144a7a9a12c
 
   - use_blueprint:
@@ -103,6 +114,7 @@ template:
         icon_off: mdi:coach-lamp
         min_brightness: 37
         default_entity_id: light.voordeur_template
+        name: Voordeur
     unique_id: 2eea83f3-105a-42dd-ac39-c7c57cea6e50
 
   - use_blueprint:
@@ -112,6 +124,7 @@ template:
         icon_on: mdi:lightbulb
         icon_off: mdi:lightbulb-off
         default_entity_id: light.floris_leeslamp_template
+        name: Floris Leeslamp
     unique_id: d4d8ae15-3439-4473-acf4-aed0942ca4d1
 
   - use_blueprint:
@@ -123,6 +136,7 @@ template:
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
         default_entity_id: light.eettafel_template
+        name: Eettafel
     unique_id: 847f5495-8971-4656-8fde-7a636e983735
 
   - use_blueprint:
@@ -134,6 +148,7 @@ template:
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
         default_entity_id: light.pepijn_template
+        name: Pepijn Plafond
     unique_id: 9ab61c13-2106-4d67-a40b-cbc707414c6a
 
   - use_blueprint:
@@ -144,6 +159,7 @@ template:
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.slaapkamer_plafond_template
+        name: Slaapkamer Plafond
     unique_id: 7b2d56f2-0563-4078-820f-b92e5256cbb1
 
   - use_blueprint:
@@ -154,6 +170,7 @@ template:
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.wasmachinehoek_template
+        name: Wasmachinehoek
     unique_id: a5f4c3a4-adf8-4e20-9fb5-b7215f4491bc
 
   - use_blueprint:
@@ -164,6 +181,7 @@ template:
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.badkamer_zolder_template
+        name: Badkamer Zolder
     unique_id: 0bf8180c-d79e-49ea-b891-9b3bdebe3458
 
   - use_blueprint:
@@ -175,6 +193,7 @@ template:
         min_brightness: 26
         max_ct_kelvin: 3500
         default_entity_id: light.speelhoek_template
+        name: Speelhoek
     unique_id: f99b33b6-e959-457b-8514-30869ceffc7a
 
   - use_blueprint:
@@ -186,6 +205,7 @@ template:
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
         default_entity_id: light.werkkamer_marleen_template
+        name: Werkkamer Marleen Plafond
     unique_id: 8cf8b0fd-adb9-4239-84ec-f3e93c8452c3
 
   - use_blueprint:
@@ -196,6 +216,7 @@ template:
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.werkkamer_martijn_plafond_template
+        name: Werkkamer Martijn Plafond
     unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
 
   # colortemp and rgb
@@ -206,6 +227,7 @@ template:
         icon_on: mdi:lamp
         icon_off: mdi:lamp-outline
         default_entity_id: light.bedside_lamp_template
+        name: Nachtkastje Martijn
     unique_id: 4f868cad-6487-40d3-935c-2fabb7d75ebb
 
   - use_blueprint:
@@ -215,6 +237,7 @@ template:
         icon_on: mdi:desk-lamp
         icon_off: mdi:desk-lamp-off
         default_entity_id: light.pepijn_leeslamp_template
+        name: Leeslamp Pepijn
     unique_id: 9c60f0f9-6f63-4f9f-9481-d55efab4b8bf
 
   # rgb
@@ -225,6 +248,7 @@ template:
         icon_on: mdi:led-strip-variant
         icon_off: mdi:led-strip-variant-off
         default_entity_id: light.vliering_led_template
+        name: Vliering Led
     unique_id: ba2c70a7-7e6f-4da9-a1a3-03b3146f5bd4
 
   # rgbw
@@ -235,6 +259,7 @@ template:
         icon_on: mdi:excavator
         icon_off: mdi:excavator
         default_entity_id: light.graafmachine_template
+        name: Graafmachine
     unique_id: 2e183aee-bbbf-4f4c-a43d-e6c48e36c879
 
   - triggers:

@@ -639,17 +639,18 @@ template:
           {% if this.state == 'unknown' %}
             Dashboard Washing Machine Status
           {% else %}
-            {%- if is_state('sensor.wasmachine', 'on') %}
-              {%- set h, m, s = states('sensor.wasmachine_remain_time').split(':') | map('int') %}
-              {%- set total = h * 3600 + m *60 %}
-              {{ 'Wasmachine klaar rond ' ~ (now() + timedelta(seconds = total)).strftime('%H:%M') }}
+            {%- if states('sensor.wasmachine_current_status') in ['running', 'rinsing', 'spinning'] %}
+              {{ 'Wasmachine klaar rond ' ~ (states('sensor.wasmachine_resterende_tijd') | as_datetime | as_local).strftime('%H:%M') }}
+            {% elif is_state('input_boolean.wasmachine_remote_start', 'on') %}
+              {% set start = states('sensor.wasmachine_start_time') | as_datetime | as_local %}
+              Ingepland, start {{ 'morgen ' if start.date() != now().date() }}{{ start.strftime('%H:%M') }}
             {%- else -%}
               Inactief
             {%- endif %}
           {% endif %}
         icon: mdi:washing-machine
         state: >
-          {{ is_state('sensor.wasmachine', 'on') }}
+          {{ states('sensor.wasmachine_current_status') in ['running', 'rinsing', 'spinning'] or is_state('input_boolean.wasmachine_remote_start', 'on') }}
 
       - unique_id: sensor_anniversary_martijn
         default_entity_id: binary_sensor.dashboard_anniversary_martijn
