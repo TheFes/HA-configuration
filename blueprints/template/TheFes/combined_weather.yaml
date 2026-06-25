@@ -578,7 +578,15 @@ actions:
       current_values: >
         {% set ns = namespace(attributes=['condition'], values={}) %}
         {% for e in weather_entities | list %}
-          {% set ns.attributes = ns.attributes + states[e].attributes.items() | selectattr('1', 'is_number') | map(attribute='0') | reject('eq', 'supported_features') | list %}
+          {% set ns.attributes = ns.attributes + 
+                                    states[e].attributes.items()
+                                      | selectattr('1', 'is_number')
+                                      | map(attribute='0')
+                                      | reject('eq', 'supported_features')
+                                      | list
+                                      | to_json
+                                      | from_json
+          %}
         {% endfor %}
         {% set attributes = ns.attributes | unique | list %}
         {% for a in attributes %}
