@@ -40,3 +40,13 @@ switch:
 
 web_server:
   version: "3"
+
+light:
+  - platform: esp32_rmt_led_strip
+    name: Onboard RGB LED
+    id: onboard_rgb_led
+    pin: 5
+    chipset: WS2812
+    num_leds: 1
+    rgb_order: GRB
+    rmt_symbols: 48
