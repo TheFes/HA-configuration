@@ -50,3 +50,20 @@ light:
     num_leds: 1
     rgb_order: GRB
     rmt_symbols: 48
+  - platform: esp32_rmt_led_strip
+    name: RGB LEDs
+    id: rgb_leds
+    pin: 14
+    chipset: WS2812
+    num_leds: 10
+    rgb_order: GRB
+    rmt_symbols: 48
+
+output:
+  - platform: ledc
+    id: buzzer_output
+    pin: 18
+
+rtttl:
+  - id: rtttl_player
+    output: buzzer_output
