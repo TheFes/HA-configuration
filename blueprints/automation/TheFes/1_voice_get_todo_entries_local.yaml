@@ -65,6 +65,7 @@ blueprint:
           - domain:
             - todo
           multiple: false
+          reorder: false
     trigger_settings:
       name: Trigger settings
       icon: mdi:chat
@@ -126,7 +127,7 @@ variables:
   valid_request: '{{ list_entity_request is not none or request_name == ''use_default''
     }}'
   list_entity: '{{ list_entity_request or default_entity }}'
-  list_name: '{{ list_entity | entity_name }}'
+  list_name: '{{ state_attr(list_entity, ''friendly_name'') }}'
 actions:
 - if: '{{ valid_request }}'
   then:

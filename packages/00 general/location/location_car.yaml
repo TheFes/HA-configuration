@@ -1,56 +1,58 @@
-automation:
-  - id: 95757e21-9bcd-4379-a1c8-a7e2d502d2de
-    alias: "Dude, Where's my car"
-    triggers:
+template:
+  # template sensor based on iOS automations to see if phone is connected to Carplay
+  - triggers:
+      - trigger: event
+        event_type: marleen_carplay_disconnected
+        id: "off"
+      - trigger: event
+        event_type: marleen_carplay_connected
+        id: "on"
+    binary_sensor:
+      - unique_id: 5f3ae4f0-e59c-4056-b49e-af26aade36c0
+        name: Marleen Carplay Connected
+        state: "{{ trigger.id }}"
+        icon: "{{ 'mdi:car-connected' if trigger.id | bool else 'mdi:car-off' }}"
+  # sensors to locate car using the sensor above, and the sensors provided by the companion app
+  - triggers:
       - alias: "Martijn disconnected from Android Auto"
         trigger: state
         entity_id: binary_sensor.pixel_10_pro_android_auto
         from: "on"
         to: "off"
-        id: leave_car
-      - alias: "Home Assistant started"
-        trigger: homeassistant
-        event: start
-        id: ha_start
-    variables:
-      loc: >
-        {{
-          states('sensor.pixel_10_pro_geocoded_location')
-          if trigger.id == 'leave_car'
-          else state_attr('sensor.variables', 'variables').get('car_location', {}).get('location')
-        }}
-      lat: >
-        {{
-          state_attr('person.martijn', 'latitude')
-          if trigger.id == 'leave_car'
-          else state_attr('sensor.variables', 'variables').get('car_location', {}).get('latitude')
-        }}
-      lon: >
-        {{
-          state_attr('person.martijn', 'longitude')
-          if trigger.id == 'leave_car'
-          else state_attr('sensor.variables', 'variables').get('car_location', {}).get('longitude')
-        }}
+        id: leave_car_martijn
+        variables:
+          notify_action: notify.mobile_app_pixel_10_pro
+          geocoded: sensor.pixel_10_pro_geocoded_location
+          device_tracker: device_tracker.pixel_10_pro_3
+      - alias: "Marleen disconnected from Android Auto"
+        trigger: state
+        entity_id: binary_sensor.marleen_carplay_connected
+        from: "on"
+        to: "off"
+        id: leave_car_marleen
+        variables:
+          notify_action: notify.mobile_app_iphone_van_marleen
+          geocoded: sensor.iphone_van_marleen_geocoded_location
+          device_tracker: device_tracker.iphone_van_marleen
     actions:
-      - if:
-          - condition: trigger
-            id: leave_car
-        then:
-          - alias: "Store car location in variables"
-            event: set_variable
-            event_data:
-              key: "car_location"
-              value:
-                location: "{{ loc }}"
-                latitude: "{{ lat }}"
-                longitude: "{{ lon }}"
-              set_timestamp: false
-      - alias: "Update car device tracker location"
-        action: device_tracker.see
+      - action: "{{ notify_action }}"
         data:
-          dev_id: car
-          host_name: Locatie Auto
-          location_name: "{{ loc }}"
-          gps:
-            - "{{ lat }}"
-            - "{{ lon }}"
+          message: "request_location_update"
+      - delay:
+          seconds: 3
+    sensor:
+      - unique_id: 9c9da226-77f1-4366-9d0a-c778941fd61b
+        name: Car Geocoded Location
+        state: "{{ states(geocoded) }}"
+        attributes:
+          latitude: "{{ state_attr(device_tracker, 'latitude') }}"
+          longitude: "{{ state_attr(device_tracker, 'longitude') }}"
+          gps_accuracy: "{{ state_attr(device_tracker, 'gps_accuracy') }}"
+  - device_tracker:
+      - unique_id: 4c9495e8-e731-4597-ba01-6e5318789e55
+        name: Car Location
+        icon: mdi:car
+        latitude: "{{ state_attr('sensor.car_geocoded_location', 'latitude') }}"
+        longitude: "{{ state_attr('sensor.car_geocoded_location', 'longitude') }}"
+        location_accuracy: "{{ state_attr('sensor.car_geocoded_location', 'gps_accuracy') }}"
+        availability: "{{ 'sensor.car_geocoded_location' | has_value }}"

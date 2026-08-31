@@ -1,0 +1,167 @@
+blueprint:
+  name: Variables Sensor (version 2)
+  description: '# Variables Sensor (version 2)
+
+
+    <img width="512" height="256" alt="dark_logo" src="https://github.com/user-attachments/assets/afee8c82-0367-42b0-ab3a-91e86079b48d" />
+
+
+    Template sensor to store variables
+
+
+    For more details on how to use the blueprint and examples for each integration,
+    see the [documentation](<https://github.com/TheFes/cheapest-energy-hours/blob/main/documentation/blueprints/energy_price_sensor.md>).
+    '
+  author: TheFes
+  source_url: https://github.com/TheFes/cheapest-energy-hours/blob/main/blueprints/energy_price_sensor.yaml
+  domain: template
+  input:
+    entity_id:
+      name: Entity id variables sensor
+      description: The entity_id which will be used for the template sensor created using this blueprint
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: sensor.variables
+    set_variable:
+      name: Set variable event
+      description: The variable event key which will be used to set a variable
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: set_variable
+    remove_variable:
+      name: Remove variable event
+      description: The variable event key which will be used to remove a single variable
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: remove_variable
+    clear_variables:
+      name: Clear all variables event
+      description: The variable event key which will be used to clear all variables
+      selector:
+        text:
+          multiple: false
+          multiline: false
+      default: clear_variables
+    default_timestamp:
+      name: Default timestamp
+      description:
+        Wether to include the timestamp when each variable is added by default. Can be overruled when
+        setting the variable.
+      selector:
+        boolean:
+      default: false
+    log_events:
+      name: Log events
+      description: Wether to log each variable event sent in the log file.
+      selector:
+        boolean:
+      default: false
+
+variables:
+  entity_id: !input entity_id
+  default_timestamp: !input default_timestamp
+  log_events: !input log_events
+  set_variable: !input set_variable
+  remove_variable: !input remove_variable
+  clear_variables: !input clear_variables
+
+triggers:
+  - trigger: event
+    event_type: !input set_variable
+  - trigger: event
+    event_type: !input remove_variable
+  - trigger: event
+    event_type: !input clear_variables
+
+conditions:
+  - condition: template
+    value_template: >
+      {{
+          (
+            trigger.event.event_type == set_variable
+            and trigger.event.data is defined
+            and trigger.event.data.key is defined
+            and trigger.event.data.value is defined
+          )
+          or
+          (
+            trigger.event.event_type == remove_variable
+            and trigger.event.data is defined
+            and trigger.event.data.key is defined
+          )
+          or 
+          trigger.event.event_type == clear_variables
+      }}
+
+actions:
+  - variables:
+      type: "{{ trigger.event.event_type }}"
+      key: "{{ trigger.event.get('data', {}).get('key') }}"
+      value: "{{ trigger.event.get('data', {}).get('value') }}"
+  - if: "{{ type in [set_variable, remove_variable] }}"
+    then:
+      - variables:
+          
+          reject_list:
+            - friendly_name
+            - device_class
+            - icon
+            - "{{ key }}"
+            - "{{ key }}_dt"
+          other_vars: >
+            {% set attr_data = (states[entity_id] | default(dict(attributes={}), true)).attributes %}
+            {{ dict(attr_data.items() | rejectattr('0', 'in', reject_list)) }}
+          set_timestamp: >
+            {{ trigger.event.data.get('set_timestamp', default_timestamp | default(false)) }}
+          to_add: >
+            {% if type == remove_variable %}
+              {}
+            {% elif set_timestamp %}
+              {{
+                {
+                  key: trigger.event.data.value,
+                  key~'_dt': now().isoformat()
+                }
+              }}
+            {% else %}
+              {{ {key: trigger.event.data.value} }}
+            {% endif %}
+          new_attr_data: "{{ combine(other_vars, to_add) }}"
+          var_count: "{{ new_attr_data.keys() | reject('search', '.*_dt$') | list | count }}"
+  - alias: Log variables event if requested
+    if: "{{ log_events }}"
+    then:
+      - alias: Set mapping to retreive description
+        variables:
+          event_description: >
+            {{
+              {
+                set_variable: "Variables sensor: New variable set",
+                remove_variable: "Variables sensor: New variable set",
+                clear_variables: "Variables sensor: All variables removed"
+              }
+            }}
+      - alias: Log the event
+        action: logbook.log
+        data:
+          name: Variables sensor update
+          message: >
+            {{ event_description.get(type) }}
+            {% if type in [set_variable, remove_variable] %}
+              {{ dict(key=key, value=value | default(state_attr(entity_id, key), true)) | to_json }}
+            {%- endif -%}
+
+sensor:
+  state: "{{ trigger.event.time_fired }}"
+  device_class: timestamp
+  icon: >
+    {% set vars = var_count | default(0) %}
+    {% set number = [vars, 9] | min ~  ('-plus' if vars > 9 else '') %}
+    {{ 'mdi:numeric-' ~ number ~ '-box' }}
+  attributes: "{{ new_attr_data | default({}) }}"

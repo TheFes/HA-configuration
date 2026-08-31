@@ -243,6 +243,55 @@ automation:
                 action: counter.reset
                 target:
                   entity_id: counter.vacuum_dust_bin
+  # actions with VoicePE button
+  - id: 5a5a8473-657d-45c9-8020-3b7f571e8d1e
+    mode: single
+    max_exceeded: silent
+    alias: Actions with Voice PE button office Martijn
+    triggers:
+      - trigger: event.received
+        target:
+          entity_id: event.ha_voice_werkkamer_martijn_button_press
+        options:
+          event_type:
+            - double_press
+        id: double
+      - trigger: event.received
+        target:
+          entity_id: event.ha_voice_werkkamer_martijn_button_press
+        options:
+          event_type:
+            - triple_press
+        id: triple
+    actions:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id:
+                  - double
+            sequence:
+              - alias: "Turn on desk power switch"
+                action: switch.toggle
+                target:
+                  entity_id: switch.shelly1pm_bureau_martijn_relay
+          - conditions:
+              - condition: trigger
+                id:
+                  - triple
+            sequence:
+              - alias: "Set media player volume to 50%"
+                action: media_player.volume_set
+                target:
+                  entity_id: media_player.martijn
+                data:
+                  volume_level: 0.5
+              - alias: "Start playing Studio Brussel radio"
+                action: music_assistant.play_media
+                target:
+                  entity_id: media_player.martijn
+                data:
+                  media_id: Studio Brussel
+                  media_type: radio
 
   # From xiaomi_cube.yaml
   - id: "ca0dceb5-ad00-4d9f-b0fc-9453574b1891"

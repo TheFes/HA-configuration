@@ -47,7 +47,7 @@ template:
             {# negative #}
               {% set negative = prices | map(attribute='price') | select('<', 0) | list | count > 0 %}
             {# wasmaschine snel #}
-              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'turbowash') | map(attribute='1') | first %}
+              {% set data = (state_attr('sensor.energy_plots', 'energy_plots') | default({}, true)).items() | selectattr('0', 'search', 'turbowash') | map(attribute='1') | first %}
               {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
               {% set hours = data.data | count / data.no_weight_points %}
               {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24') %}
@@ -58,7 +58,7 @@ template:
               {% set wasmachine_snel = dict(start=ceh.get('start'), costs=ceh.get('estimated_costs', 0) | round(5), is_now=ceh_now) %}
               
             {# wasmaschine lang #}
-              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'eco') | map(attribute='1') | first %}
+              {% set data = (state_attr('sensor.energy_plots', 'energy_plots') | default({}, true)).items() | selectattr('0', 'search', 'eco') | map(attribute='1') | first %}
               {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
               {% set hours = data.data | count / data.no_weight_points %}
               {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', value_on_error={}) %}
@@ -66,7 +66,7 @@ template:
               {% set wasmachine_lang = dict(start=ceh.get('start'), costs=ceh.get('estimated_costs', 0) | round(5), is_now=ceh_now) %}
               
             {# vaatwasser #}
-              {% set data = state_attr('sensor.energy_plots', 'energy_plots').items() | selectattr('0', 'search', 'vaatwasser') | map(attribute='1') | first %}
+              {% set data = (state_attr('sensor.energy_plots', 'energy_plots') | default({}, true)).items() | selectattr('0', 'search', 'vaatwasser') | map(attribute='1') | first %}
               {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
               {% set hours = data.data | count / data.no_weight_points %}
               {% set ceh = cheapest_energy_hours('sensor.zonneplan_prices', look_ahead=true, hours=hours, weight=data.weight, kwh=data.kwh_used, mode='all', time_format='time24', value_on_error={}) %}

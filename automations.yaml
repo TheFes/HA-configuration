@@ -37,7 +37,6 @@
     path: TheFes/1_voice_calendar_entries_local.yaml
     input:
       calendar_entity:
-      - calendar.kids
       - calendar.thefes
       - calendar.m_m
       today:
@@ -164,7 +163,7 @@
         minutes: /5
       after_notification: Mark as completed
 - id: '1762721132649'
-  alias: Telegram alert for Studio Code Server add-on
+  alias: Telegram alert for Studio Code Server app
   description: ''
   use_blueprint:
     path: TheFes/telegram_alert.yaml
@@ -173,10 +172,10 @@
       problem_state: 'on'
       repeat:
       - 90
-      alert_title: "\U0001F6A8 Studio Code Server addon alert"
-      alert_message: De Studio Code Server add-on is al even actief. Ben je nog steeds
+      alert_title: "\U0001F6A8 Studio Code Server app alert"
+      alert_message: De Studio Code Server app is al even actief. Ben je nog steeds
         aan het coderen?
-      done_message: De Studio Code Server add-on is niet meer actief.
+      done_message: De Studio Code Server app is niet meer actief.
       acknowledge_button_label: Stop met deze onzin
       can_acknowledge: false
       button_1_label: Zet addon uit
@@ -626,4 +625,47 @@
     target:
       entity_id: input_boolean.marleen_carplay
     data: {}
+  mode: single
+- id: '1784115910051'
+  alias: New automation
+  description: ''
+  triggers:
+  - trigger: light.turned_off
+    target:
+      area_id: eettafel
+    options:
+      for: 00:00:00
+      behavior: all
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - variables:
+      name: '{{ trigger.to_state.name }}
+
+        '
+  mode: single
+- id: '1784139221284'
+  alias: Test battery threshold
+  description: ''
+  triggers:
+  - trigger: battery.level_crossed_threshold
+    target:
+      area_id: weer
+    options:
+      threshold:
+        type: below
+        value:
+          active_choice: number
+          number: 20
+      behavior: each
+  conditions: []
+  actions:
+  - action: persistent_notification.create
+    metadata: {}
+    data:
+      message: The {{ trigger.to_state.name }} is below 20%
   mode: single

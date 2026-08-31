@@ -22,7 +22,7 @@ automation:
               - conditions:
                   - alias: "Single press detected"
                     condition: template
-                    value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
+                    value_template: "{{ trigger.to_state.attributes.event_type == 'single_push' }}"
                 sequence:
                   - alias: "Toggle stairs closet light"
                     action: light.toggle
@@ -31,7 +31,7 @@ automation:
               - conditions:
                   - alias: "Double press detected"
                     condition: template
-                    value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
+                    value_template: "{{ trigger.to_state.attributes.event_type == 'double_push' }}"
                 sequence:
                   - alias: "Toggle stairs closet light to full brightness"
                     action: light.toggle

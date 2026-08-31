@@ -92,16 +92,19 @@ template:
               or 
               trigger.event.event_type == 'clear_variables'
           }}
+    variables:
+      default_timestamp: false
+      log_events: false
     actions:
-      - if: "{{ trigger.event.data.get('log', state_attr('sensor.variables', 'log_events')) }}"
+      - if: "{{ log_events }}"
         then:
           - service: logbook.log
             data:
-              name: "{{ trigger.event.event_type }}:"
+              name: "{{ trigger.event.event_type }}"
               message: >
                 {{ trigger.event.data.key | default('All variables removed') }}
                 {%- if trigger.event.event_type == 'set_variable' -%}
-                  : {{ trigger.event.data.value }}.
+                  {{ trigger.event.data.value }}
                 {%- endif -%}
     sensor:
       - unique_id: 4a4c8e53-9e68-4198-9cc5-b336e228ea4d
@@ -128,3 +131,15 @@ template:
             {% elif trigger.event.event_type == 'clear_variables' %}
               {}
             {% endif %}
+
+  - use_blueprint:
+      path: TheFes/variables_v2.yaml
+      input:
+        entity_id: sensor.variables_2
+        set_variable: set_variable
+        remove_variable: remove_variable
+        clear_variables: clear_variables
+        default_timestamp: false
+        log_events: false
+    name: Variables 2
+    unique_id: 69610208-db6a-4aed-8e4b-185ef7e2a30e

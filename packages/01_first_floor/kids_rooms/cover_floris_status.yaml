@@ -1,15 +1,6 @@
 # Template sensor for Floris' cover status
 template:
   - triggers:
-      - alias: "Floris cover group close command received"
-        trigger: event
-        event_type: call_service
-        id: closing
-        event_data:
-          domain: cover
-          service: close_cover
-          service_data:
-            entity_id: cover.floris_groep
       - alias: "Floris individual cover close command received"
         trigger: event
         event_type: call_service
@@ -19,15 +10,6 @@ template:
           service: close_cover
           service_data:
             entity_id: cover.floris
-      - alias: "Floris cover group open command received (incorrect service)"
-        trigger: event
-        event_type: call_service
-        id: opening
-        event_data:
-          domain: cover
-          service: close_cover
-          service_data:
-            entity_id: cover.floris_groep
       - alias: "Floris individual cover open command received"
         trigger: event
         event_type: call_service

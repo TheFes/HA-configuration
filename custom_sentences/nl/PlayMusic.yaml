@@ -12,11 +12,11 @@ intents:
             slot: true
         response: play_music
       - sentences:
-          - Luister (<in> <area>;naar {to_play})
-          - Speel (<in> <area>;{to_play})
-          - "[wij willen ](<in> <area>;{to_play} horen)"
-          - "[wij willen |kun je | wil je ](<in> <area>;{to_play} afspelen)"
-          - "[wij willen ](<in> <area>;naar {to_play} luisteren)"
+          - Luister ((in|op|van|bij) <area>;naar {to_play})
+          - Speel ((in|op|van|bij) <area>;{to_play})
+          - "[wij willen ]((in|op|van|bij) <area>;{to_play} horen)"
+          - "[wij willen |kun je | wil je ]((in|op|van|bij) <area>;{to_play} afspelen)"
+          - "[wij willen ]((in|op|van|bij) <area>;naar {to_play} luisteren)"
         response: play_music_area
       - sentences:
           - Luister (op <name>;naar {to_play})

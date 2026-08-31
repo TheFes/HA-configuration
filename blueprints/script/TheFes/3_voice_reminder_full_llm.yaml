@@ -58,7 +58,7 @@ blueprint:
     ```'
   domain: script
   homeassistant:
-    min_version: 2024.3.999
+    min_version: 2025.4.0
   input:
     general_settings:
       name: General settings
@@ -74,6 +74,7 @@ blueprint:
               filter:
               - domain:
                 - todo
+              reorder: false
     prompt_settings:
       name: Prompt settings for the LLM
       icon: mdi:robot

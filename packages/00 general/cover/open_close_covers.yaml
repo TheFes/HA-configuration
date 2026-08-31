@@ -7,23 +7,19 @@ automation:
       cover: cover.pepijn_template
       temp: sensor.pepijn_temp
       manual: binary_sensor.screen_pepijn_manual
-      close_time_workday: "07:30"
-      close_time_weekend: "08:30"
-      open_time: "18:00"
+      close_time_workday: "07:00"
+      close_time_weekend: "07:00"
+      sun_sensor: binary_sensor.sun_back
     <<: &config
       mode: restart
       variables:
         open: >
-          {{
-              trigger.id == 'open'
-              and 
-                (
-                  states('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
-                  or not is_state('binary_sensor.rain_until_morning', 'off')
-                  or as_local(as_datetime(states('sensor.sun_next_rising'))).time() > today_at('07:00').time()
-                )
-          }}
+          {{ trigger.id == 'open' }}
       triggers:
+        - alias: "Sun at the side of the house"
+          trigger: template
+          value_template: "{{ is_state(sun_sensor, 'on') }}"
+          id: close
         - alias: "closing time"
           trigger: template
           value_template: >
@@ -32,14 +28,10 @@ automation:
               else close_time_weekend %}
             {{ now() > today_at(close_time) }}
           id: close
-        - alias: "closing time"
-          trigger: template
-          value_template: "{{ extra_close_time is defined and now() > today_at(extra_close_time) }}"
-          id: close
-        - alias: "outside temp above 18"
+        - alias: "outside temp above 20"
           trigger: numeric_state
           entity_id: sensor.weather_combined_max_temp_today
-          above: 18
+          above: 20
           id: close
         - alias: "currently sunny weather"
           trigger: state
@@ -62,50 +54,34 @@ automation:
         - alias: "Wait for manual override period to end"
           trigger: template
           value_template: "{{ is_state(manual, 'off') }}"
-        - alias: "opening time"
+        - alias: "Sun no longer at side of the house"
           trigger: template
-          value_template: "{{ now() > today_at(open_time) }}"
+          value_template: "{{ is_state(sun_sensor, 'off') }}"
           id: open
       conditions:
         - alias: "During screen season (March through September)"
           condition: template
-          value_template: "{{ 3 <= now().month <= 8 }}"
-        - condition: or
-          conditions:
-            - alias: "open"
-              condition: and
-              conditions:
-                - alias: "open trigger"
-                  condition: trigger
-                  id: open
-                - alias: "cold day tomorrow or rain expected"
-                  condition: template
-                  value_template: >
-                    {{
-                        trigger.id == 'open'
-                        and 
-                          (
-                            states('sensor.weather_combined_max_temp_tomorrow') | float(21) <= 20
-                            or not is_state('binary_sensor.rain_until_morning', 'off')
-                          )
-                    }}
-            - alias: "close"
-              condition: and
-              conditions:
+          value_template: "{{ 3 <= now().month <= 9 }}"
+      actions:
+        - choose:
+            - conditions:
                 - alias: "close trigger"
                   condition: trigger
-                  id: close
-                - alias: "closing time"
+                  id: "close"
+                - alias: "Sun at side of the house"
+                  condition: template
+                  value_template: "{{ is_state(sun_sensor, 'on') }}"
+                - alias: "closing time (override when it's a really hot day)"
                   condition: template
                   value_template: >
                     {% set close_time = close_time_workday
                       if is_state('binary_sensor.workday_sensor', 'on')
                       else close_time_weekend %}
-                    {{ today_at(close_time) < now() < today_at(open_time)  }}
-                - alias: "outside temp above 18"
+                    {{ now() > today_at(close_time) or states('sensor.weather_combined_max_temp_today') | float > 25 }}
+                - alias: "outside temp above 20"
                   condition: numeric_state
                   entity_id: sensor.weather_combined_max_temp_today
-                  above: 18
+                  above: 20
                 - alias: "currently sunny weather"
                   condition: state
                   entity_id: weather.combined
@@ -116,38 +92,15 @@ automation:
                   condition: state
                   entity_id: binary_sensor.rain
                   state: "off"
-                - alias: "inside temp above 20"
+                - alias: "inside temp above 21"
                   condition: template
-                  value_template: "{{ states(temp) | float(0) >= 20 }}"
+                  value_template: "{{ states(temp) | float(0) >= 21 }}"
                 - alias: "not manually opened/closed in the last period"
                   condition: template
                   value_template: >
                     {{ 
                         manual is undefined
                         or not is_state(manual, 'on')
-                    }}
-      actions:
-        - choose:
-            - conditions:
-                - alias: "close trigger"
-                  condition: trigger
-                  id: "close"
-                - alias: "cover is completely open or time is after 11:00"
-                  condition: template
-                  value_template: >
-                    {% set cleaning = 
-                      'floris' in cover
-                      and now().weekday() == 3
-                      and extra_close_time is defined
-                      and today_at(open_time) < now() < today_at(extra_close_time)
-                    %}
-                    {{
-                      not is_state_attr(cover, 'cover_position', 0)
-                      and
-                        (
-                          not cleaning 
-                          or is_state_attr(cover, 'cover_position', 100)
-                        )
                     }}
               sequence:
                 - alias: "close the cover"
@@ -158,9 +111,6 @@ automation:
                 - alias: "open trigger"
                   condition: trigger
                   id: "open"
-                - alias: "cover is not already completely open"
-                  condition: template
-                  value_template: "{{ not is_state_attr(cover, 'cover_position', 100) }}"
               sequence:
                 - alias: "open the cover"
                   action: cover.open_cover
@@ -174,10 +124,10 @@ automation:
       cover: cover.floris
       temp: sensor.floris_temp
       manual: binary_sensor.screen_floris_manual
-      close_time_workday: "07:30"
-      close_time_weekend: "08:30"
+      close_time_workday: "07:00"
+      close_time_weekend: "07:00"
       extra_close_time: "11:00"
-      open_time: "22:00"
+      sun_sensor: binary_sensor.sun_front
     <<: *config
 
   # Office Marleen
@@ -187,67 +137,34 @@ automation:
       cover: cover.werkkamer_marleen
       temp: sensor.werkkamer_marleen_temp
       manual: binary_sensor.screen_werkkamer_marleen_manual
-      close_time_workday: "07:30"
-      close_time_weekend: "08:30"
-      open_time: "18:00"
+      close_time_workday: "07:00"
+      close_time_weekend: "07:00"
+      sun_sensor: binary_sensor.sun_back
     <<: *config
 
-  # Office Marleen
+  # Bedroom
   - id: aab636cd-dac7-4837-82a8-720affe3879f
     alias: "Open or close covers bedroom when needed"
     trigger_variables:
       cover: cover.slaapkamer_zolder_template
       temp: sensor.awair_slaapkamer_temperature
       manual: binary_sensor.screen_slaapkamer_manual
-      close_time_workday: "07:30"
-      close_time_weekend: "08:30"
-      open_time: "21:30"
+      close_time_workday: "07:00"
+      close_time_weekend: "07:00"
+      sun_sensor: binary_sensor.sun_back
     <<: *config
 
-  # Office Marleen
+  # Landing attic
   - id: 04423f6c-4db1-4375-8f94-1b1b4438920d
     alias: "Open or close covers landing when needed"
     trigger_variables:
       cover: cover.overloop_zolder_template
       temp: sensor.awair_slaapkamer_temperature
       manual: binary_sensor.screen_overloop_zolder_manual
-      close_time_workday: "07:30"
-      close_time_weekend: "08:30"
-      open_time: "21:30"
+      close_time_workday: "07:00"
+      close_time_weekend: "07:00"
+      sun_sensor: binary_sensor.sun_back
     <<: *config
-
-  # Floris for cleaning
-  - id: fa2ca8c5-675c-4d6a-928b-4e0477cfed3
-    alias: Make sure cover is open for cleaning
-    mode: restart
-    triggers:
-      - trigger: state
-        entity_id: cover.floris_links
-        attribute: current_position
-        to: 0
-        for:
-          minutes: 2
-      - trigger: time
-        at: "08:30"
-    conditions:
-      - alias: "Cleaning time"
-        condition: time
-        after: "08:30:00"
-        before: "11:00:00"
-        weekday:
-          - "thu"
-      - alias: cover closed
-        condition: state
-        entity_id: cover.floris_links
-        attribute: current_position
-        state: 0
-    actions:
-      - alias: "Set middle cover to 50%"
-        action: cover.set_cover_position
-        target:
-          entity_id: cover.floris_links
-        data:
-          position: 50
 
   # Open all screens when it starts raining
   - id: 48718b8b-2768-4e79-9ac6-fa4f3a10cabe

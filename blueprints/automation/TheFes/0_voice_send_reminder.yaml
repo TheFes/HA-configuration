@@ -68,6 +68,7 @@ blueprint:
               - domain:
                 - conversation
               multiple: false
+              reorder: false
         todo_entity:
           name: ToDo entity
           description: Select the calendar entity to use for the reminders.
@@ -77,6 +78,7 @@ blueprint:
               filter:
               - domain:
                 - todo
+              reorder: false
         after_notification:
           name: After notification
           description: What to do with the to-do entry after the notification is sent
@@ -85,6 +87,7 @@ blueprint:
               options:
               - Delete item
               - Mark as completed
+              sort: false
               custom_value: false
               multiple: false
           default: Delete item
@@ -92,7 +95,8 @@ blueprint:
           name: Notification recipients
           description: Provide the recipients for the reminders
           selector:
-            object: {}
+            object:
+              multiple: false
           default:
           - name: John
             description: Father of the house
@@ -101,6 +105,8 @@ blueprint:
               data:
                 data:
                   channel: Reminders
+                  ttl: 0
+                  priority: high
                   notification_icon: mdi:reminder
             - action: tts.speak
               target:

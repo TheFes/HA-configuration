@@ -286,11 +286,11 @@ template:
             {{
               sensors
                 | expand
+                | selectattr('attributes.collection_date', 'defined')
                 | sort(attribute='attributes.collection_date')
                 | map(attribute='entity_id')
                 | first
                 | default('onbekend')
-                | join
             }}
       - unique_id: 42e15a4b-cd5b-4b1f-aea1-606768190cfe
         name: Dashboard ETA Martijn

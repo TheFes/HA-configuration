@@ -1,4 +1,5 @@
 template:
+  # set start time sensor
   - triggers:
       - trigger: event
         event_type: wasmachine_set_start
@@ -9,6 +10,31 @@ template:
         state: "{{ trigger.event.data.time }}"
         device_class: timestamp
         icon: mdi:washing-machine
+  # wash completed, door not opened yet
+  - triggers:
+      - trigger: state
+        entity_id: binary_sensor.wasmachinedeur_contact
+        to: "on"
+        from: "off"
+        id: "off"
+      - trigger: event.received
+        target:
+          entity_id: event.wasmachine_notification
+        options:
+          event_type:
+            - washing_is_complete
+        id: "on"
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.wasmachinedeur_contact
+        state:
+          - "on"
+          - "off"
+    binary_sensor:
+      - unique_id: 234e7fb5-0611-4770-8259-3db5d6c9e644
+        name: Wasmachine Finished
+        icon: "{{ 'mdi:washing-machine-alert' if trigger.id == 'on' else 'mdi:washing-machine-off' }}"
+        state: "{{ trigger.id }}"
 
 automation:
   - id: f552a54e-5d2f-4f0b-bef7-053ee25ae6be
@@ -30,8 +56,18 @@ automation:
         from: "off"
         id: set
       - trigger: state
+        entity_id: sensor.wasmachine_delay_ends_in
+        from: "unknown"
+        not_to: "unavailable"
+        for:
+          minutes: 1
+        id: set
+      - trigger: state
         entity_id: sensor.wasmachine_resterende_tijd
-        to: ~
+        not_to:
+          - unavailable
+          - unknown
+        enabled: false
         id: set
       - trigger: state
         entity_id: sensor.wasmachine_current_status
@@ -50,6 +86,9 @@ automation:
           {{ no_washes == washes_done }}
         for:
           seconds: 30
+        id: helper_reset
+      - trigger: time
+        at: "00:00"
         id: helper_reset
 
     actions:
@@ -125,11 +164,13 @@ automation:
               - condition: state
                 entity_id: input_boolean.wasmachine_remote_start
                 state: "off"
+              - not:
+                  - condition: state
+                    entity_id: binary_sensor.wasmachine_finished
+                    state: "on"
               - condition: state
                 entity_id: binary_sensor.wasmachine_remote_start_2
                 state: "on"
-              - condition: template
-                value_template: "{{ 'sensor.wasmachine_resterende_tijd' | has_value }}"
               - condition: state
                 entity_id: sensor.wasmachine_current_status
                 state:
@@ -146,26 +187,31 @@ automation:
                       value: 1
               - variables:
                   date_time: >
-                    {% set no_washes = states('input_number.aantal_wassen') | int -%}
-                    {% set washes_done = states('counter.aantal_wassen') | int -%}
-                    {% set remote_active = is_state('binary_sensor.wasmachine_remote_start_2', 'on') -%}
-                    {% set washes_after = (no_washes - washes_done) | default(1, true) -%}
-                    {% set short = is_state('input_boolean.wasmachine_kort', 'on') -%}
-                    {% set long_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_katoen_standaard') -%}
-                    {% set short_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_turbowash_standaard') -%}
-                    {% set data = short_data if short else long_data -%}
-                    {% set only_today = is_state('input_boolean.wasmachine_vandaag', 'on') %}
-                    {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
-                    {% set start = now() -%}
-                    {% set end_time = states('input_number.wasmachine_eindtijd') | float | default(24, true) -%}
-                    {% set end = today_at() + timedelta(hours=end_time + 0 if only_today else 24) -%}
-                    {% set hours = data.duration / 3600 * washes_after -%}
-                    {% set weight = data.data * washes_after -%}
-                    {% set kwh = data.kwh_used * washes_after -%}
-                    {% set no_weight_points = data.no_weight_points * washes_after -%}
-                    {% set no_time_today = data.duration > (end-now()).total_seconds() -%}
-                    {% set end = end + timedelta(days=1 if no_time_today else 0) -%}
-                    {{ cheapest_energy_hours('sensor.zonneplan_prices', start=start, hours=hours, weight=weight, kwh=kwh, no_weight_points=no_weight_points, end=end, min_split_hours=data.duration/3600, split=true) }}
+                    {% if trigger.entity_id == 'sensor.wasmachine_delay_ends_in' %}
+                      {% set delta = states('sensor.wasmachine_resterende_tijd') | as_datetime - (now() - timedelta(minutes=1)) %}
+                      {{ (states('sensor.wasmachine_delay_ends_in') | as_datetime | as_local - delta).replace(second=0, microsecond=0) }}
+                    {% else %}
+                      {% set no_washes = states('input_number.aantal_wassen') | int -%}
+                      {% set washes_done = states('counter.aantal_wassen') | int -%}
+                      {% set remote_active = is_state('binary_sensor.wasmachine_remote_start_2', 'on') -%}
+                      {% set washes_after = (no_washes - washes_done) | default(1, true) -%}
+                      {% set short = is_state('input_boolean.wasmachine_kort', 'on') -%}
+                      {% set long_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_katoen_standaard') -%}
+                      {% set short_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_turbowash_standaard') -%}
+                      {% set data = short_data if short else long_data -%}
+                      {% set only_today = is_state('input_boolean.wasmachine_vandaag', 'on') %}
+                      {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+                      {% set start = now() -%}
+                      {% set end_time = states('input_number.wasmachine_eindtijd') | float | default(24, true) -%}
+                      {% set end = today_at() + timedelta(hours=end_time + 0 if only_today else 24) -%}
+                      {% set hours = data.duration / 3600 * washes_after -%}
+                      {% set weight = data.data * washes_after -%}
+                      {% set kwh = data.kwh_used * washes_after -%}
+                      {% set no_weight_points = data.no_weight_points * washes_after -%}
+                      {% set no_time_today = data.duration > (end-now()).total_seconds() -%}
+                      {% set end = end + timedelta(days=1 if no_time_today else 0) -%}
+                      {{ cheapest_energy_hours('sensor.zonneplan_prices', start=start, hours=hours, weight=weight, kwh=kwh, no_weight_points=no_weight_points, end=end, min_split_hours=data.duration/3600, split=true) }}
+                    {% endif %}
               - alias: toggle input boolean
                 action: input_boolean.turn_on
                 target:
@@ -182,32 +228,34 @@ automation:
                   time: "{{ date_time }}"
           - conditions:
               - condition: trigger
-                id: reset_helpers
-              - condition: state
-                entity_id: input_boolean.wasmachine_remote_start
-                state: "off"
+                id: helper_reset
             sequence:
-              - alias: Reset daily wash counter
-                action: counter.reset
-                target:
-                  entity_id: counter.aantal_wassen
-              - alias: Set short program boolean to default
-                action: input_boolean.turn_off
-                target:
-                  entity_id: input_boolean.wasmachine_kort
+              - if:
+                  - condition: state
+                    entity_id: input_boolean.wasmachine_remote_start
+                    state: "off"
+                then:
+                  - alias: Reset daily wash counter
+                    action: counter.reset
+                    target:
+                      entity_id: counter.aantal_wassen
+                  - alias: Set short program boolean to default
+                    action: input_boolean.turn_off
+                    target:
+                      entity_id: input_boolean.wasmachine_kort
+                  - alias: Set number entity to default
+                    action: input_number.set_value
+                    target:
+                      entity_id: input_number.aantal_wassen
+                    data:
+                      value: 1
+                  - alias: Set number entity for max end time to default
+                    action: input_number.set_value
+                    target:
+                      entity_id: input_number.wasmachine_eindtijd
+                    data:
+                      value: 19
               - alias: Set only today boolean to default
                 action: input_boolean.turn_on
                 target:
                   entity_id: input_boolean.wasmachine_vandaag
-              - alias: Set number entity to default
-                action: input_number.set_value
-                target:
-                  entity_id: input_number.aantal_wassen
-                data:
-                  value: 1
-              - alias: Set number entity for max end time to default
-                action: input_number.set_value
-                target:
-                  entity_id: input_number.wasmachine_eindtijd
-                data:
-                  value: 19

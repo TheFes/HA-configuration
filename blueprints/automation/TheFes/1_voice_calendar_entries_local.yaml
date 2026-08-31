@@ -28,6 +28,7 @@ blueprint:
 
     * [Dutch](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/translations/1_voice_calendar_entries_nl.md)
 
+    * [German](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/translations/1_voice_calendar_entries_de.md)
 
     ### Usage
 
@@ -77,6 +78,7 @@ blueprint:
           - domain:
             - calendar
           multiple: true
+          reorder: false
     trigger_settings:
       name: Trigger settings
       icon: mdi:chat
@@ -241,7 +243,8 @@ blueprint:
         response_translations:
           name: Phrases used in the response for the weekdays and months
           selector:
-            object: {}
+            object:
+              multiple: false
           default: {}
         date_format:
           name: Date format
@@ -275,6 +278,15 @@ blueprint:
               multiline: false
               multiple: false
           default: events
+        combine_word:
+          name: Combine word
+          description: Word used to combine multipe events.For example "Breakfast,
+            Lunch and Dinner"
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: and
         no_events:
           name: No events for selected period
           description: Response by Assist in case there are no events
@@ -311,7 +323,7 @@ triggers:
 - trigger: conversation
   command: !input trigger
 variables:
-  version: 20250129
+  version: 20250318
   daily_mapping:
   - phrases: !input today
     delta: 0
@@ -351,6 +363,8 @@ variables:
     end: '23:59:59'
   - phrases: !input sunday
     delta: '{{ 6 - now().weekday() + (7 if 6 <= now().weekday() else 0) }}'
+    start: 00:00:00
+    end: '23:59:59'
   day_part_mapping:
   - phrases: !input night
     start: 00:00:00
@@ -426,12 +440,12 @@ actions:
         endfor %}\n  {%- endif %}\n  {{ event_count.format(date=formatted.date, event_count=day_events|count,
         events=event_singular if day_events|count==1 else event_plural) }}\n  {%-
         set text = namespace(message='') %}\n    {%- for e in full_day %}\n      {%
-        set text.message = text.message + ((' and ' if loop.last and not loop.first)
-        ~ e.summary ~ (', ' if not loop.last) ) %}\n    {%- endfor %}\n    {% if full_day
-        %}{{ day_event.format(event_list=text.message) }}{% endif %}\n    {%- for
-        e in day_events | reject('in', full_day) %}\n      {{ part_day_event.format(start=as_datetime(e.start).strftime(time_format),
-        end=as_datetime(e.end).strftime(time_format), event_summary=e.summary) }}\n
-        \   {%- endfor %}\n{%- endfor %}\n"
+        set text.message = text.message + (((' ' ~ combine_word ~ ' ') if loop.last
+        and not loop.first) ~ e.summary ~ (', ' if not loop.last) ) %}\n    {%- endfor
+        %}\n    {% if full_day %}{{ day_event.format(event_list=text.message) }}{%
+        endif %}\n    {%- for e in day_events | reject('in', full_day) %}\n      {{
+        part_day_event.format(start=as_datetime(e.start).strftime(time_format), end=as_datetime(e.end).strftime(time_format),
+        event_summary=e.summary) }}\n    {%- endfor %}\n{%- endfor %}\n"
   - alias: Send back the response
     set_conversation_response: '{{ response_events }}'
   else:

@@ -1,0 +1,35 @@
+automation:
+  - id: 3dc7ebc6-6ab7-469f-ba8a-651f0973322c
+    alias: Reset Voice PE if MA entity not working
+    triggers:
+      - alias: Check every half hour
+        trigger: time_pattern
+        minutes: "/30"
+    variables:
+      button_mapper:
+        - player: media_player.woonkamer
+          button: button.home_assistant_voice_09031b_restart
+        - player: media_player.keuken 
+          button: button.home_assistant_voice_090378_restart
+        - player: media_player.pepijn
+          button: button.home_assistant_voice_0901af_restart
+        - player: media_player.floris
+          button: button.home_assistant_voice_090285_restart
+        - player: media_player.martijn
+          button: button.home_assistant_voice_0903bc_restart
+      buttons: >
+        {{
+          button_mapper
+            | rejectattr('player', 'has_value')
+            | map(attribute='button')
+            | list
+        }}
+    conditions:
+      - alias: Check if there are buttons to press
+        condition: template
+        value_template: "{{ buttons | count > 0 }}"
+    actions:
+      - alias: Press the reset buttons of the Voice PEs
+        action: button.press
+        target:
+          entity_id: "{{ buttons }}"
