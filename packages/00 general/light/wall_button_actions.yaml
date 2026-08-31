@@ -110,7 +110,7 @@ automation:
             conditions:
               - alias: "Short?"
                 condition: template
-                value_template: "{{ event == 'single_press' and control_light }}"
+                value_template: "{{ event == 'single_push' and control_light }}"
             sequence:
               - alias: Check if any of the assigned lights is on
                 if: "{{ toggle_lights | select('is_state', 'on') | list | count > 0 }}"
@@ -134,7 +134,7 @@ automation:
           - conditions:
               - alias: "Actions on double press event (100%)"
                 condition: template
-                value_template: "{{ event == 'double_press' and control_light }}"
+                value_template: "{{ event == 'double_push' and control_light }}"
             sequence:
               - alias: Turn each toggle light to 100% (if supported)
                 repeat:
@@ -164,7 +164,7 @@ automation:
           - conditions:
               - alias: "Actions for long press event (all lights off, or activate 'scene')"
                 condition: template
-                value_template: "{{ event == 'long_press' }}"
+                value_template: "{{ event == 'long_push' }}"
             sequence:
               - if: >
                   {{
@@ -528,12 +528,6 @@ script:
                     after: "21:00:00"
                     before: "06:00:00"
                 then:
-                  - alias: Turn on one light for the cat
-                    action: light.turn_on
-                    target: 
-                      entity_id: light.boekenkast
-                    data: 
-                      brightness_pct: 1
                   - event: set_house_mode
                     event_data:
                       mode: Tandenpoetsen

@@ -1,4 +1,26 @@
 # Combined garden automation package
+template:
+  - binary_sensor:
+      - unique_id: d7b23a37-c6a7-4240-b364-7be908fea452
+        name: Sun Back
+        state: >
+          {% set az = state_attr('sun.sun', 'azimuth') %}
+          {% set el = state_attr('sun.sun', 'elevation') %}
+          {% set az_window = 79 %}
+          {% set az_min = [az_window - 90, 0] | max %}
+          {% set az_max = [az_window + 90, 360] | min %}
+          {{ az_min <= az <= az_max and el > 4 }}
+        icon: mdi:sun-compass
+      - unique_id: 810ec277-3ac3-4f62-958f-bcd5ff0e2591
+        name: Sun Front
+        state: >
+          {% set az = state_attr('sun.sun', 'azimuth') %}
+          {% set el = state_attr('sun.sun', 'elevation') %}
+          {% set az_window = 79 + 180 %}
+          {% set az_min = [az_window - 90, 0] | max %}
+          {% set az_max = [az_window + 90, 360] | min %}
+          {{ az_min <= az <= az_max and el > 4 }}
+        icon: mdi:sun-compass
 
 # From: outside_lights_on.yaml
 automation:
@@ -85,7 +107,7 @@ automation:
           - conditions:
               - alias: "Short?"
                 condition: template
-                value_template: "{{ trigger.to_state.attributes.event_type == 'single_press' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'single_push' }}"
             sequence:
               - alias: "Toggle light"
                 action: light.toggle
@@ -94,7 +116,7 @@ automation:
           - conditions:
               - alias: "Double?"
                 condition: template
-                value_template: "{{ trigger.to_state.attributes.event_type == 'double_press' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'double_push' }}"
             sequence:
               - alias: "Light on 100%"
                 action: light.turn_on
@@ -105,7 +127,7 @@ automation:
           - conditions:
               - alias: "Long?"
                 condition: template
-                value_template: "{{ trigger.to_state.attributes.event_type == 'long_press' }}"
+                value_template: "{{ trigger.to_state.attributes.event_type == 'long_push' }}"
             sequence:
               - alias: "Toggle veranda cover open/close"
                 action: "cover.{{ 'close' if is_state('cover.veranda', 'open') else 'open' }}_cover"
@@ -121,32 +143,44 @@ automation:
         trigger: state
         entity_id: binary_sensor.trend_woonkamer_temp
         to: "on"
+        id: open
       - alias: The sun is above the horizon
         trigger: state
         entity_id: sun.sun
         to: above_horizon
+        id: open
       - alias: It will be over 18 degrees
         trigger: numeric_state
         entity_id: sensor.weather_combined_max_temp_today
         above: 18
+        id: open
       - alias: Sunny or partly cloudy outside
         trigger: state
         entity_id: weather.combined
         to:
           - sunny
           - partycloudy
+        id: open
       - alias: Currently not raining
         trigger: state
         entity_id: binary_sensor.rain
         to: "off"
+        id: open
       - alias: Over 20 degrees inside
         trigger: numeric_state
         entity_id: sensor.woonkamer_multi_temperature
         above: 20
-      - alias: Time is 16:00
-        trigger: time
-        at: "16:00:00"
-        id: "close"
+        id: open
+      - alias: Sun elevation below 55
+        trigger: sun.elevation_crossed_threshold
+        options:
+          for: "00:00:00"
+          threshold:
+            type: below
+            value:
+              active_choice: number
+              number: 55
+        id: close
     conditions:
       - condition: template
         value_template: >
@@ -159,61 +193,69 @@ automation:
           }}
     actions:
       - alias: "Check if sun is rising and cover not in manual mode"
-        if: "{{ state_attr('sun.sun', 'rising') and not is_state('binary_sensor.screen_veranda_manual', 'on') }}"
-        then:
-          - alias: "No rain"
-            condition: state
-            entity_id: binary_sensor.rain
-            state: "off"
-          - alias: "Warm day"
-            condition: template
-            value_template: >
-              {% set temp = states('sensor.weather_combined_max_temp_today') | float(0) %}
-              {{ temp > 25 or (temp > 18 and now().month in range(4,9)) }}
-          - alias: "Sunny or partly cloudy"
-            condition: state
-            entity_id: weather.combined
-            state:
-              - sunny
-              - partlycloudy
-          - alias: "Temperature rising"
-            condition: state
-            entity_id: binary_sensor.trend_woonkamer_temp
-            state: "on"
-          - alias: "Warm inside"
-            condition: template
-            value_template: >
-              {% set temp = states('sensor.woonkamer_multi_temperature') | float(0) %}
-              {{ temp > 22 or (temp > 20 and now().month in range(4,9)) }}
-          - alias: "Store the current state of the light"
-            variables:
-              light_state: "{{ states('light.veranda') }}"
-          - alias: "Open cover"
-            action: cover.open_cover
-            target:
-              entity_id: cover.veranda
-          - alias: Wait if the light changes
-            wait_template: "{{ not is_state('light.veranda', light_state) }}"
-            timeout: "00:05:00"
-            continue_on_timeout: false
-          - alias: "Restore the light state"
-            action: light.turn_{{ light_state }}
-            target:
-              entity_id: light.veranda
-      - alias: "Check if this is the evening close trigger"
-        if: "{{ trigger.id == 'close' }}"
-        then:
-          - alias: "Store the current state of the light"
-            variables:
-              light_state: "{{ states('light.veranda') }}"
-          - alias: "Close cover"
-            action: cover.close_cover
-            target:
-              entity_id: cover.veranda
-          - alias: "Restore the light state"
-            action: light.turn_{{ light_state }}
-            target:
-              entity_id: light.veranda
+        choose:
+          - conditions:
+              - condition: trigger
+                id: open
+              - condition: state
+                entity_id: binary_sensor.screen_veranda_manual
+                state: "off"
+              - alias: "No rain"
+                condition: state
+                entity_id: binary_sensor.rain
+                state: "off"
+              - alias: "Warm day"
+                condition: template
+                value_template: >
+                  {% set temp = states('sensor.weather_combined_max_temp_today') | float(0) %}
+                  {{ temp > 25 or (temp > 18 and now().month in range(4,9)) }}
+              - alias: "Sun at backside of house"
+                condition: state
+                entity_id: binary_sensor.sun_back
+                state: "on"
+              - alias: "Sunny or partly cloudy"
+                condition: state
+                entity_id: weather.combined
+                state:
+                  - sunny
+                  - partlycloudy
+                  - clear
+              - alias: "Warm inside"
+                condition: template
+                value_template: >
+                  {% set temp = states('sensor.woonkamer_multi_temperature') | float(0) %}
+                  {{ temp > 22 or (temp > 20 and now().month in range(4,9)) }}
+            sequence:
+              - alias: "Store the current state of the light"
+                variables:
+                  light_state: "{{ states('light.veranda') }}"
+              - alias: "Open cover"
+                action: cover.open_cover
+                target:
+                  entity_id: cover.veranda
+              - alias: Wait if the light changes
+                wait_template: "{{ not is_state('light.veranda', light_state) }}"
+                timeout: "00:05:00"
+                continue_on_timeout: false
+              - alias: "Restore the light state"
+                action: light.turn_{{ light_state }}
+                target:
+                  entity_id: light.veranda
+          - conditions:
+              - condition: trigger
+                id: close
+            sequence:
+              - alias: "Store the current state of the light"
+                variables:
+                  light_state: "{{ states('light.veranda') }}"
+              - alias: "Close cover"
+                action: cover.close_cover
+                target:
+                  entity_id: cover.veranda
+              - alias: "Restore the light state"
+                action: light.turn_{{ light_state }}
+                target:
+                  entity_id: light.veranda
 
   - id: "1752267977360"
     alias: Turn off awning light during daytime

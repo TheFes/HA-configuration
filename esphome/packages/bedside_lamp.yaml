@@ -27,11 +27,11 @@ event:
     name: ""
     id: event_entity
     event_types:
-      - "single_press"
-      - "double_press"
-      - "triple_press"
-      - "quintuple_press"
-      - "long_press"
+      - "single_push"
+      - "double_push"
+      - "triple_push"
+      - "quintuple_push"
+      - "long_push"
       - "single_long_press"
       - "release"
 
@@ -165,7 +165,7 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "quintuple_press"
+              event_type: "quintuple_push"
           - button.press: restart_button
       - timing:
           - state: true
@@ -188,7 +188,7 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "triple_press"
+              event_type: "triple_push"
       - timing:
           - state: true
             min_length: 0ms
@@ -204,7 +204,7 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "double_press"
+              event_type: "double_push"
           - light.turn_on:
               id: my_light
               brightness: 100%
@@ -216,7 +216,7 @@ binary_sensor:
             min_length: 0ms
             max_length: ${press_wait}
           - state: true
-            min_length: ${long_press}
+            min_length: ${long_push}
         then:
           - event.trigger:
               id: event_entity
@@ -230,7 +230,7 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "single_press"
+              event_type: "single_push"
           - if:
               condition:
                 - text_sensor.state:
@@ -246,11 +246,11 @@ binary_sensor:
                     id: my_light
       - timing:
           - state: true
-            min_length: ${long_press}
+            min_length: ${long_push}
         then:
           - event.trigger:
               id: event_entity
-              event_type: "long_press"
+              event_type: "long_push"
           - homeassistant.action:
               action: light.turn_off
               data:

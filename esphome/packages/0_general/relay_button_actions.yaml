@@ -22,11 +22,11 @@ event:
     name: ""
     id: event_entity
     event_types:
-      - "single_press"
-      - "double_press"
-      - "triple_press"
-      - "quintuple_press"
-      - "long_press"
+      - "single_push"
+      - "double_push"
+      - "triple_push"
+      - "quintuple_push"
+      - "long_push"
       - "single_long_press"
       - "release"
 
@@ -123,7 +123,7 @@ binary_sensor:
               then:
                 - event.trigger:
                     id: event_entity
-                    event_type: "quintuple_press"
+                    event_type: "quintuple_push"
           - button.press: restart_button
       - timing:
           - state: true
@@ -153,7 +153,7 @@ binary_sensor:
               then:
                 - event.trigger:
                     id: event_entity
-                    event_type: "triple_press"
+                    event_type: "triple_push"
                 - switch.toggle: relay
       - timing:
           - state: true
@@ -170,7 +170,7 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "double_press"
+              event_type: "double_push"
           - if: &toggle_relay
               condition:
                 - or:
@@ -202,7 +202,7 @@ binary_sensor:
             min_length: 0ms
             max_length: ${press_wait}
           - state: true
-            min_length: ${long_press}
+            min_length: ${long_push}
         then:
           - event.trigger:
               id: event_entity
@@ -216,15 +216,15 @@ binary_sensor:
         then:
           - event.trigger:
               id: event_entity
-              event_type: "single_press"
+              event_type: "single_push"
           - if: *toggle_relay
       - timing:
           - state: true
-            min_length: ${long_press}
+            min_length: ${long_push}
         then:
           - event.trigger:
               id: event_entity
-              event_type: "long_press"
+              event_type: "long_push"
           - if: *toggle_relay
     on_release:
       then:

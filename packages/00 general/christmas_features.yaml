@@ -33,7 +33,7 @@ automation:
     conditions:
       - alias: "Check for long press event on Eettaffel button"
         condition: template
-        value_template: "{{ trigger.id != to_bed or trigger.to_state.attributes.event_type == 'long_press' }}"
+        value_template: "{{ trigger.id != to_bed or trigger.to_state.attributes.event_type == 'long_push' }}"
       - alias: "It's Chirstmas time"
         condition: state
         entity_id: input_boolean.christmas_time
