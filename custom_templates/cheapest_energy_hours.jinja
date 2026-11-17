@@ -1,4 +1,4 @@
-{%- set _version = 'v7.2.3'-%}
+{%- set _version = 'v7.3.3'-%}
 
 {#- set settings for source sensors -#}
 {#- list values are 'attr_today', 'attr_tomorrow', 'attr_all', 'time_key', 'value_key' -#}
@@ -395,6 +395,20 @@
             {%- set data = [] -%}
             {%- set valid_price_data = false -%}
         {%- endif -%}
+        {%- if source_settings == 'zonneplan' and data is defined and data | count > 0 and data[0] is mapping -%}
+            {%- if value_key not in data[0] or time_key not in data[0] -%}
+                {%- set ns_zp = namespace(data=[]) -%}
+                {%- for item in data if item is mapping -%}
+                    {%- set zp_time = item.get('start_date', item.get('datetime', item.get(time_key))) -%}
+                    {%- set zp_price_nested = item.get('price_tax_included') -%}
+                    {%- set zp_price = item.get('electricity_price', zp_price_nested.get('amount') if zp_price_nested is mapping else none) -%}
+                    {%- if zp_time | as_datetime(none) is not none and zp_price | is_number -%}
+                        {%- set ns_zp.data = ns_zp.data + [{time_key: zp_time, value_key: zp_price}] -%}
+                    {%- endif -%}
+                {%- endfor -%}
+                {%- set data = ns_zp.data -%}
+            {%- endif -%}
+        {%- endif -%}
         {#- check if sensor has valid data -#}
         {%- if data is defined -%}
             {%- if data | count > 0 and time_key in data[0] and value_key in data[0] -%}
@@ -448,9 +462,10 @@
                     {%- else -%}
                         {%- set end = today_at(end) if end is string and ':' in end and end | replace(':', '') | is_number else today_at() -%}
                         {%- set end = end + day if end == today_at() else end -%}
-                        {%- set end = end + day if include_tomorrow else end -%}
-                    {%- endif -%}
-                    {%- if original_start > end -%} {#- START = 20:00, END = 8:00 -#}
+                        {#- a window that crosses midnight (eg 20:00-08:00) is placed by the check below, so include_tomorrow must not push its end a day further -#}
+                        {%- set end = end + day if include_tomorrow and not original_start > end else end -%}
+                     {%- endif -%}
+                     {%- if original_start > end -%} {#- START = 20:00, END = 8:00 -#}
                         {%- if end > _now and not start_is_dt -%} {#- NOW() = 04:00, END = 8:00 -#}
                             {%- set start = start - day -%} {#- Set start yesterday -#}
                         {%- elif end < _now and not end_is_dt -%} {#- NOW() = 12:00, END = 8:00 -#}
@@ -604,10 +619,13 @@
     {#- no error - continue with macro -#}
         {%- else -%}
             {#- rebuild data again to match no_weight_points -#}
+                {#- weights finer than the prices (eg per-minute weights on 15-minute prices): keep the price slots instead of upsampling them -#}
+                    {%- set mw = w is not none and dp_minutes > wp_minutes and not (mode == 'split' or split) -%}
                 {# split hours if needed #}
-                    {%- if dp_minutes > wp_minutes -%}
+                    {%- if dp_minutes > wp_minutes and not mw -%}
                         {% set data, dph = _rebuild_data(data, time_key, value_key, price_factor, use_hourly_avg, _now, no_weight_points) %}
-                        {%- set dp = (h * dph) | round(0, 'ceil') | int -%}
+                        {#- h is rounded to 3 decimals, so h * dph can be slightly above a whole number (eg 4.167 * 12 = 50.004), which would add an extra datapoint when ceiled -#}
+                        {%- set dp = ((h * dph) - 0.05) | round(0, 'ceil') | int -%}
                         {%- set dp_minutes, wp_minutes = 60 / dph, 60 / no_weight_points -%}
                 {# add weights for additional datapoints if needed #}
                     {%- elif dp_minutes < wp_minutes and w is not none -%}
@@ -625,13 +643,31 @@
                 {%- endif -%}
             {#- Perform selection based on start and end on the data -#}
                 {%- set values = data
-                                    | selectattr(time_key, '>=', start)
+                                    | selectattr(time_key, '>=', start - timedelta(minutes=dp_minutes - wp_minutes if mw else 0))
                                     | selectattr(time_key, '<', end)
                                     | selectattr(value_key, 'is_number')
                                     | list
                 -%}
+            {#- weights finer than the prices: weight points per price slot, number of weights, exact hours, and the first and last candidate start (in weight points after the first slot) -#}
+                {%- if mw and values -%}
+                    {%- set L, t0, h = w | count, values[0][time_key], w | count / no_weight_points -%}
+                    {#- common grid: gcd of price slot and weight point length (minutes), so weight points need not line up with price slots (eg 10 minute weights on 15 minute prices) -#}
+                    {%- set gg = namespace(a=dp_minutes | int, b=wp_minutes | int) -%}
+                    {%- for _ in range(20) -%}
+                        {%- if gg.b == 0 -%}
+                            {%- break -%}
+                        {%- endif -%}
+                        {%- set r = gg.a % gg.b -%}
+                        {%- set gg.a = gg.b -%}
+                        {%- set gg.b = r -%}
+                    {%- endfor -%}
+                    {#- sc: grid cells per price slot, wc: grid cells per weight point -#}
+                    {%- set sc, wc = (dp_minutes | int) // gg.a, (wp_minutes | int) // gg.a -%}
+                    {%- set first = [((start - t0).total_seconds() * no_weight_points // 3600) | int, 0] | max -%}
+                    {%- set last = (([end, values[-1][time_key] + timedelta(minutes=dp_minutes)] | min - t0).total_seconds() * no_weight_points // 3600) | int - L -%}
+                {%- endif -%}
             {#- Check if there is data, and find the right hour block -#}
-                {%- if values | count >= dp -%}
+                {%- if values | count >= dp and (not mw or last >= first) -%}
                     {# apply price_tolerance if provided #}
                     {%- set pt_perc = '%' in price_tolerance | string -%}
                     {%- set pt = price_tolerance | replace('%', '') | float / 100 if pt_perc else price_tolerance | float -%}
@@ -658,9 +694,10 @@
                         {# check if a minimum number of hours for split is provided #}
                             {%- if min_split_hours is not none -%}
                                 {# create split data using minimum number of hours #}
-                                {%- set split_dp = [min_split_hours * dph, h * dph] | min | round(0) | int -%}
-                                {%- set ns = namespace(parts=[], selected=[], wanted=h*dph) -%}
-                                {%- for i in range((h*dph) | int) -%}
+                                {#- use dp (whole number of datapoints) instead of h * dph, as h is rounded to 3 decimals and h * dph is then not a whole number for eg 4.08 hours -#}
+                                {%- set split_dp = [min_split_hours * dph, dp] | min | round(0) | int -%}
+                                {%- set ns = namespace(parts=[], selected=[], wanted=dp) -%}
+                                {%- for i in range(dp) -%}
                                     {# check if there are still values to be added #}
                                     {%- if ns.wanted > 0 -%}
                                         {# create list with value blocks #}
@@ -797,6 +834,43 @@
                             {%- set output = namespace(average=none, start=none, min=none, max=none, weighted_average=none, compare=none, time_min=none, time_max=none, prices_list=[], list=[], is_now=false, extreme_now=none, estimated_costs="unknown") -%}
                             {%- set last_values = (h * no_weight_points) | round(0) | int -%}
                             {%- set to_add = dict(dp=dp, no_weight_points=no_weight_points, dph=dph)-%}
+                        {#- weights finer than the prices: find the best start at weight point resolution using prefix sums of the weights,
+                            then replace the selection by the winning window so the loop below creates the output -#}
+                            {%- if mw -%}
+                                {%- set cum = namespace(w=[0]) -%}
+                                {%- for x in w -%}
+                                    {%- for _ in range(wc) -%}
+                                        {%- set cum.w = cum.w + [cum.w[-1] + x / wc] -%}
+                                    {%- endfor -%}
+                                {%- endfor -%}
+                                {%- set best = namespace(c=none, a=none) -%}
+                                {%- for c in range(first, last + 1) -%}
+                                    {%- set a0 = c * wc -%}
+                                    {%- set cost = namespace(v=0) -%}
+                                    {%- for k in range(a0 // sc, (a0 + L * wc - 1) // sc + 1) -%}
+                                        {%- set cost.v = cost.v + values[k][value_key] * (cum.w[[(k + 1) * sc, a0 + L * wc] | min - a0] - cum.w[[k * sc, a0] | max - a0]) -%}
+                                    {%- endfor -%}
+                                    {%- set a = (cost.v / w | sum) | round(9) -%}
+                                    {%- if loop.first or (a < best.a if lowest else a > best.a) or (a == best.a and latest_possible | bool) -%}
+                                        {%- set best.c = c -%}
+                                        {%- set best.a = a -%}
+                                    {%- endif -%}
+                                {%- endfor -%}
+                                {%- set selection, window = values, namespace(v=[]) -%}
+                                {%- for j in range(L) -%}
+                                    {%- set p = best.c + j -%}
+                                    {%- set pe = namespace(v=0, o=0) -%}
+                                    {%- for k in range((p * wc) // sc, ((p + 1) * wc - 1) // sc + 1) -%}
+                                        {%- set ov = ([(k + 1) * sc, (p + 1) * wc] | min - [k * sc, p * wc] | max) / wc -%}
+                                        {%- set pe.v = pe.v + values[k][value_key] * ov -%}
+                                        {%- set pe.o = pe.o + (values[k].original_value if pt != 0 else 0) * ov -%}
+                                    {%- endfor -%}
+                                    {%- set new = {time_key: t0 + timedelta(minutes=p * wp_minutes), value_key: pe.v} -%}
+                                    {%- set new = dict(new, original_value=pe.o) if pt != 0 else new -%}
+                                    {%- set window.v = window.v + [new] -%}
+                                {%- endfor -%}
+                                {%- set values = window.v -%}
+                            {%- endif -%}
                             {%- for i in range(values | count - (last_values - 1)) -%}
                                 {%- set prices_list = values[i:i + last_values] | map(attribute=value_key) | list -%}
                                 {%- set original_price_list =
@@ -841,6 +915,7 @@
                                     {%- set output.is_now = values[i][time_key] <= _now < values[i][time_key] + timedelta(hours=h) -%}
                                 {%- endif -%}
                             {%- endfor -%}
+                            {%- set values = selection | default(values) -%}
                         {#- determine estimated_costs if kwh is provided -#}
                             {%- if kwh is not none -%}
                                 {%- set price_count = output.prices_list | count %}
@@ -894,7 +969,7 @@
             {#- output error message if there is not enought data -#}
                 {%- else -%}
                     {%- set v = values | count -%}
-                    {%- set h_v = v / no_weight_points | round(3) -%}
+                    {%- set h_v = v / (dph if mw else no_weight_points) | round(3) -%}
                     {%- set error_msg = '1 error: {} datapoints ({} hours) in selection, where {} ({} hours) are expected'.format(v | int, h_v | round(3), dp | int, h | round(3)) -%}
                     {%- set macro_output = value_on_error if use_voe else error_msg -%}
                 {%- endif -%}
