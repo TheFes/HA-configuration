@@ -1,0 +1,315 @@
+blueprint:
+  domain: automation
+  name: Voice - Calendar Entries - LLM Enhanced Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/2_voice_calendar_entries_llm_enhanced.yaml
+  homeassistant:
+    min_version: 2026.11.0
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n\nMore
+    detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/2_voice_calendar_entries_llm_enhanced.md)\n\n#
+    Request calendar events with local Assist, enhanced by an AI Task\n\nThe request
+    is caught by local trigger sentences, so you don't need an LLM as conversation
+    agent,\nand the LLM doesn't need access to your house. An AI Task (`ai_task.generate_data`)
+    is used twice:\n\n1. To determine the requested period from your question (with
+    structured output, so it can only\n   return a valid period)\n2. To answer your
+    question in natural language, based on the events in that period\n\n### Blueprint
+    setup\n\n#### Required\n* Select the calendar entities\n* An AI Task entity (or
+    set a preferred AI Task entity in Home Assistant)\n\n#### Optional\n* Add triggers
+    or change the existing ones (for example to translate them)\n* Change the instructions
+    for the AI\n* Translate the error response\n\n### Usage\n\nThe sentence needs
+    to match one of the trigger sentences, but within those sentences you can\nask
+    anything. By default the following sentences are configured:\n\n- (what's|what
+    is) on [the|my] (calendar|agenda) [{query}]\n- (what do|do) I have [planned|scheduled]
+    {query}\n- am I (busy|free) [{query}]\n- when is [my|the] next {query}\n\n####
+    Examples\n* What's on the calendar tomorrow evening\n* Do I have anything planned
+    this weekend\n* Am I free on Thursday afternoon\n* When is my next dentist appointment\n"
+  input:
+    calendar_settings:
+      name: Calendar settings
+      icon: mdi:calendar
+      input:
+        calendar_entities:
+          name: Calendar entities
+          description: The calendar entities to get the events from
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - calendar
+              reorder: false
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to determine the requested period and
+            create the response. Leave empty to use the preferred AI Task entity set
+            in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions to determine the period
+          description: Instructions for the AI to determine the requested period.
+            The output format is enforced by the structure, so this only needs to
+            explain how to interpret the request. You can use `{{ trigger.sentence
+            }}`.
+          default: 'You interpret a request about calendar events. The user asked:
+            "{{ trigger.sentence }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - time_period_type: daily when the request is about one or more full days
+            (today, tomorrow, next Thursday, the weekend, next week, the coming two
+            weeks). hourly when the request is about a part of a day or specific hours
+            (this evening, tomorrow morning, at 9, from 3 to 5, right now).
+
+            - start_date: the date on which the requested period starts, in the format
+            YYYY-MM-DD. Use today''s date when no day is mentioned. A weekday means
+            the next occurrence of that day, today included. The weekend is Saturday
+            and Sunday, a week runs from Monday until Sunday. For the night, use the
+            next day, unless the current time is before 06:00.
+
+            - start_time: the time on which the requested period starts, in the 24
+            hour format HH:MM:SS. Use 00:00:00 for full days. Night starts at 00:00:00,
+            morning at 06:00:00, afternoon at 12:00:00 and evening at 18:00:00. For
+            the current hour, use the start of the current hour.
+
+            - time_period_length: the number of days (daily) or hours (hourly) of
+            the period. Night, morning, afternoon and evening are 6 hours, a single
+            moment ("at 9") is 1 hour, the weekend is 2 days and a week is 7 days.
+            When the user asks when something is planned or when the next occurrence
+            is, without mentioning a period ("when is my next dentist appointment"),
+            use daily from today with a length of 60 days.
+
+            - period_description: a short description of the requested period, in
+            the language of the request (for example "tomorrow evening").'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        response_instructions:
+          name: Instructions for the response
+          description: Instructions for the AI to create the response. The question,
+            the requested period and the events are added automatically. You can use
+            `{{ trigger.sentence }}` and `{{ period_description }}`.
+          default: 'You are a voice assistant answering a question about the calendar.
+            Answer in the same language as the question, also when the events are
+            in another language. Use the day field of each event for the day it takes
+            place. Keep it short and natural. The answer will be read aloud by a text-to-speech
+            engine, so don''t use markdown, lists or emoji, and write dates and times
+            the way people say them. When the user asks about something specific (an
+            appointment, whether they are free), answer that first. Only mention the
+            calendar an event is in when it adds something. When there are many events,
+            summarize them instead of reading out every event. Events marked with
+            already_ended are in the past: don''t present them as upcoming. Only use
+            the events below, don''t make anything up.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+    trigger_settings:
+      name: Trigger and responses
+      icon: mdi:chat
+      collapsed: true
+      description: The trigger sentences and the response used when something went
+        wrong. Translate these to use the blueprint in another language. The response
+        of the AI is always in the language of the question.
+      input:
+        trigger:
+          name: Conversation trigger sentences
+          description: The sentences which will trigger the automation. {query} is
+            a wildcard which can hold the period, but the full sentence is always
+            sent to the AI.
+          default:
+          - (what's|what is) on [the|my] (calendar|agenda) [{query}]
+          - (what do|do) I have [planned|scheduled] {query}
+          - am I (busy|free) [{query}]
+          - when is [my|the] next {query}
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        error_response:
+          name: Error response
+          description: Used when the AI Task fails, or the calendar events could not
+            be retrieved.
+          default: Sorry, something went wrong while getting your calendar events
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- alias: Voice request about the calendar
+  trigger: conversation
+  command: !input trigger
+actions:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    ai_task_entity: !input ai_task_entity
+    llm_instructions: !input llm_instructions
+    structure:
+      time_period_type:
+        description: daily for one or more full days, hourly for a part of a day or
+          specific hours
+        required: true
+        selector:
+          select:
+            options:
+            - daily
+            - hourly
+      start_date:
+        description: The date on which the period starts (YYYY-MM-DD)
+        required: true
+        selector:
+          date: {}
+      start_time:
+        description: The time on which the period starts (HH:MM:SS, 24 hour format)
+        required: true
+        selector:
+          time: {}
+      time_period_length:
+        description: Number of days (daily) or hours (hourly) of the period
+        required: true
+        selector:
+          number:
+            min: 1
+            max: 366
+      period_description:
+        description: Short description of the requested period, in the language of
+          the request
+        required: true
+        selector:
+          text: {}
+- alias: Ask the AI Task to determine the requested period
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Calendar voice request'', ''instructions'':
+    llm_instructions, ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity)
+    if ai_task_entity else d }}'
+  response_variable: ai_period
+- alias: Stop with error response when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_period is not defined or ai_period.data is not defined
+      or ai_period.data is string }}'
+  then:
+  - set_conversation_response: !input error_response
+  - stop: AI Task failed
+- alias: Read the period from the AI result
+  variables:
+    llm: '{{ ai_period.data }}'
+    period_description: '{{ llm.get(''period_description'') or trigger.sentence }}'
+    requested_type: '{{ llm.get(''time_period_type'') if llm.get(''time_period_type'')
+      in [''daily'', ''hourly''] else ''daily'' }}'
+- alias: Validate the date and time provided by the AI
+  variables:
+    start_date: '{% set d = llm.get(''start_date'') | default('''', true) | string
+      | trim %} {{ d[:10] if d is match(''\d{4}-\d{2}-\d{2}'') else now().date() |
+      string }}
+
+      '
+    start_time: '{% set t = llm.get(''start_time'') | default(''00:00:00'', true)
+      | string | trim %} {% set t = t ~ '':00'' if t is match(''^\d{1,2}:\d{2}$'')
+      else t %} {{ t if as_timedelta(t) is not none else ''00:00:00'' }}
+
+      '
+    length: '{{ [llm.get(''time_period_length'') | default(1) | int(1), 1] | max }}'
+- alias: Determine the start of the period
+  variables:
+    start: '{% set s = as_datetime(start_date) | as_local %} {{ (s + as_timedelta(start_time)
+      if requested_type == ''hourly'' else s).isoformat() }}
+
+      '
+- alias: Determine the end of the period
+  variables:
+    end: '{% set s = as_datetime(start) %} {{ (s + timedelta(hours=length) if requested_type
+      == ''hourly'' else s + timedelta(days=length)).isoformat() }}
+
+      '
+- alias: Get the calendar events
+  action: calendar.get_events
+  continue_on_error: true
+  target:
+    entity_id: !input calendar_entities
+  data:
+    start_date_time: '{{ start }}'
+    end_date_time: '{{ end }}'
+  response_variable: calendar_response
+- alias: Stop when the calendar events could not be retrieved
+  if:
+  - condition: template
+    value_template: '{{ calendar_response is not defined }}'
+  then:
+  - set_conversation_response: !input error_response
+  - stop: Unable to retrieve the calendar events
+- alias: Combine the events of all calendars
+  variables:
+    all_events: "{% set ns = namespace(events=[]) %} {% for entity, data in calendar_response.items()
+      %}\n  {% set cal = entity_name(entity, fallback=true) %}\n  {% for e in data.get('events',
+      []) %}\n    {% set ev = {\n      'summary': e.summary | default('') | string
+      | regex_replace('\\\\s+', ' ') | trim,\n      'start': e.start,\n      'end':
+      e.end,\n      'all_day': e.start | string | length == 10,\n      'calendar':
+      cal\n    } %}\n    {% set ev = dict(ev, day=as_datetime(e.start).strftime('%A
+      %-d %B %Y')) %}\n    {% set ev = dict(ev, already_ended=true) if (as_datetime(e.end)
+      | as_local if e.end | string | length > 10 else today_at() + timedelta(days=(as_datetime(e.end).date()
+      - now().date()).days)) <= now() else ev %}\n    {% set ev = dict(ev, location=e.location
+      | regex_replace('\\\\s+', ' ') | trim) if e.location else ev %}\n    {% set
+      desc = e.description | default('', true) | string | regex_replace('\\\\s+',
+      ' ') | trim %}\n    {% set ev = dict(ev, description=desc[:200] ~ ('...' if
+      desc | length > 200 else '')) if desc else ev %}\n    {% set ns.events = ns.events
+      + [ev] %}\n  {% endfor %}\n{% endfor %} {{ ns.events | sort(attribute='start')
+      }}\n"
+- alias: Combine the calendar data
+  variables:
+    calendar_data: "{% set r = {\n  'requested_period': period_description,\n  'start_of_period':
+      start,\n  'end_of_period': end,\n  'current_time': now().isoformat(),\n  'number_of_events':
+      all_events | count,\n  'events': all_events[:100]\n} %} {{ dict(r, note='Only
+      the first 100 events are included') if all_events | count > 100 else r }}\n"
+    response_instructions: !input response_instructions
+- alias: Create the instructions for the response
+  variables:
+    answer_instructions: '{{ response_instructions }}
+
+
+      The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'') }}.
+
+
+      The question of the user: "{{ trigger.sentence }}"
+
+
+      Calendar events for {{ period_description }}:
+
+      {{ calendar_data | to_json }}'
+- alias: Ask the AI Task to answer the question
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Calendar voice response'', ''instructions'':
+    answer_instructions} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+    else d }}'
+  response_variable: ai_answer
+- alias: Send back the response
+  if:
+  - condition: template
+    value_template: '{{ ai_answer is defined and ai_answer.data is string and ai_answer.data
+      | trim | length > 0 }}'
+  then:
+  - set_conversation_response: '{{ ai_answer.data | trim }}'
+  else:
+  - set_conversation_response: !input error_response

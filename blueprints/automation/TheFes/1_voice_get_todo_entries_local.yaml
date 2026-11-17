@@ -3,11 +3,13 @@ blueprint:
   name: Voice - Get ToDo Entries - Local Assist Blueprint
   author: TheFes
   source_url: https://github.com/TheFes/ha-blueprints/blob/main/todo/1_voice_get_todo_entries_local.yaml
-  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+  homeassistant:
+    min_version: 2024.10.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
 
     More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/1_voice_get_todo_entries_local.md)
 
-    # Request calendar entries fully local
+    # Request todo list items fully local
 
     ### Blueprint setup
 
@@ -15,7 +17,7 @@ blueprint:
 
     * Set a todo entity to be used as default entity. This entity can be set by name
     in the trigger to avoid the need to add "list" after the name. By default the
-    trigger is configered for this to be the shopping list. If you want to use another
+    trigger is configured for this to be the shopping list. If you want to use another
     list you need to change the description in the trigger sentence.
 
     #### Optional
@@ -28,22 +30,25 @@ blueprint:
 
     * [Dutch](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/translations/1_voice_get_todo_entries_nl.md)
 
+    * [German](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/translations/1_voice_get_todo_entries_de.md)
+
 
     ### Usage
 
     All sentences need to match the format defined in the trigger sentences. By default
     the following sentence is configured:
 
-    - (what''s|what is) on the (shopping list|list named {list_name}|{list name} list)
+    - (what''s|what is) on the (shopping list|list named {list_name}|{list_name} list)
 
     #### Trigger sentence syntax
 
     All parts between square brackets are optional, the sentence will be recognized
-    with and without those parts. A pipe `|` means `or`. All parts betwee round brackets
+    with and without those parts. A pipe `|` means `or`. All parts between round brackets
     are mandatory, but also here the pipe means `or`.
 
-    The {list_name} part refers to the moment you want the todo entries for. This
-    needs to match to the actual name of the entity, aliases are not supported.
+    The {list_name} part refers to the todo list you want the items for. It is matched
+    with the name of the todo entities (not case sensitive), first on the complete
+    name, then on a part of the name. Aliases are not supported.
 
     #### Examples
 
@@ -84,14 +89,15 @@ blueprint:
           - (what's|what is) on the (shopping list|list named {list_name}|{list_name}
             list)
     response_settings:
-      name: Settings for the reponses
+      name: Settings for the responses
       icon: mdi:chat
       description: Change or translate the response
       collapsed: true
       input:
         no_items_response:
           name: No items on selected list
-          description: Response by Assist in case there are no items
+          description: Response by Assist in case there are no items. `{list_name}`
+            is replaced with the name of the list.
           selector:
             text:
               multiline: false
@@ -99,7 +105,8 @@ blueprint:
           default: '{list_name} is empty'
         invalid_list_response:
           name: Invalid list name
-          description: Response in case the named list could not be found
+          description: Response in case the named list could not be found. `{list_name}`
+            is replaced with the requested name.
           selector:
             text:
               multiline: false
@@ -107,7 +114,8 @@ blueprint:
           default: No list with the name {list_name} found.
         list_items_response:
           name: Response in case there are items on the named list.
-          description: The response for full day events
+          description: The response when there are items on the list. `{item_count}`,
+            `{list_items}` (one item per line) and `{list_name}` are replaced.
           selector:
             text:
               multiline: false
@@ -117,40 +125,42 @@ triggers:
 - trigger: conversation
   command: !input trigger
 variables:
-  version: 20250130
+  version: 20261116
   default_entity: !input default_entity
-  request_name: '{{ trigger.slots.get(''list_name'', ''use_default'') }}'
-  list_entity_request: '{{ states.todo | selectattr(''name'', ''search'', request_name,
-    ignorecase=True) | map(attribute=''entity_id'') | first | default(none) }}
-
-    '
-  valid_request: '{{ list_entity_request is not none or request_name == ''use_default''
-    }}'
+  request_name: '{{ (trigger.slots.get(''list_name'') or '''') | lower | trim }}'
+  list_entity_request: "{% set lists = states.todo | rejectattr('state', 'eq', 'unavailable')
+    | list %} {% set ns = namespace(exact=none, part=none) %} {% if request_name %}\n
+    \ {% for s in lists %}\n    {% set n = s.name | lower %}\n    {% if ns.exact is
+    none and n == request_name %}\n      {% set ns.exact = s.entity_id %}\n    {%
+    elif ns.part is none and (request_name in n or n in request_name) %}\n      {%
+    set ns.part = s.entity_id %}\n    {% endif %}\n  {% endfor %}\n{% endif %} {{
+    ns.exact or ns.part or none }}\n"
+  valid_request: '{{ list_entity_request is not none or not request_name }}'
   list_entity: '{{ list_entity_request or default_entity }}'
-  list_name: '{{ state_attr(list_entity, ''friendly_name'') }}'
+  list_name: '{{ state_attr(list_entity, ''friendly_name'') or list_entity }}'
 actions:
 - if: '{{ valid_request }}'
   then:
   - alias: Get items from list
     action: todo.get_items
+    continue_on_error: true
     target:
       entity_id: '{{ list_entity }}'
     data:
       status: needs_action
     response_variable: response
 - variables:
-    list_items: '{{ response[list_entity][''items''] | map(attribute=''summary'')
-      | list if valid_request else [] }}
-
-      '
+    list_items: "{{ response[list_entity]['items'] | map(attribute='summary') | map('trim')
+      | list\n   if valid_request and response is defined and list_entity in response
+      else [] }}\n"
     no_items_response: !input no_items_response
     list_items_response: !input list_items_response
     invalid_list_response: !input invalid_list_response
 - alias: Set response
-  set_conversation_response: "{% if not valid_request %}\n  {% set list_name = trigger.slots.list_name
-    %}\n  {{ invalid_list_response.format(list_name=list_name) }}\n{% elif list_items
-    | count > 0 %}\n  {% set item_count = list_items | count %}\n  {% set list_items
-    = '\\n - ' ~ list_items | join('\\n - ') %}\n  {{ list_items_response.format(item_count=item_count,
-    list_items=list_items) }}\n{% else %}\n  {{ no_items_response.format(list_name=list_name)
+  set_conversation_response: "{% if not valid_request %}\n  {{ invalid_list_response.format(list_name=trigger.slots.list_name)
+    }}\n{% elif list_items | count > 0 %}\n  {% set item_count = list_items | count
+    %}\n  {% set items = '\\n - ' ~ list_items | join('\\n - ') %}\n  {{ list_items_response.format(item_count=item_count,
+    list_items=items, list_name=list_name) }}\n{% else %}\n  {{ no_items_response.format(list_name=list_name)
     }}\n{% endif %}\n"
 mode: parallel
+max: 10

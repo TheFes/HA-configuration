@@ -1,0 +1,392 @@
+blueprint:
+  domain: script
+  name: Voice - Weather Forecasts - Full LLM script v2
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/weather/3_voice_weather_forecast_full_llm_v2.yaml
+  homeassistant:
+    min_version: 2025.8.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/weather/3_voice_weather_forecast_full_llm_v2.md)
+
+
+    # Request the weather forecast by use of an LLM (version 2)
+
+
+    The LLM only passes the question in a single `query` field. An AI Task (`ai_task.generate_data`)
+
+    with structured output determines the requested period, Home Assistant collects
+    and summarizes the
+
+    forecast, and the result is returned to the LLM, which answers the question.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+
+    * Set a weather entity to use for the forecasts
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Note
+
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for weather forecasts.
+
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+
+    #### Example for script description
+
+
+    `Gets the weather forecast and current weather conditions. Use this tool for every
+    question about the weather, also for questions like "do I need an umbrella". Pass
+    the complete question of the user in the query field, in the words of the user.`
+
+
+    ### Usage
+
+
+    You can ask for the weather in any way, using any language. You can refer to the
+    current weather,
+
+    one or more days (e.g. next weekend), a part of the day (e.g. tomorrow morning)
+    or one or more hours
+
+    (e.g. from 5 to 9). You can also ask about specific weather conditions, like "will
+    it rain tomorrow".
+
+
+    #### Examples
+
+
+    ```
+
+
+    Give me the weather forecast for this evening
+
+
+    Do I need to apply sunscreen if I go out tomorrow morning
+
+
+    When will it start raining tomorrow
+
+
+    What''s the weather for this weekend
+
+
+    ```
+
+    '
+  input:
+    weather_settings:
+      name: Weather settings
+      icon: mdi:weather-lightning-rainy
+      input:
+        weather_entity:
+          name: Weather entity
+          description: The weather entity to use for the forecasts. For the best results
+            it should provide an hourly and a daily forecast.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - weather
+              multiple: false
+              reorder: false
+        include_details:
+          name: Include the forecast per hour or day
+          description: Besides a summary of the requested period, also return the
+            forecast for each hour or day (up to 24 items) to the LLM. This allows
+            answers like "it will start raining around 4", but uses more tokens.
+          default: true
+          selector:
+            boolean: {}
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to determine the requested period.
+            This can be another (smaller, faster) model than the one used in your
+            voice pipeline. Leave empty to use the preferred AI Task entity set in
+            Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        query_prompt:
+          name: Query field description
+          description: The description of the `query` field, which tells the LLM what
+            to pass to the script.
+          default: The complete question of the user about the weather, in the words
+            of the user, including the requested day, time or period (for example
+            "do I need an umbrella tomorrow evening").
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        llm_instructions:
+          name: Instructions to determine the period
+          description: Instructions for the AI to determine the requested period.
+            The output format is enforced by the structure, so this only needs to
+            explain how to interpret the request. You can use `{{ query }}`.
+          default: 'You interpret a voice request about the weather. The user asked:
+            "{{ query }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - time_period_type: daily when the request is about one or more full days
+            (today, tomorrow, next Thursday, the weekend). hourly when the request
+            is about a part of a day, specific hours, the coming hours or the current
+            weather (this evening, tomorrow morning, at 9, from 3 to 5, right now).
+            Also use hourly when the user asks when something happens during a day
+            ("when will it start raining tomorrow"), then use the full day (start
+            at 00:00:00, or the current hour for today) as the period. When no period
+            is mentioned, use hourly for the coming 3 hours.
+
+            - start_date: the date on which the requested period starts, in the format
+            YYYY-MM-DD. Use today''s date when no day is mentioned. A weekday means
+            the next occurrence of that day, today included. The weekend is Saturday
+            and Sunday. For the night, use the next day, unless the current time is
+            before 06:00.
+
+            - start_time: the time on which the requested period starts, in the 24
+            hour format HH:MM:SS. Use 00:00:00 for full days. Night starts at 00:00:00,
+            morning at 06:00:00, afternoon at 12:00:00 and evening at 18:00:00. For
+            the current weather or the coming hours, use the start of the current
+            hour.
+
+            - time_period_length: the number of days (daily) or hours (hourly) of
+            the period. Night, morning, afternoon and evening are 6 hours, a single
+            moment ("at 9") is 1 hour and the weekend is 2 days.
+
+            - period_description: a short description of the requested period, in
+            the language of the request (for example "tomorrow morning").'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max_exceeded: silent
+fields:
+  query:
+    name: Query
+    description: !input query_prompt
+    required: true
+    selector:
+      text:
+sequence:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    query: '{{ query | default('''', true) | string | trim }}'
+    weather_entity: !input weather_entity
+    include_details: !input include_details
+    ai_task_entity: !input ai_task_entity
+    llm_instructions: !input llm_instructions
+- alias: Determine the supported forecast types
+  variables:
+    supported: '{% set sf = state_attr(weather_entity, ''supported_features'') | int(0)
+      %} {% set d = [''daily''] if sf | bitwise_and(1) else [] %} {% set h = [''hourly'']
+      if sf | bitwise_and(2) else [] %} {% set td = [''twice_daily''] if sf | bitwise_and(4)
+      else [] %} {{ d + h + td }}
+
+      '
+    structure:
+      time_period_type:
+        description: daily for one or more full days, hourly for a part of a day or
+          specific hours
+        required: true
+        selector:
+          select:
+            options:
+            - daily
+            - hourly
+      start_date:
+        description: The date on which the period starts (YYYY-MM-DD)
+        required: true
+        selector:
+          date: {}
+      start_time:
+        description: The time on which the period starts (HH:MM:SS, 24 hour format)
+        required: true
+        selector:
+          time: {}
+      time_period_length:
+        description: Number of days (daily) or hours (hourly) of the period
+        required: true
+        selector:
+          number:
+            min: 1
+            max: 48
+      period_description:
+        description: Short description of the requested period, in the language of
+          the request
+        required: true
+        selector:
+          text: {}
+- alias: Ask the AI Task to determine the requested period
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Weather voice request'', ''instructions'': llm_instructions,
+    ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+    else d }}'
+  response_variable: ai_period
+- alias: Stop with error response when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_period is not defined or ai_period.data is not defined
+      or ai_period.data is string or not supported }}'
+  then:
+  - variables:
+      response:
+        error: "{{ 'The weather entity does not provide forecasts' if not supported\n
+          \  else 'Unable to determine the requested period from the query' }}"
+  - stop: AI Task failed, or the weather entity doesn't support forecasts
+    response_variable: response
+- alias: Read the period from the AI result
+  variables:
+    llm: '{{ ai_period.data }}'
+    period_description: '{{ llm.get(''period_description'') or query }}'
+    requested_type: '{{ llm.get(''time_period_type'') if llm.get(''time_period_type'')
+      in [''daily'', ''hourly''] else ''daily'' }}'
+- alias: Check the forecast type
+  variables:
+    time_period_type: "{% if requested_type == 'hourly' and 'hourly' not in supported
+      %}\n  {{ 'daily' if 'daily' in supported else 'twice_daily' }}\n{% elif requested_type
+      == 'daily' and 'daily' not in supported %}\n  {{ 'twice_daily' if 'twice_daily'
+      in supported else 'hourly' }}\n{% else %}\n  {{ requested_type }}\n{% endif
+      %}\n"
+- alias: Validate the date and time provided by the AI
+  variables:
+    start_date: '{% set d = llm.get(''start_date'') | default('''', true) | string
+      | trim %} {{ d[:10] if d is match(''\d{4}-\d{2}-\d{2}'') else now().date() |
+      string }}
+
+      '
+    start_time: '{% set t = llm.get(''start_time'') | default(''00:00:00'', true)
+      | string | trim %} {% set t = t ~ '':00'' if t is match(''^\d{1,2}:\d{2}$'')
+      else t %} {{ t if as_timedelta(t) is not none else ''00:00:00'' }}
+
+      '
+    length: '{{ [llm.get(''time_period_length'') | default(1) | int(1), 1] | max }}'
+- alias: Determine the start of the period
+  variables:
+    start: '{% set s = as_datetime(start_date) | as_local %} {{ (s + as_timedelta(start_time)
+      if requested_type == ''hourly'' and time_period_type == ''hourly'' else s).isoformat()
+      }}
+
+      '
+- alias: Determine the end of the period
+  variables:
+    end: "{% set s = as_datetime(start) %} {% if requested_type == 'hourly' and time_period_type
+      == 'hourly' %}\n  {{ (s + timedelta(hours=length)).isoformat() }}\n{% elif requested_type
+      == 'hourly' %}\n  {# no hourly forecast available, use the full days which contain
+      the requested hours #}\n  {% set e = s + as_timedelta(start_time) + timedelta(hours=length)
+      %}\n  {% set m = as_datetime(e.date() | string) | as_local %}\n  {{ (m if e
+      == m else m + timedelta(days=1)).isoformat() }}\n{% else %}\n  {{ (s + timedelta(days=length)).isoformat()
+      }}\n{% endif %}\n"
+- alias: Get the forecast data
+  action: weather.get_forecasts
+  continue_on_error: true
+  target:
+    entity_id: !input weather_entity
+  data:
+    type: '{{ time_period_type }}'
+  response_variable: weather_response
+- alias: Select the forecast data for the requested period
+  variables:
+    all_forecast: "{{ weather_response[weather_entity].forecast | default([])\n   if
+      weather_response is defined and weather_entity in weather_response else [] }}\n"
+    selected: "{% set ns = namespace(forecast=[]) %} {% for item in all_forecast %}\n
+      \ {% set dt = item.datetime | as_datetime | as_local %}\n  {% if start | as_datetime
+      <= dt < end | as_datetime %}\n    {% set ns.forecast = ns.forecast + [dict(item,
+      datetime=dt.isoformat())] %}\n  {% endif %}\n{% endfor %} {{ ns.forecast }}\n"
+- alias: Stop when the weather provider returned no forecast data
+  if:
+  - condition: template
+    value_template: '{{ all_forecast | count == 0 }}'
+  then:
+  - variables:
+      response:
+        error: The weather provider returned no forecast data
+  - stop: No forecast data received from the weather provider
+    response_variable: response
+- alias: Collect the units
+  variables:
+    units:
+      temperature: '{{ state_attr(weather_entity, ''temperature_unit'') }}'
+      precipitation: '{{ state_attr(weather_entity, ''precipitation_unit'') }}'
+      wind_speed: '{{ state_attr(weather_entity, ''wind_speed_unit'') }}'
+      pressure: '{{ state_attr(weather_entity, ''pressure_unit'') }}'
+      visibility: '{{ state_attr(weather_entity, ''visibility_unit'') }}'
+      wind_bearing: degrees
+- alias: Collect current conditions
+  variables:
+    current_conditions: "{% if start | as_datetime <= now() < end | as_datetime %}\n
+      \ {% set a = states[weather_entity].attributes %}\n  {% set keys = ['temperature',
+      'apparent_temperature', 'humidity', 'cloud_coverage', 'uv_index',\n                 'wind_speed',
+      'wind_gust_speed', 'wind_bearing', 'precipitation', 'visibility'] %}\n  {% set
+      ns = namespace(d={'condition': states(weather_entity)}) %}\n  {% for k in keys
+      if a.get(k) is not none %}\n    {% set ns.d = dict(ns.d, **{k: a.get(k)}) %}\n
+      \ {% endfor %}\n  {{ ns.d }}\n{% else %}\n  {{ none }}\n{% endif %}\n"
+- alias: Summarize the forecast data
+  variables:
+    summary: "{% set items = selected %} {% set keys = items | map('list') | sum(start=[])
+      | unique | reject('in', ['datetime', 'is_daytime']) | list %} {% set ns = namespace(d={})
+      %} {% for k in keys %}\n  {% set v = items | selectattr(k, 'defined') | map(attribute=k)
+      | reject('none') | list %}\n  {% if v %}\n    {% if v[0] is string %}\n      {%
+      set ns.d = dict(ns.d, **{k ~ '_most_frequent': v | statistical_mode}) %}\n      {%
+      if k == 'condition' %}\n        {% set ns.d = dict(ns.d, conditions_in_period=v
+      | unique | list) %}\n      {% endif %}\n    {% elif k == 'wind_bearing' %}\n
+      \     {% set n = v | select('is_number') | list %}\n      {% if n %}\n        {%
+      set t = namespace(s=0, c=0) %}\n        {% for b in n %}\n          {% set t.s
+      = t.s + sin(b * pi / 180) %}\n          {% set t.c = t.c + cos(b * pi / 180)
+      %}\n        {% endfor %}\n        {% set ns.d = dict(ns.d, wind_bearing_average=((atan2(t.s,
+      t.c) * 180 / pi) % 360) | round(0)) %}\n      {% endif %}\n    {% elif k in
+      ['temperature', 'apparent_temperature', 'dew_point'] %}\n      {% set ns.d =
+      dict(ns.d, **{k: {'min': v | min | round(1), 'max': v | max | round(1)} if v
+      | count > 1 else v[0] | round(1)}) %}\n    {% elif k == 'templow' %}\n      {%
+      set ns.d = dict(ns.d, templow_min=v | min | round(1)) %}\n    {% elif k == 'precipitation'
+      %}\n      {% set ns.d = dict(ns.d, precipitation_total=v | sum | round(1)) %}\n
+      \   {% elif k in ['precipitation_probability', 'wind_speed', 'wind_gust_speed',
+      'uv_index'] %}\n      {% set ns.d = dict(ns.d, **{k ~ '_max': v | max | round(1)})
+      %}\n    {% else %}\n      {% set ns.d = dict(ns.d, **{k ~ '_average': v | average
+      | round(0)}) %}\n    {% endif %}\n  {% endif %}\n{% endfor %} {{ ns.d }}\n"
+- alias: Combine the weather data
+  variables:
+    weather_data: "{% set r = {\n  'requested_period': period_description,\n  'start_of_period':
+      start,\n  'end_of_period': end,\n  'forecast_type': time_period_type,\n  'units':
+      units,\n  'summary_for_period': summary\n} %} {% set r = dict(r, note='The weather
+      provider has no hourly forecast, so the forecast for the full day is provided')
+      if requested_type == 'hourly' and time_period_type != 'hourly' else r %} {%
+      set r = dict(r, current_conditions=current_conditions) if current_conditions
+      else r %} {% if selected | count == 0 %}\n  {% set r = dict(r, error='There
+      is no forecast data for the requested period, tell the user for which period
+      the forecast is available',\n                  forecast_available_from=((all_forecast
+      | first).datetime | as_datetime | as_local).isoformat(),\n                  forecast_available_until=((all_forecast
+      | last).datetime | as_datetime | as_local).isoformat(),\n                  forecast_type=time_period_type)
+      %}\n  {{ dict(r.items() | rejectattr('0', 'eq', 'summary_for_period')) }}\n{%
+      else %}\n  {{ dict(r, forecast=selected[:24]) if include_details and selected
+      | count > 1 else r }}\n{% endif %}\n"
+- stop: ''
+  response_variable: weather_data

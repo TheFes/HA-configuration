@@ -1,0 +1,382 @@
+blueprint:
+  domain: script
+  name: Voice - Add Calendar Event - Full LLM script
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/3_voice_add_calendar_event_full_llm.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/3_voice_add_calendar_event_full_llm.md)
+
+
+    # Add calendar events by use of an LLM
+
+
+    The LLM only passes the request in a single `query` field. An AI Task (`ai_task.generate_data`)
+
+    with structured output determines the title, the calendar (it can only return
+    calendars which
+
+    exist), the date, the start and end time, and optionally the location and a description.
+    When the
+
+    title or the date is missing, nothing is added and the script tells the LLM what
+    to ask.
+
+
+    Without a time an all-day event is added, without an end time the default duration
+    is used.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+    * A default calendar
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Note
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script to add events.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+
+    #### Example for script description
+
+    `Adds an event or appointment to a calendar. Use this tool whenever the user wants
+    to add, plan or schedule something in a calendar or agenda. Pass the complete
+    request of the user in the query field, in the words of the user. When the tool
+    reports missing information, ask the user for it and call the tool again with
+    the complete request including the answer.`
+
+
+    #### Examples
+
+    ```
+
+    Add a dentist appointment tomorrow at 10 to my calendar
+
+    Schedule a meeting with Robin on Friday from 2 to 4 pm
+
+    Put the camping trip in the family calendar from Friday to Sunday
+
+    ```
+
+    '
+  input:
+    calendar_settings:
+      name: Calendar settings
+      icon: mdi:calendar
+      input:
+        calendar_entities:
+          name: Calendars
+          description: The calendars events can be added to. Leave empty to allow
+            all calendars. Calendars which don't support adding events (like most
+            integration calendars) are skipped.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - calendar
+              reorder: false
+        default_calendar:
+          name: Default calendar
+          description: The calendar used when the request doesn't mention a calendar.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - calendar
+              multiple: false
+              reorder: false
+        default_duration:
+          name: Default duration
+          description: The duration of an event when only a start time is mentioned.
+          default: 60
+          selector:
+            number:
+              min: 5.0
+              max: 1440.0
+              step: 5.0
+              unit_of_measurement: minutes
+              mode: slider
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to interpret the request. Leave empty
+            to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions for the AI
+          description: Instructions for the AI to interpret the request. The output
+            format is enforced by the structure. You can use `{{ query }}` and `{{
+            default_calendar_name }}`.
+          default: 'You interpret a voice request to add an event to a calendar. The
+            user said: "{{ query }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - summary: the title of the event, without the calendar and the moment.
+            Keep the language of the request.
+
+            - calendar: match what the user says with the calendar names in the field
+            description and return the id. When no calendar is mentioned, or a general
+            word like "calendar" or "agenda", use the default calendar: {{ default_calendar_name
+            or ''the first calendar'' }}.
+
+            - date: the (start) date of the event, in the format YYYY-MM-DD. A weekday
+            means the next occurrence of that day (not today). When only a time is
+            mentioned, use today, or tomorrow when that time has already passed.
+
+            - start_time: only when a time or a part of the day is mentioned, in the
+            24 hour format HH:MM:SS. Morning is 09:00:00, afternoon 14:00:00, evening
+            19:00:00 and tonight 20:00:00. Leave it empty for an all-day event.
+
+            - end_time: only when an end time or a duration is mentioned ("until 4",
+            "for 2 hours"), in the 24 hour format HH:MM:SS.
+
+            - end_date: only for events which last more than one day ("from Friday
+            to Sunday"), the last day of the event in the format YYYY-MM-DD.
+
+            - location and description: only when the user mentions them. The calendar
+            is never the location.
+
+            - missing: never guess. Add summary or date when the user didn''t mention
+            it or it is unclear, and leave that field empty.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        query_prompt:
+          name: Query field description
+          description: The description of the `query` field, which tells the LLM what
+            to pass to the script.
+          default: The complete request of the user, in the words of the user, including
+            the event, the calendar and the moment when they are mentioned (for example
+            "add a dentist appointment tomorrow at 10 to my calendar"). When you asked
+            the user for missing information, pass the original request including
+            the answers.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max_exceeded: silent
+fields:
+  query:
+    name: Query
+    description: !input query_prompt
+    required: true
+    selector:
+      text:
+sequence:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    query: '{{ query | default('''', true) | string | trim }}'
+    ai_task_entity: !input ai_task_entity
+    calendar_entities: !input calendar_entities
+    default_calendar: !input default_calendar
+    default_duration: !input default_duration
+- alias: Collect the calendars
+  variables:
+    calendars: "{% set ids = calendar_entities if calendar_entities else states.calendar
+      | map(attribute='entity_id') | list %} {% set ns = namespace(l=[]) %} {% for
+      e in ids if states(e) not in ['unavailable', 'unknown'] and state_attr(e, 'supported_features')
+      | int(0) | bitwise_and(1) %}\n  {% set ns.l = ns.l + [{'value': e, 'label':
+      state_attr(e, 'friendly_name') or e}] %}\n{% endfor %} {{ ns.l }}\n"
+    calendar_ids: '{{ calendars | map(attribute=''value'') | list }}'
+    calendar_desc: '{% for o in calendars %}{{ o.label }} = {{ o.value }}{{ ''; ''
+      if not loop.last }}{% endfor %}'
+    default_calendar_name: "{{ (calendars | selectattr('value', 'eq', default_calendar)
+      | map(attribute='label') | first) ~ ' (' ~ default_calendar ~ ')'\n   if default_calendar
+      in calendar_ids else '' }}"
+- alias: Stop when there are no calendars
+  if:
+  - condition: template
+    value_template: '{{ calendars | count == 0 }}'
+  then:
+  - variables:
+      response:
+        success: false
+        error: There are no calendars available which support adding events
+  - stop: No calendars
+    response_variable: response
+- alias: Create the instructions and structure for the AI Task
+  variables:
+    llm_instructions: !input llm_instructions
+    structure:
+      summary:
+        description: The title of the event, without the calendar and the moment
+        selector:
+          text:
+      calendar:
+        description: '{{ ''The calendar, match on the name and return the id. Available
+          (name = id): '' ~ calendar_desc }}'
+        selector:
+          select:
+            options: '{{ calendar_ids }}'
+      date:
+        description: The (start) date of the event (YYYY-MM-DD)
+        selector:
+          date:
+      start_time:
+        description: Start time (HH:MM:SS, 24 hour format), empty for an all-day event
+        selector:
+          time:
+      end_time:
+        description: End time (HH:MM:SS, 24 hour format), only when an end time or
+          duration is mentioned
+        selector:
+          time:
+      end_date:
+        description: The last day (YYYY-MM-DD), only for events which last more than
+          one day
+        selector:
+          date:
+      location:
+        description: The location, only when mentioned
+        selector:
+          text:
+      description:
+        description: Extra details, only when mentioned
+        selector:
+          text:
+      missing:
+        description: The information which is missing or unclear in the request
+        selector:
+          select:
+            multiple: true
+            options:
+            - summary
+            - date
+- alias: Ask the AI Task to interpret the request
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Add calendar event'', ''instructions'': llm_instructions,
+    ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+    else d }}'
+  response_variable: ai_result
+- alias: Stop with an error when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_result is not defined or ai_result.data is not defined
+      or ai_result.data is string }}'
+  then:
+  - variables:
+      response:
+        success: false
+        error: Unable to interpret the request
+  - stop: AI Task failed
+    response_variable: response
+- alias: Read the result of the AI Task
+  variables:
+    llm: '{{ ai_result.data }}'
+    ai_missing: '{% set m = llm.get(''missing'') or [] %} {{ [m] if m is string else
+      m | list }}
+
+      '
+    summary: '{{ llm.get(''summary'') | default('''', true) | string | trim }}'
+    calendar_entity: "{{ llm.get('calendar') if llm.get('calendar') in calendar_ids\n
+      \  else default_calendar if default_calendar in calendar_ids else calendar_ids
+      | first | default('') }}"
+    event: "{% set ns = namespace(t={}) %} {% for k in ['start_time', 'end_time']
+      %}\n  {% set t = '' if k in ai_missing else llm.get(k) | default('', true) |
+      string | trim %}\n  {% set t = t ~ ':00' if t is match('^\\\\d{1,2}:\\\\d{2}$')
+      else t %}\n  {% set ns.t = dict(ns.t.items() | list + [(k, t if t and as_timedelta(t)
+      is not none else '')]) %}\n{% endfor %} {% set ds = namespace(d={}) %} {% for
+      k in ['date', 'end_date'] %}\n  {% set d = '' if k in ai_missing else llm.get(k)
+      | default('', true) | string | trim %}\n  {% set ds.d = dict(ds.d.items() |
+      list + [(k, d[:10] if d is match('\\\\d{4}-\\\\d{2}-\\\\d{2}') and as_datetime(d[:10],
+      none) is not none else '')]) %}\n{% endfor %} {% set date = ds.d.date %} {%
+      if not date %}\n  {{ {} }}\n{% elif ns.t.start_time %}\n  {% set start = as_datetime(date)
+      | as_local + as_timedelta(ns.t.start_time) %}\n  {% if ns.t.end_time %}\n    {%
+      set end = as_datetime(ds.d.end_date or date) | as_local + as_timedelta(ns.t.end_time)
+      %}\n    {% set end = end + timedelta(days=1) if end <= start and not ds.d.end_date
+      else end %}\n  {% else %}\n    {% set end = start + timedelta(minutes=default_duration
+      | int(60)) %}\n  {% endif %}\n  {% set end = start + timedelta(minutes=default_duration
+      | int(60)) if end <= start else end %}\n  {{ {'all_day': false, 'start': start.isoformat(),
+      'end': end.isoformat()} }}\n{% else %}\n  {% set end_date = ds.d.end_date if
+      ds.d.end_date and ds.d.end_date >= date else date %}\n  {{ {'all_day': true,
+      'start': date, 'end': (as_datetime(end_date) + timedelta(days=1)).date() | string}
+      }}\n{% endif %}\n"
+    location: '{{ llm.get(''location'') | default('''', true) | string | trim }}'
+    description: '{{ llm.get(''description'') | default('''', true) | string | trim
+      }}'
+- alias: Return what is missing, so the LLM can ask for it
+  variables:
+    missing: '{% set m = ai_missing + ([''summary''] if not summary else []) + ([''date'']
+      if not event else []) %} {{ m | select(''in'', [''summary'', ''date'']) | unique
+      | list }}
+
+      '
+- if:
+  - condition: template
+    value_template: '{{ missing | count > 0 }}'
+  then:
+  - variables:
+      response:
+        success: false
+        missing: '{{ missing }}'
+        instruction: The event was NOT added. Ask the user for the missing information,
+          then call this tool again with the complete request including the answer.
+  - stop: Information missing
+    response_variable: response
+- alias: Add the event
+  action: calendar.create_event
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data: "{% set d = {'summary': summary} %} {% if event.all_day %}\n  {% set d = dict(d,
+    start_date=event.start, end_date=event.end) %}\n{% else %}\n  {% set d = dict(d,
+    start_date_time=event.start, end_date_time=event.end) %}\n{% endif %} {% set d
+    = dict(d, description=description) if description else d %} {% set d = dict(d,
+    location=location) if location else d %} {{ d }}\n"
+- alias: Check if the event was added
+  action: calendar.get_events
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data:
+    start_date_time: '{{ (as_datetime(event.start) | as_local - timedelta(minutes=1)).isoformat()
+      }}'
+    end_date_time: '{{ (as_datetime(event.end) | as_local + timedelta(minutes=1)).isoformat()
+      }}'
+  response_variable: check
+- variables:
+    added: '{{ check is defined and check is mapping and summary in (check.get(calendar_entity,
+      {}).get(''events'') or []) | map(attribute=''summary'') | list }}'
+    result: "{% if added %}\n  {% set r = {'success': true, 'calendar': state_attr(calendar_entity,
+      'friendly_name'), 'summary': summary,\n              'all_day': event.all_day,
+      'start': event.start, 'end': event.end} %}\n  {% set r = dict(r, end=(as_datetime(event.end)
+      - timedelta(days=1)).date() | string, end_is_last_day=true) if event.all_day
+      else r %}\n  {% set r = dict(r, location=location) if location else r %}\n  {{
+      r }}\n{% else %}\n  {{ {'success': false, 'error': 'The event could not be added
+      to ' ~ state_attr(calendar_entity, 'friendly_name')} }}\n{% endif %}\n"
+- stop: ''
+  response_variable: result

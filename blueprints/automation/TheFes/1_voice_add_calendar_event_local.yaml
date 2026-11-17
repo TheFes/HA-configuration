@@ -1,0 +1,606 @@
+blueprint:
+  domain: automation
+  name: Voice - Add Calendar Event - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/61d1a7a08733db9549d1eb5912f0c974d5c65390/calendar/1_voice_add_calendar_event_local.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n\nMore
+    detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/1_voice_add_calendar_event_local.md)\n\n#
+    Add calendar events, fully local\n\nAdds an event to a calendar without an LLM.
+    Without a time an all-day event is added, without an\nend time the default duration
+    is used.\n\nWhen the moment is not recognized and you used a voice satellite,
+    the satellite asks for it.\nWithout a satellite (text chat), Assist tells you
+    it didn't recognize the moment.\n\n### Blueprint setup\n\n#### Required\n* A default
+    calendar. It is used when the calendar in the sentence is one of the\n  `Default
+    calendar names` (for example \"my calendar\")\n\n#### Optional\n* Change or translate
+    the trigger sentences, the phrases and the responses\n\n### Usage\n\nBy default
+    the following sentence is configured:\n\n- (add|put|plan|schedule) {event} (to|on|in)
+    [the|my] [{calendar}] (calendar|agenda) {due}\n\nThe event, the calendar and the
+    moment are determined from the complete sentence: the calendar is\nfound by looking
+    for the name of one of your calendars, so events with \"to\" or \"in\" in them
+    work\nas well. The moment is everything after the calendar name. It can contain
+    a day (`today`,\n`tomorrow`, a weekday), a start time (`17:30`, `5 pm`), an end
+    time (`until 6`, `to 6`) or a\nduration (`for 2 hours`) and a part of the day
+    (`morning`, `evening`, `tonight`).\n\n#### Examples\n* Add dentist to my calendar
+    tomorrow at 10\n* Add meeting with Robin to the work calendar on Friday from 2
+    to 4 pm\n* Put go to the gym in my agenda on Saturday at 9 for 2 hours\n* Add
+    Marleen's birthday to the calendar on Sunday\n"
+  input:
+    calendar_settings:
+      name: Calendar settings
+      icon: mdi:calendar
+      input:
+        calendar_entities:
+          name: Calendars
+          description: The calendars events can be added to. Leave empty to allow
+            all calendars. Calendars which don't support adding events (like most
+            integration calendars) are skipped.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - calendar
+              reorder: false
+        default_calendar:
+          name: Default calendar
+          description: The calendar used when the request doesn't mention a calendar.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - calendar
+              multiple: false
+              reorder: false
+        default_duration:
+          name: Default duration
+          description: The duration of an event when only a start time is mentioned.
+          default: 60
+          selector:
+            number:
+              min: 5.0
+              max: 1440.0
+              step: 5.0
+              unit_of_measurement: minutes
+              mode: slider
+        default_calendar_names:
+          name: Default calendar names
+          description: Other names which refer to the default calendar, for example
+            "family". The words for calendar on their own ("my calendar", "the agenda")
+            always refer to the default calendar.
+          default: []
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        calendar_words:
+          name: Words for calendar
+          description: Words for "calendar". A calendar name is also recognized with
+            one of these words after it, also when written as one word (for example
+            "werkagenda" for the calendar "Werk").
+          default:
+          - calendar
+          - agenda
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        calendar_separators:
+          name: Words between the event and the calendar
+          description: The words between the event and the calendar in your trigger
+            sentences, used to split the event and the calendar. Put longer variants
+            first ("to the" before "to").
+          default:
+          - to the
+          - to my
+          - on the
+          - on my
+          - in the
+          - in my
+          - to
+          - 'on'
+          - in
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        trigger:
+          name: Trigger sentences
+          description: The sentences need an {event} wildcard. The event, the calendar
+            and the moment are determined from the complete sentence.
+          default:
+          - (add|put|plan|schedule) {event} (to|on|in) [the|my] [{calendar}] (calendar|agenda)
+            {due}
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        max_questions:
+          name: Maximum number of follow-up questions
+          description: How many times a voice satellite may ask for the moment when
+            it was not recognized. Set to 0 to never ask a follow-up question.
+          default: 2
+          selector:
+            number:
+              min: 0.0
+              max: 5.0
+              step: 1.0
+              mode: slider
+    due_settings:
+      name: Settings for the moment
+      icon: mdi:calendar-clock
+      collapsed: true
+      description: The phrases which are recognized in the moment. Translate these
+        to use the blueprint in another language. Times can be spoken as `17:30`,
+        `17.30`, `5 pm` or just `17`.
+      input:
+        day_phrases:
+          name: Day phrases
+          description: Phrases for a day, with the number of days from today.
+          default:
+            today: 0
+            tonight: 0
+            tomorrow: 1
+            day after tomorrow: 2
+          selector:
+            object:
+              multiple: false
+        weekday_phrases:
+          name: Weekday phrases
+          description: Phrases for weekdays, with the number of the weekday (0 is
+            Monday). The next occurrence of the weekday is used, so on a Friday "friday"
+            is the Friday of next week.
+          default:
+            monday: 0
+            tuesday: 1
+            wednesday: 2
+            thursday: 3
+            friday: 4
+            saturday: 5
+            sunday: 6
+          selector:
+            object:
+              multiple: false
+        day_part_phrases:
+          name: Parts of the day
+          description: Phrases for parts of the day, with the time which is used for
+            them. When a time is mentioned as well ("at 7 in the evening") and the
+            part of the day is in the afternoon or evening, 12 hours are added to
+            times before 12:00.
+          default:
+            morning: 09:00
+            afternoon: '14:00'
+            evening: '19:00'
+            tonight: '20:00'
+          selector:
+            object:
+              multiple: false
+        pm_phrases:
+          name: Words for PM and AM
+          default:
+            pm: pm
+            p.m.: pm
+            am: am
+            a.m.: am
+          selector:
+            object:
+              multiple: false
+        until_words:
+          name: Words before the end time
+          description: The word before the end time, like "until" in "from 2 until
+            4".
+          default:
+          - until
+          - till
+          - to
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        duration_words:
+          name: Words before a duration
+          description: The word before a duration, like "for" in "for 2 hours".
+          default:
+          - for
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        duration_units:
+          name: Units for a duration
+          description: The units for a duration, with the number of minutes.
+          default:
+            minute: 1
+            minutes: 1
+            hour: 60
+            hours: 60
+          selector:
+            object:
+              multiple: false
+        one_words:
+          name: Words for one
+          description: Words which mean one, like "an" in "for an hour".
+          default:
+          - a
+          - an
+          - one
+          selector:
+            text:
+              multiple: true
+              multiline: false
+    response_settings:
+      name: Settings for the responses
+      icon: mdi:chat
+      collapsed: true
+      description: '`{event}` is replaced by the event, `{calendar}` by the calendar
+        and `{due}` by the moment.'
+      input:
+        date_format:
+          name: Date format
+          description: Format for the date in the response, check https://strftime.org
+            for options
+          default: '%A %-d %B'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        time_format:
+          name: Time format
+          default: '%H:%M'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        from_word:
+          name: Word before the start time
+          default: from
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        to_word:
+          name: Word before the end time
+          default: to
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_translations:
+          name: Translations for weekdays and months
+          description: 'Mapping to translate the English weekday and month names in
+            the date, for example `Monday: maandag`'
+          default: {}
+          selector:
+            object:
+              multiple: false
+        response_added:
+          name: Event added
+          default: Added {event} to {calendar} on {due}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_invalid_calendar:
+          name: Calendar not found
+          default: I can't find a calendar with the name {calendar}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_due:
+          name: Question for the moment
+          description: Asked on a voice satellite when the moment was not recognized.
+          default: When is {event}?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_invalid_due:
+          name: Moment not recognized
+          description: Used in text chat, or when no more questions may be asked.
+            `{due}` contains the spoken moment.
+          default: I don't know when {due} is, so I didn't add {event}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_no_answer:
+          name: No answer on the follow-up question
+          default: I didn't hear an answer, so I didn't add {event}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_error:
+          name: Error response
+          default: Sorry, I couldn't add {event} to {calendar}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- trigger: conversation
+  command: !input trigger
+  id: voice
+- trigger: event
+  event_type: voice_calendar_event_follow_up
+  id: follow_up
+conditions:
+- alias: Only handle follow-up events for this automation
+  condition: template
+  value_template: '{{ trigger.id == ''voice'' or trigger.event.data.get(''automation'')
+    == this.entity_id }}'
+variables:
+  version: 20261116
+  calendar_entities: !input calendar_entities
+  default_calendar: !input default_calendar
+  default_duration: !input default_duration
+  default_calendar_names: !input default_calendar_names
+  calendar_words: !input calendar_words
+  calendar_separators: !input calendar_separators
+  max_questions: !input max_questions
+  day_phrases: !input day_phrases
+  weekday_phrases: !input weekday_phrases
+  day_part_phrases: !input day_part_phrases
+  pm_phrases: !input pm_phrases
+  until_words: !input until_words
+  duration_words: !input duration_words
+  duration_units: !input duration_units
+  one_words: !input one_words
+  is_follow_up: '{{ trigger.id == ''follow_up'' }}'
+  data: '{{ trigger.event.data if is_follow_up else {} }}'
+  satellite_id: '{{ data.get(''satellite_id'') if is_follow_up else trigger.satellite_id
+    }}'
+  parsed: "{% if is_follow_up %}\n  {{ data.get('parsed', {}) }}\n{% else %} {% set
+    orig = trigger.sentence | regex_replace('\\\\s+', ' ') | trim %} {% set low =
+    orig | lower %} {% set event_slot = (trigger.slots.get('event') or '') | regex_replace('\\\\s+',
+    ' ') | lower | trim %} {% set start = low.find(event_slot) if event_slot else
+    -1 %} {% set req = low[start:] if start >= 0 else '' %} {% set req_orig = orig[start:]
+    if start >= 0 else '' %} {% set words = calendar_words | map('lower') | map('trim')
+    | reject('eq', '') | list %} {% set ids = calendar_entities if calendar_entities
+    else states.calendar | map(attribute='entity_id') | list %} {% set sources = namespace(l=[])
+    %} {% for e in ids if states(e) not in ['unavailable', 'unknown'] and state_attr(e,
+    'supported_features') | int(0) | bitwise_and(1) %}\n  {% set sources.l = sources.l
+    + [[(state_attr(e, 'friendly_name') or e) | lower | trim, e]] %}\n{% endfor %}
+    {% for n in default_calendar_names | map('lower') | map('trim') %}\n  {% set sources.l
+    = sources.l + [[n, default_calendar]] %}\n{% endfor %} {% set ns = namespace(v=[])
+    %} {% for w in words %}\n  {% set ns.v = ns.v + [[w, default_calendar]] %}\n{%
+    endfor %} {% for n, e in sources.l if n %}\n  {% set ns.v = ns.v + [[n, e]] %}\n
+    \ {% for w in words %}\n    {% set ns.v = ns.v + [[n ~ ' ' ~ w, e], [n ~ w, e]]
+    %}\n    {% if n.endswith(' ' ~ w) %}\n      {% set ns.v = ns.v + [[n[:-(w | length
+    + 1)], e]] %}\n    {% elif n.endswith(w) and n | length > w | length %}\n      {%
+    set ns.v = ns.v + [[n[:-(w | length)], e]] %}\n    {% endif %}\n  {% endfor %}\n{%
+    endfor %} {% set c = namespace(event=none, entity=none, rest='', spoken='') %}
+    {% for sep in calendar_separators | map('lower') | map('trim') | reject('eq',
+    '') %}\n  {% set parts = req.split(' ' ~ sep ~ ' ') %}\n  {% for i in range(1,
+    parts | count) %}\n    {% if c.event is none %}\n      {% set rest = parts[i:]
+    | join(' ' ~ sep ~ ' ') %}\n      {% set lm = namespace(e=none, l=0) %}\n      {%
+    for v in ns.v %}\n        {% if (rest == v[0] or rest.startswith(v[0] ~ ' '))
+    and v[0] | length > lm.l %}\n          {% set lm.e = v[1] %}{% set lm.l = v[0]
+    | length %}\n        {% endif %}\n      {% endfor %}\n      {% if lm.e %}\n        {%
+    set c.event = req_orig[:(parts[:i] | join(' ' ~ sep ~ ' ')) | length] | trim %}\n
+    \       {% set c.entity = lm.e %}\n        {% set c.spoken = rest[:lm.l] %}\n
+    \       {% set c.rest = rest[lm.l:] | trim %}\n      {% endif %}\n    {% endif
+    %}\n  {% endfor %}\n{% endfor %} {% if c.event is none %}\n  {% set cal_slot =
+    (trigger.slots.get('calendar') or '') | lower | trim %}\n  {% set c.event = trigger.slots.get('event',
+    '') | trim %}\n  {% set c.spoken = cal_slot %}\n  {% set c.rest = (trigger.slots.get('due')
+    or '') | lower | trim %}\n{% endif %} {{ {'event': c.event, 'entity': c.entity,
+    'calendar': c.spoken, 'due': c.rest} }} {% endif %}\n"
+  event_name: '{{ parsed.event }}'
+  calendar_entity: '{{ parsed.entity if parsed.entity in states.calendar | map(attribute=''entity_id'')
+    | list else none }}'
+  calendar_name: '{{ state_attr(calendar_entity, ''friendly_name'') if calendar_entity
+    else parsed.calendar }}'
+actions:
+- variables:
+    date_format: !input date_format
+    time_format: !input time_format
+    from_word: !input from_word
+    to_word: !input to_word
+    translations: !input response_translations
+    response_added: !input response_added
+    response_invalid_calendar: !input response_invalid_calendar
+    question_due: !input question_due
+    response_invalid_due: !input response_invalid_due
+    response_no_answer: !input response_no_answer
+    response_error: !input response_error
+    due_text: '{{ data.get(''due_text'', parsed.due) }}'
+    questions_asked: '{{ data.get(''round'', 0) | int(0) }}'
+    no_answer: false
+    event: {}
+- alias: Stop when the calendar was not found
+  if:
+  - condition: template
+    value_template: '{{ calendar_entity is none }}'
+  then:
+  - set_conversation_response: '{{ response_invalid_calendar.format(event=event_name,
+      calendar=calendar_name, due=due_text) }}'
+  - stop: Calendar not found
+- alias: Interpret the moment, and ask for it when this is a follow-up run
+  repeat:
+    sequence:
+    - alias: Ask the follow-up question
+      if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - alias: Wait until the satellite is done with the previous response
+        wait_template: '{{ is_state(satellite_id, ''idle'') }}'
+        timeout: 00:00:20
+      - action: assist_satellite.ask_question
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          question: '{{ question_due.format(event=event_name, calendar=calendar_name,
+            due=due_text) }}'
+          preannounce: false
+          answers:
+          - id: answer
+            sentences:
+            - '{answer}'
+        response_variable: answer
+      - variables:
+          answer_text: '{% set a = answer if answer is defined and answer is mapping
+            else {} %} {{ ((a.get(''slots'') or {}).get(''answer'') or a.get(''sentence'')
+            or '''') | string | trim }}'
+          no_answer: '{{ answer_text == '''' }}'
+          due_text: '{{ answer_text }}'
+          questions_asked: '{{ questions_asked + 1 }}'
+    - alias: Interpret the moment
+      if:
+      - condition: template
+        value_template: '{{ not no_answer }}'
+      then:
+      - variables:
+          event: "{% set text = ' ' ~ due_text | lower | regex_replace('[,!?]', '')
+            | regex_replace('\\\\s+', ' ') | trim ~ ' ' %} {% set d = namespace(delta=none,
+            length=0, part=none, part_length=0) %} {% for p, x in (day_phrases or
+            {}).items() %}\n  {% set p = p | lower | trim %}\n  {% if (' ' ~ p ~ '
+            ') in text and p | length > d.length %}\n    {% set d.delta = x | int(0)
+            %}{% set d.length = p | length %}\n  {% endif %}\n{% endfor %} {% for
+            p, w in (weekday_phrases or {}).items() %}\n  {% set p = p | lower | trim
+            %}\n  {% if (' ' ~ p ~ ' ') in text and p | length > d.length %}\n    {%
+            set d.delta = ((w | int(0)) - now().weekday()) % 7 or 7 %}{% set d.length
+            = p | length %}\n  {% endif %}\n{% endfor %} {% for p, t in (day_part_phrases
+            or {}).items() %}\n  {% set p = p | lower | trim %}\n  {% if (' ' ~ p
+            ~ ' ') in text and p | length > d.part_length %}\n    {% set d.part =
+            t | string %}{% set d.part_length = p | length %}\n  {% endif %}\n{% endfor
+            %} {# duration #} {% set dur = namespace(minutes=0) %} {% for dw in duration_words
+            %}\n  {% for unit, mins in (duration_units or {}).items() %}\n    {% for
+            n in text | regex_findall(' ' ~ (dw | lower) ~ ' (\\\\d+|' ~ one_words
+            | map('lower') | join('|') ~ ') ' ~ (unit | lower) ~ '(?= )') %}\n      {%
+            set dur.minutes = dur.minutes + (n | int(1)) * (mins | int(0)) %}\n    {%
+            endfor %}\n  {% endfor %}\n{% endfor %} {% set clean = text %} {% for
+            dw in duration_words %}\n  {% set clean = clean | regex_replace(' ' ~
+            (dw | lower) ~ ' (\\\\d+|' ~ one_words | map('lower') | join('|') ~ ')
+            \\\\w+', ' ') %}\n{% endfor %} {# times #} {% set found = clean | regex_findall('(?<![\\\\d:.])(\\\\d{1,2})(?:[:.](\\\\d{2}))?(?![\\\\d])')
+            %} {% set pm = namespace(v=none) %} {% for w, v in (pm_phrases or {}).items()
+            %}\n  {% if (' ' ~ (w | lower | trim) ~ ' ') in clean or clean is search('\\\\d'
+            ~ (w | lower | trim) ~ ' ') %}\n    {% set pm.v = v %}\n  {% endif %}\n{%
+            endfor %} {% set part_pm = d.part is not none and d.part[:2] | int(0)
+            >= 12 %} {% set t = namespace(l=[]) %} {% for h, m in found[:2] %}\n  {%
+            set h = h | int %}\n  {% set h = h + 12 if h < 12 and (pm.v == 'pm' or
+            (pm.v is none and part_pm)) else h %}\n  {% set h = 0 if h == 12 and pm.v
+            == 'am' else h %}\n  {% if h < 24 and m | int(0) < 60 %}\n    {% set t.l
+            = t.l + ['%02d:%02d:00' | format(h, m | int(0))] %}\n  {% endif %}\n{%
+            endfor %} {% set has_until = until_words | map('lower') | select('in',
+            clean.split(' ')) | list | count > 0 %} {% set start_time = t.l[0] if
+            t.l else (d.part ~ ':00' if d.part is not none else none) %} {% set end_time
+            = t.l[1] if t.l | count > 1 and has_until else none %} {% if d.delta is
+            none and start_time is none %}\n  {{ {} }}\n{% elif start_time is none
+            %}\n  {% set date = (today_at() + timedelta(days=d.delta)).date() %}\n
+            \ {{ {'all_day': true, 'start': date | string, 'end': (date + timedelta(days=1))
+            | string} }}\n{% else %}\n  {% set s = today_at(start_time[:5]) + timedelta(days=d.delta
+            or 0) %}\n  {% set s = s + timedelta(days=1) if d.delta is none and s
+            <= now() else s %}\n  {% if end_time %}\n    {% set e = s.replace(hour=end_time[:2]
+            | int, minute=end_time[3:5] | int) %}\n    {% set e = e + timedelta(hours=12)
+            if e <= s and (e + timedelta(hours=12)) > s and e.hour < 12 else e %}\n
+            \   {% set e = e + timedelta(days=1) if e <= s else e %}\n  {% else %}\n
+            \   {% set e = s + timedelta(minutes=dur.minutes if dur.minutes > 0 else
+            default_duration | int(60)) %}\n  {% endif %}\n  {{ {'all_day': false,
+            'start': s.isoformat(), 'end': e.isoformat()} }}\n{% endif %}\n"
+    until:
+    - condition: template
+      value_template: '{{ not is_follow_up or no_answer or event | count > 0 or questions_asked
+        >= max_questions }}'
+- alias: Stop when there was no answer
+  if:
+  - condition: template
+    value_template: '{{ no_answer }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ response_no_answer.format(event=event_name, calendar=calendar_name,
+        due=due_text) }}'
+      preannounce: false
+  - stop: No answer
+- alias: Handle a moment which was not recognized
+  if:
+  - condition: template
+    value_template: '{{ event | count == 0 }}'
+  then:
+  - if:
+    - condition: template
+      value_template: '{{ not is_follow_up and satellite_id and questions_asked <
+        max_questions }}'
+    then:
+    - alias: Ask for the moment in a new run, after this conversation is finished
+      event: voice_calendar_event_follow_up
+      event_data:
+        automation: '{{ this.entity_id }}'
+        satellite_id: '{{ satellite_id }}'
+        parsed: '{{ parsed }}'
+        due_text: '{{ due_text }}'
+        round: 1
+    - set_conversation_response: ''
+    else:
+    - variables:
+        message: '{{ response_invalid_due.format(event=event_name, calendar=calendar_name,
+          due=due_text) }}'
+    - if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - action: assist_satellite.announce
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          message: '{{ message }}'
+          preannounce: false
+      else:
+      - set_conversation_response: '{{ message }}'
+  - stop: Moment not recognized
+- variables:
+    summary: '{{ event_name }}'
+    description: ''
+    location: ''
+- alias: Add the event
+  action: calendar.create_event
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data: "{% set d = {'summary': summary} %} {% if event.all_day %}\n  {% set d = dict(d,
+    start_date=event.start, end_date=event.end) %}\n{% else %}\n  {% set d = dict(d,
+    start_date_time=event.start, end_date_time=event.end) %}\n{% endif %} {% set d
+    = dict(d, description=description) if description else d %} {% set d = dict(d,
+    location=location) if location else d %} {{ d }}\n"
+- alias: Check if the event was added
+  action: calendar.get_events
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data:
+    start_date_time: '{{ (as_datetime(event.start) | as_local - timedelta(minutes=1)).isoformat()
+      }}'
+    end_date_time: '{{ (as_datetime(event.end) | as_local + timedelta(minutes=1)).isoformat()
+      }}'
+  response_variable: check
+- variables:
+    added: '{{ check is defined and check is mapping and summary in (check.get(calendar_entity,
+      {}).get(''events'') or []) | map(attribute=''summary'') | list }}'
+    due_spoken: "{% set s = as_datetime(event.start) | as_local %} {% set ns = namespace(d=s.strftime(date_format))
+      %} {% for k, v in (translations or {}).items() %}\n  {% set ns.d = ns.d | replace(k,
+      v) %}\n{% endfor %} {% if event.all_day %}\n  {{ ns.d }}\n{% else %}\n  {{ ns.d
+      }} {{ from_word }} {{ s.strftime(time_format) }} {{ to_word }} {{ (as_datetime(event.end)
+      | as_local).strftime(time_format) }}\n{% endif %}"
+    message: "{{ response_added.format(event=event_name, calendar=calendar_name, due=due_spoken)
+      if added\n   else response_error.format(event=event_name, calendar=calendar_name,
+      due=due_text) }}"
+- if:
+  - condition: template
+    value_template: '{{ is_follow_up }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ message }}'
+      preannounce: false
+  else:
+  - set_conversation_response: '{{ message }}'

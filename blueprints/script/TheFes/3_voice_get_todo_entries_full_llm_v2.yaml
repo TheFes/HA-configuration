@@ -1,0 +1,295 @@
+blueprint:
+  domain: script
+  name: Voice - Get ToDo entries - Full LLM script v2
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/todo/3_voice_get_todo_entries_full_llm_v2.yaml
+  homeassistant:
+    min_version: 2026.11.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/3_voice_get_todo_entries_full_llm_v2.md)
+
+
+    # Request todo list items by use of an LLM (version 2)
+
+
+    The LLM only passes the question in a single `query` field. An AI Task (`ai_task.generate_data`)
+
+    with structured output selects the todo lists (it can only return lists which
+    exist) and the status
+
+    of the requested items, Home Assistant gets the items, and the result is returned
+    to the LLM, which
+
+    answers the question.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Optional
+
+
+    * Select the todo lists which can be used (all lists by default) and a default
+    list
+
+
+    #### Note
+
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for todo lists.
+
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+
+    #### Example for script description
+
+
+    `Gets the items on my todo lists, including the shopping list. Use this tool for
+    every question about what is on a list. Pass the complete question of the user
+    in the query field, in the words of the user.`
+
+
+    #### Examples
+
+
+    ```
+
+
+    What''s on the shopping list?
+
+
+    Do I need to buy milk?
+
+
+    Which tasks are overdue?
+
+
+    ```
+
+    '
+  input:
+    todo_settings:
+      name: Todo settings
+      icon: mdi:format-list-checks
+      input:
+        todo_entities:
+          name: Todo lists
+          description: The todo lists which can be used. Leave empty to use all todo
+            lists.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - todo
+              reorder: false
+        default_list:
+          name: Default list
+          description: The list which is used when the question doesn't mention a
+            list (for example the shopping list). Leave empty to use all lists.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to determine the requested lists. Leave
+            empty to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions to determine the lists
+          description: Instructions for the AI to determine the requested lists and
+            status. The output format is enforced by the structure, so this only needs
+            to explain how to interpret the request. You can use `{{ query }}` and
+            `{{ default_list_name }}`.
+          default: 'You interpret a question about todo lists, like a shopping list
+            or a list with tasks. The user asked: "{{ query }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - lists: the list or lists the question is about. Match what the user
+            says with the names in the field description (also when the user uses
+            another word, like "groceries" for a shopping list) and return the matching
+            ids. When no list is mentioned (for example "do we need milk" or "what
+            do I need to buy"), use the default list: {{ default_list_name or ''all
+            lists'' }}.
+
+            - status: needs_action for items which still need to be done (also when
+            the user asks what is on a list), completed only when the user asks for
+            items which are done, all when the user asks for both.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        query_prompt:
+          name: Query field description
+          description: The description of the `query` field, which tells the LLM what
+            to pass to the script.
+          default: The complete question of the user about the todo lists, in the
+            words of the user, including the name of the list when it is mentioned
+            (for example "what is on the shopping list").
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max_exceeded: silent
+fields:
+  query:
+    name: Query
+    description: !input query_prompt
+    required: true
+    selector:
+      text:
+sequence:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    query: '{{ query | default('''', true) | string | trim }}'
+    ai_task_entity: !input ai_task_entity
+    todo_entities: !input todo_entities
+    default_list: !input default_list
+- alias: Collect the todo lists
+  variables:
+    lists: "{% set ids = todo_entities if todo_entities else states.todo | map(attribute='entity_id')
+      | list %} {% set ns = namespace(l=[]) %} {% for e in ids if states(e) not in
+      ['unavailable', 'unknown'] %}\n  {% set ns.l = ns.l + [{'value': e, 'label':
+      entity_name(e, fallback=true)}] %}\n{% endfor %} {{ ns.l }}\n"
+    list_desc: '{% for o in lists %}{{ o.label }} = {{ o.value }}{{ ''; '' if not
+      loop.last }}{% endfor %} {%- if default_list in lists | map(attribute=''value'')
+      | list %}. Default list: {{ default_list }}{% endif %}'
+- alias: Create the structure and instructions for the AI Task
+  variables:
+    default_list_name: "{{ (lists | selectattr('value', 'eq', default_list) | map(attribute='label')
+      | list | first) ~ ' (' ~ default_list ~ ')'\n   if default_list in lists | map(attribute='value')
+      | list else '' }}"
+    llm_instructions: !input llm_instructions
+    structure:
+      lists:
+        description: 'Lists the question is about. Match on the name, return the id.
+          Available (name = id): {{ list_desc }}'
+        required: true
+        selector:
+          select:
+            multiple: true
+            options: '{{ lists }}'
+      status:
+        description: Which items are requested
+        required: true
+        selector:
+          select:
+            options:
+            - needs_action
+            - completed
+            - all
+- alias: Stop when there are no todo lists
+  if:
+  - condition: template
+    value_template: '{{ lists | count == 0 }}'
+  then:
+  - variables:
+      response:
+        error: There are no todo lists available
+  - stop: No todo lists
+    response_variable: response
+- alias: Ask the AI Task to determine the requested lists
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Todo voice request'', ''instructions'': llm_instructions,
+    ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+    else d }}'
+  response_variable: ai_lists
+- alias: Stop with an error when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_lists is not defined or ai_lists.data is not defined or
+      ai_lists.data is string }}'
+  then:
+  - variables:
+      response:
+        error: Unable to determine the requested list from the query
+  - stop: AI Task failed
+    response_variable: response
+- alias: Read the result of the AI Task
+  variables:
+    llm: '{{ ai_lists.data }}'
+    list_ids: '{{ lists | map(attribute=''value'') | list }}'
+    requested: '{% set r = llm.get(''lists'') or [] %} {% set r = ([r] if r is string
+      else r | list) | select(''in'', list_ids) | list %} {{ r or ([default_list]
+      if default_list in list_ids else list_ids) }}
+
+      '
+    status: '{{ llm.get(''status'') if llm.get(''status'') in [''needs_action'', ''completed'',
+      ''all''] else ''needs_action'' }}'
+- alias: Get the items
+  action: todo.get_items
+  continue_on_error: true
+  target:
+    entity_id: '{{ requested }}'
+  data: '{{ {''status'': [''needs_action'', ''completed'']} if status == ''all'' else
+    {''status'': status} }}'
+  response_variable: todo_response
+- alias: Stop when the items could not be retrieved
+  if:
+  - condition: template
+    value_template: '{{ todo_response is not defined }}'
+  then:
+  - variables:
+      response:
+        error: Unable to retrieve the items of the todo list
+  - stop: Unable to retrieve the items
+    response_variable: response
+- alias: Combine the items of all lists
+  variables:
+    todo_data: "{% set ns = namespace(lists=[], count=0) %} {% for entity, data in
+      todo_response.items() %}\n  {% set items = namespace(l=[]) %}\n  {% for i in
+      data.get('items', []) %}\n    {% set it = {'summary': i.summary | default('')
+      | string | regex_replace('\\\\s+', ' ') | trim} %}\n    {% set it = dict(it,
+      status=i.status) if status == 'all' else it %}\n    {% if i.due %}\n      {%
+      set due = as_datetime(i.due) %}\n      {% set due_local = due | as_local if
+      i.due | string | length > 10 else today_at() + timedelta(days=(due.date() -
+      now().date()).days) %}\n      {% set it = dict(it, due=i.due, due_day=due.strftime('%A
+      %-d %B %Y')) %}\n      {% set it = dict(it, overdue=true) if i.status == 'needs_action'
+      and (due_local if i.due | string | length > 10 else due_local + timedelta(days=1))
+      <= now() else it %}\n    {% endif %}\n    {% set desc = i.description | default('',
+      true) | string | regex_replace('\\\\s+', ' ') | trim %}\n    {% set it = dict(it,
+      description=desc[:200] ~ ('...' if desc | length > 200 else '')) if desc else
+      it %}\n    {% set items.l = items.l + [it] %}\n  {% endfor %}\n  {% set ns.count
+      = ns.count + items.l | count %}\n  {% set ns.lists = ns.lists + [{'list': entity_name(entity,
+      fallback=true), 'number_of_items': items.l | count, 'items': items.l[:100]}]
+      %}\n{% endfor %} {{ {'status': status, 'current_time': now().isoformat(), 'number_of_items':
+      ns.count, 'lists': ns.lists} }}\n"
+- stop: ''
+  response_variable: todo_data

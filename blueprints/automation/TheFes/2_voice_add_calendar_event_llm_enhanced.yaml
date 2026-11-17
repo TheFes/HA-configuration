@@ -1,0 +1,542 @@
+blueprint:
+  domain: automation
+  name: Voice - Add Calendar Event - LLM Enhanced Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/61d1a7a08733db9549d1eb5912f0c974d5c65390/calendar/2_voice_add_calendar_event_llm_enhanced.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/2_voice_add_calendar_event_llm_enhanced.md)
+
+
+    # Add calendar events with local Assist, enhanced by an AI Task
+
+
+    The request is caught by local trigger sentences, so you don''t need an LLM as
+    conversation agent,
+
+    and the LLM doesn''t need access to your house. An AI Task (`ai_task.generate_data`)
+    with
+
+    structured output determines the title, the calendar (it can only return calendars
+    which exist),
+
+    the date, the start and end time, and optionally the location and a description.
+
+
+    When the title or the date is missing and you used a voice satellite, the satellite
+    asks for it.
+
+    Without a satellite (text chat), Assist tells you what is missing.
+
+
+    Without a time an all-day event is added, without an end time the default duration
+    is used.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+    * A default calendar
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Optional
+
+    * Change or translate the trigger sentences and the responses
+
+
+    ### Usage
+
+
+    By default the following sentences are configured:
+
+
+    - (add|put) {query} (to|on|in) [the|my] [{calendar}] (calendar|agenda) [{due}]
+
+    - (schedule|plan) {query}
+
+
+    #### Examples
+
+    * Add a dentist appointment to my calendar tomorrow at 10
+
+    * Schedule a meeting with Robin on Friday from 2 to 4 pm
+
+    * Put the camping trip in the family calendar from Friday to Sunday
+
+    '
+  input:
+    calendar_settings:
+      name: Calendar settings
+      icon: mdi:calendar
+      input:
+        calendar_entities:
+          name: Calendars
+          description: The calendars events can be added to. Leave empty to allow
+            all calendars. Calendars which don't support adding events (like most
+            integration calendars) are skipped.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - calendar
+              reorder: false
+        default_calendar:
+          name: Default calendar
+          description: The calendar used when the request doesn't mention a calendar.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - calendar
+              multiple: false
+              reorder: false
+        default_duration:
+          name: Default duration
+          description: The duration of an event when only a start time is mentioned.
+          default: 60
+          selector:
+            number:
+              min: 5.0
+              max: 1440.0
+              step: 5.0
+              unit_of_measurement: minutes
+              mode: slider
+        trigger:
+          name: Trigger sentences
+          description: The whole sentence is passed to the AI, the wildcards can have
+            any name.
+          default:
+          - (add|put) {query} (to|on|in) [the|my] [{calendar}] (calendar|agenda) [{due}]
+          - (schedule|plan) {query}
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        max_questions:
+          name: Maximum number of follow-up questions
+          description: How many questions a voice satellite may ask for missing information.
+            Set to 0 to never ask a follow-up question.
+          default: 2
+          selector:
+            number:
+              min: 0.0
+              max: 5.0
+              step: 1.0
+              mode: slider
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to interpret the request. Leave empty
+            to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions for the AI
+          description: Instructions for the AI to interpret the request. The output
+            format is enforced by the structure. You can use `{{ conversation }}`
+            and `{{ default_calendar_name }}`.
+          default: 'You interpret a voice request to add an event to a calendar. This
+            is the conversation with the user:
+
+            {{ conversation }}
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - summary: the title of the event, without the calendar and the moment.
+            Keep the language of the request.
+
+            - calendar: match what the user says with the calendar names in the field
+            description and return the id. When no calendar is mentioned, or a general
+            word like "calendar" or "agenda", use the default calendar: {{ default_calendar_name
+            or ''the first calendar'' }}.
+
+            - date: the (start) date of the event, in the format YYYY-MM-DD. A weekday
+            means the next occurrence of that day (not today). When only a time is
+            mentioned, use today, or tomorrow when that time has already passed.
+
+            - start_time: only when a time or a part of the day is mentioned, in the
+            24 hour format HH:MM:SS. Morning is 09:00:00, afternoon 14:00:00, evening
+            19:00:00 and tonight 20:00:00. Leave it empty for an all-day event.
+
+            - end_time: only when an end time or a duration is mentioned ("until 4",
+            "for 2 hours"), in the 24 hour format HH:MM:SS.
+
+            - end_date: only for events which last more than one day ("from Friday
+            to Sunday"), the last day of the event in the format YYYY-MM-DD.
+
+            - location and description: only when the user mentions them.
+
+            - missing: never guess. Add summary or date when the user didn''t mention
+            it or it is unclear, and leave that field empty.
+
+            - question: when something is missing, one short question to ask the user
+            for it, in the language of the request.
+
+            - confirmation: when nothing is missing, a short confirmation in the language
+            of the request, for example "I added the dentist to your calendar for
+            tomorrow from 10:00 to 11:00". Say the date as a weekday or relative day,
+            not as a number, and the time without seconds.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+    response_settings:
+      name: Settings for the responses
+      icon: mdi:chat
+      collapsed: true
+      description: '`{question}` is replaced by the question for the missing information.'
+      input:
+        response_missing:
+          name: Information missing (text chat or no more questions)
+          default: '{question} Please say your complete request again, including this.'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_no_answer:
+          name: No answer on the follow-up question
+          default: I didn't hear an answer, so I didn't add the event
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_error:
+          name: Error response
+          default: Sorry, I couldn't add the event
+          selector:
+            text:
+              multiline: false
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- trigger: conversation
+  command: !input trigger
+  id: voice
+- trigger: event
+  event_type: voice_calendar_event_follow_up
+  id: follow_up
+conditions:
+- alias: Only handle follow-up events for this automation
+  condition: template
+  value_template: '{{ trigger.id == ''voice'' or trigger.event.data.get(''automation'')
+    == this.entity_id }}'
+variables:
+  version: 20261116
+  ai_task_entity: !input ai_task_entity
+  calendar_entities: !input calendar_entities
+  default_calendar: !input default_calendar
+  default_duration: !input default_duration
+  max_questions: !input max_questions
+  is_follow_up: '{{ trigger.id == ''follow_up'' }}'
+  data: '{{ trigger.event.data if is_follow_up else {} }}'
+  satellite_id: '{{ data.get(''satellite_id'') if is_follow_up else trigger.satellite_id
+    }}'
+actions:
+- alias: Collect the calendars
+  variables:
+    calendars: "{% set ids = calendar_entities if calendar_entities else states.calendar
+      | map(attribute='entity_id') | list %} {% set ns = namespace(l=[]) %} {% for
+      e in ids if states(e) not in ['unavailable', 'unknown'] and state_attr(e, 'supported_features')
+      | int(0) | bitwise_and(1) %}\n  {% set ns.l = ns.l + [{'value': e, 'label':
+      state_attr(e, 'friendly_name') or e}] %}\n{% endfor %} {{ ns.l }}\n"
+    calendar_ids: '{{ calendars | map(attribute=''value'') | list }}'
+    calendar_desc: '{% for o in calendars %}{{ o.label }} = {{ o.value }}{{ ''; ''
+      if not loop.last }}{% endfor %}'
+    default_calendar_name: "{{ (calendars | selectattr('value', 'eq', default_calendar)
+      | map(attribute='label') | first) ~ ' (' ~ default_calendar ~ ')'\n   if default_calendar
+      in calendar_ids else '' }}"
+    response_missing: !input response_missing
+    response_no_answer: !input response_no_answer
+    response_error: !input response_error
+    conversation: '{{ data.get(''conversation'', '''') if is_follow_up else trigger.sentence
+      }}'
+    question: '{{ data.get(''question'', '''') }}'
+    questions_asked: '{{ data.get(''round'', 0) | int(0) }}'
+    no_answer: false
+    ai_failed: false
+    missing: '{{ [''unknown''] if is_follow_up else [] }}'
+    summary: ''
+    calendar_entity: ''
+    event: {}
+    location: ''
+    description: ''
+    confirmation: ''
+    structure:
+      summary:
+        description: The title of the event, without the calendar and the moment
+        selector:
+          text:
+      calendar:
+        description: '{{ ''The calendar, match on the name and return the id. Available
+          (name = id): '' ~ calendar_desc }}'
+        selector:
+          select:
+            options: '{{ calendar_ids }}'
+      date:
+        description: The (start) date of the event (YYYY-MM-DD)
+        selector:
+          date:
+      start_time:
+        description: Start time (HH:MM:SS, 24 hour format), empty for an all-day event
+        selector:
+          time:
+      end_time:
+        description: End time (HH:MM:SS, 24 hour format), only when an end time or
+          duration is mentioned
+        selector:
+          time:
+      end_date:
+        description: The last day (YYYY-MM-DD), only for events which last more than
+          one day
+        selector:
+          date:
+      location:
+        description: The location, only when mentioned
+        selector:
+          text:
+      description:
+        description: Extra details, only when mentioned
+        selector:
+          text:
+      missing:
+        description: The information which is missing or unclear in the request
+        selector:
+          select:
+            multiple: true
+            options:
+            - summary
+            - date
+      question:
+        description: A short question for the missing information, in the language
+          of the request
+        selector:
+          text:
+      confirmation:
+        description: A short confirmation in the language of the request, when nothing
+          is missing
+        selector:
+          text:
+- alias: Stop when there are no calendars
+  if:
+  - condition: template
+    value_template: '{{ calendars | count == 0 }}'
+  then:
+  - set_conversation_response: '{{ response_error }}'
+  - stop: No calendars which support adding events
+- alias: Interpret the request, and ask follow-up questions when this is a follow-up
+    run
+  repeat:
+    sequence:
+    - alias: Ask the follow-up question
+      if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - alias: Wait until the satellite is done with the previous response
+        wait_template: '{{ is_state(satellite_id, ''idle'') }}'
+        timeout: 00:00:20
+      - action: assist_satellite.ask_question
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          question: '{{ question }}'
+          preannounce: false
+          answers:
+          - id: answer
+            sentences:
+            - '{answer}'
+        response_variable: answer
+      - variables:
+          answer_text: '{% set a = answer if answer is defined and answer is mapping
+            else {} %} {{ (a.get(''slots'') or {}).get(''answer'') or a.get(''sentence'')
+            or '''' }}'
+          no_answer: '{{ answer_text | trim == '''' }}'
+          conversation: '{{ conversation ~ ''
+
+            Question: '' ~ question ~ ''
+
+            Answer: '' ~ answer_text }}'
+          questions_asked: '{{ questions_asked + 1 }}'
+    - alias: Use the AI Task to interpret the conversation
+      if:
+      - condition: template
+        value_template: '{{ not no_answer }}'
+      then:
+      - alias: Render the instructions with the current conversation
+        variables:
+          llm_instructions: !input llm_instructions
+      - action: ai_task.generate_data
+        continue_on_error: true
+        data: '{% set d = {''task_name'': ''Add calendar event'', ''instructions'':
+          llm_instructions, ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity)
+          if ai_task_entity else d }}'
+        response_variable: ai_result
+      - variables:
+          ai_failed: '{{ ai_result is not defined or ai_result.data is not defined
+            or ai_result.data is string }}'
+          llm: '{{ {} if ai_failed else ai_result.data }}'
+          ai_missing: '{% set m = llm.get(''missing'') or [] %} {{ [m] if m is string
+            else m | list }}
+
+            '
+          summary: '{{ llm.get(''summary'') | default('''', true) | string | trim
+            }}'
+          calendar_entity: "{{ llm.get('calendar') if llm.get('calendar') in calendar_ids\n
+            \  else default_calendar if default_calendar in calendar_ids else calendar_ids
+            | first | default('') }}"
+          event: "{% set ns = namespace(t={}) %} {% for k in ['start_time', 'end_time']
+            %}\n  {% set t = '' if k in ai_missing else llm.get(k) | default('', true)
+            | string | trim %}\n  {% set t = t ~ ':00' if t is match('^\\\\d{1,2}:\\\\d{2}$')
+            else t %}\n  {% set ns.t = dict(ns.t.items() | list + [(k, t if t and
+            as_timedelta(t) is not none else '')]) %}\n{% endfor %} {% set ds = namespace(d={})
+            %} {% for k in ['date', 'end_date'] %}\n  {% set d = '' if k in ai_missing
+            else llm.get(k) | default('', true) | string | trim %}\n  {% set ds.d
+            = dict(ds.d.items() | list + [(k, d[:10] if d is match('\\\\d{4}-\\\\d{2}-\\\\d{2}')
+            and as_datetime(d[:10], none) is not none else '')]) %}\n{% endfor %}
+            {% set date = ds.d.date %} {% if not date %}\n  {{ {} }}\n{% elif ns.t.start_time
+            %}\n  {% set start = as_datetime(date) | as_local + as_timedelta(ns.t.start_time)
+            %}\n  {% if ns.t.end_time %}\n    {% set end = as_datetime(ds.d.end_date
+            or date) | as_local + as_timedelta(ns.t.end_time) %}\n    {% set end =
+            end + timedelta(days=1) if end <= start and not ds.d.end_date else end
+            %}\n  {% else %}\n    {% set end = start + timedelta(minutes=default_duration
+            | int(60)) %}\n  {% endif %}\n  {% set end = start + timedelta(minutes=default_duration
+            | int(60)) if end <= start else end %}\n  {{ {'all_day': false, 'start':
+            start.isoformat(), 'end': end.isoformat()} }}\n{% else %}\n  {% set end_date
+            = ds.d.end_date if ds.d.end_date and ds.d.end_date >= date else date %}\n
+            \ {{ {'all_day': true, 'start': date, 'end': (as_datetime(end_date) +
+            timedelta(days=1)).date() | string} }}\n{% endif %}\n"
+          location: '{{ llm.get(''location'') | default('''', true) | string | trim
+            }}'
+          description: '{{ llm.get(''description'') | default('''', true) | string
+            | trim }}'
+          missing: '{% set m = ai_missing + ([''summary''] if not summary else [])
+            + ([''date''] if not event else []) %} {{ m | select(''in'', [''summary'',
+            ''date'']) | unique | list }}
+
+            '
+          question: "{{ llm.get('question') | default('', true) | string | trim\n
+            \  or 'When is it?' if missing | count > 0 else '' }}"
+          confirmation: '{{ llm.get(''confirmation'') | default('''', true) | string
+            | trim }}'
+    until:
+    - condition: template
+      value_template: '{{ not is_follow_up or no_answer or ai_failed or missing |
+        count == 0 or questions_asked >= max_questions }}'
+- alias: Stop when there was no answer or the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ no_answer or ai_failed }}'
+  then:
+  - variables:
+      message: '{{ response_no_answer if no_answer else response_error }}'
+  - if:
+    - condition: template
+      value_template: '{{ is_follow_up }}'
+    then:
+    - action: assist_satellite.announce
+      continue_on_error: true
+      data:
+        entity_id: '{{ satellite_id }}'
+        message: '{{ message }}'
+        preannounce: false
+    else:
+    - set_conversation_response: '{{ message }}'
+  - stop: No answer or AI Task failed
+- alias: Handle missing information
+  if:
+  - condition: template
+    value_template: '{{ missing | count > 0 }}'
+  then:
+  - if:
+    - condition: template
+      value_template: '{{ not is_follow_up and satellite_id and questions_asked <
+        max_questions }}'
+    then:
+    - alias: Ask the question in a new run, after this conversation is finished
+      event: voice_calendar_event_follow_up
+      event_data:
+        automation: '{{ this.entity_id }}'
+        satellite_id: '{{ satellite_id }}'
+        conversation: '{{ conversation }}'
+        question: '{{ question }}'
+        round: 1
+    - set_conversation_response: ''
+    else:
+    - variables:
+        message: '{{ response_missing.format(question=question) }}'
+    - if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - action: assist_satellite.announce
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          message: '{{ message }}'
+          preannounce: false
+      else:
+      - set_conversation_response: '{{ message }}'
+  - stop: Information missing
+- alias: Add the event
+  action: calendar.create_event
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data: "{% set d = {'summary': summary} %} {% if event.all_day %}\n  {% set d = dict(d,
+    start_date=event.start, end_date=event.end) %}\n{% else %}\n  {% set d = dict(d,
+    start_date_time=event.start, end_date_time=event.end) %}\n{% endif %} {% set d
+    = dict(d, description=description) if description else d %} {% set d = dict(d,
+    location=location) if location else d %} {{ d }}\n"
+- alias: Check if the event was added
+  action: calendar.get_events
+  continue_on_error: true
+  target:
+    entity_id: '{{ calendar_entity }}'
+  data:
+    start_date_time: '{{ (as_datetime(event.start) | as_local - timedelta(minutes=1)).isoformat()
+      }}'
+    end_date_time: '{{ (as_datetime(event.end) | as_local + timedelta(minutes=1)).isoformat()
+      }}'
+  response_variable: check
+- variables:
+    added: '{{ check is defined and check is mapping and summary in (check.get(calendar_entity,
+      {}).get(''events'') or []) | map(attribute=''summary'') | list }}'
+    message: '{{ (confirmation or summary ~ '': '' ~ event.start) if added else response_error
+      }}'
+- if:
+  - condition: template
+    value_template: '{{ is_follow_up }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ message }}'
+      preannounce: false
+  else:
+  - set_conversation_response: '{{ message }}'

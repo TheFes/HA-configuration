@@ -3,7 +3,9 @@ blueprint:
   name: Voice - Calendar Entries - Local Assist Blueprint
   author: TheFes
   source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/1_voice_calendar_entries_local.yaml
-  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)
+  homeassistant:
+    min_version: 2024.10.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
 
     More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/1_voice_calendar_entries_local.md)
 
@@ -13,7 +15,7 @@ blueprint:
 
     #### Required
 
-    * Set one ore more calendar entries to be used
+    * Set one or more calendar entities to be used
 
     #### Optional
 
@@ -42,13 +44,15 @@ blueprint:
     #### Trigger sentence syntax
 
     All parts between square brackets are optional, the sentence will be recognized
-    with and without those parts. A pipe `|` means `or`. All parts betwee round brackets
+    with and without those parts. A pipe `|` means `or`. All parts between round brackets
     are mandatory, but also here the pipe means `or`.
 
     The {phrase} part refers to the moment you want the calendar entries for. This
     can be `today`, `tomorrow`, `day after tomorrow` for a day related to the current
     day. It can also be a weekday, like `Monday` or `Thursday`. In that case the next
-    weekday will be used. You can also use `night`, `morning`, `afternoon` or `evening`.
+    weekday will be used. You can also use `this week`, `this weekend` or `next week`,
+    and `night`, `morning`, `afternoon` or `evening`, optionally combined with a day
+    (`tomorrow evening`).
 
     #### Examples without phrase (will return the current day)
 
@@ -68,6 +72,8 @@ blueprint:
 
     * What is on the calendar for Thursday
 
+    * What''s on the calendar for tomorrow evening
+
     ```'
   input:
     calendar_entity:
@@ -86,7 +92,7 @@ blueprint:
         to your own language
       input:
         trigger:
-          name: Trigger for weather calendar entries
+          name: Trigger for calendar entries
           description: The trigger for this automation. The {phrase} part will be
             used for the period (e.g "tomorrow")
           selector:
@@ -192,10 +198,44 @@ blueprint:
               multiple: true
           default:
           - sunday
+        this_week:
+          name: This week
+          description: Phrases to request the calendar entries from today until the
+            end of the week (Sunday)
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - this week
+        weekend:
+          name: Weekend
+          description: Phrases to request the calendar entries for the coming weekend
+            (Saturday and Sunday). On Sunday only the current day is used.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - weekend
+          - this weekend
+          - the weekend
+        next_week:
+          name: Next week
+          description: Phrases to request the calendar entries for next week (Monday
+            until Sunday)
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - next week
     day_part_calender_settings:
       name: Settings for the calendar entries for part of a day
       icon: mdi:calendar
-      description: Here all the settings for the daily calendar entries are done
+      description: Here the phrases for the parts of the day are set. A day part can
+        be combined with a phrase for a day, for example "tomorrow morning" or "saturday
+        evening".
       collapsed: true
       input:
         night:
@@ -235,7 +275,7 @@ blueprint:
           default:
           - evening
     response_settings:
-      name: Settings for the reponses
+      name: Settings for the responses
       icon: mdi:chat
       description: Change or translate the response
       collapsed: true
@@ -280,7 +320,7 @@ blueprint:
           default: events
         combine_word:
           name: Combine word
-          description: Word used to combine multipe events.For example "Breakfast,
+          description: Word used to combine multiple events. For example "Breakfast,
             Lunch and Dinner"
           selector:
             text:
@@ -295,6 +335,15 @@ blueprint:
               multiline: false
               multiple: false
           default: There are no events for this period
+        response_invalid_phrase:
+          name: Period not recognized
+          description: Response by Assist when the requested period is not recognized.
+            `{{ phrase }}` contains the period as spoken.
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: I don't know which period you mean with {{ phrase }}
         event_count:
           name: Day introduction
           description: The response for each day will start with a message count
@@ -312,7 +361,7 @@ blueprint:
               multiple: false
           default: The entire day you have {event_list}.
         part_day_event:
-          name: Full day
+          name: Part of a day
           description: The response for events which are only part of the day
           selector:
             text:
@@ -323,48 +372,38 @@ triggers:
 - trigger: conversation
   command: !input trigger
 variables:
-  version: 20250318
+  version: 20261116
+  weekday: '{{ now().weekday() }}'
   daily_mapping:
   - phrases: !input today
     delta: 0
-    start: 00:00:00
-    end: '23:59:59'
   - phrases: !input tomorrow
     delta: 1
-    start: 00:00:00
-    end: '23:59:59'
   - phrases: !input day_after_tomorrow
     delta: 2
-    start: 00:00:00
-    end: '23:59:59'
   - phrases: !input monday
-    delta: '{{ 0 - now().weekday() + (7 if 0 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 0 - weekday + (7 if 0 <= weekday else 0) }}'
   - phrases: !input tuesday
-    delta: '{{ 1 - now().weekday() + (7 if 1 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 1 - weekday + (7 if 1 <= weekday else 0) }}'
   - phrases: !input wednesday
-    delta: '{{ 2 - now().weekday() + (7 if 2 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 2 - weekday + (7 if 2 <= weekday else 0) }}'
   - phrases: !input thursday
-    delta: '{{ 3 - now().weekday() + (7 if 3 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 3 - weekday + (7 if 3 <= weekday else 0) }}'
   - phrases: !input friday
-    delta: '{{ 4 - now().weekday() + (7 if 4 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 4 - weekday + (7 if 4 <= weekday else 0) }}'
   - phrases: !input saturday
-    delta: '{{ 5 - now().weekday() + (7 if 5 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 5 - weekday + (7 if 5 <= weekday else 0) }}'
   - phrases: !input sunday
-    delta: '{{ 6 - now().weekday() + (7 if 6 <= now().weekday() else 0) }}'
-    start: 00:00:00
-    end: '23:59:59'
+    delta: '{{ 6 - weekday + (7 if 6 <= weekday else 0) }}'
+  - phrases: !input this_week
+    delta: 0
+    end_delta: '{{ 6 - weekday }}'
+  - phrases: !input weekend
+    delta: '{{ 5 - weekday if weekday <= 5 else 0 }}'
+    end_delta: '{{ 6 - weekday }}'
+  - phrases: !input next_week
+    delta: '{{ 7 - weekday }}'
+    end_delta: '{{ 13 - weekday }}'
   day_part_mapping:
   - phrases: !input night
     start: 00:00:00
@@ -377,33 +416,53 @@ variables:
     end: '18:00:00'
   - phrases: !input evening
     start: '18:00:00'
-    end: '23:59:59'
-  phrase: '{{ trigger.get(''slots'', {}).phrase | lower if trigger.get(''slots'',
-    {}).get(''phrase'') else none }}'
-  daily_phrases: '{{ daily_mapping | map(attribute=''phrases'') | sum(start=[]) }}'
-  day_part_phrases: '{{ day_part_mapping | map(attribute=''phrases'') | sum(start=[])
-    }}'
-  daily: '{{ phrase is none or daily_phrases | select(''contains'', phrase) | list
-    | count > 0 }}'
-  part_day: '{{ false if phrase is none else day_part_phrases | select(''contains'',
-    phrase) | list | count > 0 }}'
+    end: '24:00:00'
+  phrase: '{{ (trigger.get(''slots'', {}).get(''phrase'') or '''') | lower | trim
+    or none }}'
+  tomorrow_phrases: !input tomorrow
+  day_after_tomorrow_phrases: !input day_after_tomorrow
+  day_lookup: "{% set ns = namespace(d={}) %} {% for m in daily_mapping %}\n  {% set
+    delta = m.delta | int(0) %}\n  {% for p in m.phrases %}\n    {% set ns.d = dict(ns.d,
+    **{p | lower | trim: [delta, m.get('end_delta', delta) | int(delta)]}) %}\n  {%
+    endfor %}\n{% endfor %} {{ ns.d }}\n"
+  part_match: "{% set ns = namespace(index=none, term='', length=0) %} {% if phrase
+    %}\n  {% for m in day_part_mapping %}\n    {% set i = loop.index0 %}\n    {% for
+    p in m.phrases | map('lower') | map('trim') %}\n      {% if p == phrase %}\n        {%
+    set ns.index = i %}{% set ns.term = p %}{% set ns.length = 1000 %}\n      {% elif
+    (' ' ~ p ~ ' ') in (' ' ~ phrase ~ ' ') and p | length > ns.length %}\n        {%
+    set ns.index = i %}{% set ns.term = p %}{% set ns.length = p | length %}\n      {%
+    endif %}\n    {% endfor %}\n  {% endfor %}\n{% endif %} {% set rest = (' ' ~ phrase
+    ~ ' ') | replace(' ' ~ ns.term ~ ' ', ' ') | trim if ns.index is not none else
+    '' %} {{ {'index': ns.index, 'rest': rest} }}\n"
+  daily: '{{ phrase is none or phrase in day_lookup }}'
+  part_day: '{{ not daily and part_match.index is not none }}'
   calendar_entity: !input calendar_entity
   translations: !input response_translations
 actions:
-- alias: Define variables to determine which part to use
+- alias: Stop when the requested period is not recognized
+  if:
+  - condition: template
+    value_template: '{{ not daily and not part_day }}'
+  then:
+  - set_conversation_response: !input response_invalid_phrase
+  - stop: Period not recognized
+- alias: Define the requested period
   variables:
-    tomorrow: !input tomorrow
-    next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
-    delta: '{{ 1 if next_day and part_day else daily_mapping | selectattr(''phrases'',
-      ''contains'', phrase) | map(attribute=''delta'') | list | first | default(0)
+    days: "{% if daily %}\n  {{ day_lookup.get(phrase, [0, 0]) if phrase else [0,
+      0] }}\n{% elif part_match.rest in day_lookup %}\n  {{ day_lookup[part_match.rest]
+      }}\n{% else %}\n  {% set day_after = day_after_tomorrow_phrases | map('lower')
+      | select('in', phrase) | list | count > 0 %}\n  {% set next_day = tomorrow_phrases
+      | map('lower') | select('in', phrase) | list | count > 0 %}\n  {% set d = 2
+      if day_after else 1 if next_day else 0 %}\n  {{ [d, d] }}\n{% endif %}\n"
+    start_time: '{{ day_part_mapping[part_match.index].start if part_day else ''00:00:00''
       }}'
-    start_time: '{{ (daily_mapping + day_part_mapping) | selectattr(''phrases'', ''contains'',
-      phrase) | map(attribute=''start'') | list | first }}'
-    end_time: '{{ (daily_mapping + day_part_mapping) | selectattr(''phrases'', ''contains'',
-      phrase) | map(attribute=''end'') | list | first }}'
-    start: '{{ today_at() + timedelta(days=delta) + as_timedelta(start_time) }}'
-    end: '{{ today_at() + timedelta(days=delta) + as_timedelta(end_time) }}'
-- alias: Get the forecast data
+    end_time: '{{ day_part_mapping[part_match.index].end if part_day else ''24:00:00''
+      }}'
+    start: '{{ (today_at() + timedelta(days=days[0] | int) + as_timedelta(start_time)).isoformat()
+      }}'
+    end: '{{ (today_at() + timedelta(days=days[1] | int) + as_timedelta(end_time)).isoformat()
+      }}'
+- alias: Get the calendar events
   action: calendar.get_events
   data:
     start_date_time: '{{ start }}'
@@ -413,7 +472,10 @@ actions:
   response_variable: calendar
   continue_on_error: true
 - variables:
-    events: '{{ merge_response(calendar) | sort(attribute=''start'') | list }}'
+    events: "{%- set ns = namespace(events=[]) %} {%- for e in (merge_response(calendar)
+      if calendar is defined else []) | sort(attribute='start') %}\n  {%- set ns.events
+      = ns.events + [dict(e, summary=(e.summary | default('') | string | regex_replace('\\\\s+',
+      ' ') | trim))] %}\n{%- endfor %} {{ ns.events }}\n"
 - if:
   - condition: template
     value_template: '{{ iif(events) }}'
@@ -427,28 +489,36 @@ actions:
       part_day_event: !input part_day_event
       event_singular: !input event_singular
       event_plural: !input event_plural
-      dates: "{%- set ns = namespace(dates=[]) %} {%- for start in events | map(attribute='start')
-        %}\n  {%- set d = as_datetime(start).date() | string %}\n  {%- if d not in
-        ns.dates %}\n    {%- set ns.dates = ns.dates + [d] %}\n  {%- endif %}\n{%-
-        endfor %} {{ ns.dates }}\n"
+      combine_word: !input combine_word
+      first_day: '{{ as_datetime(start).date() | string }}'
+      listed_events: "{%- set ns = namespace(events=[]) %} {%- for e in events %}\n
+        \ {%- set ns.events = ns.events + [dict(e, day=[e.start[:10], first_day] |
+        max)] %}\n{%- endfor %} {{ ns.events }}\n"
+      dates: '{{ listed_events | map(attribute=''day'') | unique | list }}'
   - variables:
-      response_events: "{%- for d in dates %}\n  {%- set day_events = events | selectattr('start',
-        'contains', d) | list %}\n  {%- set full_day = day_events | selectattr('start',
-        'eq', d) | list %}\n  {%- set formatted = namespace(date=as_datetime(d).strftime(date_format))
-        %}\n  {%- if translations %}\n    {%- for k, v in translations.items() %}\n
-        \     {%- set formatted.date = formatted.date | replace(k, v) %}\n    {%-
-        endfor %}\n  {%- endif %}\n  {{ event_count.format(date=formatted.date, event_count=day_events|count,
-        events=event_singular if day_events|count==1 else event_plural) }}\n  {%-
-        set text = namespace(message='') %}\n    {%- for e in full_day %}\n      {%
-        set text.message = text.message + (((' ' ~ combine_word ~ ' ') if loop.last
-        and not loop.first) ~ e.summary ~ (', ' if not loop.last) ) %}\n    {%- endfor
-        %}\n    {% if full_day %}{{ day_event.format(event_list=text.message) }}{%
-        endif %}\n    {%- for e in day_events | reject('in', full_day) %}\n      {{
-        part_day_event.format(start=as_datetime(e.start).strftime(time_format), end=as_datetime(e.end).strftime(time_format),
-        event_summary=e.summary) }}\n    {%- endfor %}\n{%- endfor %}\n"
+      response_events: "{%- set ns = namespace(lines=[]) %} {%- for d in dates %}\n
+        \ {%- set day_events = listed_events | selectattr('day', 'eq', d) | list %}\n
+        \ {#- all-day events have a date-only start ('YYYY-MM-DD' <= d), events\n
+        \     which started before this day also cover it entirely #}\n  {%- set full_day
+        = day_events | selectattr('start', 'le', d) | list %}\n  {%- set formatted
+        = namespace(date=as_datetime(d).strftime(date_format)) %}\n  {%- if translations
+        %}\n    {%- for k, v in translations.items() %}\n      {%- set formatted.date
+        = formatted.date | replace(k, v) %}\n    {%- endfor %}\n  {%- endif %}\n  {%-
+        if not loop.first %}\n    {%- set ns.lines = ns.lines + [''] %}\n  {%- endif
+        %}\n  {%- set ns.lines = ns.lines + [event_count.format(date=formatted.date,
+        event_count=day_events|count, events=event_singular if day_events|count==1
+        else event_plural)] %}\n  {%- set names = full_day | map(attribute='summary')
+        | list %}\n  {%- set event_list = names[:-1] | join(', ') ~ ' ' ~ combine_word
+        ~ ' ' ~ names[-1] if names | count > 1 else names | first | default('') %}\n
+        \ {%- if full_day %}\n    {%- set ns.lines = ns.lines + [day_event.format(event_list=event_list)]
+        %}\n  {%- endif %}\n  {%- for e in day_events | reject('in', full_day) %}\n
+        \   {%- set ns.lines = ns.lines + [part_day_event.format(start=as_datetime(e.start).strftime(time_format),
+        end=as_datetime(e.end).strftime(time_format), event_summary=e.summary)] %}\n
+        \ {%- endfor %}\n{%- endfor %} {{ ns.lines | join('\\n') }}\n"
   - alias: Send back the response
     set_conversation_response: '{{ response_events }}'
   else:
   - alias: Send back the response
     set_conversation_response: !input no_events
-mode: single
+mode: parallel
+max: 10

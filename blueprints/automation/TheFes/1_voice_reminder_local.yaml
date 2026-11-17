@@ -1,0 +1,773 @@
+blueprint:
+  domain: automation
+  name: Voice - Set Reminders - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/1_voice_reminder_local.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/reminder/1_voice_reminder_local.md)
+
+
+    # Set reminders, fully local
+
+
+    Sets a reminder for one or more recipients without an LLM. The reminder is stored
+    in a todo list,
+
+    and the `Send Reminder (version 2)` automation sends it at the right moment.
+
+
+    When the recipient or the moment is missing and you used a voice satellite, the
+    satellite asks
+
+    for it (for example "At what time should I remind you?"). Without a satellite
+    (text chat),
+
+    Assist tells you what is missing, and you need to repeat the complete request.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+    * A todo list which supports due dates with a time and descriptions (for example
+    Local To-do)
+
+    * The recipients
+
+
+    #### Optional
+
+    * Change or translate the trigger sentences, the phrases and the responses
+
+
+    ### Usage
+
+
+    By default the following sentences are configured:
+
+
+    - remind {who} to {reminder}
+
+    - (set|create|make|add) a reminder for {who} to {reminder}
+
+
+    `{who}` is one or more names (or other names) of the recipients, `me` or `everyone`.
+    The moment
+
+    can be at the end of the sentence or right after the recipients, and can contain
+    a day (`today`,
+
+    `tomorrow`, a weekday), a time (`17:30`, `5 pm`), a part of the day (`tonight`)
+    or a relative
+
+    moment (`in 10 minutes`, `in an hour`).
+
+
+    #### Examples
+
+    * Remind me to take out the trash tomorrow at 7
+
+    * Remind Marleen and me to buy flowers on Friday afternoon
+
+    * Remind me in 20 minutes to check the oven
+
+    '
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      input:
+        todo_entity:
+          name: ToDo list
+          description: The todo list to store the reminders in. It needs to support
+            due dates with a time and descriptions, like the Local To-do integration.
+            Use the same list in the `Send Reminder (version 2)` automation.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+        recipients:
+          name: Recipients
+          description: The people (or groups) reminders can be set for. Give each
+            recipient a name, and optionally other names or a description which can
+            be used to recognize them, the notify entities for the notification, the
+            Assist satellites to announce the reminder on and a person. The satellites
+            are only used when the person is home, and the person is used to know
+            who "me" is.
+          selector:
+            object:
+              multiple: true
+              label_field: name
+              description_field: aliases
+              fields:
+                name:
+                  label: Name
+                  required: true
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                aliases:
+                  label: Other names or description (comma separated)
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                person:
+                  label: Person
+                  selector:
+                    entity:
+                      filter:
+                      - domain:
+                        - person
+                      multiple: false
+                      reorder: false
+                notify:
+                  label: Notify entities
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - notify
+                      reorder: false
+                satellites:
+                  label: Assist satellites to announce on (only when the person is
+                    home)
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - assist_satellite
+                      reorder: false
+        trigger:
+          name: Trigger sentences
+          description: The sentences need a {who} and a {reminder} wildcard. The moment
+            can be part of both wildcards, it is taken from the end of {who} and the
+            end of {reminder}.
+          default:
+          - remind {who} to {reminder}
+          - (set|create|make|add) a reminder for {who} to {reminder}
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        max_questions:
+          name: Maximum number of follow-up questions
+          description: How many questions a voice satellite may ask for missing information.
+            Set to 0 to never ask a follow-up question.
+          default: 3
+          selector:
+            number:
+              min: 0.0
+              max: 5.0
+              step: 1.0
+              mode: slider
+    recipient_words:
+      name: Words for recipients
+      icon: mdi:account-multiple
+      collapsed: true
+      input:
+        me_words:
+          name: Words for yourself
+          description: Used for the person speaking (the user linked to the person,
+            or the satellite of the recipient).
+          default:
+          - me
+          - myself
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        everyone_words:
+          name: Words for everyone
+          default:
+          - everyone
+          - everybody
+          - us
+          - all of us
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        name_separators:
+          name: Words between names
+          default:
+          - and
+          selector:
+            text:
+              multiple: true
+              multiline: false
+    due_settings:
+      name: Settings for the moment
+      icon: mdi:calendar-clock
+      collapsed: true
+      description: The phrases which are recognized in the moment. Translate these
+        to use the blueprint in another language. Times can be spoken as `17:30`,
+        `17.30`, `5 pm` or just `17`.
+      input:
+        day_phrases:
+          name: Day phrases
+          description: Phrases for a day, with the number of days from today.
+          default:
+            today: 0
+            tonight: 0
+            tomorrow: 1
+            day after tomorrow: 2
+          selector:
+            object:
+              multiple: false
+        weekday_phrases:
+          name: Weekday phrases
+          description: Phrases for weekdays, with the number of the weekday (0 is
+            Monday). The next occurrence of the weekday is used, so on a Friday "friday"
+            is the Friday of next week.
+          default:
+            monday: 0
+            tuesday: 1
+            wednesday: 2
+            thursday: 3
+            friday: 4
+            saturday: 5
+            sunday: 6
+          selector:
+            object:
+              multiple: false
+        day_part_phrases:
+          name: Parts of the day
+          description: Phrases for parts of the day, with the time which is used for
+            them. When a time is mentioned as well ("at 7 in the evening") and the
+            part of the day is in the afternoon or evening, 12 hours are added to
+            times before 12:00.
+          default:
+            morning: 09:00
+            afternoon: '14:00'
+            evening: '19:00'
+            tonight: '20:00'
+          selector:
+            object:
+              multiple: false
+        pm_phrases:
+          name: Words for PM and AM
+          default:
+            pm: pm
+            p.m.: pm
+            am: am
+            a.m.: am
+          selector:
+            object:
+              multiple: false
+        relative_words:
+          name: Words for a relative moment
+          description: The word before a relative moment, like "in" in "in 10 minutes".
+          default:
+          - in
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        relative_units:
+          name: Units for a relative moment
+          description: The units for a relative moment, with the number of minutes.
+          default:
+            minute: 1
+            minutes: 1
+            hour: 60
+            hours: 60
+          selector:
+            object:
+              multiple: false
+        one_words:
+          name: Words for one
+          description: Words which mean one, like "an" in "in an hour".
+          default:
+          - a
+          - an
+          - one
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        due_words:
+          name: Other words in the moment
+          description: Other words which can be part of the moment, used to find where
+            the moment starts.
+          default:
+          - at
+          - true
+          - the
+          - this
+          - next
+          - in
+          - by
+          - before
+          - around
+          - o'clock
+          selector:
+            text:
+              multiple: true
+              multiline: false
+    response_settings:
+      name: Settings for the responses
+      icon: mdi:chat
+      collapsed: true
+      description: '`{text}` is replaced by the reminder, `{recipients}` by the recipients,
+        `{due}` by the moment and `{names}` by names which were not recognized.'
+      input:
+        date_format:
+          name: Date format
+          description: Format for the date in the response, check https://strftime.org
+            for options
+          default: '%A %-d %B'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        time_format:
+          name: Time format
+          default: '%H:%M'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        at_word:
+          name: Word between date and time
+          default: at
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        and_word:
+          name: Word between the last two recipients
+          default: and
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        you_word:
+          name: Word for "you"
+          description: Used instead of the name of the person speaking.
+          default: you
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_translations:
+          name: Translations for weekdays and months
+          description: 'Mapping to translate the English weekday and month names in
+            the date, for example `Monday: maandag`'
+          default: {}
+          selector:
+            object:
+              multiple: false
+        response_set:
+          name: Reminder set
+          default: I'll remind {recipients} on {due} to {text}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_recipients:
+          name: Question for the recipients
+          default: Who should I remind?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_unknown:
+          name: Question for unknown recipients
+          default: I don't know who {names} is. Who should I remind?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_due:
+          name: Question for the moment
+          default: When should I remind {recipients}?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_time:
+          name: Question for the time
+          default: At what time should I remind {recipients}?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        question_past:
+          name: Question when the moment has passed
+          default: That moment has already passed. When should I remind {recipients}?
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_missing:
+          name: Information missing (text chat or no more questions)
+          description: '`{question}` is replaced by the question for the missing information.'
+          default: '{question} Please say your complete request again, including this.'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_no_answer:
+          name: No answer on the follow-up question
+          default: I didn't hear an answer, so I didn't set the reminder
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_error:
+          name: Error response
+          default: Sorry, I couldn't set the reminder
+          selector:
+            text:
+              multiline: false
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- trigger: conversation
+  command: !input trigger
+  id: voice
+- trigger: event
+  event_type: voice_reminder_follow_up
+  id: follow_up
+conditions:
+- alias: Only handle follow-up events for this automation
+  condition: template
+  value_template: '{{ trigger.id == ''voice'' or trigger.event.data.get(''automation'')
+    == this.entity_id }}'
+variables:
+  version: 20261116
+  todo_entity: !input todo_entity
+  recipients: !input recipients
+  max_questions: !input max_questions
+  me_words: !input me_words
+  everyone_words: !input everyone_words
+  name_separators: !input name_separators
+  day_phrases: !input day_phrases
+  weekday_phrases: !input weekday_phrases
+  day_part_phrases: !input day_part_phrases
+  pm_phrases: !input pm_phrases
+  relative_words: !input relative_words
+  relative_units: !input relative_units
+  one_words: !input one_words
+  due_words: !input due_words
+  is_follow_up: '{{ trigger.id == ''follow_up'' }}'
+  data: '{{ trigger.event.data if is_follow_up else {} }}'
+  user_id: "{{ data.get('user_id') if is_follow_up else\n   (trigger.user_input.context.user_id
+    if trigger.user_input is defined and trigger.user_input.context is defined else
+    none) }}"
+  satellite_id: '{{ data.get(''satellite_id'') if is_follow_up else trigger.satellite_id
+    }}'
+  recipient_list: "{% set ns = namespace(r=[]) %} {% for r in recipients | default([],
+    true) if r is mapping and (r.get('name') or '') | string | trim %}\n  {% set n
+    = r.get('notify') or [] %}\n  {% set s = r.get('satellites') or [] %}\n  {% set
+    ns.r = ns.r + [{\n    'name': r.name | string | trim,\n    'aliases': ((r.get('aliases')
+    or '') | string).split(',') | map('trim') | reject('eq', '') | list,\n    'person':
+    r.get('person') or none,\n    'notify': [n] if n is string else n | list,\n    'satellites':
+    [s] if s is string else s | list\n  }] %}\n{% endfor %} {{ ns.r }}\n"
+  speaker: '{% set p = states.person | selectattr(''attributes.user_id'', ''eq'',
+    user_id) | map(attribute=''entity_id'') | first | default(none) if user_id else
+    none %} {% set by_person = recipient_list | selectattr(''person'', ''eq'', p)
+    | map(attribute=''name'') | list if p else [] %} {% set by_sat = recipient_list
+    | selectattr(''satellites'', ''contains'', satellite_id) | map(attribute=''name'')
+    | list if satellite_id else [] %} {{ by_person[0] if by_person | count == 1 else
+    by_sat[0] if by_sat | count == 1 else none }}
+
+    '
+  supported: '{{ state_attr(todo_entity, ''supported_features'') | int(0) }}'
+  due_tokens: "{% set ns = namespace(t=[]) %} {% for k in (day_phrases or {}).keys()
+    | list + (weekday_phrases or {}).keys() | list + (day_part_phrases or {}).keys()
+    | list\n            + (pm_phrases or {}).keys() | list + (relative_units or {}).keys()
+    | list\n            + due_words + relative_words + one_words %}\n  {% set ns.t
+    = ns.t + (k | string | lower).split(' ') %}\n{% endfor %} {{ ns.t | map('trim')
+    | reject('eq', '') | unique | list }}\n"
+  parts: "{% set st = namespace(t=[]) %} {% for k in (day_phrases or {}).keys() |
+    list + (weekday_phrases or {}).keys() | list\n            + (day_part_phrases
+    or {}).keys() | list + (relative_units or {}).keys() | list %}\n  {% set st.t
+    = st.t + (k | string | lower).split(' ') %}\n{% endfor %} {% set ns = namespace(r={})
+    %} {% for key, raw in [['who', trigger.slots.get('who', '') if not is_follow_up
+    else data.get('who', '')],\n                    ['reminder', trigger.slots.get('reminder',
+    '') if not is_follow_up else data.get('reminder', '')]] %}\n  {% set words = raw
+    | string | regex_replace('\\\\s+', ' ') | trim %}\n  {% set words = words.split('
+    ') if words else [] %}\n  {% set low = words | map('lower') | map('regex_replace',
+    '[,!?.]+$', '') | list %}\n  {# moment at the end #}\n  {% set n = namespace(i=words
+    | count, stop=false) %}\n  {% for idx in range(words | count - 1, 0, -1) %}\n
+    \   {% if not n.stop and (low[idx] in due_tokens or low[idx] is match('^\\\\d{1,2}([:.]\\\\d{2})?(am|pm|u|h)?$'))
+    %}\n      {% set n.i = idx %}\n    {% else %}\n      {% set n.stop = true %}\n
+    \   {% endif %}\n  {% endfor %}\n  {% if not (low[n.i:] | select('in', st.t) |
+    list or low[n.i:] | join(' ') is search('\\\\d')) %}\n    {% set n.i = words |
+    count %}\n  {% endif %}\n  {# moment at the start (only for the reminder) #}\n
+    \ {% set p = namespace(j=0, stop=false) %}\n  {% if key == 'reminder' %}\n    {%
+    for idx in range(0, n.i - 1) %}\n      {% if not p.stop and (low[idx] in due_tokens
+    or low[idx] is match('^\\\\d{1,2}([:.]\\\\d{2})?(am|pm|u|h)?$')) %}\n        {%
+    set p.j = idx + 1 %}\n      {% else %}\n        {% set p.stop = true %}\n      {%
+    endif %}\n    {% endfor %}\n    {% if not (low[:p.j] | select('in', st.t) | list
+    or low[:p.j] | join(' ') is search('\\\\d')) %}\n      {% set p.j = 0 %}\n    {%
+    endif %}\n  {% endif %}\n  {% set ns.r = dict(ns.r.items() | list + [(key, words[p.j:n.i]
+    | join(' ')), (key ~ '_due', (words[:p.j] + words[n.i:]) | join(' '))]) %}\n{%
+    endfor %} {{ ns.r }}\n"
+actions:
+- variables:
+    date_format: !input date_format
+    time_format: !input time_format
+    at_word: !input at_word
+    and_word: !input and_word
+    you_word: !input you_word
+    translations: !input response_translations
+    response_set: !input response_set
+    question_recipients: !input question_recipients
+    question_unknown: !input question_unknown
+    question_due: !input question_due
+    question_time: !input question_time
+    question_past: !input question_past
+    response_missing: !input response_missing
+    response_no_answer: !input response_no_answer
+    response_error: !input response_error
+    who_raw: '{{ data.get(''who'', '''') if is_follow_up else trigger.slots.get(''who'',
+      '''') }}'
+    reminder_raw: '{{ data.get(''reminder'', '''') if is_follow_up else trigger.slots.get(''reminder'',
+      '''') }}'
+    who_override: '{{ data.get(''who_override'', '''') }}'
+    due_override: '{{ data.get(''due_override'', '''') }}'
+    extra_due: '{{ data.get(''extra_due'', '''') }}'
+    question: '{{ data.get(''question'', '''') }}'
+    missing_kind: '{{ data.get(''missing_kind'', '''') }}'
+    questions_asked: '{{ data.get(''round'', 0) | int(0) }}'
+    no_answer: false
+    result: {}
+    spoken_names: ''
+- alias: Stop when the blueprint is not configured correctly
+  if:
+  - condition: template
+    value_template: '{{ not (supported | bitwise_and(32) and supported | bitwise_and(64))
+      or recipient_list | count == 0 }}'
+  then:
+  - set_conversation_response: '{{ response_error }}'
+  - stop: The todo list doesn't support due dates with a time and descriptions, or
+      no recipients are configured
+- alias: Interpret the request, and ask follow-up questions when this is a follow-up
+    run
+  repeat:
+    sequence:
+    - alias: Ask the follow-up question
+      if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - alias: Wait until the satellite is done with the previous response
+        wait_template: '{{ is_state(satellite_id, ''idle'') }}'
+        timeout: 00:00:20
+      - action: assist_satellite.ask_question
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          question: '{{ question }}'
+          preannounce: false
+          answers:
+          - id: answer
+            sentences:
+            - '{answer}'
+        response_variable: answer
+      - variables:
+          answer_text: '{% set a = answer if answer is defined and answer is mapping
+            else {} %} {{ ((a.get(''slots'') or {}).get(''answer'') or a.get(''sentence'')
+            or '''') | string | trim }}'
+          no_answer: '{{ answer_text == '''' }}'
+          who_override: '{{ answer_text if missing_kind == ''recipients'' else who_override
+            }}'
+          due_override: '{{ answer_text if missing_kind in [''due'', ''past''] else
+            due_override }}'
+          extra_due: "{{ (extra_due ~ ' ' ~ answer_text) | trim if missing_kind ==
+            'time'\n   else '' if missing_kind in ['due', 'past'] else extra_due }}"
+          questions_asked: '{{ questions_asked + 1 }}'
+    - alias: Interpret the request
+      if:
+      - condition: template
+        value_template: '{{ not no_answer }}'
+      then:
+      - variables:
+          result: "{# recipients #} {% set w = namespace(who=' ' ~ (who_override or
+            parts.who) | lower | regex_replace('[.!?]', '') ~ ' ') %} {% for sep in
+            name_separators %}\n  {% set w.who = w.who | replace(' ' ~ (sep | lower
+            | trim) ~ ' ', ',') %}\n{% endfor %} {% set who = w.who %} {% set ns =
+            namespace(names=[], unknown=[], me_unknown=false) %} {% for part in who.split(',')
+            | map('trim') | reject('eq', '') %}\n  {% if part in me_words | map('lower')
+            | list %}\n    {% if speaker %}{% set ns.names = ns.names + [speaker]
+            %}{% else %}{% set ns.me_unknown = true %}{% endif %}\n  {% elif part
+            in everyone_words | map('lower') | list %}\n    {% set ns.names = ns.names
+            + recipient_list | map(attribute='name') | list %}\n  {% else %}\n    {%
+            set m = namespace(n=none) %}\n    {% for r in recipient_list if m.n is
+            none and (part == r.name | lower or part in r.aliases | map('lower') |
+            list) %}\n      {% set m.n = r.name %}\n    {% endfor %}\n    {% if m.n
+            %}{% set ns.names = ns.names + [m.n] %}{% else %}{% set ns.unknown = ns.unknown
+            + [part] %}{% endif %}\n  {% endif %}\n{% endfor %} {% set names = ns.names
+            | unique | list %} {# moment #} {% set due_text = (due_override or (parts.who_due
+            ~ ' ' ~ parts.reminder_due)) ~ ' ' ~ extra_due %} {% set text = ' ' ~
+            due_text | lower | regex_replace('[,!?]', '') | regex_replace('\\\\s+',
+            ' ') | trim ~ ' ' %} {% set rel = namespace(minutes=0) %} {% for rw in
+            relative_words %}\n  {% for unit, mins in (relative_units or {}).items()
+            %}\n    {% for c in text | regex_findall(' ' ~ (rw | lower) ~ ' (\\\\d+|'
+            ~ one_words | map('lower') | join('|') ~ ') ' ~ (unit | lower) ~ '(?=
+            )') %}\n      {% set rel.minutes = rel.minutes + (c | int(1)) * (mins
+            | int(0)) %}\n    {% endfor %}\n  {% endfor %}\n{% endfor %} {% set d
+            = namespace(delta=none, length=0, part=none, part_length=0, time=none,
+            dt=none) %} {% if rel.minutes > 0 %}\n  {% set d.dt = (now() + timedelta(minutes=rel.minutes)).replace(second=0,
+            microsecond=0) %}\n{% else %}\n  {% for p, x in (day_phrases or {}).items()
+            %}\n    {% set p = p | lower | trim %}\n    {% if (' ' ~ p ~ ' ') in text
+            and p | length > d.length %}\n      {% set d.delta = x | int(0) %}{% set
+            d.length = p | length %}\n    {% endif %}\n  {% endfor %}\n  {% for p,
+            w in (weekday_phrases or {}).items() %}\n    {% set p = p | lower | trim
+            %}\n    {% if (' ' ~ p ~ ' ') in text and p | length > d.length %}\n      {%
+            set d.delta = ((w | int(0)) - now().weekday()) % 7 or 7 %}{% set d.length
+            = p | length %}\n    {% endif %}\n  {% endfor %}\n  {% for p, t in (day_part_phrases
+            or {}).items() %}\n    {% set p = p | lower | trim %}\n    {% if (' '
+            ~ p ~ ' ') in text and p | length > d.part_length %}\n      {% set d.part
+            = t | string %}{% set d.part_length = p | length %}\n    {% endif %}\n
+            \ {% endfor %}\n  {% set found = text | regex_findall('(?<![\\\\d:.])(\\\\d{1,2})(?:[:.](\\\\d{2}))?(?![\\\\d])')
+            %}\n  {% if found %}\n    {% set h = found[0][0] | int %}\n    {% set
+            mi = found[0][1] | int(0) %}\n    {% set pm = namespace(v=none) %}\n    {%
+            for w, v in (pm_phrases or {}).items() %}\n      {% if (' ' ~ (w | lower
+            | trim) ~ ' ') in text or text is search('\\\\d' ~ (w | lower | trim)
+            ~ ' ') %}\n        {% set pm.v = v %}\n      {% endif %}\n    {% endfor
+            %}\n    {% set part_pm = d.part is not none and d.part[:2] | int(0) >=
+            12 %}\n    {% set h = h + 12 if h < 12 and (pm.v == 'pm' or (pm.v is none
+            and part_pm)) else h %}\n    {% set h = 0 if h == 12 and pm.v == 'am'
+            else h %}\n    {% set d.time = '%02d:%02d' | format(h, mi) if h < 24 and
+            mi < 60 else none %}\n  {% elif d.part is not none %}\n    {% set d.time
+            = d.part %}\n  {% endif %}\n  {% if d.time is not none %}\n    {% set
+            dt = today_at(d.time) + timedelta(days=d.delta or 0) %}\n    {% set d.dt
+            = dt + timedelta(days=1) if d.delta is none and dt <= now() else dt %}\n
+            \ {% endif %}\n{% endif %} {# what is missing #} {% set missing =\n     'recipients'
+            if not names or ns.unknown or ns.me_unknown\n     else 'due' if d.dt is
+            none and d.delta is none\n     else 'time' if d.dt is none\n     else
+            'past' if d.dt <= now()\n     else '' %}\n{{ {\n  'text': parts.reminder,\n
+            \ 'names': names,\n  'unknown': ns.unknown,\n  'due': d.dt.isoformat()
+            if d.dt is not none else '',\n  'missing': missing\n} }}\n"
+          missing_kind: '{{ result.missing }}'
+          spoken_names: '{% set ns = namespace(n=[]) %} {% for x in result.names %}{%
+            set ns.n = ns.n + [you_word if x == speaker else x] %}{% endfor %} {%
+            set n = ns.n %} {{ n | join('', '') if n | count < 2 else n[:-1] | join('',
+            '') ~ '' '' ~ and_word ~ '' '' ~ n[-1] }}'
+          question: "{% set r = spoken_names or you_word %} {% if result.missing ==
+            'recipients' %}\n  {{ question_unknown.format(names=result.unknown | join(',
+            '), recipients=r) if result.unknown else question_recipients.format(recipients=r)
+            }}\n{% elif result.missing == 'due' %}\n  {{ question_due.format(recipients=r)
+            }}\n{% elif result.missing == 'time' %}\n  {{ question_time.format(recipients=r)
+            }}\n{% elif result.missing == 'past' %}\n  {{ question_past.format(recipients=r)
+            }}\n{% endif %}"
+    until:
+    - condition: template
+      value_template: '{{ not is_follow_up or no_answer or missing_kind == '''' or
+        questions_asked >= max_questions }}'
+- alias: Stop when there was no answer
+  if:
+  - condition: template
+    value_template: '{{ no_answer }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ response_no_answer }}'
+      preannounce: false
+  - stop: No answer
+- alias: Handle missing information
+  if:
+  - condition: template
+    value_template: '{{ missing_kind != '''' or result.text | trim == '''' }}'
+  then:
+  - if:
+    - condition: template
+      value_template: '{{ not is_follow_up and satellite_id and missing_kind != ''''
+        and questions_asked < max_questions }}'
+    then:
+    - alias: Ask the question in a new run, after this conversation is finished
+      event: voice_reminder_follow_up
+      event_data:
+        automation: '{{ this.entity_id }}'
+        satellite_id: '{{ satellite_id }}'
+        user_id: '{{ user_id }}'
+        who: '{{ who_raw }}'
+        reminder: '{{ reminder_raw }}'
+        who_override: '{{ who_override }}'
+        due_override: '{{ due_override }}'
+        extra_due: '{{ extra_due }}'
+        question: '{{ question }}'
+        missing_kind: '{{ missing_kind }}'
+        round: 1
+    - set_conversation_response: ''
+    else:
+    - variables:
+        message: '{{ response_missing.format(question=question) if missing_kind !=
+          '''' else response_error }}'
+    - if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - action: assist_satellite.announce
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          message: '{{ message }}'
+          preannounce: false
+      else:
+      - set_conversation_response: '{{ message }}'
+  - stop: Information missing
+- alias: Create the description with the recipients
+  variables:
+    text: '{{ result.text }}'
+    due: '{{ result.due }}'
+    chosen: '{{ result.names }}'
+    reminder_description: "{% set ns = namespace(l=[]) %} {% for r in recipient_list
+      if r.name in chosen %}\n  {% set ns.l = ns.l + [r.name ~ ': ' ~ (r.notify +
+      r.satellites + ([r.person] if r.person else [])) | join(', ')] %}\n{% endfor
+      %} {{ ns.l | join('\\n') }}"
+- alias: Store the reminder
+  action: todo.add_item
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    item: '{{ text }}'
+    due_datetime: '{{ due }}'
+    description: '{{ reminder_description }}'
+- alias: Check if the reminder was stored
+  action: todo.get_items
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    status: needs_action
+  response_variable: check
+- variables:
+    stored: '{{ check is defined and text in check[todo_entity][''items''] | map(attribute=''summary'')
+      | list }}'
+    due_spoken: "{% set dt = as_datetime(due) | as_local %} {% set ns = namespace(d=dt.strftime(date_format))
+      %} {% for k, v in (translations or {}).items() %}\n  {% set ns.d = ns.d | replace(k,
+      v) %}\n{% endfor %} {{ ns.d }} {{ at_word }} {{ dt.strftime(time_format) }}"
+    message: '{{ response_set.format(recipients=spoken_names, due=due_spoken, text=text)
+      if stored else response_error }}'
+- if:
+  - condition: template
+    value_template: '{{ is_follow_up }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ message }}'
+      preannounce: false
+  else:
+  - set_conversation_response: '{{ message }}'

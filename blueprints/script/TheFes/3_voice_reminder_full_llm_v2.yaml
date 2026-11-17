@@ -1,0 +1,414 @@
+blueprint:
+  domain: script
+  name: Voice - Set Reminders - Full LLM script (version 2)
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/3_voice_reminder_full_llm_v2.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/reminder/3_voice_reminder_full_llm_v2.md)
+
+
+    # Set reminders by use of an LLM (version 2)
+
+
+    The LLM only passes the request in a single `query` field. An AI Task (`ai_task.generate_data`)
+
+    with structured output determines the text, the recipients (it can only return
+    recipients you
+
+    configured) and the date and time of the reminder. When something is missing,
+    nothing is stored
+
+    and the script tells the LLM what to ask, so the LLM asks you follow-up questions
+    until it has
+
+    everything it needs.
+
+
+    The reminder is stored in a todo list. The `Send Reminder (version 2)` automation
+    sends it at the
+
+    right moment to the notify entities of the recipients, and announces it on their
+    Assist satellites
+
+    when they are home.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+    * A todo list which supports due dates with a time and descriptions (for example
+    Local To-do)
+
+    * The recipients
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Note
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script to set reminders.
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+
+    #### Example for script description
+
+    `Sets a reminder for one or more people at a date and time. Use this tool whenever
+    the user asks to be reminded of something, or to remind someone else. Pass the
+    complete request of the user in the query field, in the words of the user. When
+    the tool reports missing information, ask the user for it and call the tool again
+    with the complete request including the answer.`
+
+
+    #### Examples
+
+    ```
+
+    Remind me to take out the trash tomorrow at 7
+
+    Remind Marleen and me to buy flowers on Friday afternoon
+
+    Set a reminder to call the plumber
+
+    ```
+
+    '
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      input:
+        todo_entity:
+          name: ToDo list
+          description: The todo list to store the reminders in. It needs to support
+            due dates with a time and descriptions, like the Local To-do integration.
+            Use the same list in the `Send Reminder (version 2)` automation.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+        recipients:
+          name: Recipients
+          description: The people (or groups) reminders can be set for. Give each
+            recipient a name, and optionally other names or a description which can
+            be used to recognize them, the notify entities for the notification, the
+            Assist satellites to announce the reminder on and a person. The satellites
+            are only used when the person is home, and the person is used to know
+            who "me" is.
+          selector:
+            object:
+              multiple: true
+              label_field: name
+              description_field: aliases
+              fields:
+                name:
+                  label: Name
+                  required: true
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                aliases:
+                  label: Other names or description (comma separated)
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                person:
+                  label: Person
+                  selector:
+                    entity:
+                      filter:
+                      - domain:
+                        - person
+                      multiple: false
+                      reorder: false
+                notify:
+                  label: Notify entities
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - notify
+                      reorder: false
+                satellites:
+                  label: Assist satellites to announce on (only when the person is
+                    home)
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - assist_satellite
+                      reorder: false
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to interpret the request. Leave empty
+            to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions for the AI
+          description: Instructions for the AI to interpret the request. The output
+            format is enforced by the structure. You can use `{{ query }}`, `{{ speaker
+            }}` and `{{ recipient_desc }}`.
+          default: 'You interpret a voice request to set a reminder. The user said:
+            "{{ query }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+            {{ ''The user speaking is '' ~ speaker ~ '', so "me" or "I" means '' ~
+            speaker ~ ''.'' if speaker else ''It is not known who is speaking. When
+            the user says "me" or "I" without a name, add recipients to missing.''
+            }}
+
+            The recipients you can choose from are: {{ recipient_desc }}.
+
+
+            Fill in the fields as follows:
+
+            - text: what the reminder is about, as it should be sent to the recipients,
+            without the recipients and the moment. Keep the language of the request.
+
+            - recipients: the names of the recipients. Match what the user says with
+            the names and the other names or descriptions. Only use names from the
+            list.
+
+            - date: the date to send the reminder, in the format YYYY-MM-DD. A weekday
+            means the next occurrence of that day (not today). When only a time is
+            mentioned, use today, or tomorrow when that time has already passed. A
+            relative moment ("in 2 hours") is calculated from the current date and
+            time.
+
+            - time: the time to send the reminder, in the 24 hour format HH:MM:SS.
+            Morning is 09:00:00, afternoon 14:00:00, evening 19:00:00 and tonight
+            20:00:00. When the user only mentions a day, without a time or a part
+            of the day, leave the time empty and add time to missing.
+
+            - missing: never guess. Add text, recipients, date or time when the user
+            didn''t mention it or it is unclear, and leave that field empty.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        query_prompt:
+          name: Query field description
+          description: The description of the `query` field, which tells the LLM what
+            to pass to the script.
+          default: The complete request of the user, in the words of the user, including
+            who should be reminded, of what, and when (for example "remind me to take
+            out the trash tomorrow at 7"). When you asked the user for missing information,
+            pass the original request including the answers.
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max_exceeded: silent
+fields:
+  query:
+    name: Query
+    description: !input query_prompt
+    required: true
+    selector:
+      text:
+sequence:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    query: '{{ query | default('''', true) | string | trim }}'
+    ai_task_entity: !input ai_task_entity
+    todo_entity: !input todo_entity
+    recipients: !input recipients
+    user_id: '{{ context.user_id if context is defined and context.user_id else none
+      }}'
+    satellite_id:
+- alias: Prepare the recipients
+  variables:
+    recipient_list: "{% set ns = namespace(r=[]) %} {% for r in recipients | default([],
+      true) if r is mapping and (r.get('name') or '') | string | trim %}\n  {% set
+      n = r.get('notify') or [] %}\n  {% set s = r.get('satellites') or [] %}\n  {%
+      set ns.r = ns.r + [{\n    'name': r.name | string | trim,\n    'aliases': ((r.get('aliases')
+      or '') | string).split(',') | map('trim') | reject('eq', '') | list,\n    'person':
+      r.get('person') or none,\n    'notify': [n] if n is string else n | list,\n
+      \   'satellites': [s] if s is string else s | list\n  }] %}\n{% endfor %} {{
+      ns.r }}\n"
+    speaker: '{% set p = states.person | selectattr(''attributes.user_id'', ''eq'',
+      user_id) | map(attribute=''entity_id'') | first | default(none) if user_id else
+      none %} {% set by_person = recipient_list | selectattr(''person'', ''eq'', p)
+      | map(attribute=''name'') | list if p else [] %} {% set by_sat = recipient_list
+      | selectattr(''satellites'', ''contains'', satellite_id) | map(attribute=''name'')
+      | list if satellite_id else [] %} {{ by_person[0] if by_person | count == 1
+      else by_sat[0] if by_sat | count == 1 else none }}
+
+      '
+    recipient_names: '{{ recipient_list | map(attribute=''name'') | list }}'
+    recipient_desc: '{% for r in recipient_list %}{{ r.name }}{{ '' ('' ~ r.aliases
+      | join('', '') ~ '')'' if r.aliases }}{{ ''; '' if not loop.last }}{% endfor
+      %}'
+    supported: '{{ state_attr(todo_entity, ''supported_features'') | int(0) }}'
+- alias: Stop when the todo list doesn't support reminders
+  if:
+  - condition: template
+    value_template: '{{ not (supported | bitwise_and(32) and supported | bitwise_and(64))
+      or recipient_list | count == 0 }}'
+  then:
+  - variables:
+      response:
+        success: false
+        error: "{{ 'No recipients are configured' if recipient_list | count == 0 else\n
+          \  'The todo list for reminders does not support due dates with a time and
+          descriptions' }}"
+  - stop: Not configured correctly
+    response_variable: response
+- alias: Create the instructions and structure for the AI Task
+  variables:
+    llm_instructions: !input llm_instructions
+    structure:
+      text:
+        description: What the reminder is about, without recipients and moment
+        selector:
+          text:
+      recipients:
+        description: The names of the recipients
+        selector:
+          select:
+            multiple: true
+            options: '{{ recipient_names }}'
+      date:
+        description: Date to send the reminder (YYYY-MM-DD)
+        selector:
+          date:
+      time:
+        description: Time to send the reminder (HH:MM:SS, 24 hour format)
+        selector:
+          time:
+      missing:
+        description: The information which is missing or unclear in the request
+        selector:
+          select:
+            multiple: true
+            options:
+            - text
+            - recipients
+            - date
+            - time
+- alias: Ask the AI Task to interpret the request
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Set reminder'', ''instructions'': llm_instructions,
+    ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+    else d }}'
+  response_variable: ai_result
+- alias: Stop with an error when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_result is not defined or ai_result.data is not defined
+      or ai_result.data is string }}'
+  then:
+  - variables:
+      response:
+        success: false
+        error: Unable to interpret the request
+  - stop: AI Task failed
+    response_variable: response
+- alias: Read and check the result of the AI Task
+  variables:
+    llm: '{{ ai_result.data }}'
+    ai_missing: '{% set m = llm.get(''missing'') or [] %} {{ [m] if m is string else
+      m | list }}
+
+      '
+    text: '{{ llm.get(''text'') | default('''', true) | string | trim }}'
+    chosen: '{% set r = llm.get(''recipients'') or [] %} {{ ([r] if r is string else
+      r | list) | select(''in'', recipient_names) | unique | list }}
+
+      '
+    time: '{% set t = '''' if ''time'' in ai_missing else llm.get(''time'') | default('''',
+      true) | string | trim %} {% set t = t ~ '':00'' if t is match(''^\\d{1,2}:\\d{2}$'')
+      else t %} {{ t if t and as_timedelta(t) is not none else '''' }}
+
+      '
+    date: '{% set d = '''' if ''date'' in ai_missing else llm.get(''date'') | default('''',
+      true) | string | trim %} {{ d[:10] if d is match(''\\d{4}-\\d{2}-\\d{2}'') and
+      as_datetime(d[:10], none) is not none else '''' }}
+
+      '
+    due: '{{ (as_datetime(date) | as_local + as_timedelta(time)).isoformat() if date
+      and time else '''' }}'
+    in_past: '{{ due != '''' and as_datetime(due) <= now() }}'
+    missing: "{% set m = ai_missing + (['text'] if not text else []) + (['recipients']
+      if not chosen else [])\n             + (['date'] if not date else []) + (['time']
+      if not time else []) %}\n{{ m | select('in', ['text', 'recipients', 'date',
+      'time']) | unique | list }}\n"
+- alias: Return what is missing, so the LLM can ask for it
+  if:
+  - condition: template
+    value_template: '{{ missing | count > 0 or in_past }}'
+  then:
+  - variables:
+      response: "{% set r = {\n  'success': false,\n  'missing': missing,\n  'instruction':
+        'The reminder was NOT set. Ask the user for the missing information, then
+        call this tool again with the complete request including the answer.'\n} %}
+        {% set r = dict(r, note='The requested moment ' ~ due ~ ' is in the past,
+        ask for a moment in the future') if in_past else r %} {% set r = dict(r, known_recipients=recipient_names)
+        if 'recipients' in missing else r %} {% set r = dict(r, understood={'text':
+        text, 'recipients': chosen, 'date': date, 'time': time}) %} {{ r }}\n"
+  - stop: Information missing
+    response_variable: response
+- alias: Create the description with the recipients
+  variables:
+    reminder_description: "{% set ns = namespace(l=[]) %} {% for r in recipient_list
+      if r.name in chosen %}\n  {% set ns.l = ns.l + [r.name ~ ': ' ~ (r.notify +
+      r.satellites + ([r.person] if r.person else [])) | join(', ')] %}\n{% endfor
+      %} {{ ns.l | join('\\n') }}"
+- alias: Store the reminder
+  action: todo.add_item
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    item: '{{ text }}'
+    due_datetime: '{{ due }}'
+    description: '{{ reminder_description }}'
+- alias: Check if the reminder was stored
+  action: todo.get_items
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    status: needs_action
+  response_variable: check
+- variables:
+    stored: '{{ check is defined and text in check[todo_entity][''items''] | map(attribute=''summary'')
+      | list }}'
+    result: "{% if stored %}\n  {{ {'success': true, 'text': text, 'recipients': chosen,
+      'moment': due,\n      'moment_spoken': as_datetime(due).strftime('%A %-d %B
+      %H:%M')} }}\n{% else %}\n  {{ {'success': false, 'error': 'The reminder could
+      not be stored'} }}\n{% endif %}\n"
+- stop: ''
+  response_variable: result

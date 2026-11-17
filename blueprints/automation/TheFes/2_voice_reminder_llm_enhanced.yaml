@@ -1,0 +1,565 @@
+blueprint:
+  domain: automation
+  name: Voice - Set Reminders - LLM enhanced Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/2_voice_reminder_llm_enhanced.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/reminder/2_voice_reminder_llm_enhanced.md)
+
+
+    # Set reminders with local Assist, enhanced by an AI Task
+
+
+    The request is caught by local trigger sentences, so you don''t need an LLM as
+    conversation agent,
+
+    and the LLM doesn''t need access to your house. An AI Task (`ai_task.generate_data`)
+    with
+
+    structured output determines the text, the recipients (it can only return recipients
+    you
+
+    configured) and the date and time of the reminder.
+
+
+    When something is missing and you used a voice satellite, the satellite asks for
+    it (for example
+
+    "At what time?") and the AI Task is used again with your answer. Without a satellite
+    (text chat),
+
+    Assist tells you what is missing, and you need to repeat the complete request.
+
+
+    The reminder is stored in a todo list. The `Send Reminder (version 2)` automation
+    sends it at the
+
+    right moment.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+    * A todo list which supports due dates with a time and descriptions (for example
+    Local To-do)
+
+    * The recipients
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Optional
+
+    * Change or translate the trigger sentences and the responses
+
+
+    ### Usage
+
+
+    By default the following sentences are configured:
+
+
+    - remind {query}
+
+    - (set|create|make|add) a reminder [for] {query}
+
+
+    #### Examples
+
+    * Remind me to take out the trash tomorrow at 7
+
+    * Remind Marleen and me to buy flowers on Friday afternoon
+
+    * Set a reminder to call the plumber
+
+    '
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      input:
+        todo_entity:
+          name: ToDo list
+          description: The todo list to store the reminders in. It needs to support
+            due dates with a time and descriptions, like the Local To-do integration.
+            Use the same list in the `Send Reminder (version 2)` automation.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+        recipients:
+          name: Recipients
+          description: The people (or groups) reminders can be set for. Give each
+            recipient a name, and optionally other names or a description which can
+            be used to recognize them, the notify entities for the notification, the
+            Assist satellites to announce the reminder on and a person. The satellites
+            are only used when the person is home, and the person is used to know
+            who "me" is.
+          selector:
+            object:
+              multiple: true
+              label_field: name
+              description_field: aliases
+              fields:
+                name:
+                  label: Name
+                  required: true
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                aliases:
+                  label: Other names or description (comma separated)
+                  selector:
+                    text:
+                      multiline: false
+                      multiple: false
+                person:
+                  label: Person
+                  selector:
+                    entity:
+                      filter:
+                      - domain:
+                        - person
+                      multiple: false
+                      reorder: false
+                notify:
+                  label: Notify entities
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - notify
+                      reorder: false
+                satellites:
+                  label: Assist satellites to announce on (only when the person is
+                    home)
+                  selector:
+                    entity:
+                      multiple: true
+                      filter:
+                      - domain:
+                        - assist_satellite
+                      reorder: false
+        trigger:
+          name: Trigger sentences
+          description: The sentences need a {query} wildcard.
+          default:
+          - remind {query}
+          - (set|create|make|add) a reminder [for] {query}
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        max_questions:
+          name: Maximum number of follow-up questions
+          description: How many questions a voice satellite may ask for missing information.
+            Set to 0 to never ask a follow-up question.
+          default: 3
+          selector:
+            number:
+              min: 0.0
+              max: 5.0
+              step: 1.0
+              mode: slider
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to interpret the request. Leave empty
+            to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions for the AI
+          description: Instructions for the AI to interpret the request. The output
+            format is enforced by the structure. You can use `{{ conversation }}`,
+            `{{ speaker }}` and `{{ recipient_desc }}`.
+          default: 'You interpret a voice request to set a reminder. This is the conversation
+            with the user:
+
+            {{ conversation }}
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+            {{ ''The user speaking is '' ~ speaker ~ '', so "me" or "I" means '' ~
+            speaker ~ ''.'' if speaker else ''It is not known who is speaking. When
+            the user says "me" or "I" without a name, add recipients to missing.''
+            }}
+
+            The recipients you can choose from are: {{ recipient_desc }}.
+
+
+            Fill in the fields as follows:
+
+            - text: what the reminder is about, as it should be sent to the recipients,
+            without the recipients and the moment. Keep the language of the request.
+
+            - recipients: the names of the recipients. Match what the user says with
+            the names and the other names or descriptions. Only use names from the
+            list.
+
+            - date: the date to send the reminder, in the format YYYY-MM-DD. A weekday
+            means the next occurrence of that day (not today). When only a time is
+            mentioned, use today, or tomorrow when that time has already passed. A
+            relative moment ("in 2 hours") is calculated from the current date and
+            time.
+
+            - time: the time to send the reminder, in the 24 hour format HH:MM:SS.
+            Morning is 09:00:00, afternoon 14:00:00, evening 19:00:00 and tonight
+            20:00:00. When the user only mentions a day, without a time or a part
+            of the day, leave the time empty and add time to missing.
+
+            - missing: never guess. Add text, recipients, date or time when the user
+            didn''t mention it or it is unclear, and leave that field empty.
+
+            - question: when something is missing, one short question to ask the user
+            for it, in the language of the request.
+
+            - confirmation: when nothing is missing, a short confirmation in the language
+            of the request, for example "I''ll remind you tomorrow at 7:00 to take
+            out the trash". Say the date as a weekday or relative day, not as a number,
+            and the time without seconds.'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+    response_settings:
+      name: Settings for the responses
+      icon: mdi:chat
+      collapsed: true
+      description: '`{question}` is replaced by the question for the missing information.'
+      input:
+        response_missing:
+          name: Information missing (text chat or no more questions)
+          default: '{question} Please say your complete request again, including this.'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_no_answer:
+          name: No answer on the follow-up question
+          default: I didn't hear an answer, so I didn't set the reminder
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_error:
+          name: Error response
+          default: Sorry, I couldn't set the reminder
+          selector:
+            text:
+              multiline: false
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- trigger: conversation
+  command: !input trigger
+  id: voice
+- trigger: event
+  event_type: voice_reminder_follow_up
+  id: follow_up
+conditions:
+- alias: Only handle follow-up events for this automation
+  condition: template
+  value_template: '{{ trigger.id == ''voice'' or trigger.event.data.get(''automation'')
+    == this.entity_id }}'
+variables:
+  version: 20261116
+  todo_entity: !input todo_entity
+  recipients: !input recipients
+  ai_task_entity: !input ai_task_entity
+  max_questions: !input max_questions
+  is_follow_up: '{{ trigger.id == ''follow_up'' }}'
+  data: '{{ trigger.event.data if is_follow_up else {} }}'
+  user_id: "{{ data.get('user_id') if is_follow_up else\n   (trigger.user_input.context.user_id
+    if trigger.user_input is defined and trigger.user_input.context is defined else
+    none) }}"
+  satellite_id: '{{ data.get(''satellite_id'') if is_follow_up else trigger.satellite_id
+    }}'
+  recipient_list: "{% set ns = namespace(r=[]) %} {% for r in recipients | default([],
+    true) if r is mapping and (r.get('name') or '') | string | trim %}\n  {% set n
+    = r.get('notify') or [] %}\n  {% set s = r.get('satellites') or [] %}\n  {% set
+    ns.r = ns.r + [{\n    'name': r.name | string | trim,\n    'aliases': ((r.get('aliases')
+    or '') | string).split(',') | map('trim') | reject('eq', '') | list,\n    'person':
+    r.get('person') or none,\n    'notify': [n] if n is string else n | list,\n    'satellites':
+    [s] if s is string else s | list\n  }] %}\n{% endfor %} {{ ns.r }}\n"
+  speaker: '{% set p = states.person | selectattr(''attributes.user_id'', ''eq'',
+    user_id) | map(attribute=''entity_id'') | first | default(none) if user_id else
+    none %} {% set by_person = recipient_list | selectattr(''person'', ''eq'', p)
+    | map(attribute=''name'') | list if p else [] %} {% set by_sat = recipient_list
+    | selectattr(''satellites'', ''contains'', satellite_id) | map(attribute=''name'')
+    | list if satellite_id else [] %} {{ by_person[0] if by_person | count == 1 else
+    by_sat[0] if by_sat | count == 1 else none }}
+
+    '
+  recipient_names: '{{ recipient_list | map(attribute=''name'') | list }}'
+  recipient_desc: '{% for r in recipient_list %}{{ r.name }}{{ '' ('' ~ r.aliases
+    | join('', '') ~ '')'' if r.aliases }}{{ ''; '' if not loop.last }}{% endfor %}'
+  supported: '{{ state_attr(todo_entity, ''supported_features'') | int(0) }}'
+actions:
+- variables:
+    response_missing: !input response_missing
+    response_no_answer: !input response_no_answer
+    response_error: !input response_error
+    conversation: '{{ data.get(''conversation'', '''') if is_follow_up else trigger.sentence
+      }}'
+    question: '{{ data.get(''question'', '''') }}'
+    questions_asked: '{{ data.get(''round'', 0) | int(0) }}'
+    no_answer: false
+    ai_failed: false
+    missing: '{{ [''unknown''] if is_follow_up else [] }}'
+    text: ''
+    chosen: []
+    due: ''
+    confirmation: ''
+    structure:
+      text:
+        description: What the reminder is about, without recipients and moment
+        selector:
+          text:
+      recipients:
+        description: The names of the recipients
+        selector:
+          select:
+            multiple: true
+            options: '{{ recipient_names }}'
+      date:
+        description: Date to send the reminder (YYYY-MM-DD)
+        selector:
+          date:
+      time:
+        description: Time to send the reminder (HH:MM:SS, 24 hour format)
+        selector:
+          time:
+      missing:
+        description: The information which is missing or unclear in the request
+        selector:
+          select:
+            multiple: true
+            options:
+            - text
+            - recipients
+            - date
+            - time
+      question:
+        description: A short question for the missing information, in the language
+          of the request
+        selector:
+          text:
+      confirmation:
+        description: A short confirmation in the language of the request, when nothing
+          is missing
+        selector:
+          text:
+- alias: Stop when the blueprint is not configured correctly
+  if:
+  - condition: template
+    value_template: '{{ not (supported | bitwise_and(32) and supported | bitwise_and(64))
+      or recipient_list | count == 0 }}'
+  then:
+  - set_conversation_response: '{{ response_error }}'
+  - stop: The todo list doesn't support due dates with a time and descriptions, or
+      no recipients are configured
+- alias: Interpret the request, and ask follow-up questions when this is a follow-up
+    run
+  repeat:
+    sequence:
+    - alias: Ask the follow-up question
+      if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - alias: Wait until the satellite is done with the previous response
+        wait_template: '{{ is_state(satellite_id, ''idle'') }}'
+        timeout: 00:00:20
+      - action: assist_satellite.ask_question
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          question: '{{ question }}'
+          preannounce: false
+          answers:
+          - id: answer
+            sentences:
+            - '{answer}'
+        response_variable: answer
+      - variables:
+          answer_text: '{% set a = answer if answer is defined and answer is mapping
+            else {} %} {{ (a.get(''slots'') or {}).get(''answer'') or a.get(''sentence'')
+            or '''' }}'
+          no_answer: '{{ answer_text | trim == '''' }}'
+          conversation: '{{ conversation ~ ''
+
+            Question: '' ~ question ~ ''
+
+            Answer: '' ~ answer_text }}'
+          questions_asked: '{{ questions_asked + 1 }}'
+    - alias: Use the AI Task to interpret the conversation
+      if:
+      - condition: template
+        value_template: '{{ not no_answer }}'
+      then:
+      - alias: Render the instructions with the current conversation
+        variables:
+          llm_instructions: !input llm_instructions
+      - action: ai_task.generate_data
+        continue_on_error: true
+        data: '{% set d = {''task_name'': ''Set reminder'', ''instructions'': llm_instructions,
+          ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity) if ai_task_entity
+          else d }}'
+        response_variable: ai_result
+      - variables:
+          ai_failed: '{{ ai_result is not defined or ai_result.data is not defined
+            or ai_result.data is string }}'
+          llm: '{{ {} if ai_failed else ai_result.data }}'
+          ai_missing: '{% set m = llm.get(''missing'') or [] %} {{ [m] if m is string
+            else m | list }}
+
+            '
+          text: '{{ llm.get(''text'') | default('''', true) | string | trim }}'
+          chosen: '{% set r = llm.get(''recipients'') or [] %} {{ ([r] if r is string
+            else r | list) | select(''in'', recipient_names) | unique | list }}
+
+            '
+          due: '{% set t = '''' if ''time'' in ai_missing else llm.get(''time'') |
+            default('''', true) | string | trim %} {% set t = t ~ '':00'' if t is
+            match(''^\\d{1,2}:\\d{2}$'') else t %} {% set t = t if t and as_timedelta(t)
+            is not none else '''' %} {% set d = '''' if ''date'' in ai_missing else
+            llm.get(''date'') | default('''', true) | string | trim %} {% set d =
+            d[:10] if d is match(''\\d{4}-\\d{2}-\\d{2}'') and as_datetime(d[:10],
+            none) is not none else '''' %} {{ (as_datetime(d) | as_local + as_timedelta(t)).isoformat()
+            if d and t else '''' }}
+
+            '
+          missing: "{% set m = ai_missing + (['text'] if not text else []) + (['recipients']
+            if not chosen else [])\n   + (['time'] if not due else []) + (['time']
+            if due and as_datetime(due) <= now() else []) %}\n{{ m | select('in',
+            ['text', 'recipients', 'date', 'time']) | unique | list }}\n"
+          question: "{{ llm.get('question') | default('', true) | string | trim\n
+            \  or 'When should I send the reminder?' if missing | count > 0 else ''
+            }}"
+          confirmation: '{{ llm.get(''confirmation'') | default('''', true) | string
+            | trim }}'
+    until:
+    - condition: template
+      value_template: '{{ not is_follow_up or no_answer or ai_failed or missing |
+        count == 0 or questions_asked >= max_questions }}'
+- alias: Stop when there was no answer or the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ no_answer or ai_failed }}'
+  then:
+  - variables:
+      message: '{{ response_no_answer if no_answer else response_error }}'
+  - if:
+    - condition: template
+      value_template: '{{ is_follow_up }}'
+    then:
+    - action: assist_satellite.announce
+      continue_on_error: true
+      data:
+        entity_id: '{{ satellite_id }}'
+        message: '{{ message }}'
+        preannounce: false
+    else:
+    - set_conversation_response: '{{ message }}'
+  - stop: No answer or AI Task failed
+- alias: Handle missing information
+  if:
+  - condition: template
+    value_template: '{{ missing | count > 0 }}'
+  then:
+  - if:
+    - condition: template
+      value_template: '{{ not is_follow_up and satellite_id and questions_asked <
+        max_questions }}'
+    then:
+    - alias: Ask the question in a new run, after this conversation is finished
+      event: voice_reminder_follow_up
+      event_data:
+        automation: '{{ this.entity_id }}'
+        satellite_id: '{{ satellite_id }}'
+        user_id: '{{ user_id }}'
+        conversation: '{{ conversation }}'
+        question: '{{ question }}'
+        round: 1
+    - set_conversation_response: ''
+    else:
+    - variables:
+        message: '{{ response_missing.format(question=question) }}'
+    - if:
+      - condition: template
+        value_template: '{{ is_follow_up }}'
+      then:
+      - action: assist_satellite.announce
+        continue_on_error: true
+        data:
+          entity_id: '{{ satellite_id }}'
+          message: '{{ message }}'
+          preannounce: false
+      else:
+      - set_conversation_response: '{{ message }}'
+  - stop: Information missing
+- alias: Create the description with the recipients
+  variables:
+    reminder_description: "{% set ns = namespace(l=[]) %} {% for r in recipient_list
+      if r.name in chosen %}\n  {% set ns.l = ns.l + [r.name ~ ': ' ~ (r.notify +
+      r.satellites + ([r.person] if r.person else [])) | join(', ')] %}\n{% endfor
+      %} {{ ns.l | join('\\n') }}"
+- alias: Store the reminder
+  action: todo.add_item
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    item: '{{ text }}'
+    due_datetime: '{{ due }}'
+    description: '{{ reminder_description }}'
+- alias: Check if the reminder was stored
+  action: todo.get_items
+  continue_on_error: true
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    status: needs_action
+  response_variable: check
+- variables:
+    stored: '{{ check is defined and text in check[todo_entity][''items''] | map(attribute=''summary'')
+      | list }}'
+    message: '{{ (confirmation or as_datetime(due).strftime(''%A %-d %B %H:%M'') ~
+      '': '' ~ text) if stored else response_error }}'
+- if:
+  - condition: template
+    value_template: '{{ is_follow_up }}'
+  then:
+  - action: assist_satellite.announce
+    continue_on_error: true
+    data:
+      entity_id: '{{ satellite_id }}'
+      message: '{{ message }}'
+      preannounce: false
+  else:
+  - set_conversation_response: '{{ message }}'

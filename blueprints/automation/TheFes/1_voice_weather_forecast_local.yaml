@@ -3,7 +3,9 @@ blueprint:
   name: Voice - Weather Forecast - Local Assist Blueprint
   author: TheFes
   source_url: https://github.com/TheFes/ha-blueprints/blob/main/weather/1_voice_weather_forecast_local.yaml
-  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/header.png?raw=true)\n\nMore
+  homeassistant:
+    min_version: 2024.10.0
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n\nMore
     detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/weather/1_voice_weather_forecast_local.md)\n\n#
     Request the weather forecast fully locally\n\n### Blueprint setup\n\n#### Required\n*
     Set a weather entity to use for the forecasts\n\n#### Optional\n* Add triggers
@@ -21,16 +23,18 @@ blueprint:
     [forecast] [for] [this|next] ({phrase}|day)\n- what('ll| will) the weather [forecast]
     be [like] [[for] [[the] coming|this] ({phrase}|day)]\n\n#### Trigger sentence
     syntax\nAll parts between square brackets are optional, the sentence will be recognized
-    with and without those parts. A pipe `|` means `or`.\nAll parts betwee round brackets
-    are mandatory, but also here the pipe means `or`.\n\nThe {phrase} part refers
-    to the moment you want the weather forecast for.\nThis can be `today`, `tomorrow`,
-    `day after tomorrow` for a day related to the current day.\nIt can also be a weekday,
-    like `Monday` or `Thursday`. In that case the next weekday will be used.\nYou
-    can also use `night`, `morning`, `afternoon` or `evening`.\n\n#### Examples without
-    phrase (will return the current day)\n* What's the weather\n* What will the weather
-    be like\n\n#### Examples with a phrase (will return the requested moment)\n* What's
-    the weather tomorrow\n* What is the weather forecast for next Thursday\n* What
-    will the weather be like this evening\n"
+    with and without those parts. A pipe `|` means `or`.\nAll parts between round
+    brackets are mandatory, but also here the pipe means `or`.\n\nThe {phrase} part
+    refers to the moment you want the weather forecast for.\nThis can be `today`,
+    `tomorrow`, `day after tomorrow` for a day related to the current day.\nIt can
+    also be a weekday, like `Monday` or `Thursday`. In that case the next weekday
+    will be used.\nYou can also use `night`, `morning`, `afternoon` or `evening`,
+    optionally combined with a day,\nlike `tomorrow morning` or `Saturday afternoon`.\n\n####
+    Examples without phrase (will return the current day)\n* What's the weather\n*
+    What will the weather be like\n\n#### Examples with a phrase (will return the
+    requested moment)\n* What's the weather tomorrow\n* What is the weather forecast
+    for next Thursday\n* What will the weather be like this evening\n* What's the
+    weather for Saturday afternoon\n"
   input:
     weather_entity:
       name: Weather Entity
@@ -159,7 +163,9 @@ blueprint:
     day_part_forecast_settings:
       name: Settings for the forecast of a part of the day.
       icon: mdi:chat
-      description: Here all the settings for the daily forecast are done
+      description: Here the phrases for the parts of the day are set. A day part can
+        be combined with a phrase for a day, for example "tomorrow morning" or "saturday
+        evening".
       collapsed: true
       input:
         current:
@@ -210,7 +216,7 @@ blueprint:
           default:
           - evening
     response_settings:
-      name: Settings for the reponses
+      name: Settings for the responses
       icon: mdi:chat
       description: Change or translate the response
       collapsed: true
@@ -258,7 +264,7 @@ blueprint:
               multiline: false
           default: with lightning
         lightning-rainy:
-          name: Lightning
+          name: Lightning Rainy
           selector:
             text:
               multiple: false
@@ -330,7 +336,9 @@ blueprint:
         rain_warning_threshold:
           name: Rain warning threshold
           description: A warning to bring an umbrella will be given if the precipitation
-            probability is above this percentage
+            probability is above this percentage. When the weather provider doesn't
+            provide a precipitation probability, the warning is given when any precipitation
+            is expected. This is available as the `rain_expected` variable.
           selector:
             number:
               min: 0.0
@@ -343,7 +351,7 @@ blueprint:
           name: 'Phrases to be used to describe the wind speed. Needs to be a yaml
             mapping. Second value is the lower threshold for the description in the
             same unit as wind speed of your forecast is in. Default values are using
-            km/h. The lowest value Descriptions are taken from: https://en.wikipedia.org/wiki/Beaufort_scale'
+            km/h. Descriptions are taken from: https://en.wikipedia.org/wiki/Beaufort_scale'
           selector:
             object:
               multiple: false
@@ -364,7 +372,7 @@ blueprint:
         wind_threshold:
           name: Wind threshold
           description: Information regarding wind will be reported if it is above
-            this threshold.
+            this threshold. Uses the same unit as the wind speed of your weather entity.
           selector:
             number:
               min: 0.0
@@ -419,7 +427,7 @@ blueprint:
               mode: slider
           default: 0
         response_invalid_phrase:
-          name: Response when the requested prhase could not be recognized
+          name: Response when the requested phrase could not be recognized
           description: The response which will be given by Assist.
           selector:
             text:
@@ -427,7 +435,7 @@ blueprint:
               multiple: false
           default: Unable to get forecasts for {{ phrase }}
         response_no_data:
-          name: Response when there is a no data for the requested period
+          name: Response when there is no data for the requested period
           description: The response which will be given by Assist.
           selector:
             text:
@@ -441,21 +449,24 @@ blueprint:
             text:
               multiline: true
               multiple: false
-          default: "It is currently {{ current_temperature }} degrees and {{ current_condition_translated
-            }}. Temperatures will range from {{ templow }} up to {{ temperature }}
-            degrees today. {% if current_temperature != current_apparent_temperature
-            %}It feels like {{ current_apparent_temperature }} degrees.{% endif %}
-            {% if precipitation_probability | float(-1) > rain_warning_threshold %}There
-            is a {{ precipitation_probability }}% chance of {{ precipitation }} mm
-            of rain, so bring an umbrella if you go outside.{% endif %} {% if current_uv_index
-            | float(-1) > 3 and current_condition in ['clear', 'partlycloudy'] %}The
-            sun is shining brightly, so be sure to apply sunscreen when going outside.{%
-            endif %} {%- if current_wind_speed is not none -%}\n  {% if current_wind_speed
-            >= wind_threshold %}The wind is {{ current_wind_phrase }}{% if current_wind_direction
-            is not none %} and coming from {{ current_wind_direction }}{% endif %}.{%
-            endif %}\n  {% if current_wind_speed >= wind_warning_threshold %}So in
-            case you don't have to go out, better stay inside.{% elif current_wind_speed
-            >= wind_joke_threshold %}So make sure your umbrella doesn't blow away!{%
+          default: "It is currently {{ current_temperature }} degrees {{ current_condition_translated
+            }}. {% if templow is not none and temperature is not none %}Temperatures
+            will range from {{ templow }} up to {{ temperature }} degrees today.{%
+            endif %} {% if current_apparent_temperature is not none and current_temperature
+            != current_apparent_temperature %}It feels like {{ current_apparent_temperature
+            }} degrees.{% endif %} {% if rain_expected %}There is {% if precipitation_probability
+            is not none %}a {{ precipitation_probability }}% {% else %}a {% endif
+            %}chance of {% if precipitation | float(0) > 0 %}{{ precipitation }} mm
+            of {% endif %}rain, so bring an umbrella if you go outside.{% endif %}
+            {% if current_uv_index | float(-1) > 3 and current_condition in ['sunny',
+            'partlycloudy', 'clear'] %}The sun is shining brightly, so be sure to
+            apply sunscreen when going outside.{% endif %} {%- if current_wind_speed
+            is not none -%}\n  {% if current_wind_speed >= wind_threshold %}The wind
+            is {{ current_wind_phrase }}{% if current_wind_direction is not none %}
+            and coming from {{ current_wind_direction }}{% endif %}.{% endif %}\n
+            \ {% if current_wind_speed >= wind_warning_threshold %}So in case you
+            don't have to go out, better stay inside.{% elif current_wind_speed >=
+            wind_joke_threshold %}So make sure your umbrella doesn't blow away!{%
             endif %}\n{%- endif %}"
         response_forecast:
           name: Response when there is a forecast found
@@ -464,26 +475,29 @@ blueprint:
             text:
               multiline: true
               multiple: false
-          default: "It will be {{ temperature }} degrees and {{ condition_translated
-            }}. Temperatures will range {% if templow is defined %}from {{ templow
-            }} {% endif %}up to {{ temperature }} degrees. {% if temperature != apparent_temperature
+          default: "It will be {{ temperature }} degrees {{ condition_translated }}.
+            {% if templow is not none and templow != temperature %}Temperatures will
+            range from {{ templow }} up to {{ temperature }} degrees.{% endif %} {%
+            if apparent_temperature is not none and temperature != apparent_temperature
             %}It will feel like {{ apparent_temperature }} degrees.{% endif %} {%
-            if precipitation_probability | float(-1) > rain_warning_threshold %}There
-            is a {{ precipitation_probability }}% chance of {{ precipitation }} mm
-            of rain, so bring an umbrella if you go outside.{% endif %} {% if uv_index
-            | float(-1) > 3 and condition in ['clear', 'partlycloudy'] %}The sun will
-            be shining brightly today, so be sure to apply sunscreen when going outside.{%
-            endif %} {%- if wind_speed is not none -%}\n  {% if wind_speed >= wind_threshold
-            %}The wind will be {{ wind_phrase }}{% if wind_direction is not none %}
-            and coming from {{ wind_direction }}{% endif %}.{% endif %}\n  {% if wind_speed
-            >= wind_warning_threshold %}So in case you don't have to go out, better
-            stay inside.{% elif wind_speed >= wind_joke_threshold %}So make sure your
-            umbrella doesn't blow away!{% endif %}\n{%- endif %}"
+            if rain_expected %}There is {% if precipitation_probability is not none
+            %}a {{ precipitation_probability }}% {% else %}a {% endif %}chance of
+            {% if precipitation | float(0) > 0 %}{{ precipitation }} mm of {% endif
+            %}rain, so bring an umbrella if you go outside.{% endif %} {% if uv_index
+            | float(-1) > 3 and condition in ['sunny', 'partlycloudy', 'clear'] %}The
+            sun will be shining brightly, so be sure to apply sunscreen when going
+            outside.{% endif %} {%- if wind_speed is not none -%}\n  {% if wind_speed
+            >= wind_threshold %}The wind will be {{ wind_phrase }}{% if wind_direction
+            is not none %} and coming from {{ wind_direction }}{% endif %}.{% endif
+            %}\n  {% if wind_speed >= wind_warning_threshold %}So in case you don't
+            have to go out, better stay inside.{% elif wind_speed >= wind_joke_threshold
+            %}So make sure your umbrella doesn't blow away!{% endif %}\n{%- endif
+            %}"
 triggers:
 - trigger: conversation
   command: !input trigger
 variables:
-  version: 20260516
+  version: 20261116
   daily_mapping:
   - phrases: !input current
     delta: 0
@@ -520,22 +534,32 @@ variables:
   - phrases: !input evening
     start: '18:00:00'
     end: '23:59:59'
-  phrase: '{{ trigger.get(''slots'', {}).phrase | lower if trigger.get(''slots'',
-    {}).get(''phrase'') else none }}'
+  phrase: '{{ (trigger.get(''slots'', {}).get(''phrase'') or '''') | lower | trim
+    or none }}'
   current_phrases: !input current
-  daily_phrases: '{{ daily_mapping | map(attribute=''phrases'') | sum(start=[]) }}'
-  day_part_phrases: '{{ day_part_mapping | map(attribute=''phrases'') | sum(start=[])
-    }}'
-  current: '{{ phrase is none or phrase in current_phrases }}'
-  daily: '{{ current or daily_phrases | select(''contains'', phrase) | list | count
-    > 0 }}'
-  part_day: '{{ false if phrase is none else day_part_phrases | select(''contains'',
-    phrase) | list | count > 0 }}'
+  tomorrow_phrases: !input tomorrow
+  day_after_tomorrow_phrases: !input day_after_tomorrow
+  day_lookup: "{% set ns = namespace(d={}) %} {% for m in daily_mapping %}\n  {% for
+    p in m.phrases %}\n    {% set ns.d = dict(ns.d, **{p | lower | trim: m.delta |
+    int(0)}) %}\n  {% endfor %}\n{% endfor %} {{ ns.d }}\n"
+  part_match: "{% set ns = namespace(index=none, term='', length=0) %} {% if phrase
+    %}\n  {% for m in day_part_mapping %}\n    {% set i = loop.index0 %}\n    {% for
+    p in m.phrases | map('lower') | map('trim') %}\n      {% if p == phrase %}\n        {%
+    set ns.index = i %}{% set ns.term = p %}{% set ns.length = 1000 %}\n      {% elif
+    (' ' ~ p ~ ' ') in (' ' ~ phrase ~ ' ') and p | length > ns.length %}\n        {%
+    set ns.index = i %}{% set ns.term = p %}{% set ns.length = p | length %}\n      {%
+    endif %}\n    {% endfor %}\n  {% endfor %}\n{% endif %} {% set rest = (' ' ~ phrase
+    ~ ' ') | replace(' ' ~ ns.term ~ ' ', ' ') | trim if ns.index is not none else
+    '' %} {{ {'index': ns.index, 'rest': rest} }}\n"
+  current: '{{ phrase is none or phrase in current_phrases | map(''lower'') | map(''trim'')
+    | list }}'
+  daily: '{{ current or phrase in day_lookup }}'
+  part_day: '{{ not daily and part_match.index is not none }}'
   weather_entity: !input weather_entity
-  supported: '{% set sf = state_attr(weather_entity, ''supported_features'') | default([],
-    true) %} {% set d = [''daily''] if sf in [1, 3, 5, 7] else [] %} {% set h = [''hourly'']
-    if sf in [2, 3, 6, 7] else [] %} {% set td = [''twice_daily''] if sf in [4, 5,
-    6, 7] else [] %} {{ d + h + td }}
+  supported: '{% set sf = state_attr(weather_entity, ''supported_features'') | int(0)
+    %} {% set d = [''daily''] if sf | bitwise_and(1) else [] %} {% set h = [''hourly'']
+    if sf | bitwise_and(2) else [] %} {% set td = [''twice_daily''] if sf | bitwise_and(4)
+    else [] %} {{ d + h + td }}
 
     '
   translations:
@@ -558,8 +582,13 @@ variables:
   wind_phrases: !input wind_phrases
   wind_dir: !input wind_direction
   value_round: !input value_round
+  rain_warning_threshold: !input rain_warning_threshold
+  wind_threshold: !input wind_threshold
+  wind_joke_threshold: !input wind_joke_threshold
+  wind_warning_threshold: !input wind_warning_threshold
   current_condition: '{{ states(weather_entity) }}'
-  current_condition_translated: '{{ translations.get(current_condition) }}'
+  current_condition_translated: '{{ translations.get(current_condition, current_condition)
+    }}'
   current_temperature: '{{ state_attr(weather_entity, ''temperature'') | round(value_round,
     default=none) }}'
   current_humidity: '{{ state_attr(weather_entity, ''humidity'') | round(value_round,
@@ -582,15 +611,17 @@ variables:
     default=none) }}'
   current_wind_bearing: '{{ state_attr(weather_entity, ''wind_bearing'') | round(value_round,
     default=none) }}'
-  current_wind_direction: "{% set avg_deg = current_wind_bearing %} {% if avg_deg
-    | is_number %}\n  {% set directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    %}\n  {% set index = ((avg_deg + 22.5) % 360 / 45) | int %}\n  {% set direction
-    = directions[index] %}\n  {{ wind_dir.get(direction) }}\n{% else %}\n  {{ none
-    }}\n{% endif %}\n"
+  current_wind_direction: "{% set raw = state_attr(weather_entity, 'wind_bearing')
+    %} {% if raw | is_number %}\n  {% set directions = ['N', 'NE', 'E', 'SE', 'S',
+    'SW', 'W', 'NW'] %}\n  {% set index = ((raw | float + 22.5) % 360 / 45) | int
+    %}\n  {{ wind_dir.get(directions[index]) }}\n{% elif raw is string and raw | upper
+    in wind_dir %}\n  {{ wind_dir.get(raw | upper) }}\n{% else %}\n  {{ none }}\n{%
+    endif %}\n"
   current_wind_speed: '{{ state_attr(weather_entity, ''wind_speed'') | round(value_round,
     default=none) }}'
-  current_wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', current_wind_speed)
-    | map(attribute=''0'') | list | last | default }}'
+  current_wind_phrase: "{{ wind_phrases.items() | sort(attribute='1') | selectattr('1',
+    '<=', current_wind_speed | float(0))\n   | map(attribute='0') | list | last |
+    default('') if current_wind_speed is not none else '' }}\n"
 actions:
 - choose:
   - conditions: '{{ daily and (''daily'' in supported or ''twice_daily'' in supported)
@@ -606,15 +637,29 @@ actions:
       continue_on_error: true
     - alias: Define variables to determine which part to use
       variables:
-        delta: '{{ daily_mapping | selectattr(''phrases'', ''contains'', phrase) |
-          map(attribute=''delta'') | list | first | default(0) }}'
+        delta: '{{ day_lookup.get(phrase, 0) if phrase else 0 }}'
         start: '{{ today_at() + timedelta(days=delta) }}'
         end: '{{ start | as_datetime + timedelta(days=1) }}'
-        day_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast = weather[weather_entity].forecast
-          if weather is defined else [] %} {% for item in forecast %}\n  {% if start
-          | as_datetime <= item.datetime | as_datetime | as_local < end | as_datetime
-          %}\n    {% set ns.forecast = ns.forecast + [item] %}\n  {% endif %}\n{%
-          endfor %} {{ ns.forecast | first | default({}) }}\n"
+        day_items: "{% set ns = namespace(forecast=[]) %} {% set forecast = weather[weather_entity].forecast
+          if weather is defined and weather_entity in weather else [] %} {% for item
+          in forecast %}\n  {% if start | as_datetime <= item.datetime | as_datetime
+          | as_local < end | as_datetime %}\n    {% set ns.forecast = ns.forecast
+          + [item] %}\n  {% endif %}\n{% endfor %} {{ ns.forecast }}\n"
+        day_forecast: "{% set daytime = day_items | selectattr('is_daytime', 'defined')
+          | selectattr('is_daytime', 'eq', true) | list %} {% set f = (daytime or
+          day_items) | first | default({}) %} {% if day_items | count > 1 %}\n  {#
+          twice daily forecast, combine the day and night part #}\n  {% set temps
+          = day_items | map(attribute='temperature') | select('is_number') | list
+          %}\n  {% set lows = day_items | selectattr('templow', 'defined') | map(attribute='templow')
+          | select('is_number') | list %}\n  {% set rain = day_items | selectattr('precipitation',
+          'defined') | map(attribute='precipitation') | select('is_number') | list
+          %}\n  {% set prob = day_items | selectattr('precipitation_probability',
+          'defined') | map(attribute='precipitation_probability') | select('is_number')
+          | list %}\n  {% set f = dict(f, temperature=temps | max) if temps else f
+          %}\n  {% set f = dict(f, templow=(lows + temps) | min) if temps else f %}\n
+          \ {% set f = dict(f, precipitation=rain | sum) if rain else f %}\n  {% set
+          f = dict(f, precipitation_probability=prob | max) if prob else f %}\n{%
+          endif %} {{ f }}\n"
     - if:
       - condition: template
         value_template: '{{ iif(day_forecast) }}'
@@ -644,20 +689,21 @@ actions:
             default=none) }}'
           precipitation_probability: '{{ day_forecast.get(''precipitation_probability'',
             none) | round(value_round, default=none) }}'
+          rain_expected: "{{ precipitation_probability | float(-1) > rain_warning_threshold\n
+            \  if precipitation_probability is not none\n   else day_forecast.get('precipitation')
+            | float(0) > 0 }}\n"
           wind_speed: '{{ day_forecast.get(''wind_speed'', none) | round(value_round,
             default=none) }}'
-          condition_translated: '{{ translations.get(condition) }}'
-          rain_warning_threshold: !input rain_warning_threshold
-          wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', wind_speed)
-            | map(attribute=''0'') | list | last | default }}'
-          wind_threshold: !input wind_threshold
-          wind_joke_threshold: !input wind_joke_threshold
-          wind_warning_threshold: !input wind_warning_threshold
-          wind_direction: "{% set avg_deg = day_forecast.get('wind_bearing', none)
-            | float(none) %} {% if avg_deg is not none %}\n  {% set directions = ['N',
-            'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] %}\n  {% set index = ((avg_deg
-            + 22.5) % 360 / 45) | int %}\n  {% set direction = directions[index] %}\n
-            \ {{ wind_dir.get(direction) }}\n{% else %}\n  {{ none }}\n{% endif %}\n"
+          condition_translated: '{{ translations.get(condition, condition) }}'
+          wind_phrase: "{{ wind_phrases.items() | sort(attribute='1') | selectattr('1',
+            '<=', wind_speed | float(0))\n   | map(attribute='0') | list | last |
+            default('') if wind_speed is not none else '' }}\n"
+          wind_direction: "{% set raw = day_forecast.get('wind_bearing') %} {% if
+            raw | is_number %}\n  {% set directions = ['N', 'NE', 'E', 'SE', 'S',
+            'SW', 'W', 'NW'] %}\n  {% set index = ((raw | float + 22.5) % 360 / 45)
+            | int %}\n  {{ wind_dir.get(directions[index]) }}\n{% elif raw is string
+            and raw | upper in wind_dir %}\n  {{ wind_dir.get(raw | upper) }}\n{%
+            else %}\n  {{ none }}\n{% endif %}\n"
           response_current: !input response_current
           response_forecast: !input response_forecast
       - alias: Send back the response
@@ -682,21 +728,28 @@ actions:
       continue_on_error: true
     - alias: Define variables to determine which part to use
       variables:
-        tomorrow: !input tomorrow
-        start_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
-          | map(attribute=''start'') | list | first }}'
-        end_time: '{{ day_part_mapping | selectattr(''phrases'', ''contains'', phrase)
-          | map(attribute=''end'') | list | first }}'
-        next_day: '{{ phrase is search(tomorrow | join(''|'')) }}'
-        skip_day: '{{ now() >= today_at(end_time) and not next_day }}'
-        delta: '{{ 1 if (next_day or skip_day) else 0 }}'
-        start: '{{ today_at() + timedelta(days=delta) + as_timedelta(start_time) }}'
-        end: '{{ today_at() + timedelta(days=delta) + as_timedelta(end_time) }}'
+        part: '{{ day_part_mapping[part_match.index] }}'
+        start_time: '{{ part.start }}'
+        end_time: '{{ part.end }}'
+        explicit_day: '{{ part_match.rest in day_lookup }}'
+        day_after: '{{ day_after_tomorrow_phrases | map(''lower'') | select(''in'',
+          phrase) | list | count > 0 }}'
+        next_day: '{{ tomorrow_phrases | map(''lower'') | select(''in'', phrase) |
+          list | count > 0 }}'
+        skip_day: '{{ now() >= today_at(end_time) and not next_day and not day_after
+          }}'
+        delta: "{% if explicit_day %}\n  {{ day_lookup[part_match.rest] }}\n{% else
+          %}\n  {{ 2 if day_after else 1 if (next_day or skip_day) else 0 }}\n{% endif
+          %}\n"
+        start: '{{ today_at() + timedelta(days=delta | int) + as_timedelta(start_time)
+          }}'
+        end: '{{ today_at() + timedelta(days=delta | int) + as_timedelta(end_time)
+          }}'
         day_part_forecast: "{% set ns = namespace(forecast=[]) %} {% set forecast
-          = weather[weather_entity].forecast if weather is defined else [] %} {% for
-          item in forecast %}\n  {% if start | as_datetime <= item.datetime | as_datetime
-          < end | as_datetime %}\n    {% set ns.forecast = ns.forecast + [item] %}\n
-          \ {% endif %}\n{% endfor %} {{ ns.forecast | default([]) }}\n"
+          = weather[weather_entity].forecast if weather is defined and weather_entity
+          in weather else [] %} {% for item in forecast %}\n  {% if start | as_datetime
+          <= item.datetime | as_datetime < end | as_datetime %}\n    {% set ns.forecast
+          = ns.forecast + [item] %}\n  {% endif %}\n{% endfor %} {{ ns.forecast }}\n"
     - if:
       - condition: template
         value_template: '{{ iif(day_part_forecast) }}'
@@ -704,55 +757,64 @@ actions:
       - alias: Create variables for response
         variables:
           condition: '{{ day_part_forecast | selectattr(''condition'', ''defined'')
-            | map(attribute=''condition'') | list | statistical_mode }}'
+            | map(attribute=''condition'') | reject(''none'') | list | statistical_mode(none)
+            }}'
           cloud_coverage: '{{ day_part_forecast | selectattr(''cloud_coverage'', ''defined'')
-            | map(attribute=''cloud_coverage'') | list | average | default(0) | round(value_round)
-            }}'
+            | map(attribute=''cloud_coverage'') | select(''is_number'') | list | average(0)
+            | round(value_round) }}'
           temperature: '{{ day_part_forecast | selectattr(''temperature'', ''defined'')
-            | map(attribute=''temperature'') | list | max | default(0) | round(value_round)
-            }}'
-          dew_point: '{{ day_part_forecast | selectattr(''dew_point'', ''defined'')
-            | map(attribute=''dew_point'') | list | max | default(0) | round(value_round)
-            }}'
-          pressure: '{{ day_part_forecast | selectattr(''pressure'', ''defined'')
-            | map(attribute=''pressure'') | list | max | default(0) | round(value_round)
-            }}'
-          humidity: '{{ day_part_forecast | selectattr(''humidity'', ''defined'')
-            | map(attribute=''humidity'') | list | max | default(0) | round(value_round)
-            }}'
-          apparent_temperature: '{{ day_part_forecast | selectattr(''apparent_temperature'',
-            ''defined'') | map(attribute=''apparent_temperature'') | list | max |
-            default(temperature) | round(value_round) }}'
-          uv_index: '{{ day_part_forecast | selectattr(''uv_index'', ''defined'')
-            | map(attribute=''uv_index'') | list | max | default(0) | round(value_round)
-            }}'
-          precipitation: '{{ day_part_forecast | selectattr(''precipitation'', ''defined'')
-            | map(attribute=''precipitation'') | list | sum | default(0) | round(value_round)
-            }}'
-          precipitation_probability: '{{ day_part_forecast | selectattr(''precipitation_probability'',
-            ''defined'') | map(attribute=''precipitation_probability'') | list | max
+            | map(attribute=''temperature'') | select(''is_number'') | list | max
             | default(0) | round(value_round) }}'
-          wind_speed: '{{ day_part_forecast | selectattr(''wind_speed'', ''defined'')
-            | map(attribute=''wind_speed'') | list | max | default(0) | round(value_round)
+          templow: '{{ day_part_forecast | selectattr(''temperature'', ''defined'')
+            | map(attribute=''temperature'') | select(''is_number'') | list | min
+            | default(temperature) | round(value_round) }}'
+          dew_point: '{{ day_part_forecast | selectattr(''dew_point'', ''defined'')
+            | map(attribute=''dew_point'') | select(''is_number'') | list | max |
+            default(0) | round(value_round) }}'
+          pressure: '{{ day_part_forecast | selectattr(''pressure'', ''defined'')
+            | map(attribute=''pressure'') | select(''is_number'') | list | max | default(0)
+            | round(value_round) }}'
+          humidity: '{{ day_part_forecast | selectattr(''humidity'', ''defined'')
+            | map(attribute=''humidity'') | select(''is_number'') | list | max | default(0)
+            | round(value_round) }}'
+          apparent_temperature: '{{ day_part_forecast | selectattr(''apparent_temperature'',
+            ''defined'') | map(attribute=''apparent_temperature'') | select(''is_number'')
+            | list | max | default(temperature) | round(value_round) }}'
+          uv_index: '{{ day_part_forecast | selectattr(''uv_index'', ''defined'')
+            | map(attribute=''uv_index'') | select(''is_number'') | list | max | default(0)
+            | round(value_round) }}'
+          precipitation: '{{ day_part_forecast | selectattr(''precipitation'', ''defined'')
+            | map(attribute=''precipitation'') | select(''is_number'') | list | sum
+            | round(value_round) }}'
+          probabilities: '{{ day_part_forecast | selectattr(''precipitation_probability'',
+            ''defined'') | map(attribute=''precipitation_probability'') | select(''is_number'')
+            | list }}'
+          precipitation_probability: '{{ probabilities | max | default(0) | round(value_round)
             }}'
-          condition_translated: '{{ translations.get(condition) }}'
-          rain_warning_threshold: !input rain_warning_threshold
-          wind_phrase: '{{ wind_phrases.items() | selectattr(''1'', ''<='', wind_speed)
-            | map(attribute=''0'') | list | last | default }}'
-          wind_threshold: !input wind_threshold
-          wind_joke_threshold: !input wind_joke_threshold
-          wind_warning_threshold: !input wind_warning_threshold
+          rain_expected: "{{ precipitation_probability > rain_warning_threshold if
+            probabilities\n   else day_part_forecast | selectattr('precipitation',
+            'defined') | map(attribute='precipitation') | select('is_number') | sum
+            > 0 }}\n"
+          wind_speed: '{{ day_part_forecast | selectattr(''wind_speed'', ''defined'')
+            | map(attribute=''wind_speed'') | select(''is_number'') | list | max |
+            default(0) | round(value_round) }}'
+          wind_gust_speed: '{{ day_part_forecast | selectattr(''wind_gust_speed'',
+            ''defined'') | map(attribute=''wind_gust_speed'') | select(''is_number'')
+            | list | max | default(none) | round(value_round, default=none) }}'
+          condition_translated: '{{ translations.get(condition, condition) }}'
+          wind_phrase: "{{ wind_phrases.items() | sort(attribute='1') | selectattr('1',
+            '<=', wind_speed | float(0))\n   | map(attribute='0') | list | last |
+            default('') }}\n"
           wind_direction: "{% set bearings = day_part_forecast | selectattr('wind_bearing',
-            'defined') | selectattr('wind_bearing', 'is_number') | map(attribute='wind_bearing')
-            | list %} {% if bearings | count > 0 %}\n  {% set ns = namespace(sin_sum=0,
-            cos_sum=0) %}\n  {% for b in bearings %}\n    {% set ns.sin_sum = ns.sin_sum
-            + sin(b * pi / 180) %}\n    {% set ns.cos_sum = ns.cos_sum + cos(b * pi
-            / 180) %}\n  {% endfor %}\n  {% set avg_rad = atan2(ns.sin_sum, ns.cos_sum)
-            %}\n  {% set avg_deg = (avg_rad * 180 / pi) % 360 %}\n  {% set directions
+            'defined') | map(attribute='wind_bearing') | select('is_number') | list
+            %} {% if bearings | count > 0 %}\n  {% set ns = namespace(sin_sum=0, cos_sum=0)
+            %}\n  {% for b in bearings %}\n    {% set ns.sin_sum = ns.sin_sum + sin(b
+            * pi / 180) %}\n    {% set ns.cos_sum = ns.cos_sum + cos(b * pi / 180)
+            %}\n  {% endfor %}\n  {% set avg_rad = atan2(ns.sin_sum, ns.cos_sum) %}\n
+            \ {% set avg_deg = (avg_rad * 180 / pi) % 360 %}\n  {% set directions
             = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] %}\n  {% set index = ((avg_deg
-            + 22.5) % 360 / 45) | int %}\n  {% set direction = directions[index] %}\n
-            \ {{ wind_dir.get(direction) }}\n{% else %}\n  {{ none }}\n{% endif %}\n"
-          response_forecast: !input response_forecast
+            + 22.5) % 360 / 45) | int %}\n  {{ wind_dir.get(directions[index]) }}\n{%
+            else %}\n  {{ none }}\n{% endif %}\n"
       - alias: Send back the response
         set_conversation_response: !input response_forecast
       else:
@@ -765,4 +827,5 @@ actions:
   default:
   - alias: Send back the response
     set_conversation_response: !input response_invalid_phrase
-mode: single
+mode: parallel
+max: 10

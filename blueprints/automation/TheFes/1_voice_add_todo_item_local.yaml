@@ -1,0 +1,389 @@
+blueprint:
+  domain: automation
+  name: Voice - Add ToDo Item with due date - Local Assist Blueprint
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/todo/1_voice_add_todo_item_local.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n\nMore
+    detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/todo/1_voice_add_todo_item_local.md)\n\n#
+    Add a todo item with a due date and time, fully local\n\nThe built-in intent can
+    add items to a todo list, but doesn't support a due date or time.\nThis blueprint
+    adds the item with the due moment you mention.\n\n### Blueprint setup\n\n####
+    Required\n* Set a default todo list. It is used when the list name in the sentence
+    is one of the\n  `Default list names` (for example \"shopping\")\n\n#### Optional\n*
+    Change or translate the trigger sentences, the phrases for days, weekdays and
+    parts of the day,\n  and the responses\n\n### Usage\n\nBy default the sentence
+    needs to contain a due moment after the list name, so a sentence\nwithout a due
+    moment (and for example \"add 5 minutes to the timer\") is still handled by the\nbuilt-in
+    intents:\n\n- (add|put) {item} (on|to) [the|my] {list} (for|on|at|due|before|by)
+    {due}\n- (add|put) {item} (on|to) [the|my] {list} (today|tonight|tomorrow|this|next)
+    [{due}]\n\nThe item and the list are determined from the complete sentence: the
+    list is found by looking\nfor the name of one of your lists (with or without the
+    word \"list\"), so items with \"to\" or \"on\"\nin them (\"go to the gym\") and
+    list names with \"list\" in them work as well. The due moment is\neverything after
+    the list name. It can contain a day (`today`, `tomorrow`, `day after tomorrow`,\na
+    weekday), a time (`17:30`, `9.15`, `5 pm`) and a part of the day (`morning`, `evening`,
+    `tonight`).\n\n#### Examples\n* Add call the plumber to the home assistant list
+    tomorrow at 10\n* Add go to the gym to my chores for friday\n* Put buy a present
+    on my todo list for friday\n* Add take out the trash to my chores list tonight\n"
+  input:
+    list_settings:
+      name: List settings
+      icon: mdi:format-list-checks
+      input:
+        default_list:
+          name: Default todo list
+          description: The list used when the list name in the sentence is one of
+            the default list names.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+        default_list_names:
+          name: Default list names
+          description: Names which refer to the default list, for example "shopping".
+            Other names are matched with the names of your todo lists (not case sensitive).
+          default:
+          - shopping
+          - grocery
+          - groceries
+          - todo
+          - to do
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        list_words:
+          name: Words for list
+          description: Words for "list". A list name is also recognized with one of
+            these words after it, also when written as one word (for example "boodschappenlijst"
+            for the list "Boodschappen"), and without it when the name of the list
+            ends with it.
+          default:
+          - list
+          selector:
+            text:
+              multiple: true
+              multiline: false
+        list_separators:
+          name: Words between the item and the list
+          description: The words between the item and the list in your trigger sentences,
+            used to split the item and the list. Put longer variants first ("to the"
+            before "to").
+          default:
+          - to the
+          - to my
+          - on the
+          - on my
+          - to
+          - 'on'
+          selector:
+            text:
+              multiple: true
+              multiline: false
+    trigger_settings:
+      name: Trigger settings
+      icon: mdi:chat
+      collapsed: true
+      input:
+        trigger:
+          name: Trigger sentences
+          description: The sentences need an {item} and a {list} wildcard. The item,
+            the list and the due moment are determined from the complete sentence,
+            so the exact split of the wildcards doesn't matter. Keep a word for the
+            due moment after {list}, so sentences without a due moment (and other
+            sentences like "add 5 minutes to the timer") are still handled by the
+            built-in intents.
+          default:
+          - (add|put) {item} (on|to) [the|my] {list} (for|on|at|due|before|by) {due}
+          - (add|put) {item} (on|to) [the|my] {list} (today|tonight|tomorrow|this|next)
+            [{due}]
+          selector:
+            text:
+              multiple: true
+              multiline: false
+    due_settings:
+      name: Settings for the due moment
+      icon: mdi:calendar-clock
+      collapsed: true
+      description: The phrases which are recognized in the due moment. Translate these
+        to use the blueprint in another language. Times can be spoken as `17:30`,
+        `17.30`, `5 pm` or just `17`.
+      input:
+        day_phrases:
+          name: Day phrases
+          description: Phrases for a day, with the number of days from today.
+          default:
+            today: 0
+            tonight: 0
+            tomorrow: 1
+            day after tomorrow: 2
+          selector:
+            object:
+              multiple: false
+        weekday_phrases:
+          name: Weekday phrases
+          description: Phrases for weekdays, with the number of the weekday (0 is
+            Monday). The next occurrence of the weekday is used, so on a Friday "friday"
+            is the Friday of next week.
+          default:
+            monday: 0
+            tuesday: 1
+            wednesday: 2
+            thursday: 3
+            friday: 4
+            saturday: 5
+            sunday: 6
+          selector:
+            object:
+              multiple: false
+        day_part_phrases:
+          name: Parts of the day
+          description: Phrases for parts of the day, with the time which is used for
+            them. When a time is mentioned as well ("at 7 in the evening") and the
+            part of the day is in the afternoon or evening, 12 hours are added to
+            times before 12:00.
+          default:
+            morning: 09:00
+            afternoon: '14:00'
+            evening: '19:00'
+            tonight: '20:00'
+          selector:
+            object:
+              multiple: false
+        pm_phrases:
+          name: Words for PM and AM
+          description: Words which mean a time is in the afternoon (pm) or in the
+            morning (am).
+          default:
+            pm: pm
+            p.m.: pm
+            am: am
+            a.m.: am
+          selector:
+            object:
+              multiple: false
+    response_settings:
+      name: Settings for the responses
+      icon: mdi:chat
+      collapsed: true
+      description: '`{item}`, `{list_name}` and `{due}` are replaced in the responses.'
+      input:
+        date_format:
+          name: Date format
+          description: Format for the date in the response, check https://strftime.org
+            for options
+          default: '%A %-d %B'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        time_format:
+          name: Time format
+          description: Format for the time in the response
+          default: '%H:%M'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        at_word:
+          name: Word between date and time
+          default: at
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_translations:
+          name: Translations for weekdays and months
+          description: 'Mapping to translate the English weekday and month names in
+            the date, for example `Monday: maandag`'
+          default: {}
+          selector:
+            object:
+              multiple: false
+        response_added:
+          name: Item added with a due moment
+          default: Added {item} to {list_name}, due {due}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_no_due_support:
+          name: List doesn't support due dates
+          description: Used when the list doesn't support due dates, the item is added
+            without one.
+          default: Added {item} to {list_name}, but this list doesn't support due
+            dates
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_invalid_list:
+          name: List not found
+          default: I can't find a list with the name {list_name}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_invalid_due:
+          name: Due moment not recognized
+          description: Used when no day, time or part of the day was recognized. The
+            item is not added. `{due}` contains the spoken due moment.
+          default: I don't know when {due} is, so I didn't add {item}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        response_error:
+          name: Error response
+          default: Sorry, I couldn't add {item} to {list_name}
+          selector:
+            text:
+              multiline: false
+              multiple: false
+mode: parallel
+max: 10
+triggers:
+- trigger: conversation
+  command: !input trigger
+variables:
+  version: 20261116
+  default_list: !input default_list
+  default_list_names: !input default_list_names
+  day_phrases: !input day_phrases
+  weekday_phrases: !input weekday_phrases
+  day_part_phrases: !input day_part_phrases
+  pm_phrases: !input pm_phrases
+  list_words: !input list_words
+  list_separators: !input list_separators
+  parsed: "{% set orig = trigger.sentence | regex_replace('\\\\s+', ' ') | trim %}
+    {% set low = orig | lower %} {% set item_slot = (trigger.slots.get('item') or
+    '') | regex_replace('\\\\s+', ' ') | lower | trim %} {% set start = low.find(item_slot)
+    if item_slot else -1 %} {% set req = low[start:] if start >= 0 else '' %} {% set
+    req_orig = orig[start:] if start >= 0 else '' %} {% set words = list_words | map('lower')
+    | map('trim') | reject('eq', '') | list %} {% set ns = namespace(v=[]) %} {% set
+    sources = namespace(l=[]) %} {% for s in states.todo | rejectattr('state', 'eq',
+    'unavailable') %}\n  {% set sources.l = sources.l + [[s.name | lower | trim, s.entity_id]]
+    %}\n{% endfor %} {% for n in default_list_names | map('lower') | map('trim') %}\n
+    \ {% set sources.l = sources.l + [[n, default_list]] %}\n{% endfor %} {% for n,
+    e in sources.l if n %}\n  {% set ns.v = ns.v + [[n, e]] %}\n  {% for w in words
+    %}\n    {% set ns.v = ns.v + [[n ~ ' ' ~ w, e], [n ~ w, e]] %}\n    {% if n.endswith('
+    ' ~ w) %}\n      {% set ns.v = ns.v + [[n[:-(w | length + 1)], e]] %}\n    {%
+    elif n.endswith(w) and n | length > w | length %}\n      {% set ns.v = ns.v +
+    [[n[:-(w | length)], e]] %}\n    {% endif %}\n  {% endfor %}\n{% endfor %} {%
+    set c = namespace(item=none, entity=none, rest='', spoken='') %} {% for sep in
+    list_separators | map('lower') | map('trim') | reject('eq', '') %}\n  {% set parts
+    = req.split(' ' ~ sep ~ ' ') %}\n  {% for i in range(1, parts | count) %}\n    {%
+    if c.item is none %}\n      {% set rest = parts[i:] | join(' ' ~ sep ~ ' ') %}\n
+    \     {% set lm = namespace(e=none, l=0) %}\n      {% for v in ns.v %}\n        {%
+    if (rest == v[0] or rest.startswith(v[0] ~ ' ')) and v[0] | length > lm.l %}\n
+    \         {% set lm.e = v[1] %}{% set lm.l = v[0] | length %}\n        {% endif
+    %}\n      {% endfor %}\n      {% if lm.e %}\n        {% set c.item = req_orig[:(parts[:i]
+    | join(' ' ~ sep ~ ' ')) | length] | trim %}\n        {% set c.entity = lm.e %}\n
+    \       {% set c.spoken = rest[:lm.l] %}\n        {% set c.rest = rest[lm.l:]
+    | trim %}\n      {% endif %}\n    {% endif %}\n  {% endfor %}\n{% endfor %} {%
+    if c.item is none %}\n  {# no known list found, use the wildcards as they were
+    matched #}\n  {% set list_slot = (trigger.slots.get('list') or trigger.slots.get('list_name')
+    or '') | lower | trim %}\n  {% set due_slot = (trigger.slots.get('due') or '')
+    | lower | trim %}\n  {% set c.item = trigger.slots.get('item', '') | trim %}\n
+    \ {% set c.spoken = list_slot %}\n  {% set p = low.rfind(list_slot) if list_slot
+    else -1 %}\n  {% set c.rest = low[p + list_slot | length:] | trim if p >= 0 else
+    due_slot %}\n{% endif %} {{ {'item': c.item, 'entity': c.entity, 'list': c.spoken,
+    'due': c.rest} }}\n"
+  item: '{{ parsed.item }}'
+  due_text: '{{ parsed.due }}'
+  list_entity: '{{ parsed.entity if parsed.entity in states.todo | map(attribute=''entity_id'')
+    | list else none }}'
+  list_name: '{{ state_attr(list_entity, ''friendly_name'') if list_entity else parsed.list
+    }}'
+  due: "{% set text = ' ' ~ due_text | regex_replace('\\\\s+', ' ') ~ ' ' %} {% set
+    ns = namespace(delta=none, length=0, part=none, part_length=0) %} {% for p, d
+    in day_phrases.items() %}\n  {% set p = p | lower | trim %}\n  {% if (' ' ~ p
+    ~ ' ') in text and p | length > ns.length %}\n    {% set ns.delta = d | int(0)
+    %}{% set ns.length = p | length %}\n  {% endif %}\n{% endfor %} {% for p, w in
+    weekday_phrases.items() %}\n  {% set p = p | lower | trim %}\n  {% if (' ' ~ p
+    ~ ' ') in text and p | length > ns.length %}\n    {% set wd = w | int(0) %}\n
+    \   {% set ns.delta = (wd - now().weekday()) % 7 or 7 %}{% set ns.length = p |
+    length %}\n  {% endif %}\n{% endfor %} {% for p, t in day_part_phrases.items()
+    %}\n  {% set p = p | lower | trim %}\n  {% if (' ' ~ p ~ ' ') in text and p |
+    length > ns.part_length %}\n    {% set ns.part = t | string %}{% set ns.part_length
+    = p | length %}\n  {% endif %}\n{% endfor %} {% set found = text | regex_findall('(?<![\\\\d:.])(\\\\d{1,2})(?:[:.](\\\\d{2}))?(?![\\\\d])')
+    %} {% set time = none %} {% if found %}\n  {% set h = found[0][0] | int %}\n  {%
+    set m = found[0][1] | int(0) %}\n  {% set ns2 = namespace(pm=none) %}\n  {% for
+    w, v in pm_phrases.items() %}\n    {% if (' ' ~ (w | lower | trim) ~ ' ') in text
+    %}\n      {% set ns2.pm = v %}\n    {% endif %}\n  {% endfor %}\n  {% set part_pm
+    = ns.part is not none and ns.part[:2] | int(0) >= 12 %}\n  {% set h = h + 12 if
+    h < 12 and (ns2.pm == 'pm' or (ns2.pm is none and part_pm)) else h %}\n  {% set
+    h = 0 if h == 12 and ns2.pm == 'am' else h %}\n  {% set time = '%02d:%02d' | format(h,
+    m) if h < 24 and m < 60 else none %}\n{% elif ns.part is not none %}\n  {% set
+    time = ns.part %}\n{% endif %} {% if ns.delta is none and time is none %}\n  {{
+    none }}\n{% else %}\n  {% set date = today_at() + timedelta(days=ns.delta or 0)
+    %}\n  {% if time is not none %}\n    {% set dt = today_at(time) + timedelta(days=ns.delta
+    or 0) %}\n    {% set dt = dt + timedelta(days=1) if ns.delta is none and dt <=
+    now() else dt %}\n    {{ {'date': dt.date() | string, 'datetime': dt.isoformat(),
+    'time': time} }}\n  {% else %}\n    {{ {'date': date.date() | string} }}\n  {%
+    endif %}\n{% endif %}\n"
+  supports_date: '{{ state_attr(list_entity, ''supported_features'') | int(0) | bitwise_and(16)
+    > 0 if list_entity else false }}'
+  supports_datetime: '{{ state_attr(list_entity, ''supported_features'') | int(0)
+    | bitwise_and(32) > 0 if list_entity else false }}'
+actions:
+- variables:
+    response_invalid_list: !input response_invalid_list
+    response_invalid_due: !input response_invalid_due
+- alias: Stop when the list was not found
+  if:
+  - condition: template
+    value_template: '{{ list_entity is none }}'
+  then:
+  - set_conversation_response: '{{ response_invalid_list.format(item=item, list_name=parsed.list,
+      due=due_text) }}'
+  - stop: List not found
+- alias: Stop when the due moment was not recognized
+  if:
+  - condition: template
+    value_template: '{{ due is none }}'
+  then:
+  - set_conversation_response: '{{ response_invalid_due.format(item=item, list_name=list_name,
+      due=due_text) }}'
+  - stop: Due moment not recognized
+- alias: Add the item
+  action: todo.add_item
+  continue_on_error: true
+  target:
+    entity_id: '{{ list_entity }}'
+  data: "{% if supports_datetime and due.get('datetime') %}\n  {{ {'item': item, 'due_datetime':
+    due.datetime} }}\n{% elif supports_date or supports_datetime %}\n  {{ {'item':
+    item, 'due_date': due.date} }}\n{% else %}\n  {{ {'item': item} }}\n{% endif %}\n"
+- alias: Check if the item was added
+  action: todo.get_items
+  continue_on_error: true
+  target:
+    entity_id: '{{ list_entity }}'
+  data:
+    status: needs_action
+  response_variable: check
+- variables:
+    date_format: !input date_format
+    time_format: !input time_format
+    at_word: !input at_word
+    translations: !input response_translations
+    response_added: !input response_added
+    response_no_due_support: !input response_no_due_support
+    response_error: !input response_error
+    added: '{{ check is defined and item in check[list_entity][''items''] | map(attribute=''summary'')
+      | list }}'
+    due_spoken: "{% set ns = namespace(d=as_datetime(due.date).strftime(date_format))
+      %} {% for k, v in (translations or {}).items() %}\n  {% set ns.d = ns.d | replace(k,
+      v) %}\n{% endfor %} {% if due.get('time') and supports_datetime %}\n  {{ ns.d
+      }} {{ at_word }} {{ today_at(due.time).strftime(time_format) }}\n{% else %}\n
+      \ {{ ns.d }}\n{% endif %}\n"
+- set_conversation_response: "{% if not added %}\n  {{ response_error.format(item=item,
+    list_name=list_name, due=due_spoken) }}\n{% elif supports_date or supports_datetime
+    %}\n  {{ response_added.format(item=item, list_name=list_name, due=due_spoken)
+    }}\n{% else %}\n  {{ response_no_due_support.format(item=item, list_name=list_name,
+    due=due_spoken) }}\n{% endif %}\n"

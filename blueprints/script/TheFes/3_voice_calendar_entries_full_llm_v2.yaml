@@ -1,0 +1,315 @@
+blueprint:
+  domain: script
+  name: Voice - Calendar entries - Full LLM script v2
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/calendar/3_voice_calendar_entries_full_llm_v2.yaml
+  homeassistant:
+    min_version: 2026.11.0
+  description: '![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)
+
+
+    More detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/calendar/3_voice_calendar_entries_full_llm_v2.md)
+
+
+    # Request calendar events by use of an LLM (version 2)
+
+
+    The LLM only passes the question in a single `query` field. An AI Task (`ai_task.generate_data`)
+
+    with structured output determines the requested period, Home Assistant collects
+    the events of all
+
+    selected calendars, and the result is returned to the LLM, which answers the question.
+
+
+    ### Blueprint setup
+
+
+    #### Required
+
+
+    * Select the calendar entities
+
+    * An AI Task entity (or set a preferred AI Task entity in Home Assistant)
+
+
+    #### Note
+
+
+    * Give the script a clear description. This will be used by the LLM to understand
+    it should use this script for calendar events.
+
+
+    * **Make sure to expose the script to Assist after the script has been saved**
+
+
+    #### Example for script description
+
+
+    `Gets the events from my calendars. Use this tool for every question about appointments,
+    events or what is planned. Pass the complete question of the user in the query
+    field, in the words of the user.`
+
+
+    ### Usage
+
+
+    You can ask about your calendar in any way, using any language. You can refer
+    to one or more days
+
+    (e.g. next weekend), a part of the day (e.g. tomorrow evening) or one or more
+    hours (e.g. from 5 to 9).
+
+    You can also ask for specific events, like "when is my next dentist appointment".
+
+
+    #### Examples
+
+
+    ```
+
+
+    What''s on the calendar tomorrow?
+
+
+    Am I busy tonight at 9?
+
+
+    When is my next dentist appointment?
+
+
+    What do I have planned next week?
+
+
+    ```
+
+    '
+  input:
+    calendar_settings:
+      name: Calendar settings
+      icon: mdi:calendar
+      input:
+        calendar_entities:
+          name: Calendar entities
+          description: The calendar entities to get the events from
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - calendar
+              reorder: false
+    ai_settings:
+      name: AI settings
+      icon: mdi:robot
+      collapsed: true
+      input:
+        ai_task_entity:
+          name: AI Task entity
+          description: The AI Task entity used to determine the requested period.
+            Leave empty to use the preferred AI Task entity set in Home Assistant.
+          default:
+          selector:
+            entity:
+              filter:
+              - domain:
+                - ai_task
+              multiple: false
+              reorder: false
+        llm_instructions:
+          name: Instructions to determine the period
+          description: Instructions for the AI to determine the requested period.
+            The output format is enforced by the structure, so this only needs to
+            explain how to interpret the request. You can use `{{ query }}`.
+          default: 'You interpret a request about calendar events. The user asked:
+            "{{ query }}"
+
+
+            The current date and time is {{ now().strftime(''%A %Y-%m-%d %H:%M'')
+            }}.
+
+
+            Fill in the fields as follows:
+
+            - time_period_type: daily when the request is about one or more full days
+            (today, tomorrow, next Thursday, the weekend, next week, the coming two
+            weeks). hourly when the request is about a part of a day or specific hours
+            (this evening, tomorrow morning, at 9, from 3 to 5, right now).
+
+            - start_date: the date on which the requested period starts, in the format
+            YYYY-MM-DD. Use today''s date when no day is mentioned. A weekday means
+            the next occurrence of that day, today included. The weekend is Saturday
+            and Sunday, a week runs from Monday until Sunday. For the night, use the
+            next day, unless the current time is before 06:00.
+
+            - start_time: the time on which the requested period starts, in the 24
+            hour format HH:MM:SS. Use 00:00:00 for full days. Night starts at 00:00:00,
+            morning at 06:00:00, afternoon at 12:00:00 and evening at 18:00:00. For
+            the current hour, use the start of the current hour.
+
+            - time_period_length: the number of days (daily) or hours (hourly) of
+            the period. Night, morning, afternoon and evening are 6 hours, a single
+            moment ("at 9") is 1 hour, the weekend is 2 days and a week is 7 days.
+            When the user asks when something is planned or when the next occurrence
+            is, without mentioning a period ("when is my next dentist appointment"),
+            use daily from today with a length of 60 days.
+
+            - period_description: a short description of the requested period, in
+            the language of the request (for example "tomorrow evening").'
+          selector:
+            text:
+              multiline: true
+              multiple: false
+        query_prompt:
+          name: Query field description
+          description: The description of the `query` field, which tells the LLM what
+            to pass to the script.
+          default: The complete question of the user about the calendar, in the words
+            of the user, including the requested day, time or period (for example
+            "what do I have planned tomorrow evening").
+          selector:
+            text:
+              multiline: true
+              multiple: false
+mode: parallel
+max_exceeded: silent
+fields:
+  query:
+    name: Query
+    description: !input query_prompt
+    required: true
+    selector:
+      text:
+sequence:
+- alias: Set the input variables
+  variables:
+    version: 20261116
+    query: '{{ query | default('''', true) | string | trim }}'
+    ai_task_entity: !input ai_task_entity
+    llm_instructions: !input llm_instructions
+    structure:
+      time_period_type:
+        description: daily for one or more full days, hourly for a part of a day or
+          specific hours
+        required: true
+        selector:
+          select:
+            options:
+            - daily
+            - hourly
+      start_date:
+        description: The date on which the period starts (YYYY-MM-DD)
+        required: true
+        selector:
+          date: {}
+      start_time:
+        description: The time on which the period starts (HH:MM:SS, 24 hour format)
+        required: true
+        selector:
+          time: {}
+      time_period_length:
+        description: Number of days (daily) or hours (hourly) of the period
+        required: true
+        selector:
+          number:
+            min: 1
+            max: 366
+      period_description:
+        description: Short description of the requested period, in the language of
+          the request
+        required: true
+        selector:
+          text: {}
+- alias: Ask the AI Task to determine the requested period
+  action: ai_task.generate_data
+  continue_on_error: true
+  data: '{% set d = {''task_name'': ''Calendar voice request'', ''instructions'':
+    llm_instructions, ''structure'': structure} %} {{ dict(d, entity_id=ai_task_entity)
+    if ai_task_entity else d }}'
+  response_variable: ai_period
+- alias: Stop with an error when the AI Task failed
+  if:
+  - condition: template
+    value_template: '{{ ai_period is not defined or ai_period.data is not defined
+      or ai_period.data is string }}'
+  then:
+  - variables:
+      response:
+        error: Unable to determine the requested period from the query
+  - stop: AI Task failed
+    response_variable: response
+- alias: Read the period from the AI result
+  variables:
+    llm: '{{ ai_period.data }}'
+    period_description: '{{ llm.get(''period_description'') or query }}'
+    requested_type: '{{ llm.get(''time_period_type'') if llm.get(''time_period_type'')
+      in [''daily'', ''hourly''] else ''daily'' }}'
+- alias: Validate the date and time provided by the AI
+  variables:
+    start_date: '{% set d = llm.get(''start_date'') | default('''', true) | string
+      | trim %} {{ d[:10] if d is match(''\d{4}-\d{2}-\d{2}'') else now().date() |
+      string }}
+
+      '
+    start_time: '{% set t = llm.get(''start_time'') | default(''00:00:00'', true)
+      | string | trim %} {% set t = t ~ '':00'' if t is match(''^\d{1,2}:\d{2}$'')
+      else t %} {{ t if as_timedelta(t) is not none else ''00:00:00'' }}
+
+      '
+    length: '{{ [llm.get(''time_period_length'') | default(1) | int(1), 1] | max }}'
+- alias: Determine the start of the period
+  variables:
+    start: '{% set s = as_datetime(start_date) | as_local %} {{ (s + as_timedelta(start_time)
+      if requested_type == ''hourly'' else s).isoformat() }}
+
+      '
+- alias: Determine the end of the period
+  variables:
+    end: '{% set s = as_datetime(start) %} {{ (s + timedelta(hours=length) if requested_type
+      == ''hourly'' else s + timedelta(days=length)).isoformat() }}
+
+      '
+- alias: Get the calendar events
+  action: calendar.get_events
+  continue_on_error: true
+  target:
+    entity_id: !input calendar_entities
+  data:
+    start_date_time: '{{ start }}'
+    end_date_time: '{{ end }}'
+  response_variable: calendar_response
+- alias: Stop when the calendar events could not be retrieved
+  if:
+  - condition: template
+    value_template: '{{ calendar_response is not defined }}'
+  then:
+  - variables:
+      response:
+        error: Unable to retrieve the calendar events
+  - stop: Unable to retrieve the calendar events
+    response_variable: response
+- alias: Combine the events of all calendars
+  variables:
+    all_events: "{% set ns = namespace(events=[]) %} {% for entity, data in calendar_response.items()
+      %}\n  {% set cal = entity_name(entity, fallback=true) %}\n  {% for e in data.get('events',
+      []) %}\n    {% set ev = {\n      'summary': e.summary | default('') | string
+      | regex_replace('\\\\s+', ' ') | trim,\n      'start': e.start,\n      'end':
+      e.end,\n      'all_day': e.start | string | length == 10,\n      'calendar':
+      cal\n    } %}\n    {% set ev = dict(ev, day=as_datetime(e.start).strftime('%A
+      %-d %B %Y')) %}\n    {% set ev = dict(ev, already_ended=true) if (as_datetime(e.end)
+      | as_local if e.end | string | length > 10 else today_at() + timedelta(days=(as_datetime(e.end).date()
+      - now().date()).days)) <= now() else ev %}\n    {% set ev = dict(ev, location=e.location
+      | regex_replace('\\\\s+', ' ') | trim) if e.location else ev %}\n    {% set
+      desc = e.description | default('', true) | string | regex_replace('\\\\s+',
+      ' ') | trim %}\n    {% set ev = dict(ev, description=desc[:200] ~ ('...' if
+      desc | length > 200 else '')) if desc else ev %}\n    {% set ns.events = ns.events
+      + [ev] %}\n  {% endfor %}\n{% endfor %} {{ ns.events | sort(attribute='start')
+      }}\n"
+- alias: Combine the calendar data
+  variables:
+    calendar_data: "{% set r = {\n  'requested_period': period_description,\n  'start_of_period':
+      start,\n  'end_of_period': end,\n  'current_time': now().isoformat(),\n  'number_of_events':
+      all_events | count,\n  'events': all_events[:100]\n} %} {{ dict(r, note='Only
+      the first 100 events are included') if all_events | count > 100 else r }}\n"
+- stop: ''
+  response_variable: calendar_data

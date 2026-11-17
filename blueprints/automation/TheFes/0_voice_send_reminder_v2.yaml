@@ -1,0 +1,246 @@
+blueprint:
+  domain: automation
+  name: Voice - Send Reminder - Automation (version 2)
+  author: TheFes
+  source_url: https://github.com/TheFes/ha-blueprints/blob/main/reminder/0_voice_send_reminder_v2.yaml
+  homeassistant:
+    min_version: 2025.7.0
+  description: "![Image](https://github.com/TheFes/ha-blueprints/blob/main/images/TheFesCasa_logo_bp_light.png?raw=true)\n\nMore
+    detailed information can be found [here](https://github.com/TheFes/ha-blueprints/blob/main/documentation/reminder/0_voice_send_reminder_v2.md)\n\n#
+    Send the reminders set by voice (version 2)\n\nSends the reminders created by
+    the version 2 reminder blueprints (local, LLM enhanced and\nfull LLM version 2).
+    Those blueprints store the recipients in the description of the todo\nitem, so
+    this automation doesn't need an LLM or a list of recipients.\n\nFor every reminder
+    which is due:\n* A notification is sent to the notify entities of the recipients\n*
+    The reminder is announced on the Assist satellites of the recipients, but only
+    when the\n  person linked to the recipient is home\n* The reminder is removed
+    or marked as completed when at least one notification or\n  announcement was done.
+    When nothing could be sent (only satellites and nobody home), the\n  reminder
+    stays on the list and is tried again, so it is announced once the person gets
+    home\n\nReminders without recipients (for example added manually) are sent to
+    the fallback notify\nentities, or as a persistent notification when no fallback
+    is set.\n\n### Blueprint setup\n\n#### Required\n* Select the todo list which
+    is used to store the reminders\n\n#### Optional\n* Fallback notify entities, the
+    notification title and the announcement\n* The trigger, by default the list is
+    checked every minute\n"
+  input:
+    general_settings:
+      name: General settings
+      icon: mdi:cog
+      input:
+        todo_entity:
+          name: ToDo list
+          description: The todo list which is used to store the reminders.
+          selector:
+            entity:
+              filter:
+              - domain:
+                - todo
+              multiple: false
+              reorder: false
+        after_notification:
+          name: After notification
+          description: What to do with the todo item after the reminder is sent.
+          default: Delete item
+          selector:
+            select:
+              options:
+              - Delete item
+              - Mark as completed
+              multiple: false
+              custom_value: false
+              sort: false
+        fallback_notify:
+          name: Fallback notify entities
+          description: Used for reminders without recipients in the description (for
+            example added manually). When empty, a persistent notification is created
+            for those reminders.
+          default: []
+          selector:
+            entity:
+              multiple: true
+              filter:
+              - domain:
+                - notify
+              reorder: false
+    message_settings:
+      name: Message settings
+      icon: mdi:message-text
+      collapsed: true
+      description: '`{text}` is replaced by the text of the reminder, `{names}` by
+        the names of the recipients.'
+      input:
+        notification_title:
+          name: Notification title
+          default: Reminder
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        notification_message:
+          name: Notification message
+          default: '{text}'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        announcement:
+          name: Announcement on the satellites
+          default: 'Reminder for {names}: {text}'
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        and_word:
+          name: Word to join the last two names
+          default: and
+          selector:
+            text:
+              multiline: false
+              multiple: false
+        preannounce:
+          name: Play a sound before the announcement
+          default: true
+          selector:
+            boolean: {}
+    trigger_settings:
+      name: Trigger
+      icon: mdi:timer
+      collapsed: true
+      input:
+        triggers:
+          name: Triggers
+          description: When to check for reminders which are due, by default every
+            minute.
+          default:
+          - trigger: time_pattern
+            minutes: /1
+          selector:
+            trigger: {}
+mode: queued
+max: 5
+max_exceeded: silent
+triggers: !input triggers
+variables:
+  version: 20261116
+  todo_entity: !input todo_entity
+  after_notification: !input after_notification
+  fallback_notify: !input fallback_notify
+  notification_title: !input notification_title
+  notification_message: !input notification_message
+  announcement: !input announcement
+  and_word: !input and_word
+  preannounce: !input preannounce
+actions:
+- alias: Get the open reminders
+  action: todo.get_items
+  target:
+    entity_id: '{{ todo_entity }}'
+  data:
+    status: needs_action
+  response_variable: todo_data
+- alias: Select the reminders which are due
+  variables:
+    items: "{% set ns = namespace(items=[]) %} {% set limit = now() + timedelta(seconds=30)
+      %} {% for i in todo_data[todo_entity]['items'] | selectattr('due', 'defined')
+      %}\n  {% set due = as_datetime(i.due, none) %}\n  {% if due is not none %}\n
+      \   {% set due = due | as_local if due.tzinfo else as_datetime(i.due ~ 'T00:00:00'
+      if i.due | length == 10 else i.due) | as_local %}\n    {% if due <= limit %}\n
+      \     {% set ns.items = ns.items + [i] %}\n    {% endif %}\n  {% endif %}\n{%
+      endfor %} {{ ns.items }}\n"
+- alias: Send each reminder
+  repeat:
+    for_each: '{{ items }}'
+    sequence:
+    - alias: Read the recipients from the description
+      variables:
+        item: '{{ repeat.item }}'
+        text: '{{ item.summary }}'
+        recipients: "{% set ns = namespace(r=[]) %} {% for line in (item.description
+          | default('', true)).split('\\n') if ':' in line %}\n  {% set ids = line
+          | regex_findall('\\\\b((?:notify|assist_satellite|person)\\\\.[a-z0-9_]+)')
+          %}\n  {% if ids %}\n    {% set ns.r = ns.r + [{\n      'name': line.split(':')[0]
+          | trim,\n      'notify': ids | select('match', 'notify\\\\.') | select('in',
+          states.notify | map(attribute='entity_id') | list) | list,\n      'satellites':
+          ids | select('match', 'assist_satellite\\\\.') | list,\n      'person':
+          ids | select('match', 'person\\\\.') | first | default(none)\n    }] %}\n
+          \ {% endif %}\n{% endfor %} {{ ns.r }}\n"
+        notify_targets: '{% set n = recipients | map(attribute=''notify'') | sum(start=[])
+          | unique | list %} {{ n if recipients else fallback_notify | default([],
+          true) }}
+
+          '
+        announcements: "{% set ns = namespace(a=[]) %} {% for s in recipients | map(attribute='satellites')
+          | sum(start=[]) | unique\n     if states(s) not in ['unavailable', 'unknown']
+          %}\n  {% set names = recipients | selectattr('satellites', 'contains', s)\n
+          \      | selectattr('person', 'none') | map(attribute='name') | list\n     +
+          recipients | selectattr('satellites', 'contains', s)\n       | rejectattr('person',
+          'none') | selectattr('person', 'is_state', 'home') | map(attribute='name')
+          | list %}\n  {% if names %}\n    {% set ns.a = ns.a + [{'satellite': s,
+          'names': names}] %}\n  {% endif %}\n{% endfor %} {{ ns.a }}\n"
+        names: '{{ recipients | map(attribute=''name'') | list }}'
+        sent: 0
+    - alias: Send the notification
+      if:
+      - condition: template
+        value_template: '{{ notify_targets | count > 0 }}'
+      then:
+      - action: notify.send_message
+        continue_on_error: true
+        target:
+          entity_id: '{{ notify_targets }}'
+        data:
+          title: '{{ notification_title.format(text=text, names=names | join('', ''))
+            }}'
+          message: '{{ notification_message.format(text=text, names=names | join('',
+            '')) }}'
+      - variables:
+          sent: '{{ sent + 1 }}'
+    - alias: Announce the reminder on the satellites
+      repeat:
+        for_each: '{{ announcements }}'
+        sequence:
+        - action: assist_satellite.announce
+          continue_on_error: true
+          target:
+            entity_id: '{{ repeat.item.satellite }}'
+          data:
+            preannounce: '{{ preannounce }}'
+            message: '{% set n = repeat.item.names %} {% set n = n | join('', '')
+              if n | count < 2 else n[:-1] | join('', '') ~ '' '' ~ and_word ~ ''
+              '' ~ n[-1] %} {{ announcement.format(text=text, names=n) }}'
+        - variables:
+            sent: '{{ sent + 1 }}'
+    - alias: Persistent notification for reminders without recipients
+      if:
+      - condition: template
+        value_template: '{{ recipients | count == 0 and notify_targets | count ==
+          0 }}'
+      then:
+      - action: persistent_notification.create
+        data:
+          title: '{{ notification_title.format(text=text, names='''') }}'
+          message: '{{ notification_message.format(text=text, names='''') }}'
+      - variables:
+          sent: '{{ sent + 1 }}'
+    - alias: Remove or complete the reminder when it was sent
+      if:
+      - condition: template
+        value_template: '{{ sent > 0 }}'
+      then:
+      - if:
+        - condition: template
+          value_template: '{{ after_notification == ''Mark as completed'' }}'
+        then:
+        - action: todo.update_item
+          target:
+            entity_id: '{{ todo_entity }}'
+          data:
+            item: '{{ item.uid | default(text, true) }}'
+            status: completed
+        else:
+        - action: todo.remove_item
+          target:
+            entity_id: '{{ todo_entity }}'
+          data:
+            item: '{{ item.uid | default(text, true) }}'
