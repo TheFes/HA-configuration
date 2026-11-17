@@ -1,24 +1,26 @@
 fetch_weather_forecast_data:
   alias: Fetch Weather Forecast Data
+  description: Gets the weather forecast and current weather conditions. Use this
+    tool for every question about the weather, also for questions like "do I need
+    an umbrella". Pass the complete question of the user in the query field, in the
+    words of the user.
+  icon: mdi:weather-lightning-rainy
   use_blueprint:
-    path: TheFes/3_voice_weather_forecast_full_llm.yaml
     input:
       weather_entity: weather.combined
-  description: Gets the weather forecast for either a part of a day, or one or more
-    full days. In case the weather for the weekend is requested, this means Saturday
-    and Sunday
-  icon: mdi:weather-lightning-rainy
+    path: TheFes/3_voice_weather_forecast_full_llm_v2.yaml
 fetch_calendar_events:
   alias: Fetch Calendar Events
+  description: Gets the events from my calendars. Use this tool for every question
+    about appointments, events or what is planned. Pass the complete question of the
+    user in the query field, in the words of the user.
+  icon: mdi:calendar
   use_blueprint:
-    path: TheFes/3_voice_calendar_entries_full_llm.yaml
     input:
       calendar_entities:
       - calendar.m_m
       - calendar.thefes
-  description: Fetch calendar events from my calendar. In case the data for the weekend
-    is requested, this means Saturday and Sunday
-  icon: mdi:calendar
+    path: TheFes/3_voice_calendar_entries_full_llm_v2.yaml
 martijn_starts_working:
   alias: Martijn Starts Working
   sequence:
@@ -43,20 +45,17 @@ martijn_starts_working:
       media_id: Studio Brussel
     target:
       entity_id: media_player.martijn
-  - alias: Turn on office desk power
-    action: switch.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.bureau_martijn_template
   description: Actions to be performed when Martijn starts working in his office
 voice_script_for_music_assistant_requests:
+  alias: Voice - Script for Music Assistant requests
+  description: Play music with Music Assistant. Use this tool whenever the user asks
+    to play, shuffle or listen to music, an artist, an album, a song, a playlist or
+    a radio station. Pass the complete request in the query field, in the words of
+    the user, and add where to play it (the area the request comes from) when the
+    user does not mention a location.
+  icon: mdi:account-music
   use_blueprint:
-    path: music-assistant/llm_voice_script.yaml
     input:
-      media_player_prompt: Only use in case the request specifically mentions a media
-        player to play the music on. This has to be a media player provided by the
-        Music Assistant integration
       actions:
       - alias: Define variables used to send notification to the right display
         variables:
@@ -69,31 +68,15 @@ voice_script_for_music_assistant_requests:
             topic: awtrix_floris/notify
           topic: '{{ map_to_awtrix | selectattr(''area_name'', ''in'', area | default([],
             true) | map(''area_name'') | list) | map(attribute=''topic'') | list }}'
-      - alias: Show on Ulanzi display in case there is one in the room
-        repeat:
-          for_each: '{{ topic }}'
-          sequence:
-          - alias: Send notification
-            action: mqtt.publish
-            data:
-              qos: 0
-              retain: false
-              topic: '{{ repeat.item }}'
-              payload: '{{ dict(text = media_description, icon = ''musicvisualisation'',)
-                | to_json }}'
-      conditions:
-      - condition: state
-        entity_id: input_boolean.test
-        state: 'on'
-  alias: Voice - Script for Music Assistant requests
-  description: 'This script is used to play music based on a voice request. The tool
-    takes the following arguments: media_type, artist, album, media_id, radio_mode,
-    area. media_id, media_type are always required and must always be supplied as
-    arguments to this tool. An area or Music Assistant media player can optionally
-    be provided in the voice request as well. Use the parameters as described in the
-    description of each parameter. Use this tool whenever the user requests to play
-    music.'
-  icon: mdi:account-music
+      - alias: Show on Ulanzi display in case there is one in the room (published
+          by automation, mqtt.publish is admin-only)
+        if: '{{ topic | count > 0 }}'
+        then:
+        - event: awtrix_music_notify
+          event_data:
+            topics: '{{ topic }}'
+            text: '{{ media_description }}'
+    path: TheFes/mass_llm_script_v2.yaml
 current_device_state:
   sequence:
   - variables:
@@ -153,29 +136,13 @@ current_device_state:
     minutes to hours and minutes in case it is more than 60 minutes.
 voice_get_todo_entries_full_llm_script:
   alias: Voice - Get ToDo entries - Full LLM script
+  description: Gets the items on my todo lists, including the shopping list. Use this
+    tool for every question about what is on a list. Pass the complete question of
+    the user in the query field, in the words of the user.
   use_blueprint:
-    path: TheFes/3_voice_get_todo_entries_full_llm.yaml
-  description: Fetch todo items from my todo lists. Note that the shopping list is
-    also considered a todo list. Ignore items marked as completed, unless the uses
-    specifically requests them.
-voice_set_reminder_full_llm_script:
-  alias: Voice - Set Reminder - Full LLM script
-  use_blueprint:
-    path: TheFes/3_voice_reminder_full_llm.yaml
     input:
-      todo_entity: todo.reminder
-      date_prompt: 'This argument is mandatory and must always be provided no matter
-        what!
-
-        Provide the date on which the reminder should be sent. In case only a time
-        is provided by the user, take the next occurance of that time. So if the request
-        is for a reminder at 6 o clock in the evening, and it''s already 8 o clock
-        in the evening set the reminder for tomorrow. The date needs be in the format
-        YYYY-MM-DD. The current date at this moment is {{ now().date() }}. Always
-        provide a date, and only provide a date, do not include a time.'
-  description: Tool to set reminders based on voice commands. In case not recipient
-    is provided ask for it, in case no clear date and time is provided ask for it,
-    in case no recipient is provided ask for it
+      default_list: todo.boodschappenlijst
+    path: TheFes/3_voice_get_todo_entries_full_llm_v2.yaml
 llm_web_search:
   sequence:
   - action: conversation.process
@@ -200,3 +167,87 @@ llm_web_search:
     with the smart home and are exclusively about current events or information in
     real-time like the current president, results of last night's game, release dates,
     etc.
+bedtime_floris_routine:
+  alias: Floris is going to sleep (Voice)
+  icon: mdi:bed
+  mode: restart
+  sequence:
+  - alias: Send Floris sleeping event
+    event: floris_sleeping
+  - action: number.set_value
+    alias: Set Floris dimmer to sleep brightness
+    data:
+      value: 30
+    target:
+      entity_id: number.floris_start_brightness
+  - action: number.set_value
+    alias: Set Floris dimmer to sleep brightness
+    data:
+      value: 40
+    target:
+      entity_id: number.floris_leeslamp_start_brightness
+  - delay: 0.5
+  - action: light.turn_on
+    alias: Light on
+    target:
+      entity_id:
+      - light.floris_template
+      - light.bedlamp_floris
+      - light.floris_leeslamp_template
+  - alias: Turn on graafmachine, dimmed and warm
+    action: light.turn_on
+    target:
+      entity_id: light.graafmachine_template
+    data:
+      brightness_pct: 20
+      color_temp_kelvin: 2200
+test_vars:
+  sequence:
+  - variables:
+      delta: '{{ timedelta(minutes=2, seconds=15) }}'
+      string: '{{ timedelta_string(delta, 2) }}'
+      string2: '{{ timedelta_string(as_timedelta(delta), 2) }}'
+      string3: '{% set delta = timedelta(minutes=2, seconds=15) %} {{ timedelta_string(delta,
+        2) }}
+
+        '
+  alias: Test vars
+  description: ''
+voice_set_reminders_full_llm_script_version_2:
+  alias: Voice - Set Reminders - Full LLM script (version 2)
+  description: Sets a reminder for one or more people at a date and time. Use this
+    tool whenever the user asks to be reminded of something, or to remind someone
+    else. Pass the complete request of the user in the query field, in the words of
+    the user. When the tool reports missing information, ask the user for it and call
+    the tool again with the complete request including the answer.
+  use_blueprint:
+    path: TheFes/3_voice_reminder_full_llm_v2.yaml
+    input:
+      todo_entity: todo.reminder
+      recipients:
+      - name: Martijn
+        aliases: Papa, dad, Fes
+        person: person.martijn
+        notify:
+        - notify.thefes_casa_alert_martijn
+        - notify.pixel_10_pro
+        satellites:
+        - assist_satellite.keuken
+      - name: Marleen
+        aliases: Mama, mam, mom
+        person: person.marleen
+        notify:
+        - notify.iphone_van_marleen
+        satellites:
+        - assist_satellite.keuken
+voice_add_calendar_event_full_llm_script:
+  alias: Voice - Add Calendar Event - Full LLM script
+  description: Adds an event or appointment to a calendar. Use this tool whenever
+    the user wants to add, plan or schedule something in a calendar or agenda. Pass
+    the complete request of the user in the query field, in the words of the user.
+    When the tool reports missing information, ask the user for it and call the tool
+    again with the complete request including the answer.
+  use_blueprint:
+    input:
+      default_calendar: calendar.m_m
+    path: TheFes/3_voice_add_calendar_event_full_llm.yaml

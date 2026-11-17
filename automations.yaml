@@ -1,28 +1,3 @@
-- id: '1737403451714'
-  alias: Music Assistant - Local(only) Voice Support Blueprint
-  description: ''
-  use_blueprint:
-    path: music-assistant/mass_assist_blueprint_en.yaml
-    input:
-      default_player_entity_id_input: media_player.test_player
-      album_trigger:
-      - (play|listen to|bla bla) [the ](album|ep|record|compilation|single) {media_name}
-        [by [the ](artist|band|group) {artist}] [(in|on|using) [the ]{area_or_player_name}][
-        (with|using) {radio_mode}]
-      track_trigger:
-      - (play|listen to|bla bla) [the ](track|song) {media_name} [by [the ](artist|band|group)
-        {artist}] [(in|on|using) [the ]{area_or_player_name}][ (with|using) {radio_mode}]
-      artist_trigger:
-      - (play|listen to|bla bla) [the ](artist|band|group) {media_name} [(in|on|using)
-        [the ]{area_or_player_name}][ (with|using) {radio_mode}]
-      radio_trigger:
-      - (play|listen to|bla bla) [the ]((radio station)|(radio)|(station)) {media_name}
-        [(in|on|using) [the ]{area_or_player_name}]
-      playlist_trigger:
-      - (play|listen to|bla bla) [the ]playlist {media_name} [(in|on|using) [the ]{area_or_player_name}][
-        (with|using) {radio_mode}]
-      response_input: 'TEST: {{ trigger.slots.media_name }} playing on {{ mass_player_name
-        }}'
 - id: '1737968496160'
   alias: Voice - Weather Forecast - Local Assist Blueprint
   description: ''
@@ -101,9 +76,21 @@
       event_count: Op {date} heb je {event_count} {events}.
       day_event: Voor de hele dag staat er {event_list}.
       part_day_event: Van {start} tot {end} heb je {event_summary}.
-      triggers:
+      trigger:
       - wat staat er [voor|op] {phrase} op de (agenda|kalender|planning)
       - staat er [voor|op] {phrase} iets op de (agenda|kalender|planning)
+      - wat staat er [vandaag] op de (agenda|kalender|planning)
+      this_week:
+      - deze week
+      weekend:
+      - weekend
+      - dit weekend
+      - het weekend
+      next_week:
+      - volgende week
+      combine_word: en
+      response_invalid_phrase: Ik weet niet welke periode je bedoelt met {{ phrase
+        }}
 - id: '1738230371255'
   alias: Voice - Get ToDo Entries - Local Assist Blueprint
   description: ''
@@ -111,57 +98,12 @@
     path: TheFes/1_voice_get_todo_entries_local.yaml
     input:
       default_entity: todo.boodschappenlijst
-      triggers:
-      - wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) {list_name}|{list_name}[
-        ]lijst)
       no_items_response: '{list_name} is leeg.'
       list_items_response: 'Er staan {item_count} dingen op: {list_items}'
       invalid_list_response: Ik kan geen lijst met de naam {list_name} vinden.
-- id: '1743151381222'
-  alias: Voice - Send Reminder - Automation
-  description: ''
-  use_blueprint:
-    path: TheFes/0_voice_send_reminder.yaml
-    input:
-      recipients:
-      - name: Martijn
-        description: Father of the house
-        notifiers:
-        - alias: Send mobile notification to Martijn
-          action: notify.mobile_app_pixel_10_pro
-          data:
-            data:
-              ttl: 0
-              priority: high
-              channel: Reminders
-              notification_icon: mdi:reminder
-          condition: '{{ is_state(''input_boolean.test'', ''on'') }}'
-        - alias: Announce reminder via TTS to Martijn
-          action: tts.speak
-          target:
-            entity_id: tts.home_assistant_cloud
-          data:
-            media_player_entity_id: media_player.martijn
-          prefix: 'Dit is een reminder voor:'
-          condition: '{{ is_state(''person.martijn'', ''home'') }}'
-      - name: Marleen
-        description: Mother of the house
-        notifiers:
-        - alias: Send mobile notification to Marleen
-          action: notify.mobile_app_iphone_van_marleen
-          data:
-            data:
-              ttl: 0
-              priority: high
-              channel: Reminders
-              notification_icon: mdi:reminder
-      llm_agent: conversation.chatgpt
-      todo_entity: todo.reminder
-      triggers:
-      - alias: Trigger to check for Todo items every minute
-        trigger: time_pattern
-        minutes: /5
-      after_notification: Mark as completed
+      trigger:
+      - wat staat er op [de] (boodschappen[ ]lijst|lijst (met de naam|genaamd) {list_name}|{list_name}[
+        ]lijst)
 - id: '1762721132649'
   alias: Telegram alert for Studio Code Server app
   description: ''
@@ -383,10 +325,10 @@
       target:
       - event.thefes_casa_alert_update_event
       alert_title: "{%- set names = state_attr('binary_sensor.cover_unavailable',
-        'name') %}\n{%- set names = iif(names, names, []) %}\n\U0001F6A8 Screen{{
+        'names') %}\n{%- set names = iif(names, names, []) %}\n\U0001F6A8 Screen{{
         iif(names | count == 1, '', 's') }} niet beschikbaar"
       alert_message: '{%- set names = state_attr(''binary_sensor.cover_unavailable'',
-        ''name'') %}
+        ''names'') %}
 
         {%- set names = iif(names, names, []) %}
 
@@ -396,10 +338,8 @@
       button_1_label: Reload integratie
       button_1_actions:
       - action: homeassistant.reload_config_entry
-        metadata: {}
-        data: {}
-        target:
-          entity_id: cover.veranda
+        data:
+          entry_id: 824f9ec1e0cf0a3f2337b4145b48ba6c
       use_done_title: false
       alert_data_sensor: sensor.thefes_alert_data
 - id: '1763653648602'
@@ -541,34 +481,35 @@
       response_no_data: Geen weersvoorspelling beschikbaar voor {{ phrase }}
       response_forecast: 'Het {{ ''is'' if current else ''wordt'' }} {{ temperature
         }} graden {{ condition_translated }}.  {% if temperature != apparent_temperature
-        %}Het voelt als {{ apparent_temperature }} graden. {% endif %} {% if precipitation_probability
-        > rain_warning_threshold %}Er is {{ precipitation_probability }}%  kans op
-        {{ precipitation }} milimeter regen, dus neem een paraplu mee als je naar
-        buiten gaat.{% endif %} {% if uv_index > 3 and condition in [''clear'', ''partlycloudy'']
-        %} De zon schijnt fel vandaag, dus doe zonnebrand op als je naar buiten gaat.{%
-        endif %}  {% if wind_speed >= wind_threshold %} De wind wordt {{ wind_phrase
-        }}{% if wind_direction is not none %}  en komt uit het {{ wind_direction}}{%
-        endif %}. {% endif %} {% if wind_speed >= wind_warning_threshold %} Dus als
-        je niet per se naar buiten hoeft, blijf dan vooral lekker binnen.{% elif wind_speed
-        >=  wind_joke_threshold %}Dus zorg dat je {% if precipitation_probability
-        > 10 %}paraplu {% else %}''t {% endif %}niet weg waait!{% endif %}
+        %}Het voelt als {{ apparent_temperature }} graden. {% endif %} {% if rain_expected
+        %}Er is {{ precipitation_probability }}%  kans op {% if precipitation | float(0)
+        > 0 %}{{ precipitation }} millimeter {% endif %}regen, dus neem een paraplu
+        mee als je naar buiten gaat.{% endif %} {% if uv_index | float(-1) > 3 and
+        condition in [''sunny'', ''partlycloudy'', ''clear''] %} De zon schijnt fel
+        vandaag, dus doe zonnebrand op als je naar buiten gaat.{% endif %}  {% if
+        wind_speed | float(0) >= wind_threshold %} De wind wordt {{ wind_phrase }}{%
+        if wind_direction is not none %}  en komt uit het {{ wind_direction}}{% endif
+        %}. {% endif %} {% if wind_speed | float(0) >= wind_warning_threshold %} Dus
+        als je niet per se naar buiten hoeft, blijf dan vooral lekker binnen.{% elif
+        wind_speed | float(0) >= wind_joke_threshold %}Dus zorg dat je {% if rain_expected
+        %}paraplu {% else %}''t {% endif %}niet weg waait!{% endif %}
 
         '
-      response_current: 'Het is nu {{ current_temperature }} graden en {{ current_condition_translated}}.  De
-        temperatuur zal vandaag tussen de {{ templow }} en {{ temperature }} graden
-        zijn. {% if current_temperature != current_apparent_temperature %} Het voelt
-        nu als {{ current_apparent_temperature }} graden.{% endif %}  {% if precipitation_probability
-        | float(-1) > rain_warning_threshold %} Er is {{ precipitation_probability
-        }}% kans op {{ precipitation }} mm regen,  dus neem een paraplu mee naar buiten.{%
-        endif %} {% if current_uv_index | float(-1)  > 3 and current_condition in
-        [''clear'',''partlycloudy''] %}De zon schijnt fel vandaag,  dus doe zonnebrand
-        op als je naar buiten gaat.{% endif %} {%- if current_wind_speed  is not none
-        -%} {% if current_wind_speed >= wind_threshold %} De wind is  {{ current_wind_phrase
-        }}{% if current_wind_direction is not none %} en komt uit  het {{ current_wind_direction}}{%
-        endif %}.{% endif %} {% if current_wind_speed >= wind_warning_threshold %}Dus
-        als je niet per se naar buiten hoeft, kun je dat beter niet doen.{% elif current_wind_speed
-        >= wind_joke_threshold %}Dus houd je paraplu goed vast!{% endif %}{%- endif
-        %}
+      response_current: 'Het is nu {{ current_temperature }} graden {{ current_condition_translated
+        }}.  De temperatuur zal vandaag tussen de {{ templow }} en {{ temperature
+        }} graden zijn. {% if current_temperature != current_apparent_temperature
+        %} Het voelt nu als {{ current_apparent_temperature }} graden.{% endif %}  {%
+        if rain_expected %} Er is {{ precipitation_probability }}% kans op {% if precipitation
+        | float(0) > 0 %}{{ precipitation }} mm {% endif %}regen,  dus neem een paraplu
+        mee naar buiten.{% endif %} {% if current_uv_index | float(-1)  > 3 and current_condition
+        in [''sunny'', ''partlycloudy'', ''clear''] %}De zon schijnt fel vandaag,  dus
+        doe zonnebrand op als je naar buiten gaat.{% endif %} {%- if current_wind_speed  is
+        not none -%} {% if current_wind_speed >= wind_threshold %} De wind is  {{
+        current_wind_phrase }}{% if current_wind_direction is not none %} en komt
+        uit  het {{ current_wind_direction}}{% endif %}.{% endif %} {% if current_wind_speed
+        >= wind_warning_threshold %}Dus als je niet per se naar buiten hoeft, kun
+        je dat beter niet doen.{% elif current_wind_speed >= wind_joke_threshold %}Dus
+        houd je paraplu goed vast!{% endif %}{%- endif %}
 
         '
       wind_threshold: 0
@@ -669,3 +610,255 @@
     data:
       message: The {{ trigger.to_state.name }} is below 20%
   mode: single
+- id: '1788876661139'
+  alias: Gewicht
+  description: ''
+  triggers:
+  - trigger: conversation
+    command:
+    - Gewicht {50..100:gewicht}[ (punt|.) {0..9:decimaal}]
+  conditions: []
+  actions:
+  - variables:
+      gewicht: '{{ (trigger.slots.gewicht | int ~ ''.'' ~ trigger.slots.decimaal |
+        default(0) | int) | float }}
+
+        '
+  - set_conversation_response: Ingesteld op {{ gewicht }}
+- id: '1794603369060'
+  alias: Music Assistant - AI Task Enhanced Voice Support
+  description: ''
+  use_blueprint:
+    input:
+      ai_task_entity: ai_task.google_ai_task
+      area_and_player_response: '{% if enqueue == ''add'' %}Ik voeg <media_info> toe
+        aan de wachtrij in <area_info> en op <player_info>{% elif enqueue == ''next''
+        %}Ik speel <media_info> hierna af in <area_info> en op <player_info>{% else
+        %}Ik speel <media_info> {{ ''in willekeurige volgorde '' if shuffle }}af in
+        <area_info> en op <player_info>{% endif %}'
+      area_players:
+      - media_player.woonkamer
+      area_response: '{% if enqueue == ''add'' %}Ik voeg <media_info> toe aan de wachtrij
+        in <area_info>{% elif enqueue == ''next'' %}Ik speel <media_info> hierna af
+        in <area_info>{% else %}Ik speel <media_info> {{ ''in willekeurige volgorde
+        '' if shuffle }}af in <area_info>{% endif %}'
+      artist_text: van
+      combine_text: en
+      control_response: '{{ {''resume'': ''Ik speel verder'', ''next'': ''Volgende
+        nummer'', ''previous'': ''Vorige nummer'', ''pause'': ''Gepauzeerd'', ''stop'':
+        ''Gestopt''}.get(request_type, ''Oké'') }}'
+      error_response: Sorry, er ging iets mis tijdens het verwerken van je muziek
+        verzoek.
+      no_target_response: Ik kon niet bepalen op welke speler ik dit moest afspelen,
+        en er is geen standaard speler ingesteld.
+      not_found_response: Sorry, ik kon <media_info> niet vinden.
+      player_response: '{% if enqueue == ''add'' %}Ik voeg <media_info> toe aan de
+        wachtrij op <player_info>{% elif enqueue == ''next'' %}Ik speel <media_info>
+        hierna af op <player_info>{% else %}Ik speel <media_info> {{ ''in willekeurige
+        volgorde '' if shuffle }}af op <player_info>{% endif %}'
+      trigger:
+      - (shuffle|speel|luister naar) {query}
+      - '[ik wil] [graag] [naar] {query} (luisteren|horen)'
+      - '[ik wil] [graag] {query} afspelen'
+      - zet {query} op
+      - mag ik {query} horen
+      - (kun|kan) je {query} (afspelen|opzetten|draaien)
+      - laat [me|ons] {query} horen
+      - voeg {query} toe aan de (wachtrij|afspeellijst|playlist) [{rest}]
+      - zet {query} in de wachtrij [{rest}]
+      - (verplaats|verhuis|stuur) de muziek naar {query}
+      - zet de muziek over naar {query}
+      transfer_response: Ik heb de muziek verplaatst naar <area_info> <player_info>
+      nothing_playing_response: Er speelt geen muziek die ik kan verplaatsen
+    path: TheFes/mass_llm_ai_task_assist.yaml
+- id: '1794775349498'
+  alias: Show Music Assistant voice request on Awtrix display
+  description: Publishes the song requested by voice to the Awtrix display(s) in the
+    room. Runs as an automation because mqtt.publish is admin-only and voice requests
+    can come from non-admin users. Fired by script.voice_script_for_music_assistant_requests.
+  triggers:
+  - event_type: awtrix_music_notify
+    trigger: event
+  actions:
+  - alias: Send notification to each display
+    repeat:
+      for_each: '{{ trigger.event.data.topics | default([], true) }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          payload: '{{ dict(text=trigger.event.data.text, icon=''musicvisualisation'')
+            | to_json }}'
+          qos: 0
+          retain: false
+          topic: '{{ repeat.item }}'
+  max_exceeded: silent
+  mode: queued
+- id: '1794861549064'
+  alias: Voice - Send Reminder - Automation (version 2)
+  description: ''
+  use_blueprint:
+    input:
+      after_notification: Mark as completed
+      and_word: en
+      announcement: 'Herinnering voor {names}: {text}'
+      fallback_notify:
+      - notify.thefes_casa_alert_martijn
+      notification_message: '{text}'
+      notification_title: Herinnering
+      todo_entity: todo.reminder
+    path: TheFes/0_voice_send_reminder_v2.yaml
+- id: '1794862608617'
+  alias: Voice - Set Reminders - LLM enhanced
+  description: ''
+  use_blueprint:
+    input:
+      recipients:
+      - aliases: Papa, dad, Fes
+        name: Martijn
+        notify:
+        - notify.thefes_casa_alert_martijn
+        - notify.pixel_10_pro
+        person: person.martijn
+        satellites:
+        - assist_satellite.keuken
+      - aliases: Mama, mam, mom
+        name: Marleen
+        notify:
+        - notify.iphone_van_marleen
+        person: person.marleen
+        satellites:
+        - assist_satellite.keuken
+      response_error: Sorry, het is niet gelukt om de herinnering in te stellen
+      response_missing: '{question} Zeg je hele verzoek nog een keer, inclusief dit.'
+      response_no_answer: Ik heb geen antwoord gehoord, dus ik heb de herinnering
+        niet ingesteld
+      todo_entity: todo.reminder
+      trigger:
+      - herinner {query}
+      - (zet|maak) een herinnering [voor] {query}
+      - remind {query}
+      - (set|create|make|add) a reminder [for] {query}
+    path: TheFes/2_voice_reminder_llm_enhanced.yaml
+- id: '1794862617922'
+  alias: Voice - Set Reminders - Local
+  description: ''
+  use_blueprint:
+    input:
+      and_word: en
+      at_word: om
+      date_format: '%A %-d %B'
+      day_part_phrases:
+        '''s avonds': '19:00'
+        '''s middags': '14:00'
+        '''s ochtends': 09:00
+        avond: '19:00'
+        middag: '14:00'
+        morgenavond: '19:00'
+        morgenmiddag: '14:00'
+        morgenochtend: 09:00
+        ochtend: 09:00
+        vanavond: '20:00'
+      day_phrases:
+        morgen: 1
+        morgenavond: 1
+        morgenmiddag: 1
+        morgenochtend: 1
+        overmorgen: 2
+        vanavond: 0
+        vandaag: 0
+        vannacht: 0
+      due_words:
+      - om
+      - op
+      - deze
+      - volgende
+      - komende
+      - over
+      - binnen
+      - voor
+      - rond
+      - uur
+      everyone_words:
+      - iedereen
+      - ons
+      - allemaal
+      me_words:
+      - me
+      - mij
+      - mijzelf
+      name_separators:
+      - en
+      one_words:
+      - een
+      - één
+      pm_phrases: {}
+      question_due: Wanneer moet ik {recipients} herinneren?
+      question_past: Dat moment is al voorbij. Wanneer moet ik {recipients} herinneren?
+      question_recipients: Wie moet ik herinneren?
+      question_time: Hoe laat moet ik {recipients} herinneren?
+      question_unknown: Ik weet niet wie {names} is. Wie moet ik herinneren?
+      recipients:
+      - aliases: Papa, dad, Fes
+        name: Martijn
+        notify:
+        - notify.thefes_casa_alert_martijn
+        - notify.pixel_10_pro
+        person: person.martijn
+        satellites:
+        - assist_satellite.keuken
+      - aliases: Mama, mam, mom
+        name: Marleen
+        notify:
+        - notify.iphone_van_marleen
+        person: person.marleen
+        satellites:
+        - assist_satellite.keuken
+      relative_units:
+        kwartier: 15
+        minuten: 1
+        minuut: 1
+        uur: 60
+      relative_words:
+      - over
+      - binnen
+      response_error: Sorry, het is niet gelukt om de herinnering in te stellen
+      response_missing: '{question} Zeg je hele verzoek nog een keer, inclusief dit.'
+      response_no_answer: Ik heb geen antwoord gehoord, dus ik heb de herinnering
+        niet ingesteld
+      response_set: 'Ik herinner {recipients} op {due} aan: {text}'
+      response_translations:
+        April: april
+        August: augustus
+        December: december
+        February: februari
+        Friday: vrijdag
+        January: januari
+        July: juli
+        June: juni
+        March: maart
+        May: mei
+        Monday: maandag
+        November: november
+        October: oktober
+        Saturday: zaterdag
+        September: september
+        Sunday: zondag
+        Thursday: donderdag
+        Tuesday: dinsdag
+        Wednesday: woensdag
+      time_format: '%H:%M'
+      todo_entity: todo.reminder
+      trigger:
+      - herinner {who} (eraan|er aan) [om|dat] {reminder}
+      - herinner {who} aan {reminder}
+      - (zet|maak) een herinnering voor {who} (om|dat) {reminder}
+      weekday_phrases:
+        dinsdag: 1
+        donderdag: 3
+        maandag: 0
+        vrijdag: 4
+        woensdag: 2
+        zaterdag: 5
+        zondag: 6
+      you_word: je
+    path: TheFes/1_voice_reminder_local.yaml
