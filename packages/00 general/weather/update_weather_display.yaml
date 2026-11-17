@@ -1,0 +1,212 @@
+automation:
+  - alias: Weerdisplay zolder (nu, max, min)
+    description: Toont het huidige weer, de verwachte maximumtemperatuur overdag en de verwachte minimumtemperatuur 's nachts op het e-paper display (384 x 168).
+    mode: single
+
+    triggers:
+      - trigger: time_pattern
+        minutes: "0"
+      - trigger: state
+        entity_id: event.overloop_zolder_weatherdisplay_knop_1
+        not_from:
+          - unavailable
+          - unknown
+
+    actions:
+      - variables:
+          font_file: ppb.ttf # of GothamRnd-Bold.ttf als die op de HA-installatie staat
+          # Accentkleur en drempel: temperaturen op of onder de drempel krijgen de accentkleur
+          accent_color: red
+          accent_temp_threshold: 3
+
+          # ---- Waarden ----
+          current_condition: "{{ states('weather.combined') }}"
+          day_condition: "{{ state_attr('sensor.weather_display_data', 'day_condition') }}"
+          night_condition: "{{ state_attr('sensor.weather_display_data', 'night_condition') }}"
+          current_temp: "{{ state_attr('weather.combined', 'temperature') | float(none) }}"
+          day_max_temp: "{{ state_attr('sensor.weather_display_data', 'day_temp') | float(none) }}"
+          night_min_temp: "{{ state_attr('sensor.weather_display_data', 'night_temp') | float(none) }}"
+          current_temp_text: "{{ (current_temp | round(0) | int ~ '°') if current_temp is number else '--' }}"
+          day_max_temp_text: "{{ (day_max_temp | round(0) | int ~ '°') if day_max_temp is number else '--' }}"
+          night_min_temp_text: "{{ (night_min_temp | round(0) | int ~ '°') if night_min_temp is number else '--' }}"
+          current_temp_color: "{{ accent_color if current_temp is number and current_temp <= accent_temp_threshold else 'black' }}"
+          day_max_temp_color: "{{ accent_color if day_max_temp is number and day_max_temp <= accent_temp_threshold else 'black' }}"
+          night_min_temp_color: "{{ accent_color if night_min_temp is number and night_min_temp <= accent_temp_threshold else 'black' }}"
+
+          # ---- Iconen ----
+          is_night: "{{ is_state('sun.sun', 'below_horizon') }}"
+          day_icon_map:
+            clear-night: "mdi:weather-night"
+            cloudy: "mdi:weather-cloudy"
+            fog: "mdi:weather-fog"
+            hail: "mdi:weather-hail"
+            lightning: "mdi:weather-lightning"
+            lightning-rainy: "mdi:weather-lightning-rainy"
+            partlycloudy: "mdi:weather-partly-cloudy"
+            pouring: "mdi:weather-pouring"
+            rainy: "mdi:weather-rainy"
+            snowy: "mdi:weather-snowy"
+            snowy-rainy: "mdi:weather-snowy-rainy"
+            sunny: "mdi:weather-sunny"
+            windy: "mdi:weather-windy"
+            windy-variant: "mdi:weather-windy-variant"
+            exceptional: "mdi:alert-circle-outline"
+          night_icon_map:
+            clear-night: "mdi:weather-night"
+            cloudy: "mdi:weather-cloudy"
+            fog: "mdi:weather-fog"
+            hail: "mdi:weather-hail"
+            lightning: "mdi:weather-lightning"
+            lightning-rainy: "mdi:weather-lightning-rainy"
+            partlycloudy: "mdi:weather-night-partly-cloudy"
+            pouring: "mdi:weather-pouring"
+            rainy: "mdi:weather-rainy"
+            snowy: "mdi:weather-snowy"
+            snowy-rainy: "mdi:weather-snowy-rainy"
+            sunny: "mdi:weather-night"
+            windy: "mdi:weather-windy"
+            windy-variant: "mdi:weather-windy-variant"
+            exceptional: "mdi:alert-circle-outline"
+          # Huidig weer volgt de zon; max overdag altijd dagvariant; min nacht altijd nachtvariant
+          current_icon: "{{ (night_icon_map if is_night else day_icon_map).get(current_condition, 'mdi:help-circle-outline') }}"
+          day_icon: "{{ day_icon_map.get(day_condition, 'mdi:help-circle-outline') }}"
+          night_icon: "{{ night_icon_map.get(night_condition, 'mdi:help-circle-outline') }}"
+
+          # ---- Tijdstempel ----
+          weekdays: ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"]
+          months:
+            [
+              "Jan",
+              "Feb",
+              "Mrt",
+              "Apr",
+              "Mei",
+              "Jun",
+              "Jul",
+              "Aug",
+              "Sep",
+              "Okt",
+              "Nov",
+              "Dec",
+            ]
+          updated_text: >-
+            {{ weekdays[now().weekday()] }} {{ now().day }} {{ months[now().month - 1] }}, {{ now().strftime('%H:%M') }}
+
+      - action: opendisplay.drawcustom
+        target:
+          device_id: eea8923973394a2b8c0997eb83f87efa
+        data:
+          background: white
+          rotate: "270"
+          payload:
+            # Header bar
+            - type: rectangle
+              x_start: 0
+              x_end: 384
+              y_start: 0
+              y_end: 26
+              fill: black
+              outline: black
+              width: 0
+            - type: icon
+              value: "mdi:weather-partly-cloudy"
+              x: 2
+              "y": 1
+              size: 24
+              color: white
+            - type: text
+              value: "Weer"
+              font: "{{ font_file }}"
+              x: 28
+              "y": 13
+              size: 18
+              color: white
+              anchor: lm
+            - type: text
+              value: "{{ updated_text }}"
+              font: "{{ font_file }}"
+              x: 380
+              "y": 13
+              size: 12
+              color: white
+              anchor: rm
+
+            # Links: huidig weer
+            - type: icon
+              value: "{{ current_icon }}"
+              x: 8
+              "y": 51
+              size: 92
+              color: black
+            - type: text
+              value: "{{ current_temp_text }}"
+              font: "{{ font_file }}"
+              x: 106
+              "y": 97
+              size: 64
+              color: "{{ current_temp_color }}"
+              anchor: lm
+
+            # Verticale scheidingslijn
+            - type: line
+              x_start: 222
+              x_end: 222
+              y_start: 34
+              y_end: 160
+              fill: black
+
+            # Rechts boven: verwacht overdag
+            - type: text
+              value: "Max {{state_attr('sensor.weather_display_data', 'day') }}"
+              font: "{{ font_file }}"
+              x: 236
+              "y": 46
+              size: 11
+              color: black
+              anchor: lm
+            - type: icon
+              value: "{{ day_icon }}"
+              x: 236
+              "y": 54
+              size: 34
+              color: black
+            - type: text
+              value: "{{ day_max_temp_text }}"
+              font: "{{ font_file }}"
+              x: 278
+              "y": 72
+              size: 38
+              color: "{{ day_max_temp_color }}"
+              anchor: lm
+
+            # Horizontale scheidingslijn rechts
+            - type: line
+              x_start: 236
+              x_end: 370
+              y_start: 97
+              y_end: 97
+              fill: black
+
+            # Rechts onder: verwacht 's nachts
+            - type: text
+              value: "Min nacht"
+              font: "{{ font_file }}"
+              x: 236
+              "y": 108
+              size: 11
+              color: black
+              anchor: lm
+            - type: icon
+              value: "{{ night_icon }}"
+              x: 236
+              "y": 117
+              size: 34
+              color: black
+            - type: text
+              value: "{{ night_min_temp_text }}"
+              font: "{{ font_file }}"
+              x: 278
+              "y": 135
+              size: 38
+              color: "{{ night_min_temp_color }}"
+              anchor: lm

@@ -3,14 +3,14 @@ template:
   - triggers:
       - alias: "Monitor rain sensor becoming unavailable"
         trigger: state
-        entity_id: binary_sensor.regensensor_water_leak
+        entity_id: binary_sensor.regensensor_rain
         to: unavailable
         for:
           seconds: 30
       - alias: "Monitor rain sensor and weather integration state changes"
         trigger: state
         entity_id:
-          - binary_sensor.regensensor_water_leak
+          - binary_sensor.regensensor_rain
           - binary_sensor.rain_from_weather_integrations
           - binary_sensor.around_sunrise
         to:
@@ -22,22 +22,22 @@ template:
         state: >
           {% set around_sunrise = is_state('binary_sensor.around_sunrise', 'on') %}
           {% set use_rain_sensor =
-            'binary_sensor.regensensor_water_leak' | has_value 
+            'binary_sensor.regensensor_rain' | has_value 
             and
               (
                 not is_state('binary_sensor.around_sunrise', 'on')
-                or is_state('binary_sensor.regensensor_water_leak', 'off')
+                or is_state('binary_sensor.regensensor_rain', 'off')
               )
           %}
           {{
-            states('binary_sensor.regensensor_water_leak') | bool
+            states('binary_sensor.regensensor_rain') | bool
             if use_rain_sensor
             else states('binary_sensor.rain_from_weather_integrations') | bool
           }}
         availability: >
           {{ 
             (
-              'binary_sensor.regensensor_water_leak' | has_value
+              'binary_sensor.regensensor_rain' | has_value
               and not is_state('binary_sensor.around_sunrise', 'on')
             )
             or'binary_sensor.rain_from_weather_integrations' | has_value
@@ -50,25 +50,23 @@ template:
         state: >
           {%- set p1 = state_attr('sensor.neerslag_buienalarm_regen_data', 'data') %}
           {%- set p1 = p1.precip[:4] | reject('eq', 77) | list | sum if p1 else 'na' %}
-          {%- set p2 = states('sensor.pirateweather_precip_intensity') | float('na') %}
-          {%- set p3 = states('sensor.br_precipitation') | float('na') %}
-          {%- set p4 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
-          {%- if p4 %}
+          {%- set p2 = states('sensor.br_precipitation') | float('na') %}
+          {%- set p3 = state_attr('sensor.neerslag_buienradar_regen_data', 'data') %}
+          {%- if p3 %}
             {%- set ns = namespace(p=[]) %}
-            {%- for item in p4.split(' ')[:4] %}
+            {%- for item in p3.split(' ')[:4] %}
               {%- set ns.p = ns.p + [(item.split('|')[0] | float / 1000) | round(2) ] %}
             {%- endfor %}
-            {%- set p4 =  ns.p | sum %}
+            {%- set p3 = ns.p | sum %}
           {%- else %}
-            {%- set p4 = 'na' %}
+            {%- set p3 = 'na' %}
           {%- endif %}
-          {{ [p1, p2, p3, p4] | select('is_number') | max | default(0) }}
+          {{ [p1, p2, p3] | select('is_number') | max | default(0) }}
         availability: >
           {%- set p1 = 'sensor.neerslag_buienalarm_regen_data' %}
-          {%- set p2 = 'sensor.pirateweather_precip_intensity' %}
-          {%- set p3 = 'sensor.br_precipitation' %}
-          {%- set p4 = 'sensor.neerslag_buienradar_regen_data' %}
-          {{ [ p1, p2, p3, p4 ] | select('has_value') | list | count > 0 }}
+          {%- set p2 = 'sensor.br_precipitation' %}
+          {%- set p3 = 'sensor.neerslag_buienradar_regen_data' %}
+          {{ [ p1, p2, p3] | select('has_value') | list | count > 0 }}
         icon: >
           {{ 'mdi:weather-sunny' if this.state == 'off' else 'mdi:weather-rainy' }}
   - triggers:
@@ -134,11 +132,11 @@ template:
           }}
         <<: *other_config
 
-  # From raindata.yaml
+# From raindata.yaml
   - binary_sensor:
       - unique_id: d2920d48-13b8-47db-8518-6a7a1eb92851
         name: Raindata
-        state: "{{ this.attributes.get('raindata', dict(source='none', data=[0]*12)).data | max > 0 }}"
+        state: "{{ (this.attributes.get('raindata', {}).get('data') or [0]) | max > 0 }}"
         attributes:
           raindata: >
             {% set radar = state_attr("sensor.neerslag_buienradar_regen_data","data") %}
@@ -147,11 +145,12 @@ template:
               {% set raindata = (radar | replace('|', ' ')).split(' ') | reject('contains', ':') | select() | map('int') | list %}
               {% set ns = namespace(raindata=[]) %}
               {%- for rain in raindata %}
-                {%- set rainintensity = (10**((0-109)/32)) | round(2) %}
+                {#- Buienradar value 0-255 to mm/h: 10^((value - 109) / 32) #}
+                {%- set rainintensity = (10**((rain-109)/32)) | round(2) %}
                 {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
                 {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
               {%- endfor %}
-              {{ dict(source='buienradar', data=ns.raindata[:11]) }}
+              {{ dict(source='buienradar', data=ns.raindata[:11] or [0]) }}
             {% elif alarm %}
               {%- set raindata = alarm.precip %}
               {% set ns = namespace(raindata=[]) %}
@@ -159,12 +158,12 @@ template:
                 {%- set mapvalues = [ 0, 0.5, 1.5, 2, 3.5, 5, 10] %}
                 {%- set ns.raindata = ns.raindata + [((mapvalues + [rainintensity]) | sort).index(rainintensity)] %}
               {%- endfor %}
-              {{ dict(source='buienalarm', data=ns.raindata[:11]) }}
+              {{ dict(source='buienalarm', data=ns.raindata[:11] or [0]) }}
             {% else %}
               {{ dict(source='none', data=[0]*12) }}
             {% endif %}
 
-  # From temp_window_open.yaml
+# From temp_window_open.yaml
   - binary_sensor:
       - unique_id: 89607e16-e3fe-41aa-ade9-4b3d3ece55f5
         name: "Temperature Bedroom"
@@ -209,8 +208,6 @@ template:
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
-
-# From night.yaml
 binary_sensor:
   - platform: tod
     name: Night

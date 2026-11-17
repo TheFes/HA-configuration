@@ -1,0 +1,51 @@
+template:
+  - triggers:
+      - trigger: state
+        entity_id: sun.sun
+        to: below_horizon
+      - trigger: state
+        entity_id: sun.sun
+        to: above_horizon
+      - trigger: homeassistant
+        event: start
+      - trigger: event
+        event_type: update_weather_display_data
+    actions:
+      - action: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id:
+            - weather.combined
+            - weather.knmi
+        response_variable: weather_daily
+      - action: weather.get_forecasts
+        data:
+          type: hourly
+        target:
+          entity_id:
+            - weather.combined
+            - weather.knmi
+        response_variable: weather_hourly
+      - variables:
+          weather_entity: "{{ 'weather.combined' if weather_daily['weather.combined'].forecast | count > 0 else 'weather.knmi' }}"
+          weather_data: >
+            {% set is_night = states('sun.sun') == 'below_horizon' %}
+            {% set sunset = (state_attr('sun.sun', 'next_setting') | as_datetime | as_local + timedelta(days=-1 if is_night else 0)).isoformat() %}
+            {% set sunrise = (state_attr('sun.sun', 'next_rising') | as_datetime | as_local).isoformat()  %}
+            {% set hourly_data = weather_hourly[weather_entity].forecast | selectattr('datetime', '>', sunset) | selectattr('datetime', '<', sunrise) | list %}
+            {% set night_temp = hourly_data | map(attribute='temperature') | list | min | round(1) %}
+            {% set night_condition = hourly_data | map(attribute='condition') | list | statistical_mode %}
+
+            {% set use_tomorrow = (is_night and (sunrise | as_datetime).date() != now().date()) | int %}
+            {% set daily_data = weather_daily[weather_entity].forecast[use_tomorrow] %}
+            {% set day_temp = daily_data.temperature %}
+            {% set day_condition = daily_data.condition %}
+
+            {{ dict(night_temp=night_temp, night_condition=night_condition, day_temp=day_temp, day_condition=day_condition, day=iif(use_tomorrow, 'morgen', 'vandaag')) }}
+    sensor:
+      - unique_id: 788724cc-324c-4195-ba74-c8af26bd022a
+        name: Weather Display Data
+        state: "{{ now() }}"
+        device_class: timestamp
+        attributes: "{{ weather_data }}"
