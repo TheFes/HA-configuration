@@ -1,0 +1,894 @@
+input_text:
+  phone_in_assist:
+    name: Phone in Assist
+    icon: mdi:phone-voip
+    max: 50
+  phone_outside_call:
+    name: Phone outside call
+    icon: mdi:phone-outgoing
+    max: 100
+  phone_pending_call:
+    name: Phone pending call
+    icon: mdi:phone-clock
+    max: 255
+
+script:
+# Dial Assist and bridge it to the phone leg
+  phone_assist_connect:
+    alias: "Phone: bridge to Assist"
+    mode: restart
+    fields:
+      phone:
+        description: "Identifier of the phone leg in ha-sip, e.g. **621"
+        required: true
+        selector:
+          text:
+    variables:
+      assist_uri: "sip:homeassistant@192.168.2.94:5060"
+    sequence:
+    - alias: "Dial the Voice over IP integration"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: dial
+          number: "{{ assist_uri }}"
+          ring_timeout: 15
+          sip_account: 1
+          webhook_to_call:
+            call_established: phone_assist_assist_connected
+    - alias: "Wait until Assist answered"
+      wait_for_trigger:
+      - trigger: webhook
+        webhook_id: phone_assist_assist_connected
+        local_only: true
+      timeout:
+        seconds: 15
+    - alias: "Assist did not answer"
+      if: "{{ not wait.completed }}"
+      then:
+      - action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: play_message
+            number: "{{ phone }}"
+            message: Home Assistant is nu niet bereikbaar. Tot horens.
+            post_action: hangup
+      - stop: "Assist did not answer"
+        error: true
+    - alias: "Bridge phone and Assist"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: bridge_audio
+          number: "{{ phone }}"
+          bridge_to: "{{ assist_uri }}"
+
+# Swap the Assist leg for an outside call
+  phone_assist_handover:
+    alias: "Phone: hand over from Assist to outside line"
+    mode: single
+    fields:
+      to_call:
+        description: "SIP URI to call, e.g. sip:+31612345678@192.168.2.100"
+        required: true
+        selector:
+          text:
+      satellite:
+        description: "Assist satellite entity of the phone (used to wait for the spoken reply)"
+        selector:
+          entity:
+            domain: assist_satellite
+      spoken_name:
+        description: "Name used in spoken messages"
+        selector:
+          text:
+    variables:
+      assist_uri: "sip:homeassistant@192.168.2.94:5060"
+      phone: "{{ states('input_text.phone_in_assist') }}"
+      spoken_name: "{{ spoken_name | default('Het nummer', true) | trim }}"
+    sequence:
+    - alias: "Only when a phone is actually on the line"
+      condition: template
+      value_template: "{{ phone not in ['', 'unknown', 'unavailable'] }}"
+    - alias: "Let Assist finish its reply before the leg is dropped"
+      if: "{{ satellite is defined and satellite | default('', true) != '' }}"
+      then:
+      - wait_template: "{{ is_state(satellite, 'responding') }}"
+        timeout:
+          seconds: 10
+      - wait_template: "{{ is_state(satellite, 'idle') }}"
+        timeout:
+          seconds: 20
+      else:
+      - delay:
+          seconds: 4
+    - alias: "Remember the outside call for the clean up automation"
+      action: input_text.set_value
+      target:
+        entity_id: input_text.phone_outside_call
+      data:
+        value: "{{ to_call }}"
+    - alias: "Drop the Assist leg, the phone leg stays up"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: hangup
+          number: "{{ assist_uri }}"
+    - alias: "Dial the requested number"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: dial
+          number: "{{ to_call }}"
+          ring_timeout: 45
+          sip_account: 1
+          webhook_to_call:
+            call_established: phone_assist_outside_connected
+            call_disconnected: phone_assist_outside_ended
+            ring_timeout: phone_assist_outside_ended
+    - alias: "Ringback tone while waiting (60 s file, longer than the ring timeout)"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: play_audio_file
+          number: "{{ phone }}"
+          audio_file: /config/www/ringback.wav
+          cache_audio: true
+    - alias: "Wait for the other side to pick up, reject or time out"
+      wait_for_trigger:
+      - trigger: webhook
+        webhook_id: phone_assist_outside_connected
+        local_only: true
+        id: connected
+      - trigger: webhook
+        webhook_id: phone_assist_outside_ended
+        local_only: true
+        id: ended
+      timeout:
+        seconds: 60
+    - alias: "Stop the ringback tone"
+      action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: stop_playback
+          number: "{{ phone }}"
+    - alias: "Connected or not?"
+      if: "{{ wait.completed and wait.trigger.id == 'connected' }}"
+      then:
+      - alias: "Bridge the phone to the outside call"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: bridge_audio
+            number: "{{ phone }}"
+            bridge_to: "{{ to_call }}"
+      - alias: "Wait until the other side hangs up (phone hang up stops this script)"
+        wait_for_trigger:
+        - trigger: webhook
+          webhook_id: phone_assist_outside_ended
+          local_only: true
+        timeout:
+          hours: 4
+      - alias: "Other side is gone: end the phone leg as well"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: hangup
+            number: "{{ phone }}"
+      - action: input_text.set_value
+        target:
+          entity_id:
+          - input_text.phone_in_assist
+          - input_text.phone_outside_call
+        data:
+          value: ""
+      else:
+      - alias: "Make sure the outside call is gone"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: hangup
+            number: "{{ to_call }}"
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.phone_outside_call
+        data:
+          value: ""
+      - alias: "Tell the caller"
+        action: hassio.addon_stdin
+        data:
+          addon: c7744bff_ha-sip
+          input:
+            command: play_message
+            number: "{{ phone }}"
+            message: "{{ spoken_name }} neemt niet op. Je kunt het opnieuw proberen."
+      - delay:
+          seconds: 5
+      - alias: "Back to Assist"
+        action: script.phone_assist_connect
+        data:
+          phone: "{{ phone }}"
+  phone_call:
+    alias: "Bel iemand met de telefoon"
+    description: >-
+      Start a phone call from the home landline phone to a person, company or phone number.
+      Use this whenever the user asks to call or phone someone, for example "bel papa",
+      "ik wil oma bellen", "bel naar Jumbo Berkel-Enschot", "bel 06 12345678" or
+      "bel 112". Pass who to call exactly as the user said it. When the user refers to a
+      phone number from earlier in the conversation (for example "bel dit nummer"),
+      pass that phone number in to_call and the person or company it belongs to in name.
+      The result contains the sentence to say to the user. If the result asks the user
+      a question, say it, wait for the answer and then use phone_call_confirm.
+    mode: single
+    fields:
+      to_call:
+        name: Who to call
+        description: >-
+          The person or company to call (a name, relation or description such as "papa",
+          "oma van de poes" or "Jumbo Berkel-Enschot") or the phone number, exactly as the
+          user said it. For a number from earlier in the conversation, the number itself.
+        required: true
+        selector:
+          text:
+      name:
+        name: Name
+        description: >-
+          Optional. The person or company the phone number belongs to, for example
+          "Fujifilm Tilburg". Only needed when to_call is a phone number.
+        required: false
+        selector:
+          text:
+    variables:
+      sip: "@192.168.2.100"
+      phone_satellite: assist_satellite.192_168_2_100
+      request: "{{ to_call | default('') | string | trim }}"
+      given_name: "{{ name | default('', true) | string | trim }}"
+      from_phone: >
+        {% if trigger_from_phone is defined %}
+          {{ trigger_from_phone }}
+        {% else %}
+          {{ states('input_text.phone_in_assist') not in ['', 'unknown', 'unavailable']
+             and is_state(phone_satellite, 'processing') }}
+        {% endif %}
+      is_emergency: >
+        {{ request | regex_search('^\D*1\s*1\s*2\D*$|een\s+een\s+twee|alarm|nood|ambulance|brandweer|politie', ignorecase=True) }}
+      phone_book: >-
+        {% set ns = namespace(lines=[]) %}
+        {% for o in state_attr('input_select.phone_book', 'options') | default([], true) %}
+          {% set p = o.split('|') | map('trim') | list %}
+          {% if p | length >= 2 and p[0] and p[-1] %}
+            {% set d = p[1:-1] | select | join(', ') %}
+            {% set ns.lines = ns.lines + [p[0] ~ (' (' ~ d ~ ')' if d else '') ~ ': ' ~ p[-1]] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.lines | join('\n') }}
+    sequence:
+    - alias: "Not asked on a phone: only explain, never call"
+      if: "{{ not from_phone }}"
+      then:
+      - variables:
+          result:
+            success: false
+            say: Bellen kan alleen met de telefoon. Pak de hoorn van de haak en vraag het daar nog een keer.
+            instruction: Reply to the user with exactly the text in 'say' and nothing else.
+      - stop: "Not requested from a phone"
+        response_variable: result
+    - alias: "Look up the number, unless it is an emergency"
+      if: "{{ not is_emergency }}"
+      then:
+      - alias: "Phone book lookup with AI Task (default AI Task entity)"
+        action: ai_task.generate_data
+        continue_on_error: true
+        data:
+          task_name: Phone book lookup
+          instructions: >
+            You transform a phone call request into a phone number.
+            The request can be in Dutch or English.
+
+            Phone book:
+
+            {{ phone_book }}
+
+            Rules:
+
+            - If the request refers to someone in the phone book (by name, by
+              relation such as "papa" or "oma", or by a description such as
+              "oma van de poes"), return that number.
+
+            - If the request is numeric, return it as an international number.
+              If no country code is given, assume a Dutch number and prefix +31
+              (dropping the leading 0).
+
+            - The number has no spaces or other characters besides the leading +.
+
+            - If the request is not numeric and cannot be related to the phone
+              book, set found to false and leave phone_number empty. Do not guess
+              numbers for companies or anyone else outside the phone book.
+
+            Examples: "Papa" gives the father's number,
+            "06 12 3 4 12 34" gives +31612341234.
+
+            Request: "{{ request }}"
+          structure:
+            found:
+              description: Whether a number could be determined
+              required: true
+              selector:
+                boolean:
+            phone_number:
+              description: International format such as +31612345678, empty when not found
+              required: true
+              selector:
+                text:
+            spoken_name:
+              description: How to refer to the person being called in Dutch (e.g. "papa"), or the number itself
+              required: false
+              selector:
+                text:
+        response_variable: lookup
+    - alias: "Work out the result"
+      variables:
+        sip_uri: >
+          {% set n = '' %}
+          {% if is_emergency %}
+            {% set n = '+31112' %}
+          {% elif lookup is defined and lookup.data is defined and lookup.data.found %}
+            {% set n = lookup.data.phone_number | string | regex_replace('[^+0-9]', '') %}
+            {% if n is match('00') %}
+              {% set n = '+' ~ n[2:] %}
+            {% elif n is match('0') %}
+              {% set n = '+31' ~ n[1:] %}
+            {% endif %}
+          {% endif %}
+          sip:{{ n }}{{ sip }}
+        known_number: "{{ sip_uri is match('sip:\\+[0-9]{5,15}@') }}"
+        spoken_name: >
+          {% if is_emergency %}
+            Het alarmnummer
+          {% elif given_name %}
+            {{ given_name }}
+          {% elif lookup is defined and lookup.data is defined and lookup.data.get('spoken_name') %}
+            {{ lookup.data.spoken_name }}
+          {% else %}
+            {{ request }}
+          {% endif %}
+
+  # Not in the phone book and not a number: search the web, park the number and
+  # ask for confirmation. Nothing is dialled in this branch.
+    - alias: "Not in the phone book: look the company up and ask before calling"
+      if: "{{ not known_number and not is_emergency and request is search('[A-Za-zÀ-ÿ]') }}"
+      then:
+      - alias: "Tell the caller we are searching (played by ha-sip on the phone leg)"
+        event: phone_assist_say
+        event_data:
+          message: "Even zoeken naar het nummer van {{ request }}."
+      - alias: "Web search with the existing search agent"
+        action: script.llm_web_search
+        continue_on_error: true
+        data:
+          query: >-
+            Wat is het algemene telefoonnummer van {{ request }} (Nederland)?
+            Noem de naam van het bedrijf, de plaats en het telefoonnummer.
+        response_variable: search
+      - alias: "Pull number, company and city out of the search answer"
+        action: ai_task.generate_data
+        continue_on_error: true
+        data:
+          task_name: Company phone number extraction
+          instructions: >
+            Below is a web search answer about the phone number of "{{ request }}".
+            Extract the phone number of that company or location. Only use a number
+            that literally appears in the answer; never make one up. If the answer
+            contains no phone number for it, set found to false.
+
+            Search answer:
+
+            {{ search.response.speech.plain.speech | default('') if search is defined else '' }}
+          structure:
+            found:
+              description: Whether the answer contains a phone number for the request
+              required: true
+              selector:
+                boolean:
+            phone_number:
+              description: The phone number in international format, e.g. +31135791911
+              required: true
+              selector:
+                text:
+            company:
+              description: Company name, e.g. "Jumbo"
+              required: false
+              selector:
+                text:
+            city:
+              description: Town or city of this location, e.g. "Berkel-Enschot"
+              required: false
+              selector:
+                text:
+        response_variable: company_lookup
+      - alias: "Work out the company result"
+        variables:
+          c: "{{ company_lookup.data if company_lookup is defined and company_lookup.data is defined else {} }}"
+          company_uri: >
+            {% set n = '' %}
+            {% if c.found | default(false) %}
+              {% set n = c.phone_number | default('') | string | regex_replace('[^+0-9]', '') %}
+              {% if n is match('00') %}
+                {% set n = '+' ~ n[2:] %}
+              {% elif n is match('0') %}
+                {% set n = '+31' ~ n[1:] %}
+              {% endif %}
+            {% endif %}
+            sip:{{ n }}{{ sip }}
+          company_known: "{{ company_uri is match('sip:\\+[0-9]{5,15}@') }}"
+          company_name: >
+            {% set co = c.company | default('', true) | trim %}
+            {% set ci = c.city | default('', true) | trim %}
+            {% if co and ci %}{{ co }} in {{ ci }}{% elif co %}{{ co }}{% else %}{{ request }}{% endif %}
+        # Read-out version, grouped: 06 12 34 56 78 / 0800 123 4567 / 013 123 45 67
+          spoken_number: >
+            {% set n = company_uri | regex_replace('^sip:|@.*$', '') %}
+            {% set nat = '0' ~ n[3:] if n.startswith('+31') else n %}
+            {% if nat is match('06') %}{{ nat[0:2] }} {{ nat[2:4] }} {{ nat[4:6] }} {{ nat[6:8] }} {{ nat[8:] }}
+            {% elif nat is match('0[89]0') %}{{ nat[0:4] }} {{ nat[4:7] }} {{ nat[7:] }}
+            {% elif nat is match('0') %}{{ nat[0:3] }} {{ nat[3:6] }} {{ nat[6:8] }} {{ nat[8:] }}
+            {% else %}{{ nat | batch(3) | map('join') | join(' ') }}{% endif %}
+      - if: "{{ company_known }}"
+        then:
+        - alias: "Park the number for the confirmation"
+          action: input_text.set_value
+          target:
+            entity_id: input_text.phone_pending_call
+          data:
+            value: "{{ {'to_call': company_uri, 'name': company_name | trim} | to_json }}"
+        - alias: "Switch on the ja/nee sentences, only for as long as the number is parked"
+          action: automation.turn_on
+          target:
+            entity_id: automation.phone_answer_to_call_question
+        - variables:
+            result:
+              success: true
+              needs_confirmation: true
+              say: >-
+                Ik heb nummer {{ spoken_number | trim }} gevonden voor {{ company_name | trim }}.
+                Wil je dat bellen?
+              instruction: >-
+                Say exactly the text in 'say' to the user and wait for the answer.
+                Do not call phone_call_confirm until the user has answered: use
+                confirm true if the user agrees, false if not.
+        - stop: "Company found, waiting for confirmation"
+          response_variable: result
+        else:
+        - variables:
+            result:
+              success: false
+              say: Ik kon geen telefoonnummer vinden voor {{ request }}. Probeer het nog eens met een andere omschrijving.
+              instruction: Reply to the user with exactly the text in 'say' and nothing else.
+        - stop: "No company number found"
+          response_variable: result
+
+    - alias: "Ask the automation to hand over to the outside line"
+      if: "{{ known_number }}"
+      then:
+      - event: phone_assist_start_call
+        event_data:
+          to_call: "{{ sip_uri }}"
+          satellite: "{{ phone_satellite }}"
+          spoken_name: "{{ spoken_name | trim }}"
+    - alias: "Result for the sentence trigger or the LLM"
+      variables:
+        result:
+          success: "{{ known_number }}"
+          say: >-
+            {% if known_number %}
+              {{ spoken_name | trim }} wordt gebeld. Blijf aan de lijn.
+            {% else %}
+              Ik heb geen telefoonnummer voor {{ given_name or request }}. Probeer het nog eens met een andere naam.
+            {% endif %}
+          instruction: >-
+            Reply to the user with exactly the text in 'say' and nothing else.
+            Do not ask a follow-up question.
+    - stop: "Finished"
+      response_variable: result
+
+# Answer to "Wil je dat bellen?". Exposed to Assist so Gemini can use it;
+# "Phone: answer to call question" uses it for the local path.
+  phone_call_confirm:
+    alias: "Bevestig het klaarstaande telefoongesprek"
+    description: >-
+      Use this only after phone_call asked the user whether to call a phone number it
+      found, and the user has answered. confirm is true when the user said yes, false
+      when the user said no. Never use it in the same turn as phone_call.
+    mode: single
+    fields:
+      confirm:
+        name: Confirm
+        description: True if the user wants the number called, false if not.
+        required: true
+        selector:
+          boolean:
+    variables:
+      phone_satellite: assist_satellite.192_168_2_100
+      pending: >
+        {% set v = states('input_text.phone_pending_call') %}
+        {{ v | from_json if v is match('\s*\{') else {} }}
+      age: >
+        {{ (now() - states.input_text.phone_pending_call.last_changed).total_seconds() | int
+           if states.input_text.phone_pending_call is not none else 9999 }}
+      has_pending: "{{ pending.to_call is defined and age < 90 }}"
+      from_phone: >
+        {% if trigger_from_phone is defined %}
+          {{ trigger_from_phone }}
+        {% else %}
+          {{ states('input_text.phone_in_assist') not in ['', 'unknown', 'unavailable']
+             and is_state(phone_satellite, 'processing') }}
+        {% endif %}
+      accepted: "{{ confirm in [true, 'true', 'True', 'on', 'yes'] }}"
+    sequence:
+    - alias: "Nothing waiting (also the answer to a stray 'ja' on another device)"
+      if: "{{ not has_pending }}"
+      then:
+      - variables:
+          result:
+            success: false
+            say: Er staat geen gesprek klaar. Vraag eerst wie je wilt bellen.
+            instruction: Reply to the user with exactly the text in 'say' and nothing else.
+      - stop: "Nothing pending"
+        response_variable: result
+    - alias: "Only the phone can confirm"
+      if: "{{ not from_phone }}"
+      then:
+      - variables:
+          result:
+            success: false
+            say: Bellen kan alleen met de telefoon.
+            instruction: Reply to the user with exactly the text in 'say' and nothing else.
+      - stop: "Not from the phone"
+        response_variable: result
+    - alias: "Guard: the question must have been asked first (stops the LLM chaining both tools)"
+      if: "{{ age < 4 }}"
+      then:
+      - variables:
+          result:
+            success: false
+            instruction: >-
+              The user has not answered yet. First ask the question from the
+              phone_call result and wait for the user's answer.
+      - stop: "Confirmed too fast"
+        response_variable: result
+    - alias: "Clear the parked number, whatever the answer"
+      action: input_text.set_value
+      target:
+        entity_id: input_text.phone_pending_call
+      data:
+        value: ""
+    - if: "{{ accepted }}"
+      then:
+      - event: phone_assist_start_call
+        event_data:
+          to_call: "{{ pending.to_call }}"
+          satellite: "{{ phone_satellite }}"
+          spoken_name: "{{ pending.name | default('Het nummer', true) }}"
+      - variables:
+          result:
+            success: true
+            say: "{{ pending.name | default('Het nummer', true) }} wordt gebeld. Blijf aan de lijn."
+            instruction: Reply to the user with exactly the text in 'say' and nothing else.
+      - stop: "Answered yes"
+        response_variable: result
+      else:
+      - variables:
+          result:
+            success: true
+            say: Oké, ik bel niet.
+            instruction: Reply to the user with exactly the text in 'say' and nothing else.
+      - stop: "Answered no"
+        response_variable: result
+automation:
+# 1. Phone picks up -> connect to Assist
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist01
+  alias: "Phone: connect to Assist"
+  description: "Answers a call from a Grandstream phone and bridges it to the Voice over IP integration."
+  mode: queued
+  max: 2
+  triggers:
+  - alias: "SIP call webhook received"
+    trigger: webhook
+    webhook_id: sip_call_webhook_id
+    local_only: true
+  variables:
+    allowed_callers:
+    - "**621"   # Woonkamer
+    - "**622"   # Werkkamer Martijn
+    # parsed_caller is what the old menu used; newer ha-sip docs call it parsed_remote_uri
+    number_calling: "{{ trigger.json.parsed_caller | default(trigger.json.parsed_remote_uri, true) }}"
+    in_use_by: "{{ states('input_text.phone_in_assist') }}"
+  conditions:
+  - alias: "Webhook is for an incoming call"
+    condition: template
+    value_template: "{{ trigger.json.event == 'incoming_call' }}"
+  - alias: "Caller is one of the Grandstream phones"
+    condition: template
+    value_template: "{{ number_calling in allowed_callers }}"
+  actions:
+  - alias: "Other phone is already using the line"
+    if: "{{ in_use_by not in ['', 'unknown', 'unavailable', number_calling] }}"
+    then:
+    - action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: answer
+          number: "{{ number_calling }}"
+          menu:
+            message: De lijn is bezet. Probeer het later nog eens.
+            post_action: hangup
+    - stop: "Line in use by {{ in_use_by }}"
+  - alias: "Remember which phone is on the line"
+    action: input_text.set_value
+    target:
+      entity_id: input_text.phone_in_assist
+    data:
+      value: "{{ number_calling }}"
+  - alias: "Answer the phone without a menu"
+    action: hassio.addon_stdin
+    data:
+      addon: c7744bff_ha-sip
+      input:
+        command: answer
+        number: "{{ number_calling }}"
+        webhook_to_call:
+          call_disconnected: phone_assist_phone_hung_up
+        menu:
+          post_action: noop
+  - alias: "Dial Assist and bridge"
+    action: script.phone_assist_connect
+    data:
+      phone: "{{ number_calling }}"
+
+# 2. Phone is put down -> end everything that belongs to it
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist02
+  alias: "Phone: clean up after hang up"
+  description: "Ends the Assist leg and/or outside call when the phone hangs up. Also clears stale state at startup."
+  mode: queued
+  triggers:
+  - alias: "Phone leg disconnected"
+    trigger: webhook
+    webhook_id: phone_assist_phone_hung_up
+    local_only: true
+    id: hung_up
+  - alias: "Home Assistant started"
+    trigger: homeassistant
+    event: start
+    id: start
+  variables:
+    assist_uri: "sip:homeassistant@192.168.2.94:5060"
+    outside: "{{ states('input_text.phone_outside_call') }}"
+  actions:
+  - alias: "Stop a handover that is still running"
+    action: script.turn_off
+    target:
+      entity_id:
+      - script.phone_assist_handover
+      - script.phone_assist_connect
+  - alias: "Hang up the Assist leg"
+    action: hassio.addon_stdin
+    data:
+      addon: c7744bff_ha-sip
+      input:
+        command: hangup
+        number: "{{ assist_uri }}"
+  - alias: "Hang up the outside call, if any"
+    if: "{{ outside not in ['', 'unknown', 'unavailable'] }}"
+    then:
+    - action: hassio.addon_stdin
+      data:
+        addon: c7744bff_ha-sip
+        input:
+          command: hangup
+          number: "{{ outside }}"
+  - alias: "Clear state (the parked company number too)"
+    action: input_text.set_value
+    target:
+      entity_id:
+      - input_text.phone_in_assist
+      - input_text.phone_outside_call
+      - input_text.phone_pending_call
+    data:
+      value: ""
+
+# 3. "Bel papa" as a sentence trigger: the fast path. The lookup and the handover
+#    are in script.phone_call, which the LLM agent can also use as a tool.
+#    Filler words (graag, even, eens, nu) are optional parts of the sentence, so they
+#    never end up in the {to_call} name ("Ik wil graag papa bellen" -> "papa").
+- id: 7f409c21-989e-425f-8a8e-1fc73d57b58d
+  alias: Initiate call using Assist
+  mode: single
+  triggers:
+  - alias: Trigger sentence to initiate call
+    trigger: conversation
+    command:
+    - (Bel|Telefoneer) [even|graag|eens|nu] [naar|met] {to_call}
+    - (Ik wil|Wij willen) [graag|even|eens|nu] [met|naar] {to_call} (bellen|praten|telefoneren|kletsen|babbelen)
+  variables:
+    # Voice over IP satellite of ha-sip: both Grandstream phones reach Assist through it.
+    # Voice satellites, the Assist chat window (no device) and a phone that dials
+    # Home Assistant directly instead of **620 are not allowed to call.
+    phone_satellite: assist_satellite.192_168_2_100
+    from_phone: "{{ trigger.device_id is not none and trigger.device_id == device_id(phone_satellite) }}"
+  actions:
+  - alias: "Look up the number and start the call"
+    action: script.phone_call
+    continue_on_error: true
+    data:
+      to_call: "{{ trigger.slots.to_call }}"
+      trigger_from_phone: "{{ from_phone }}"
+    response_variable: result
+  - alias: Set response
+    set_conversation_response: >
+      {% if result is defined and result.say is defined %}
+        {{ result.say }}
+      {% else %}
+        Er ging iets mis bij het bellen. Probeer het nog een keer.
+      {% endif %}
+
+# 4. Greetings are answered here instead of by the LLM agent. A greeting answered by
+#    the LLM starts a conversation in which sentence triggers are no longer checked.
+#    "Goedemorgen" is left out on purpose: "Good morning actions" handles that.
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist03
+  alias: "Phone: answer greetings locally"
+  description: "Keeps 'bel papa' working after someone first says hello."
+  mode: queued
+  triggers:
+  - alias: Greeting
+    trigger: conversation
+    command:
+    - (hallo|hoi|hey|hee|hé|hi|hai|goedemiddag|goedenavond|goeiemiddag|goeienavond) [daar|allemaal|home assistant|assistent]
+    - hallo hallo
+  variables:
+    phone_satellite: assist_satellite.192_168_2_100
+    from_phone: "{{ trigger.device_id is not none and trigger.device_id == device_id(phone_satellite) }}"
+  actions:
+  - alias: Set response
+    set_conversation_response: >
+      {% if from_phone %}
+        Hallo! Wie wil je bellen, of wat kan ik voor je doen?
+      {% else %}
+        Hallo! Wat kan ik voor je doen?
+      {% endif %}
+
+# 5. Starts the handover for script.phone_call / phone_call_confirm. An automation run
+#    has no user, so the admin-only ha-sip commands are allowed even when the LLM agent
+#    (a non-admin user) started the script.
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist04
+  alias: "Phone: start outside call"
+  description: "Runs the handover script without a user context, so ha-sip commands are allowed."
+  mode: queued
+  triggers:
+  - alias: "script.phone_call found a number to call"
+    trigger: event
+    event_type: phone_assist_start_call
+  conditions:
+  - alias: "Only a complete SIP address"
+    condition: template
+    value_template: "{{ trigger.event.data.to_call | default('') | string is match('sip:\\+[0-9]{5,15}@') }}"
+  actions:
+  - alias: "Start the handover"
+    action: script.turn_on
+    target:
+      entity_id: script.phone_assist_handover
+    data:
+      variables:
+        to_call: "{{ trigger.event.data.to_call }}"
+        satellite: "{{ trigger.event.data.satellite }}"
+        spoken_name: "{{ trigger.event.data.spoken_name }}"
+
+# 6. Answers "ja"/"nee" to "Wil je dat bellen?" locally (when not talking to Gemini).
+#    OFF by default: while it is off its sentence triggers are removed, so "ja"/"nee"
+#    are never intercepted in other conversations. script.phone_call switches it on
+#    when it parks a number; automation 8 switches it off when nothing is parked.
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist06
+  alias: "Phone: answer to call question"
+  description: "Yes/no answer to 'Wil je dat bellen?'. Only active while a number is parked; only dials from the phone."
+  initial_state: false
+  mode: single
+  triggers:
+  - alias: "Yes"
+    trigger: conversation
+    id: "yes"
+    command:
+    - "ja [graag|doe maar|bel maar|hoor|prima|is goed|dat is goed|alsjeblieft|bellen maar]"
+    - "prima [doe maar|bel maar]"
+    - "(doe|bel) maar"
+    - "graag"
+    - "is goed"
+    - "(oké|okee|ok) [doe maar|bel maar]"
+  - alias: "No"
+    trigger: conversation
+    id: "no"
+    command:
+    - "nee [dank je|dankjewel|bedankt|niet doen|niet bellen|laat maar]"
+    - "niet (doen|bellen)"
+    - "laat maar"
+    - "liever niet"
+  variables:
+    phone_satellite: assist_satellite.192_168_2_100
+    from_phone: "{{ trigger.device_id is not none and trigger.device_id == device_id(phone_satellite) }}"
+  actions:
+  - action: script.phone_call_confirm
+    continue_on_error: true
+    data:
+      confirm: "{{ trigger.id == 'yes' }}"
+      trigger_from_phone: "{{ from_phone }}"
+    response_variable: result
+  - set_conversation_response: >
+      {{ result.say if result is defined and result.say is defined
+         else 'Er ging iets mis. Probeer het nog een keer.' }}
+
+# 7. Plays a short message on the phone leg (used for "Even zoeken..."). An automation
+#    for the same reason as 5: ha-sip commands are admin-only.
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist05
+  alias: "Phone: say message on phone"
+  mode: queued
+  triggers:
+  - trigger: event
+    event_type: phone_assist_say
+  conditions:
+  - condition: template
+    value_template: "{{ states('input_text.phone_in_assist') not in ['', 'unknown', 'unavailable'] }}"
+  actions:
+  - action: hassio.addon_stdin
+    data:
+      addon: c7744bff_ha-sip
+      input:
+        command: play_message
+        number: "{{ states('input_text.phone_in_assist') }}"
+        message: "{{ trigger.event.data.message }}"
+
+# 8. Keeps the ja/nee automation switched off whenever nothing is parked
+- id: 3d1b6a52-7c0e-4f4b-9a55-phoneassist07
+  alias: "Phone: parked number housekeeping"
+  description: "Expires a parked number after 90 s and switches off the ja/nee sentences when nothing is parked."
+  mode: queued
+  triggers:
+  - alias: "Parked number not answered within 90 seconds"
+    trigger: state
+    entity_id: input_text.phone_pending_call
+    for:
+      seconds: 90
+    id: expired
+  - alias: "Parked number cleared (answered, hung up or expired)"
+    trigger: state
+    entity_id: input_text.phone_pending_call
+    to: ""
+    id: cleared
+  - alias: "After a restart nothing is parked"
+    trigger: homeassistant
+    event: start
+    id: start
+  actions:
+  - if: "{{ trigger.id == 'expired' and states('input_text.phone_pending_call') not in ['', 'unknown', 'unavailable'] }}"
+    then:
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.phone_pending_call
+      data:
+        value: ""
+  - if: "{{ states('input_text.phone_pending_call') in ['', 'unknown', 'unavailable'] }}"
+    then:
+    - alias: "Sentences off. stop_actions false: the answer automation may be mid-reply"
+      action: automation.turn_off
+      target:
+        entity_id: automation.phone_answer_to_call_question
+      data:
+        stop_actions: false
