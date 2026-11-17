@@ -2,22 +2,42 @@
 
 # From: eta_m_en_m_from_work.yaml
 automation:
+# From: eta_m_en_m_from_work.yaml
   - id: 376b6b93-e8ed-43cf-89e3-1b915e5ff236
     alias: "Send notification when Martijn or Marleen leaves from work"
-    mode: parallel
+    description: >-
+      Sends the other person an ETA when Martijn or Marleen leaves work, and refreshes it
+      on every Waze update. No waiting runs: the trip state lives in sensor.variables as
+      eta_<name> (HH:MM, used by the dashboard) and eta_<name>_data (ETA timestamp,
+      expiry and vehicle). The ETA notification is cleared when the trip ends.
+    mode: queued
+    max: 20
     max_exceeded: silent
+    trace:
+      stored_traces: 25
     triggers:
       - alias: "Marleen left work"
         trigger: state
         entity_id: person.marleen
         from: !secret work_marleen
         to: "not_home"
+        id: depart
       - alias: "Martijn left work"
         trigger: state
         entity_id: person.martijn
         from: !secret work_martijn
         to: "not_home"
-      - alias: "Person status changed (for reset)"
+        id: depart
+      - alias: "Travel time updated by Waze"
+        trigger: state
+        entity_id:
+          - sensor.martijn_naar_huis
+          - sensor.marleen_naar_huis
+        not_to:
+          - unavailable
+          - unknown
+        id: update
+      - alias: "Arrived home or back at work (reset)"
         trigger: state
         entity_id:
           - person.martijn
@@ -26,7 +46,7 @@ automation:
           - "home"
           - !secret work_marleen
           - !secret work_martijn
-        id: "reset"
+        id: reset
       - alias: "Cancel ETA notification for Martijn"
         trigger: event
         id: reset
@@ -44,107 +64,169 @@ automation:
         variables:
           name: marleen
     variables:
-      name: "{{ name if name is defined else states[trigger.entity_id].object_id }}"
+      name: "{{ name if name is defined else trigger.entity_id.split('.')[1].split('_')[0] }}"
       gender: "{{ 'hij' if name == 'martijn' else 'ze' }}"
       sensor: "sensor.{{ name }}_naar_huis"
       notify: "{{ 'mobile_app_iphone_van_marleen' if name == 'martijn' else 'mobile_app_pixel_10_pro' }}"
-      vehicle: "{{ 'fiets' if is_state('input_boolean.martijn_fiets', 'on') and is_state('binary_sensor.pixel_10_pro_android_auto', 'off') and name == 'martijn' else 'auto' }}"
-      eta: >
-        {%- set delta = 40 if vehicle == 'fiets' else states(sensor) | float %}
-        {{ (now() + timedelta(minutes=delta)).strftime('%H:%M') }}
-      work:
-        martijn: !secret work_martijn
-        marleen: !secret work_marleen
+      all_vars: "{{ state_attr('sensor.variables', 'variables') | default({}, true) }}"
+      trip: "{{ all_vars.get('eta_' ~ name ~ '_data') }}"
     actions:
-      - if: "{{ trigger.id == 'reset' }}"
-        then:
-          - alias: "Remove ETA variable"
-            event: remove_variable
-            event_data:
-              key: "eta_{{ name }}"
-        else:
-          - alias: "Update travel time sensor"
-            action: homeassistant.update_entity
-            target:
-              entity_id: "{{ sensor }}"
-          - alias: "Send notification to phone"
-            action: "notify.{{ notify }}"
-            data:
-              title: "{{ name | capitalize }} is onderweg {{ (' met de ' ~ vehicle) if name == 'martijn' else ''}}"
-              message: "Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}"
-              data:
-                ttl: 0
-                priority: high
-                channel: ETA
-                tag: eta_{{ name }}
-                notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car'}}"
-                actions:
-                  - action: "cancel_eta_{{ name }}"
-                    title: "Stop updates"
-          - alias: "Set ETA variable"
-            event: set_variable
-            event_data:
-              key: "eta_{{ name }}"
-              value: "{{ eta }}"
-              set_timestamp: false
-          - if: "{{ vehicle == 'auto' }}"
-            then:
-              - repeat:
-                  until: >
-                    {{
-                      is_state(trigger.entity_id, [work[name], 'home'])
-                      or (state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_'~name, none) is none
-                    }}
-                  sequence:
-                    - alias: "Update travel time sensor in loop"
-                      action: homeassistant.update_entity
-                      target:
-                        entity_id: "{{ sensor }}"
-                    - alias: "Calculate updated ETA time"
-                      variables:
-                        eta: "{{ now() + timedelta(minutes=states(sensor)|float) }}"
-                    - wait_for_trigger:
-                        - alias: "Person reached destination"
-                          trigger: template
-                          value_template: "{{ is_state(trigger.entity_id, [work[name], 'home']) }}"
-                        - alias: "ETA cancellation requested"
-                          trigger: event
-                          event_type: mobile_app_notification_action
-                          event_data:
-                            action: "cancel_eta_{{ name }}"
-                        - alias: "ETA delay detected"
-                          trigger: template
-                          value_template: >
-                            {{
-                              (now() + timedelta(minutes=states(sensor) | float)) - as_datetime(eta) > timedelta(minutes=5)
-                            }}
-                          id: delay
-                    - if: "{{ wait.trigger.id == 'delay' }}"
-                      then:
-                        - alias: "Calculate delayed ETA time"
-                          variables:
-                            eta: "{{ (now() + timedelta(minutes=states(sensor) | float)).strftime('%H:%M') }}"
-                        - alias: "Update ETA variable with new time"
-                          event: set_variable
-                          event_data:
-                            key: "eta_{{ name }}"
-                            value: "{{ eta }}"
-                        - alias: "Send notification to phone"
-                          action: "notify.{{ notify }}"
-                          data:
-                            title: "{{ name | capitalize }} is vertraagd"
-                            message: "{{ gender | capitalize }} zou er nu rond {{ eta }} moeten zijn"
-                            data:
-                              ttl: 0
-                              priority: high
-                              channel: ETA
-                              tag: eta_{{ name }}
-                              notification_icon: mdi:car
-                              actions:
-                                - action: "cancel_eta_{{ name }}"
-                                  title: "Stop updates"
+      - choose:
+          - alias: "Reset: arrived, cancelled or trip expired"
+            conditions:
+              - or:
+                  - condition: trigger
+                    id: reset
+                  - and:
+                      - condition: trigger
+                        id: update
+                      - alias: "Trip expired?"
+                        condition: template
+                        value_template: "{{ trip is mapping and now() > as_datetime(trip.expires) }}"
+              - alias: "Anything to remove?"
+                condition: template
+                value_template: "{{ trip is not none or ('eta_' ~ name) in all_vars }}"
+            sequence:
+              - alias: "Remove ETA for the dashboard"
+                event: remove_variable
+                event_data:
+                  key: "eta_{{ name }}"
+              - alias: "Wait until sensor.variables processed it"
+                wait_template: >-
+                  {{ ('eta_' ~ name) not in (state_attr('sensor.variables', 'variables') | default({}, true)) }}
+                timeout: 5
+              - alias: "Remove ETA data"
+                event: remove_variable
+                event_data:
+                  key: "eta_{{ name }}_data"
+              - alias: "Clear the ETA notification on the other phone"
+                action: "notify.{{ notify }}"
+                continue_on_error: true
+                data:
+                  message: clear_notification
+                  data:
+                    tag: "eta_{{ name }}"
 
-  # From: martijn_bicycle.yaml
+          - alias: "Departure: send first ETA"
+            conditions:
+              - condition: trigger
+                id: depart
+            sequence:
+              - alias: "Update travel time sensor"
+                action: homeassistant.update_entity
+                target:
+                  entity_id: "{{ sensor }}"
+                continue_on_error: true
+              - alias: "Calculate ETA with the updated travel time"
+                variables:
+                  vehicle: >-
+                    {{ 'fiets' if name == 'martijn'
+                       and is_state('input_boolean.martijn_fiets', 'on')
+                       and is_state('binary_sensor.pixel_10_pro_android_auto', 'off')
+                       else 'auto' }}
+                  travel: "{{ 40 if vehicle == 'fiets' else states(sensor) | float(0) }}"
+                  eta_ts: "{{ (now() + timedelta(minutes=travel)).isoformat() if travel > 0 else none }}"
+                  eta: "{{ as_datetime(eta_ts).strftime('%H:%M') if eta_ts else 'onbekend' }}"
+                  expires: "{{ (now() + timedelta(minutes=[travel * 2, 60] | max)).isoformat() }}"
+              - alias: "Send notification to phone"
+                action: "notify.{{ notify }}"
+                data:
+                  title: "{{ name | capitalize }} is onderweg{{ (' met de ' ~ vehicle) if name == 'martijn' else '' }}"
+                  message: >-
+                    {%- if eta_ts -%}
+                      Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ eta }}
+                    {%- else -%}
+                      Reistijd is nog niet bekend, je krijgt een update zodra die er is
+                    {%- endif -%}
+                  data:
+                    ttl: 0
+                    priority: high
+                    channel: ETA
+                    tag: "eta_{{ name }}"
+                    notification_icon: "{{ 'mdi:bike' if vehicle == 'fiets' else 'mdi:car' }}"
+                    actions:
+                      - action: "cancel_eta_{{ name }}"
+                        title: "Stop updates"
+              - alias: "Store ETA data"
+                event: set_variable
+                event_data:
+                  key: "eta_{{ name }}_data"
+                  value:
+                    ts: "{{ eta_ts }}"
+                    expires: "{{ expires }}"
+                    vehicle: "{{ vehicle }}"
+                  set_timestamp: false
+              - alias: "Wait until sensor.variables processed it"
+                wait_template: >-
+                  {{ ((state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_' ~ name ~ '_data') or {}).get('expires') == expires }}
+                timeout: 5
+              - alias: "Store ETA for the dashboard"
+                event: set_variable
+                event_data:
+                  key: "eta_{{ name }}"
+                  value: "{{ eta }}"
+                  set_timestamp: false
+
+          - alias: "Travel time update: refresh ETA"
+            conditions:
+              - condition: trigger
+                id: update
+              - alias: "On the way by car with a valid travel time?"
+                condition: template
+                value_template: "{{ trip is mapping and trip.vehicle == 'auto' and is_number(trigger.to_state.state) }}"
+            sequence:
+              - alias: "Calculate new ETA"
+                variables:
+                  new_ts: "{{ (now() + timedelta(minutes=trigger.to_state.state | float)).isoformat() }}"
+                  new_eta: "{{ as_datetime(new_ts).strftime('%H:%M') }}"
+                  diff: >-
+                    {{ ((as_datetime(new_ts) - as_datetime(trip.ts)).total_seconds() / 60) | round(1)
+                       if trip.ts else none }}
+              - alias: "First known ETA, or changed more than 5 minutes?"
+                condition: template
+                value_template: "{{ diff is none or diff | abs > 5 }}"
+              - alias: "Notify when the ETA is later, or known for the first time"
+                if: "{{ diff is none or diff > 5 }}"
+                then:
+                  - action: "notify.{{ notify }}"
+                    data:
+                      title: "{{ name | capitalize }} is {{ 'onderweg' if diff is none else 'vertraagd' }}"
+                      message: >-
+                        {%- if diff is none -%}
+                          Als {{ gender }} meteen naar huis komt is {{ gender }} er om {{ new_eta }}
+                        {%- else -%}
+                          {{ gender | capitalize }} zou er nu rond {{ new_eta }} moeten zijn
+                        {%- endif -%}
+                      data:
+                        ttl: 0
+                        priority: high
+                        channel: ETA
+                        tag: "eta_{{ name }}"
+                        notification_icon: mdi:car
+                        actions:
+                          - action: "cancel_eta_{{ name }}"
+                            title: "Stop updates"
+              - alias: "Store new ETA data"
+                event: set_variable
+                event_data:
+                  key: "eta_{{ name }}_data"
+                  value:
+                    ts: "{{ new_ts }}"
+                    expires: "{{ trip.expires }}"
+                    vehicle: "{{ trip.vehicle }}"
+                  set_timestamp: false
+              - alias: "Wait until sensor.variables processed it"
+                wait_template: >-
+                  {{ ((state_attr('sensor.variables', 'variables') | default({}, true)).get('eta_' ~ name ~ '_data') or {}).get('ts') == new_ts }}
+                timeout: 5
+              - alias: "Store new ETA for the dashboard"
+                event: set_variable
+                event_data:
+                  key: "eta_{{ name }}"
+                  value: "{{ new_eta }}"
+                  set_timestamp: false
+
+# From: martijn_bicycle.yaml
   - id: 6757b053-0f63-4c30-98bd-1038ab57700e
     alias: "Check if Martijn is on his bicycle for ETA calculation"
     mode: single
@@ -186,7 +268,7 @@ automation:
                 target:
                   entity_id: input_boolean.martijn_fiets
 
-  # From: notification_marleen_almost_home.yaml
+# From: notification_marleen_almost_home.yaml
   - id: 2068227c-13b2-4bc3-bc1b-50afe8da2deb
     alias: "Marleen is almost home"
     mode: single

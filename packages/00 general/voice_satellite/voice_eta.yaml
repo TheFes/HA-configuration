@@ -18,10 +18,10 @@ automation:
           person: "person.{{ name | lower }}"
           waze: "sensor.{{ name | lower }}_naar_huis"
           proximity: "sensor.thuis_{{ name | lower }}_direction_of_travel"
-      - alias: "Make sure entity states are updated"
+      - alias: "Make sure entity states are updated (Waze polling is disabled)"
         action: homeassistant.update_entity
         target:
-          entity_id: "{{ [waze,proximity, person] }}"
+          entity_id: "{{ [waze, proximity, person] }}"
       - alias: "Short delay to make sure updates are done"
         delay: 0.5
       - alias: Set response
@@ -29,10 +29,43 @@ automation:
           {%- set eta = (now() + timedelta(minutes=2 + states(waze) | float(0))).strftime('%H:%M') %}
           {%- if is_state(person, 'home') %}
             {{ name }} is al thuis
-          {%- elif is_state(waze, 'towards') %}
+          {%- elif is_state(proximity, 'towards') %}
             {{ name }} is om {{ eta }} thuis.
           {%- elif is_state(proximity, 'away_from') %}
             {{ name }} gaat de verkeerde kant op, maar als {{ gender }} nu omdraait is {{ gender }} om {{ eta }} thuis.
           {%- else %}
             {{ name }} is nog niet onderweg, maar als {{ gender }} nu vertrekt is {{ gender }} om {{ eta }} thuis.
           {%- endif %}
+
+  - id: 5a0e3c4f-9b2d-4f61-8e7a-2c6d1b9f4e83
+    alias: Poll Waze travel time during an active ETA trip
+    description: >-
+      Waze polling is disabled for both travel time entries (it only produced
+      "No routes matched" warnings while at home). While a trip is active in
+      sensor.variables, refresh the matching Waze sensor every 5 minutes; the ETA
+      automation reacts to the resulting state change.
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - alias: Every 5 minutes
+        trigger: time_pattern
+        minutes: "/5"
+    variables:
+      all_vars: "{{ state_attr('sensor.variables', 'variables') | default({}, true) }}"
+      targets: >-
+        {{
+          ['martijn', 'marleen']
+            | select('in', all_vars.keys() | map('replace', 'eta_', '') | map('replace', '_data', '') | list)
+            | map('regex_replace', '^(.*)$', 'sensor.\\1_naar_huis')
+            | list
+        }}
+    conditions:
+      - alias: "Trip active for someone?"
+        condition: template
+        value_template: "{{ targets | count > 0 }}"
+    actions:
+      - alias: Refresh Waze travel time
+        action: homeassistant.update_entity
+        target:
+          entity_id: "{{ targets }}"
+        continue_on_error: true
