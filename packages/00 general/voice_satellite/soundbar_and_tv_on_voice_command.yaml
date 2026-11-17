@@ -1,53 +1,38 @@
 automation:
   - id: 2017abca-a756-420b-98fb-228824ce182a
-    alias: Voice - Manage Shield and Soundbar on voice command in living room or kitchen
+    alias: Voice - Manage Shield and Soundbar on voice command in living room
     mode: parallel
     variables:
       tv_playing: "{{ is_state('media_player.nvidia_shield', 'playing') }}"
+      soundbar_was_on: "{{ is_state('media_player.samsung_soundbar', 'on') }}"
       soundbar_source: "{{ state_attr('media_player.samsung_soundbar', 'source') | default('off', true) }}"
-      living: "{{ area_name(trigger.entity_id) == 'Woonkamer' }}"
+      soundbar_volume: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') }}"
       satellite_player: "{{ device_entities(device_id(trigger.entity_id)) | select('match', 'media_player') | list | first }}"
+    # Soundbar was in use on another source (TV), so it has to go back there
+      restore_soundbar: "{{ soundbar_was_on and soundbar_source not in ['aux', 'off'] }}"
     triggers:
       - trigger: state
-        entity_id:
-          - assist_satellite.woonkamer
-          - assist_satellite.keuken
+        entity_id: assist_satellite.woonkamer
         to: listening
     actions:
-      - if: "{{ tv_playing and living }}"
+      - if: "{{ tv_playing }}"
         then:
           - alias: "Pause the Shield"
             action: media_player.media_pause
             target:
               entity_id: media_player.nvidia_shield
-      - if: "{{ tv_playing }}"
-        then:
-          - alias: Create scene with current soundbar status
-            action: scene.create
-            data:
-              scene_id: soundbar_before
-              snapshot_entities:
-                - media_player.samsung_soundbar
-          - alias: Wait for satellite to enter processing state
-            wait_for_trigger:
-              - trigger: state
-                entity_id:
-                  - assist_satellite.woonkamer
-                  - assist_satellite.keuken
-                to: processing
+          - alias: Wait until satellite stops listening (processing, or idle when cancelled)
+            wait_template: "{{ not is_state(trigger.entity_id, 'listening') }}"
             timeout:
-              seconds: 10
-          - variables:
-              living: "{{ area_name(wait.trigger.entity_id) == 'Woonkamer' }}"
-          - if: "{{ wait.trigger is not none }}"
+              seconds: 15
+          - if: "{{ states(trigger.entity_id) in ['processing', 'responding'] }}"
             then:
               - alias: Set volume soundbar
                 action: media_player.volume_set
                 target:
-                  entity_id:
-                    - media_player.samsung_soundbar
+                  entity_id: media_player.samsung_soundbar
                 data:
-                  volume_level: "{{ 0.1 if living else 0.02 }}"
+                  volume_level: 0.1
       - alias: Store current volume satellite
         variables:
           sat_vol: "{{ state_attr(satellite_player, 'volume_level') }}"
@@ -57,7 +42,8 @@ automation:
           entity_id: "{{ satellite_player }}"
         data:
           volume_level: 0.7
-      - if: "{{ living }}"
+      - alias: Switch soundbar to aux, unless the request was already cancelled
+        if: "{{ not is_state(trigger.entity_id, 'idle') }}"
         then:
           - alias: Ensure soundbar is on
             action: media_player.turn_on
@@ -69,36 +55,51 @@ automation:
               source: aux
             target:
               entity_id: media_player.samsung_soundbar
-      - alias: Wait for satellite to return to idle state
-        wait_for_trigger:
-          - trigger: template
-            value_template: "{{ is_state(trigger.entity_id, 'idle') }}"
-            for:
-              seconds: 0.5
+      - alias: Wait for satellite to be idle (also when it already is)
+        repeat:
+          sequence:
+            - wait_template: "{{ is_state(trigger.entity_id, 'idle') }}"
+              timeout:
+                minutes: 2
+            - delay:
+                milliseconds: 500
+          until: "{{ is_state(trigger.entity_id, 'idle') or repeat.index >= 5 }}"
       - alias: Set volume voice satellite back to old setting
         action: media_player.volume_set
         target:
           entity_id: "{{ satellite_player }}"
         data:
           volume_level: "{{ sat_vol }}"
-      - if: "{{ tv_playing }}"
+      - if: "{{ tv_playing and not is_state('media_player.nvidia_shield', 'playing') }}"
         then:
-          - alias: Apply scene with previous soundbar settings
-            action: scene.turn_on
+          - alias: Resume playing on Shield
+            action: media_player.media_play
             target:
-              entity_id: scene.soundbar_before
-          - if: "{{ not is_state('media_player.nvidia_shield', 'playing') }}"
-            then:
-              - alias: Resume playing on Shield
-                action: media_player.media_play
-                target:
-                  entity_id: media_player.nvidia_shield
-      - if: "{{ not tv_playing and living }}"
+              entity_id: media_player.nvidia_shield
+      - if: "{{ restore_soundbar }}"
         then:
+          - if: "{{ not is_state_attr('media_player.samsung_soundbar', 'source', soundbar_source) }}"
+            then:
+              - alias: Set soundbar back to previous source
+                action: media_player.select_source
+                data:
+                  source: "{{ soundbar_source }}"
+                target:
+                  entity_id: media_player.samsung_soundbar
+          - if: "{{ soundbar_volume is number }}"
+            then:
+              - alias: Set soundbar back to previous volume
+                action: media_player.volume_set
+                target:
+                  entity_id: media_player.samsung_soundbar
+                data:
+                  volume_level: "{{ soundbar_volume }}"
+        else:
           - variables:
               player: >
                 {{
                   integration_entities('music_assistant')
+                    | select('match', 'media_player')
                     | select('in', area_entities(area_id(trigger.entity_id)))
                     | list
                     | first
@@ -110,24 +111,29 @@ automation:
               seconds: 10
           - variables:
               something_played: "{{ wait.completed }}"
-          - alias: Wait for music to stop playing
-            wait_for_trigger:
-              - trigger: template
-                value_template: >
-                  {{
-                    something_played
-                    and not is_state(player, 'playing')
-                  }}
-                for:
-                  seconds: 10
-            timeout:
-              minutes: 5
-          - if: "{{ wait.trigger is not none }}"
+          - if: "{{ something_played }}"
             then:
-              - alias: Turn soundbar off again
-                action: media_player.turn_off
-                target:
-                  entity_id: media_player.samsung_soundbar
+              - alias: Wait for music to stop playing
+                wait_for_trigger:
+                  - trigger: template
+                    value_template: "{{ not is_state(player, 'playing') }}"
+                    for:
+                      seconds: 10
+                timeout:
+                  minutes: 5
+              - if: "{{ wait.trigger is not none }}"
+                then:
+                  - alias: Turn soundbar off again
+                    action: media_player.turn_off
+                    target:
+                      entity_id: media_player.samsung_soundbar
+            else:
+              - if: "{{ not soundbar_was_on }}"
+                then:
+                  - alias: Nothing played and soundbar was off before, turn it off again
+                    action: media_player.turn_off
+                    target:
+                      entity_id: media_player.samsung_soundbar
 
   - id: bd5c40c0-6c25-4560-9455-8318d1e3924a
     alias: Make sure Soundbar is set to right source when something is playing

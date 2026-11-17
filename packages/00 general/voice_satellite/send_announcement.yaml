@@ -30,56 +30,56 @@ script:
         name: Pre Announce Sound
         description: Sends default pre announce sound if nothing is set
     sequence:
-      - alias: Set variables to be used in script
-        variables:
-          player: >
-            {{
-              device_entities(device_id(satellite))
-                | select('match', 'media_player.')
-                | first
-                | default(none)
-            }}
-          current_vol: "{{ state_attr(player, 'volume_level') }}"
-          data: |
-            {% set data =
-              {
-                "preannounce_media_id": pre_announce_sound | default(none, true),
-                "message": message | default(" ", true)
-              } 
-            %}
-            {{ dict(data.items() | selectattr('1')) }}
-      - parallel:
-          - alias: Send announcement
-            action: assist_satellite.announce
-            data: "{{ data }}"
-            target:
-              entity_id: "{{ satellite }}"
-          - alias: Check if volume should be adjusted
-            if:
-              - alias: Check if volume setting is proviced and player can be found
-                condition: template
-                value_template: "{{ volume is defined and player is not none }}"
-            then:
-              - alias: Wait until player is responding
-                wait_template: "{{ is_state('assist_satellite.martijn', 'responding') }}"
-              - alias: Short delay to prevent volume adjustment before announcement actually starts
-                delay: 0.3
-              - alias: Set volume
-                action: media_player.volume_set
-                target:
-                  entity_id: "{{ player }}"
-                data:
-                  volume_level: "{{ volume | default(0.6) | float(0.6) }}"
-      - if:
-          - alias: Check if volume setting is proviced and player can be found
-            condition: template
-            value_template: "{{ volume is defined and player is not none }}"
+    - alias: Set variables to be used in script
+      variables:
+        player: >
+          {{
+            device_entities(device_id(satellite))
+              | select('match', 'media_player.')
+              | first
+              | default(none)
+          }}
+        current_vol: "{{ state_attr(player, 'volume_level') if player else none }}"
+        data: |
+          {% set data =
+            {
+              "preannounce_media_id": pre_announce_sound | default(none, true),
+              "message": message | default(" ", true)
+            } 
+          %}
+          {{ dict(data.items() | selectattr('1')) }}
+    - parallel:
+      - alias: Send announcement
+        action: assist_satellite.announce
+        data: "{{ data }}"
+        target:
+          entity_id: "{{ satellite }}"
+      - alias: Check if volume should be adjusted
+        if:
+        - alias: Check if volume setting is provided and player can be found
+          condition: template
+          value_template: "{{ volume is defined and player is not none }}"
         then:
-          - alias: Wait until player is no longer responding
-            wait_template: "{{ not is_state(satellite, 'responding') }}"
-          - alias: Set volume back to original volume
-            action: media_player.volume_set
-            target:
-              entity_id: "{{ player }}"
-            data:
-              volume_level: "{{ current_vol }}"
+        - alias: Wait until player is responding
+          wait_template: "{{ is_state(satellite, 'responding') }}"
+        - alias: Short delay to prevent volume adjustment before announcement actually starts
+          delay: 0.3
+        - alias: Set volume
+          action: media_player.volume_set
+          target:
+            entity_id: "{{ player }}"
+          data:
+            volume_level: "{{ volume | default(0.6) | float(0.6) }}"
+    - if:
+      - alias: Check if volume was changed and original volume is known
+        condition: template
+        value_template: "{{ volume is defined and player is not none and current_vol is number }}"
+      then:
+      - alias: Wait until player is no longer responding
+        wait_template: "{{ not is_state(satellite, 'responding') }}"
+      - alias: Set volume back to original volume
+        action: media_player.volume_set
+        target:
+          entity_id: "{{ player }}"
+        data:
+          volume_level: "{{ current_vol }}"

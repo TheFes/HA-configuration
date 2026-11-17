@@ -98,7 +98,6 @@ automation:
               - condition: trigger
                 id:
                   - dark
-                  - shield
                   - home
               - alias: "Dark inside?"
                 condition: state
@@ -217,161 +216,197 @@ media_player:
     host: 192.168.2.116
     port: 55001
     max_volume: 20
-    power_options: True
+    power_options: true
 
-  # - platform: media_player_template
-  #   media_players:
-  #     shield_en_soundbar:
-  #       friendly_name: Shield en Soundbar
-  #       unique_id: ca6d1b07-6e7b-41dd-9fae-963a9b5a632b
-  #       device_class: tv
-  #       value_template: >
-  #         {% set player = 'media_player.nvidia_shield'
-  #           if not is_state(' media_player.nvidia_shield', 'off')
-  #           else 'media_player.samsung_soundbar' %}
-  #         {{ states(player) }}
-  #       turn_on:
-  #         - action: media_player.turn_on
-  #           target:
-  #             entity_id: media_player.nvidia_shield
-  #       turn_off:
-  #         - action: media_player.turn_on
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       volume_up:
-  #         - action: media_player.volume_set
-  #           target:
-  #             entity_id: media_player.samsung_soundbar
-  #           data:
-  #             volume_level: "{{ [1, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.05] | min }}"
-  #       volume_down:
-  #         - action: media_player.volume_set
-  #           target:
-  #             entity_id: media_player.samsung_soundbar
-  #           data:
-  #             volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.05] | max }}"
-  #       set_volume:
-  #         - action: media_player.volume_set
-  #           target:
-  #             entity_id: media_player.samsung_soundbar
-  #           data:
-  #             volume_level: "{{ volume }}"
-  #       play:
-  #         - action: media_player.media_play
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       # play_pause:
-  #       #   - action: media_player.media_play_pause
-  #       #     target:
-  #       #       entity_id: >
-  #       #         {{ 'media_player.nvidia_shield'
-  #       #           if not is_state(' media_player.nvidia_shield', 'off')
-  #       #           else 'media_player.samsung_soundbar' }}
-  #       pause:
-  #         - action: media_player.media_stop
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       stop:
-  #         - action: media_player.media_stop
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       next:
-  #         - action: media_player.media_next_track
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       previous:
-  #         - action: media_player.media_previous_track
-  #           target:
-  #             entity_id: >
-  #               {{ 'media_player.nvidia_shield'
-  #                 if not is_state(' media_player.nvidia_shield', 'off')
-  #                 else 'media_player.samsung_soundbar' }}
-  #       current_source_template: >
-  #         {% set player = 'media_player.nvidia_shield'
-  #           if not is_state(' media_player.nvidia_shield', 'off')
-  #           else 'media_player.samsung_soundbar' %}
-  #         {{ state_attr(player, 'source') }}
-  #       # source_list: >
-  #       #   {% set player = 'media_player.nvidia_shield'
-  #       #     if not is_state(' media_player.nvidia_shield', 'off')
-  #       #     else 'media_player.samsung_soundbar' %}
-  #       #   {{ state_attr(player, 'source_list') }}
-  #       mute:
-  #         - action: media_player.volume_mute
-  #           target:
-  #             entity_id: media_player.samsung_soundbar
-  #           data:
-  #             is_volume_muted: "{{ is_muted }}"
-  #       current_is_muted_template: >
-  #         {{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}
-  #       # app_id_template: "{{ state_attr('media_player.nvidia_shield'. 'app_id') }}"
-  #       # app_name_template: "{{ state_attr('media_player.nvidia_shield'. 'app_name') }}"
+template:
+  - media_player:
+      - name: "Shield en Soundbar"
+        unique_id: 8d2f6c1e-4b7a-4f0e-9a35-2c6e1b7d90a4
+        default_entity_id: media_player.shield_en_soundbar
+        device_class: tv
 
-  # From: universal_shield_soundbar.yaml
-  - platform: universal
-    name: Shield en Soundbar
-    unique_id: 56f0b8ab-3309-4572-96cb-e6818875ad58
-    children:
-      - media_player.nvidia_shield
-      - media_player.samsung_soundbar
-    state_template: >
-      {{ 
-        states('media_player.nvidia_shield')
-        if not is_state('media_player.nvidia_shield', 'off')
-        else states('media_player.samsung_soundbar')
-      }}
-    commands:
-      turn_on:
-        service: media_player.turn_on
-        target:
-          entity_id: media_player.nvidia_shield
-      turn_off:
-        service: media_player.turn_off
-        target:
-          entity_id: >
-            {{ 
-              'media_player.nvidia_shield'
-              if not is_state('media_player.nvidia_shield', 'off')
-              else 'media_player.samsung_soundbar'
-            }}
-      volume_up:
-        service: media_player.volume_set
-        target:
-          entity_id: media_player.samsung_soundbar
-        data:
-          volume_level: "{{ [0.2, state_attr('media_player.samsung_soundbar', 'volume_level') + 0.01] | min | round(2) }}"
-      volume_down:
-        service: media_player.volume_set
-        target:
-          entity_id: media_player.samsung_soundbar
-        data:
-          volume_level: "{{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') - 0.01] | max | round(2) }}"
-      volume_set:
-        service: media_player.volume_set
-        target:
-          entity_id: media_player.samsung_soundbar
-        data:
-          volume_level: "{{ [0.2, volume_level] | min | round(2) }}"
-      volume_mute:
-        service: media_player.volume_mute
-        target:
-          entity_id: media_player.samsung_soundbar
-        data:
-          is_volume_muted: "{{ not state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
-    attributes:
-      volume_level: media_player.samsung_soundbar|volume_level
+      # The Shield counts as "on" only when it is not off/unavailable/unknown; otherwise everything follows the soundbar
+      # An unknown/unavailable soundbar shows as off
+        state: >
+          {% if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] %}
+            {{ states('media_player.nvidia_shield') }}
+          {% elif is_state('media_player.samsung_soundbar', 'on')
+                  and is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+                  and states('media_player.woonkamer') in ['idle', 'playing', 'paused', 'buffering'] %}
+            {{ states('media_player.woonkamer') }}
+          {% elif states('media_player.samsung_soundbar') in ['unavailable', 'unknown'] %}
+            off
+          {% else %}
+            {{ states('media_player.samsung_soundbar') }}
+          {% endif %}
+
+      # --- Power ---
+        turn_on:
+          action: media_player.turn_on
+          target:
+            entity_id: media_player.nvidia_shield
+        turn_off:
+          - if: "{{ states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] }}"
+            then:
+              - action: media_player.turn_off
+                target:
+                  entity_id: media_player.nvidia_shield
+            else:
+              - if: "{{ states('media_player.woonkamer') in ['playing', 'paused', 'buffering'] }}"
+                then:
+                  - action: media_player.media_stop
+                    target:
+                      entity_id: media_player.woonkamer
+              - action: media_player.turn_off
+                target:
+                  entity_id: media_player.samsung_soundbar
+
+      # --- Volume: always the soundbar (same 0.2 cap as the universal config) ---
+        volume_level: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') }}"
+        is_volume_muted: "{{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
+        volume_set:
+          action: media_player.volume_set
+          target:
+            entity_id: media_player.samsung_soundbar
+          data:
+            volume_level: "{{ [0.2, volume_level] | min | round(2) }}"
+        volume_up:
+          action: media_player.volume_set
+          target:
+            entity_id: media_player.samsung_soundbar
+          data:
+            volume_level: >-
+              {{ [0.2, state_attr('media_player.samsung_soundbar', 'volume_level') | float(0) + 0.01] | min | round(2) }}
+        volume_down:
+          action: media_player.volume_set
+          target:
+            entity_id: media_player.samsung_soundbar
+          data:
+            volume_level: >-
+              {{ [0, state_attr('media_player.samsung_soundbar', 'volume_level') | float(0) - 0.01] | max | round(2) }}
+        volume_mute:
+          action: media_player.volume_mute
+          target:
+            entity_id: media_player.samsung_soundbar
+          data:
+            is_volume_muted: "{{ is_volume_muted }}"
+
+      # --- Playback: Shield > Voice PE (soundbar on Aux) > soundbar ---
+        media_play:
+          action: media_player.media_play
+          target:
+            entity_id: &playback >-
+              {% if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] %}
+                media_player.nvidia_shield
+              {% elif is_state('media_player.samsung_soundbar', 'on')
+                      and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
+                media_player.woonkamer
+              {% else %}
+                media_player.samsung_soundbar
+              {% endif %}
+        media_pause:
+          action: media_player.media_pause
+          target:
+            entity_id: *playback
+        media_stop:
+          action: media_player.media_stop
+          target:
+            entity_id: *playback
+        media_next_track:
+          action: media_player.media_next_track
+          target:
+            entity_id: *playback
+        media_previous_track:
+          action: media_player.media_previous_track
+          target:
+            entity_id: *playback
+        media_seek:
+          action: media_player.media_seek
+          target:
+            entity_id: *playback
+          data:
+            seek_position: "{{ seek_position }}"
+        play_media:
+          action: media_player.play_media
+          target:
+            entity_id: *playback
+          data:
+            media_content_type: "{{ media_content_type }}"
+            media_content_id: "{{ media_content_id }}"
+
+      # --- Source: Shield (when on) or soundbar. Never the Voice PE. ---
+        source: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.samsung_soundbar' %}
+          {% set s = state_attr(p, 'source') %}
+          {{ s if s in (state_attr(p, 'source_list') or []) else none }}
+        source_list: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.samsung_soundbar' %}
+          {{ state_attr(p, 'source_list') or [] }}
+        select_source:
+          action: media_player.select_source
+          target:
+            entity_id: >-
+              {{
+                'media_player.nvidia_shield'
+                if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+                else 'media_player.samsung_soundbar'
+              }}
+          data:
+            source: "{{ source }}"
+
+      # --- Media info: follows the playback target ---
+        media_title: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.woonkamer'
+             if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+             else 'media_player.samsung_soundbar' %}
+          {{ state_attr(p, 'media_title') }}
+        media_artist: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.woonkamer'
+             if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+             else 'media_player.samsung_soundbar' %}
+          {{ state_attr(p, 'media_artist') }}
+        media_album_name: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.woonkamer'
+             if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+             else 'media_player.samsung_soundbar' %}
+          {{ state_attr(p, 'media_album_name') }}
+        app_name: >
+          {% set p = 'media_player.nvidia_shield'
+             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+             else 'media_player.woonkamer'
+             if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+             else 'media_player.samsung_soundbar' %}
+          {{ state_attr(p, 'app_name') }}
+
+      # Artwork, duration and position only exist for the Voice PE (Music Assistant)
+        media_image_url: >
+          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
+                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
+            {{ state_attr('media_player.woonkamer', 'entity_picture') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        media_duration: >
+          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
+                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
+            {{ state_attr('media_player.woonkamer', 'media_duration') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        media_position: >
+          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
+                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
+            {{ state_attr('media_player.woonkamer', 'media_position') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
