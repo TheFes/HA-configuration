@@ -1,6 +1,8 @@
 automation:
   - id: e18beec6-b22c-4ac5-88da-05b7c05b9c33
     alias: "ECU reset with switch"
+    mode: single
+    max_exceeded: silent
     triggers:
       - alias: "Solar energy output sensor not responding for 5 minutes"
         trigger: state
@@ -24,7 +26,7 @@ automation:
       - alias: "ECU current power didn't change for 15 minutes"
         trigger: state
         entity_id: sensor.ecu_current_power
-        to: ~
+        to:
         for:
           minutes: 5
         id: stable
@@ -66,9 +68,7 @@ automation:
           entity_id: switch.ecu_reset
       - alias: Wait for 10 seconds
         delay: 10
-      - alias: reload config entry
+      - alias: Reload the APsystems ECU integration
         action: homeassistant.reload_config_entry
         data:
           entry_id: 01KT1SE1R2BNKSB512EG02D7J5
-        target:
-          entity_id: switch.ecu_216000095911_query_ecu

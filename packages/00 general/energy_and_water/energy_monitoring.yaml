@@ -190,68 +190,6 @@ template:
           tax: 0.70544
 
   # =============================================================================
-  # TOTAL COST CALCULATIONS
-  # =============================================================================
-  - sensor:
-      # only electricity and gas
-      - unique_id: 414d57af-ebbe-41d2-84de-913542306181
-        name: Energy Costs Total
-        state: >
-          {% set entities = [
-                              'sensor.energy_consumption_tarif_1_cost',
-                              'sensor.energy_consumption_tarif_2_cost',
-                              'sensor.energy_production_tarif_1_compensation',
-                              'sensor.energy_production_tarif_2_compensation',
-                              'sensor.gas_consumption_cost'
-                            ]
-          %}
-          {% set costs = entities | select('search', '.cost$') | map('states') | map('float') | sum %}
-          {% set comp = entities | select('search', '.compensation$') | map('states') | map('float') | sum %}
-          {{ costs - comp }}
-        state_class: total
-        unit_of_measurement: €
-        device_class: monetary
-        availability: >
-          {% set entities = [
-                              'sensor.energy_consumption_tarif_1_cost',
-                              'sensor.energy_consumption_tarif_2_cost',
-                              'sensor.energy_production_tarif_1_compensation',
-                              'sensor.energy_production_tarif_2_compensation',
-                              'sensor.gas_consumption_cost'
-                            ]
-          %}
-          {{ entities | map('states') | reject('is_number') | list | count == 0 }}
-        attributes:
-          last_reset: >
-            {% set entities = [
-                                'sensor.energy_consumption_tarif_1_cost',
-                                'sensor.energy_consumption_tarif_2_cost',
-                                'sensor.energy_production_tarif_1_compensation',
-                                'sensor.energy_production_tarif_2_compensation',
-                                'sensor.gas_consumption_cost'
-                              ]
-            %}
-            {{ entities | map('state_attr', 'last_reset') | max }}
-      # electricity, gas and water (using the sensor above)
-      - unique_id: d1f2e0f6-6b79-4b7a-bfb7-a380e5671eb9
-        name: Utility Costs Total
-        state: >
-          {{ states('sensor.energy_costs_total') | float + states('sensor.watermeter_total_consumption_cost') | float }}
-        state_class: total
-        unit_of_measurement: €
-        device_class: monetary
-        availability: >
-          {{ states('sensor.energy_costs_total') | is_number and states('sensor.watermeter_total_consumption_cost') | is_number }}
-        attributes:
-          last_reset: >
-            {% set entities = [
-                                'sensor.energy_costs_total',
-                                'sensor.watermeter_total_consumption_cost'
-                              ]
-            %}
-            {{ entities | map('state_attr', 'last_reset') | max }}
-
-  # =============================================================================
   # NET POWER CONSUMPTION/PRODUCTION
   # =============================================================================
   - sensor:
@@ -282,6 +220,6 @@ template:
       - unique_id: 89453b1c-c0a9-474d-971a-673ec54595c2
         name: Net Power Consumption
         state: >
-          {{ (states('sensor.power_consumption') | float - states('sensor.electricity_meter_power_production') | float) > 0 }}
+          {{ (states('sensor.electricity_meter_energieverbruik') | float - states('sensor.electricity_meter_energieproductie') | float) > 0 }}
         availability: >
-          {{ states('sensor.power_consumption') | is_number and states('sensor.electricity_meter_power_production') | is_number }}
+          {{ states('sensor.electricity_meter_energieverbruik') | is_number and states('sensor.electricity_meter_energieproductie') | is_number }}
