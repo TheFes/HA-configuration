@@ -27,7 +27,6 @@
 # - Entity: sensor.afvalwijzer_tomorrow - Tomorrow's collections
 # - Entity: sensor.afvalwijzer_restgft - Rest/GFT collection dates
 # - Entity: sensor.afvalwijzer_dhm - Paper/PMD collection dates
-# - Entity: sensor.afvalwijzer_kerstbomen - Christmas tree collection
 # - Service: notify.all_phones - Mobile notifications
 # - Macro: helpers.jinja date_week - Date formatting helper
 
@@ -157,11 +156,7 @@ template:
           availability: "{{ trigger.entity_id | has_value }}"
           attributes:
             waste_type: >
-              {% set name = this.attributes.friendly_name %}
-              {{
-                name if trigger.to_state.state != states('sensor.afvalwijzer_kerstbomen')
-                else name | replace(' & ', ', ') ~ ' & 🌲'
-              }}
+              {{ this.attributes.friendly_name }}
             collection_date: >
               {{ trigger.to_state.state | as_datetime | as_local }}
             in_two_weeks: >

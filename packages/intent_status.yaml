@@ -1,33 +1,33 @@
-rest:
-  - resource: https://ohf-voice.github.io/intents/
-    scan_interval: 14400
-    binary_sensor:
-      - unique_id: 5f1bf2ef-1258-4195-81f4-e8efd8ddb36a
-        name: All Dutch intents provided
-        value_template: >
-          {{
-            value.split('</td>')
-              | select('search', 'Nederlands')
-              | select('search', '⭐️')
-              | list
-              | count > 0
-          }}
-        icon: mdi:star
+# rest:
+#   - resource: https://ohf-voice.github.io/intents/
+#     scan_interval: 14400
+#     binary_sensor:
+#       - unique_id: 5f1bf2ef-1258-4195-81f4-e8efd8ddb36a
+#         name: All Dutch intents provided
+#         value_template: >
+#           {{
+#             value.split('</td>')
+#               | select('search', 'Nederlands')
+#               | select('search', '⭐️')
+#               | list
+#               | count > 0
+#           }}
+#         icon: mdi:star
 
-automation:
-  - id: ef97c1e3-8e09-4b7c-9973-cc5379d6239d
-    alias: Warn when not all Dutch intents are provided
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.all_intents_provided
-        to: "off"
-    actions:
-      - alias: Send message
-        action: telegram_bot.send_message
-        data:
-          config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
-          chat_id:
-            - "6269584791"
-          message: ⭐ Nederlands heeft geen ster meer, er zijn dus nieuwe intents bij gekomen. Check op het intents overzicht welke intents missen.
-          inline_keyboard:
-            - Intents overzicht:https://ohf-voice.github.io/intents/
+# automation:
+#   - id: ef97c1e3-8e09-4b7c-9973-cc5379d6239d
+#     alias: Warn when not all Dutch intents are provided
+#     triggers:
+#       - trigger: state
+#         entity_id: binary_sensor.all_intents_provided
+#         to: "off"
+#     actions:
+#       - alias: Send message
+#         action: telegram_bot.send_message
+#         data:
+#           config_entry_id: 01K9CHBP94KXC847V9Z7KB8EVY
+#           chat_id:
+#             - "6269584791"
+#           message: ⭐ Nederlands heeft geen ster meer, er zijn dus nieuwe intents bij gekomen. Check op het intents overzicht welke intents missen.
+#           inline_keyboard:
+#             - Intents overzicht:https://ohf-voice.github.io/intents/

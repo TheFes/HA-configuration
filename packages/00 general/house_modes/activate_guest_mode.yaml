@@ -4,7 +4,7 @@ automation:
     triggers:
       - trigger: state
         entity_id: sensor.guest_wifi_active
-        to: ~
+        to:
         id: "on"
       - trigger: state
         entity_id: sensor.guest_wifi_active
@@ -20,7 +20,7 @@ automation:
             (
               trigger.to_state.state | is_number
               and trigger.from_state.state | is_number
-              and trigger.to_state.state > trigger.from_state.state
+              and trigger.to_state.state | int > trigger.from_state.state | int
             )
         }}
     actions:
@@ -48,7 +48,6 @@ automation:
                   data:
                     variables:
                       guest: " {{ repeat.item }}"
-
 script:
   guest_mode_sensor:
     alias: "Trigger guest mode sensor"
@@ -57,11 +56,21 @@ script:
     sequence:
       - if: "{{ guest not in state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true)}}"
         then:
+          - variables:
+              host: >
+                {{ state_attr('sensor.fritz_guest_hosts', 'hosts')
+                    | default([], true)
+                    | selectattr('id', 'eq', guest)
+                    | first
+                    | default({}, true) }}
           - alias: Send guest mode notification to phone
             action: notify.mobile_app_pixel_10_pro
             data:
               title: "🏡 Gastmodus geactiveerd"
-              message: "Gastmodus geactiveert door {{ guest }}"
+              message: >
+                Gastmodus geactiveerd door {{ host.name | default(guest, true) }}
+                {%- if host.ip is defined %} ({{ host.ip }}){% endif %}
+                {%- if host.mac is defined and host.mac != host.name %}, MAC {{ host.mac }}{% endif %}
               data:
                 ttl: 0
                 priority: high
@@ -98,7 +107,6 @@ script:
                 event: wifi_ignore
                 event_data:
                   name: "{{ guest }}"
-
 template:
   - triggers:
       - trigger: event
@@ -144,52 +152,61 @@ template:
   - sensor:
       - unique_id: 4a803590-3649-473a-a10d-809a09fcfd2f
         name: Guest Wifi Active
+        availability: "{{ has_value('sensor.fritz_guest_hosts') }}"
         state: >
-          {% set ignore = state_attr('sensor.guest_wifi_ignore', 'ignore')
-                                | default([], true)
-          %}
-          {% set always = state_attr('sensor.guest_wifi_ignore', 'always_guest')
-                                | default([], true)
-          %}
-          {% set guest = expand(integration_entities('fritz'))
-              | selectattr('entity_id', 'search', '^device_tracker.')
-              | selectattr('state', 'eq', 'home')
-              | rejectattr('name', 'in', ignore)
-              | selectattr('attributes.ip', 'defined')
-              | selectattr('attributes.ip', 'search', '^192.168.189')
-              | list
-              | count
-          %}
-          {% set always = expand(integration_entities('fritz'))
-              | selectattr('entity_id', 'search', '^device_tracker.')
-              | selectattr('state', 'eq', 'home')
-              | selectattr('name', 'in', always)
-              | list
-              | count
-          %}
-          {{ guest + always }}
+          {% set ignore = state_attr('sensor.guest_wifi_ignore', 'ignore') | default([], true) %}
+          {% set always = state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true) %}
+          {{ state_attr('sensor.fritz_guest_hosts', 'hosts') | default([], true)
+              | map(attribute='id')
+              | reject('in', ignore | reject('in', always) | list)
+              | list | count }}
         attributes:
           names: >
-            {% set ignore = state_attr('sensor.guest_wifi_ignore', 'ignore')
-                                  | default([], true)
-            %}
-            {% set always = state_attr('sensor.guest_wifi_ignore', 'always_guest')
-                                  | default([], true)
-            %}
-            {% set guest = expand(integration_entities('fritz'))
-                | selectattr('entity_id', 'search', '^device_tracker.')
-                | selectattr('state', 'eq', 'home')
-                | rejectattr('name', 'in', ignore)
-                | selectattr('attributes.ip', 'defined')
-                | selectattr('attributes.ip', 'search', '^192.168.189')
-                | map(attribute='name')
-                | list
-            %}
-            {% set always = expand(integration_entities('fritz'))
-                | selectattr('entity_id', 'search', '^device_tracker.')
-                | selectattr('state', 'eq', 'home')
-                | selectattr('name', 'in', always)
-                | map(attribute='name')
-                | list
-            %}
-            {{ guest + always }}
+            {% set ignore = state_attr('sensor.guest_wifi_ignore', 'ignore') | default([], true) %}
+            {% set always = state_attr('sensor.guest_wifi_ignore', 'always_guest') | default([], true) %}
+            {{ state_attr('sensor.fritz_guest_hosts', 'hosts') | default([], true)
+                | map(attribute='id')
+                | reject('in', ignore | reject('in', always) | list)
+                | list }}
+command_line:
+  - sensor:
+      name: Fritz Guest Hosts
+      unique_id: cf485815-4c5c-45f4-8adb-097b761d8ad4
+      command_timeout: 30
+      scan_interval: 60
+      value_template: "{{ value_json.count }}"
+      json_attributes:
+        - hosts
+        - error
+      command: |-
+        python3 -c '
+        import json
+        try:
+            import re
+            import yaml
+            from fritzconnection.lib.fritzhosts import FritzHosts
+            GUEST_PREFIX = "192.168.189."
+            IP_NAME = re.compile(r"^PC-\d+-\d+-\d+-\d+$")
+            with open("/config/secrets.yaml", encoding="utf-8") as fh:
+                s = yaml.safe_load(fh)
+            hosts = FritzHosts(
+                address=s["fritz_tr064_host"],
+                user=s["fritz_tr064_user"],
+                password=s["fritz_tr064_password"],
+                timeout=10,
+            ).get_hosts_attributes()
+            def guest(h):
+                name = h.get("HostName") or ""
+                mac = h.get("MACAddress") or ""
+                ident = mac if (not name or IP_NAME.match(name)) else name
+                return {"id": ident, "name": name or mac, "ip": h.get("IPAddress"), "mac": mac}
+            guests = [
+                guest(h)
+                for h in hosts
+                if str(h.get("Active")).lower() in ("1", "true")
+                and str(h.get("IPAddress") or "").startswith(GUEST_PREFIX)
+            ]
+            print(json.dumps({"count": len(guests), "hosts": guests, "error": None}))
+        except Exception as err:
+            print(json.dumps({"count": None, "hosts": [], "error": f"{type(err).__name__}: {err}"}))
+        '

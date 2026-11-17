@@ -730,6 +730,6 @@ script:
   vacuum_toggle:
     alias: Vacuum toggle
     sequence:
-      - action: "vacuum.{{ 'start' if is_state('vacuum.vacuum.valetudo_brokenachingdragonfly', 'docked') else 'return_to_dock' }}"
+      - action: "vacuum.{{ 'start' if is_state('vacuum.valetudo_brokenachingdragonfly', 'docked') else 'return_to_dock' }}"
         target:
           entity_id: vacuum.valetudo_brokenachingdragonfly
