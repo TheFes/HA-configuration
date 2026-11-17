@@ -1,7 +1,8 @@
 blueprint:
-  name: Relay light and add effects
+  name: Relay light and add effects (RGBW + color temperature)
   description: >
-    Converts a switch to a light
+    Wraps an RGBW / color temperature light that is powered through a relay switch
+    in a template light, and adds Slow Pulse and Fast Pulse effects.
   author: TheFes
   source_url: https://github.com/TheFes/HA-configuration/blob/main/blueprints/template/TheFes/relay_light_and_add_effects.yaml
   domain: template
@@ -13,7 +14,7 @@ blueprint:
         entity:
           multiple: false
           filter:
-            - domain: switch
+            - domain: light
       default: null
     relay_switch:
       name: Relay Switch
@@ -44,7 +45,7 @@ blueprint:
       selector:
         number:
           min: 0
-          max: 255
+          max: 254
       default: 0
     name:
       name: Name
@@ -68,17 +69,18 @@ variables:
   icon_on: !input icon_on
   icon_off: !input icon_off
   min_brightness: !input min_brightness
+  br_span: "{{ [255 - min_brightness, 1] | max }}"
   provided_name: !input name
 
 light:
   default_entity_id: !input default_entity_id
   name: "{{ provided_name or source_light | entity_name | default('Not ready', true) }}"
-  icon: "{{ icon_on if is_state(source_light, 'on') else icon_off }}"
+  icon: "{{ icon_on if this.state == 'on' else icon_off }}"
   state: >
     {{
       is_state(source_light, 'on')
       or this.entity_id in state_attr('sensor.blink_effect_active', 'blink_active') | default({}, true)
-      or 
+      or
         (
           not states(source_light) | bool('na') is boolean
           and (is_state(relay_switch, 'on') if relay_switch else true)
@@ -92,17 +94,17 @@ light:
           target:
             entity_id: "{{ source_light }}"
           data: >
-            {% if relay_switch is not none %}
-              {% set brightness =
-                device_entities(device_id(source_light))
-                  | select('search', '^number.*start_brightness$')
-                  | map('states')
-                  | select('is_number')
-                  | map('float')
-                  | average('na')
-                  | int('na')
-              %}
-              {{ dict(brightness_pct=brightness) if brightness | is_number else dict() }}
+            {% set br_pct =
+              device_entities(device_id(source_light))
+                | select('search', '^number.*start_brightness$')
+                | map('states')
+                | select('is_number')
+                | map('float')
+                | average('na')
+            %}
+            {% if relay_switch and br_pct | is_number %}
+              {% set brightness = (br_pct * 2.55 * (br_span / 255) + min_brightness) | round(0) | int %}
+              {{ dict(brightness=brightness) }}
             {% else %}
               {{ dict() }}
             {% endif %}
@@ -119,7 +121,7 @@ light:
           target:
             entity_id: "{{ source_light }}"
       else:
-        - alias: Turn on switch
+        - alias: Turn off switch
           action: switch.turn_off
           target:
             entity_id: "{{ relay_switch }}"
@@ -127,32 +129,39 @@ light:
     {{
       [
         1,
-        ((state_attr(source_light, 'brightness') | int(0) - min_brightness) / ((255 - min_brightness) / 255)) | round
-      ] | max
+        ((state_attr(source_light, 'brightness') | int(0) - min_brightness) / (br_span / 255)) | round,
+        255
+      ] | median
     }}
   set_level:
     - action: light.turn_on
-      data:
+      target:
         entity_id: "{{ source_light }}"
+      data:
         brightness: >
-          {{ (brightness | float * ((255 - min_brightness) / 255) + min_brightness) | round }}
+          {{ (brightness | float * (br_span / 255) + min_brightness) | round(0) | int }}
   temperature: >
-    {{ none if state_attr(source_light, 'color_temp_kelvin') is none else (1000000 / state_attr(source_light, 'color_temp_kelvin')) | int }}
+    {% set k = state_attr(source_light, 'color_temp_kelvin') %}
+    {{ (1000000 / k) | int if k else none }}
+  # min_mireds = coldest = highest kelvin; max_mireds = warmest = lowest kelvin
   min_mireds: >
-    {{ none if state_attr(source_light, 'min_color_temp_kelvin') is none else (100000 / state_attr(source_light, 'min_color_temp_kelvin') | default(100, true)) | int }}
+    {% set k = state_attr(source_light, 'max_color_temp_kelvin') %}
+    {{ (1000000 / k) | int if k else 153 }}
   max_mireds: >
-    {{ none if state_attr(source_light, 'max_color_temp_kelvin') is none else (1000000 / state_attr(source_light, 'max_color_temp_kelvin') | default(150, true)) | int }}
+    {% set k = state_attr(source_light, 'min_color_temp_kelvin') %}
+    {{ (1000000 / k) | int if k else 500 }}
   set_temperature:
     - action: light.turn_on
-      data:
+      target:
         entity_id: "{{ source_light }}"
+      data:
         color_temp_kelvin: "{{ color_temp_kelvin }}"
   effect_list: >
     {% set effect = state_attr(source_light, 'effect_list') | default([], true) %}
     {{ (effect + [ 'Slow Pulse', 'Fast Pulse', 'None']) | unique | list }}
   effect: >
     {% set custom = state_attr('sensor.blink_effect_active', 'blink_active')[this.entity_id] | default('None') %}
-    {% set def = state_attr(source_light, effect) | default('None') %}
+    {% set def = state_attr(source_light, 'effect') | default('None') %}
     {% set effect = [def, custom] | reject('eq', 'None') | list %}
     {{ effect | first if effect else 'None' }}
   set_effect:
@@ -173,19 +182,21 @@ light:
               light: "{{ this.entity_id }}"
               toggle_entity: "{{ source_light }}"
               effect: "{{ effect }}"
-  rgb: "{{ state_attr(source_light, 'rgb') }}"
+  rgb: "{{ state_attr(source_light, 'rgb_color') }}"
   set_rgb:
     - action: light.turn_on
-      data:
+      target:
         entity_id: "{{ source_light }}"
-        rgb: "{{ rgb }}"
-  rgbw: "{{ state_attr(source_light, 'rgbw') }}"
+      data:
+        rgb_color: "{{ rgb }}"
+  rgbw: "{{ state_attr(source_light, 'rgbw_color') }}"
   set_rgbw:
     - action: light.turn_on
-      data:
+      target:
         entity_id: "{{ source_light }}"
-        rgb: "{{ rgbw }}"
-  supports_transition: "{{ state_attr(source_light, 'supported_features') | bitwise_and(32) != 0 }}"
+      data:
+        rgbw_color: "{{ rgbw }}"
+  supports_transition: "{{ state_attr(source_light, 'supported_features') | int(0) | bitwise_and(32) != 0 }}"
   availability: >
     {{
       source_light | has_value

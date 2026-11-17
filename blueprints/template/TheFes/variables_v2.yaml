@@ -102,12 +102,11 @@ conditions:
 actions:
   - variables:
       type: "{{ trigger.event.event_type }}"
-      key: "{{ trigger.event.get('data', {}).get('key') }}"
-      value: "{{ trigger.event.get('data', {}).get('value') }}"
+      key: "{{ trigger.event.data.get('key') }}"
+      value: "{{ trigger.event.data.get('value') }}"
   - if: "{{ type in [set_variable, remove_variable] }}"
     then:
       - variables:
-          
           reject_list:
             - friendly_name
             - device_class
@@ -143,7 +142,7 @@ actions:
             {{
               {
                 set_variable: "Variables sensor: New variable set",
-                remove_variable: "Variables sensor: New variable set",
+                remove_variable: "Variables sensor: Variable removed",
                 clear_variables: "Variables sensor: All variables removed"
               }
             }}
