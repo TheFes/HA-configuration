@@ -54,7 +54,6 @@ automation:
     triggers:
       - trigger: state
         entity_id:
-          - device_tracker.martijn_desktop
           - device_tracker.nb105516
           - media_player.martijn
         to:
@@ -65,19 +64,18 @@ automation:
       - alias: "Everyting off?"
         condition: state
         entity_id:
-          - device_tracker.martijn_desktop
           - device_tracker.nb105516
+        state:
+          - "not_home"
+        for: "00:30:00"
+      - alias: "Everyting off?"
+        condition: state
+        entity_id:
           - media_player.martijn
         state:
           - "idle"
           - "off"
-          - "not_home"
-        for: "00:30:00"
     actions:
-      - alias: "Turn off desk plug when devices are idle"
-        action: switch.turn_off
-        target:
-          entity_id: switch.shelly1pm_bureau_martijn_relay
       - alias: "Turn off Ulanzi clock"
         action: light.turn_off
         target:
@@ -269,11 +267,7 @@ automation:
               - condition: trigger
                 id:
                   - double
-            sequence:
-              - alias: "Turn on desk power switch"
-                action: switch.toggle
-                target:
-                  entity_id: switch.shelly1pm_bureau_martijn_relay
+            sequence: []
           - conditions:
               - condition: trigger
                 id:
@@ -309,10 +303,6 @@ automation:
           - alias: "Actions with shake"
             conditions: "{{ event == 'shake' }}"
             sequence:
-              - alias: "Turn on desk power switch"
-                action: switch.turn_on
-                target:
-                  entity_id: switch.shelly1pm_bureau_martijn_relay
               - alias: "Turn on radio if morning on workday"
                 choose:
                   - conditions:
@@ -357,25 +347,6 @@ automation:
                       volume_level: >
                         {% set c = 0.05 if event == 'rotate_right' else -0.05 %}
                         {{ ([ 0, volume + c, 1] | sort)[1] | round(2) }}
-
-# From bureau_martijn.yaml
-template:
-  - switch:
-      - unique_id: 3eafb3f9-f884-40cb-9095-5a5da3476cb4
-        name: Bureau
-        default_entity_id: switch.bureau_martijn_template
-        state: "{{ is_state('switch.shelly1pm_bureau_martijn_relay', 'on') }}"
-        turn_on:
-          - service: switch.turn_on
-            target:
-              entity_id: switch.shelly1pm_bureau_martijn_relay
-        turn_off:
-          - service: switch.turn_on
-            target:
-              entity_id: script.computer_martijn_off
-          - service: switch.turn_off
-            target:
-              entity_id: switch.shelly1pm_bureau_martijn_relay
 
 # From desk_martijn_switch.yaml
 script:

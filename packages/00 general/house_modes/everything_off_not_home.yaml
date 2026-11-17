@@ -47,23 +47,3 @@ automation:
                     action: switch.turn_off
                     target:
                       entity_id: switch.afzuigkap
-      - alias: "Turn off desk Martijn if not active"
-        choose:
-          - conditions:
-              - alias: "Computer Martijn uit"
-                condition: state
-                entity_id: binary_sensor.computer_zolder
-                state: "off"
-              - alias: "Laptop werkt uit"
-                condition: state
-                entity_id: binary_sensor.laptop_werk_martijn_lan
-                state: "off"
-              - alias: "Laptop werkt uit"
-                condition: state
-                entity_id: binary_sensor.laptop_werk_martijn_wifi
-                state: "off"
-            sequence:
-              - alias: "Bureau Martijn uit"
-                action: switch.turn_off
-                target:
-                  entity_id: switch.bureau_martijn_template

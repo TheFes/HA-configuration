@@ -252,19 +252,10 @@ automation:
           update: &update >
             {{
               is_state('person.martijn', 'home')
-              and is_state('switch.shelly1pm_bureau_martijn_relay', 'on')
               and is_state('script.computer_martijn_off', 'off')
               if action == 'on'
               else true
             }}
-      - alias: Monitor office power switch for screen control
-        trigger: state
-        entity_id: switch.shelly1pm_bureau_martijn_relay
-        to: ~
-        variables:
-          action: >
-            {{ trigger.to_state.state if (not is_state('sensor.house_mode', 'Slapen') and is_state('person.martijn', 'home')) else 'off' }}
-          update: *update
       - alias: Schedule screen on/off at specific times
         trigger: time
         at:
@@ -286,7 +277,7 @@ automation:
           action: "{{ is_state('person.martijn', 'home') }}"
           update: >
             {{
-              (is_state('switch.shelly1pm_bureau_martijn_relay', 'on') and not is_state('sensor.house_mode', 'Slapen'))
+              not is_state('sensor.house_mode', 'Slapen')
               if action == 'on'
               else true
             }}
