@@ -74,7 +74,7 @@ automation:
         entity_id:
           - weather.combined
           - input_number.correction_clock_pepijn
-        to: ~
+        to:
     variables:
       correction: "{{ states('input_number.correction_clock_pepijn') | float(0) }}"
     actions:
@@ -151,7 +151,7 @@ automation:
               topic: awtrix_pepijn/switch
               payload: "{{ dict(name = 'sleep_clock') }}"
 
-  # Floris' Ulanzi display automations
+# Floris' Ulanzi display automations
   - id: 8c6c0182-b227-47b8-a53b-c88075761b1a
     alias: "Awtrix button Floris"
     triggers:
@@ -168,19 +168,40 @@ automation:
         choose:
           - conditions: "{{ event == 'single' }}"
             sequence:
-              - alias: "Toggle selected Floris light based on button pressed"
-                action: light.toggle
-                target:
-                  entity_id: >
-                    {%
-                      set button_map = 
-                        {
-                          'left': 'light.bedlamp_floris',
-                          'select': 'light.planeet',
-                          'right': 'light.floris_leeslamp'
-                        }
-                    %}
-                    {{ button_map[button] }}
+              - alias: "Middle button controls the graafmachine"
+                if: "{{ button == 'select' }}"
+                then:
+                  - alias: "Graafmachine already on?"
+                    if:
+                      - condition: state
+                        entity_id: light.graafmachine_template
+                        state: "on"
+                    then:
+                      - alias: "Turn graafmachine off"
+                        action: light.turn_off
+                        target:
+                          entity_id: light.graafmachine_template
+                    else:
+                      - alias: "Turn graafmachine on, dimmed and warm"
+                        action: light.turn_on
+                        target:
+                          entity_id: light.graafmachine_template
+                        data:
+                          brightness_pct: 20
+                          color_temp_kelvin: 2200
+                else:
+                  - alias: "Toggle selected Floris light based on button pressed"
+                    action: light.toggle
+                    target:
+                      entity_id: >
+                        {%
+                          set button_map = 
+                            {
+                              'left': 'light.bedlamp_floris',
+                              'right': 'light.floris_leeslamp'
+                            }
+                        %}
+                        {{ button_map[button] }}
           - conditions: "{{ event == 'hold' }}"
             sequence:
               - alias: "Light off"
@@ -223,7 +244,7 @@ automation:
         entity_id:
           - weather.combined
           - input_number.correction_clock_floris
-        to: ~
+        to:
     variables:
       correction: "{{ states('input_number.correction_clock_floris') | float(0) }}"
     actions:

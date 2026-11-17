@@ -81,7 +81,7 @@ template:
         name: Veranda
     unique_id: 83b9379d-81d9-4759-b81f-1338165547c8
 
-  # brightness and color temp
+# brightness and color temp
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
@@ -131,7 +131,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.eettafel
-        relay_switch: switch.shelly1_eettafel_relay
+        relay_switch: switch.eettafel_relay
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
@@ -219,7 +219,7 @@ template:
         name: Werkkamer Martijn Plafond
     unique_id: fb0f5aec-05d6-49df-bb10-b33ad6210fec
 
-  # colortemp and rgb
+# colortemp and rgb
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp_rgb.yaml
       input:
@@ -240,7 +240,7 @@ template:
         name: Leeslamp Pepijn
     unique_id: 9c60f0f9-6f63-4f9f-9481-d55efab4b8bf
 
-  # rgb
+# rgb
   - use_blueprint:
       path: TheFes/light_relay_effect_rgb.yaml
       input:
@@ -251,11 +251,11 @@ template:
         name: Vliering Led
     unique_id: ba2c70a7-7e6f-4da9-a1a3-03b3146f5bd4
 
-  # rgbw
+# rgbw
   - use_blueprint:
       path: TheFes/light_relay_effect_rgbw.yaml
       input:
-        source_light: light.graafmachine
+        source_light: light.floris_graafmachine
         icon_on: mdi:excavator
         icon_off: mdi:excavator
         default_entity_id: light.graafmachine_template

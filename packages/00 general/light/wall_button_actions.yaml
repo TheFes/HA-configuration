@@ -12,7 +12,7 @@ automation:
           - event.shelly1_werkkamer_marleen_shelly1_werkkamer_marleen
           - event.sonoff_badkamer_zolder
           - event.sonoff_badkamerspiegel_zolder
-          - event.shelly1_eettafel_shelly1_eettafel
+          - event.eettafel_eettafel_ingang
           - event.dimmer_woonkamer_plafond
           - event.dimmer_overloop
           - event.dimmer_keuken
@@ -305,11 +305,11 @@ automation:
               Opstaan: 60
               Thuis: 100
               Slapen: 30
-            number.floris_inschakelniveau:
+            number.floris_plafondlamp_inschakelniveau:
               Opstaan: 150
               Thuis: 254
               Slapen: 75
-            number.floris_power_on_level:
+            number.floris_plafondlamp_power_on_level:
               Opstaan: 150
               Thuis: 254
               Slapen: 75
@@ -355,7 +355,7 @@ automation:
           - binary_sensor.pepijn_sleeping
           - input_boolean.nachtlampje_floris
           - binary_sensor.floris_sleeping
-        to: ~
+        to:
     actions:
       - alias: Assign variables to be used in action
         variables:
@@ -384,7 +384,6 @@ automation:
                 | select('in', label_entities('night_light'))
                 | list
             }}
-
 script:
   dim_actions:
     alias: Dim light up/down

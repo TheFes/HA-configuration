@@ -17,7 +17,7 @@ template:
           - alias: "Set Pepijn dimmer start brightness based on sleep state"
             action: number.set_value
             target:
-              entity_id: number.shelly1_pepijn_start_brightness
+              entity_id: number.light_pepijn_start_brightness
             data:
               value: 30
     binary_sensor:
@@ -43,7 +43,7 @@ template:
           - alias: "Set Floris dimmer start brightness based on sleep state"
             action: number.set_value
             target:
-              entity_id: number.light_floris_start_brightness
+              entity_id: number.floris_start_brightness
             data:
               value: 30
     binary_sensor:
@@ -79,18 +79,14 @@ script:
           entity_id:
             - light.floris_template
             - light.bedlamp_floris
-            - light.planeet
             - light.floris_leeslamp_template
-      - alias: "Turn on graafmachine"
+      - alias: "Turn on graafmachine, dimmed and warm"
         action: light.turn_on
         target:
-          entity_id: light.graafmachine
+          entity_id: light.graafmachine_template
         data:
-          brightness: 26
-          rgb_color:
-            - 255
-            - 148
-            - 3
+          brightness_pct: 20
+          color_temp_kelvin: 2200
 
   bedtime_pepijn_routine:
     alias: "Pepijn is going to sleep (Voice)"
@@ -116,7 +112,6 @@ script:
         target:
           entity_id:
             - light.wereldbol
-
 automation:
   - id: 7680c082-f8f8-402d-ba9c-dc2064de40b4
     alias: Turn on nightlight for Pepijn and Floris

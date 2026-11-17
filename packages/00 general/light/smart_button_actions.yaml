@@ -23,7 +23,7 @@ automation:
                     {{
                       area_entities(area)
                         | select('in', label_entities('off_long_press'))
-                        | select('in', label_entities('main_light'))
+                        | select('in', label_entities('smart_button'))
                         | list
                     }}
           - conditions: "{{ event == 'double' }}"
@@ -34,7 +34,7 @@ automation:
                     {{
                       area_entities(area)
                         | select('in', label_entities('off_long_press'))
-                        | select('in', label_entities('main_light'))
+                        | select('in', label_entities('smart_button'))
                         | list
                     }}
                 data:
