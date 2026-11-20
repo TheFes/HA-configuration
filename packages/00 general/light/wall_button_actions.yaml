@@ -7,26 +7,26 @@ automation:
       - alias: Trigger on button press event entity
         trigger: state
         entity_id:
-          - event.sonof_werkkamer_martijn_plafond
-          - event.sonoff_slaapkamer_plafond
-          - event.shelly1_werkkamer_marleen_shelly1_werkkamer_marleen
-          - event.sonoff_badkamer_zolder
-          - event.sonoff_badkamerspiegel_zolder
+          - event.werkkamer_martijn_schakelaar_plafond
+          - event.slaapkamer_schakelaar_plafond
+          - event.werkkamer_marleen_schakelaar_plafond
+          - event.badkamer_zolder_schakelaar_plafond
+          - event.badkamer_zolder_schakelaar_spiegel
           - event.eettafel_eettafel_ingang
-          - event.dimmer_woonkamer_plafond
-          - event.dimmer_overloop
-          - event.dimmer_keuken
-          - event.dimmer_badkamer_badkamer
-          - event.shelly_badkamerspiegel_shelly1_badkamerspiegel
-          - event.sonoff_floris_sonoff_floris
-          - event.shelly1_pepijn_shelly1_pepijn
-          - event.dimmer_zolder_zolder
-          - event.sonoff_wasmachinehoek_sonoff_wasmachinehoek
-          - event.dimmer_hal_hal
-          - event.sonoff_voordeur_sonoff_voordeur
+          - event.woonkamer_dimmer_plafond
+          - event.overloop_dimmer_plafond
+          - event.keuken_dimmer_plafond
+          - event.badkamer_dimmer_plafond
+          - event.badkamer_schakelaar_spiegel
+          - event.floris_schakelaar_plafond
+          - event.pepijn_schakelaar_plafond
+          - event.overloop_zolder_dimmer_wand
+          - event.overloop_zolder_schakelaar_plafond
+          - event.hal_dimmer_plafond
+          - event.voor_het_huis_schakelaar_buiten
         not_from: unavailable
         variables:
-          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) if trigger.to_state else 'unknown' }}"
           area: "{{ area_id(trigger.entity_id) }}"
           floor: "{{ floor_id(trigger.entity_id) }}"
           relay: >
@@ -274,34 +274,34 @@ automation:
             number.badkamer_zolder_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.dimmer_woonkamer_plafond_start_brightness:
+            number.woonkamer_dimmer_plafond_start_brightness:
               Thuis: 60
               Opstaan: 60
               Tandenpoetsen: 30
-            number.dimmer_overloop_start_brightness:
+            number.overloop_dimmer_plafond_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.dimmer_keuken_start_brightness:
+            number.keuken_dimmer_plafond_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.light_eettafel_start_brightness:
+            number.eettafel_plafondlamp_start_brightness:
               Thuis: 100
               Relax: 30
               Tandenpoetsen: 30
-            number.dimmer_zolder_start_brightness:
+            number.overloop_zolder_dimmer_wand_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
             number.wasmachinehoek_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.dimmer_hal_start_brightness:
+            number.hal_dimmer_plafond_start_brightness:
               Thuis: 100
               Tandenpoetsen: 30
-            number.dimmer_badkamer_start_brightness:
+            number.badkamer_dimmer_plafond_start_brightness:
               Opstaan: 100
               Thuis: 100
               Slapen: 30
-            number.light_pepijn_start_brightness:
+            number.pepijn_plafondlamp_start_brightness:
               Opstaan: 60
               Thuis: 100
               Slapen: 30

@@ -76,7 +76,7 @@ automation:
                 target:
                   entity_id:
                     - light.tuinlampjes
-                    - light.voordeur
+                    - light.voor_het_huis_buitenlamp
               - alias: "Turn porch light on"
                 action: light.turn_on
                 target:
@@ -99,8 +99,12 @@ automation:
     max_exceeded: silent
     triggers:
       - trigger: state
-        entity_id: event.sonoff_tuin_sonoff_tuin
+        entity_id: event.tuin_schakelaar_buiten
         not_from: unavailable
+    conditions:
+      - alias: "Event entity still exists (not removed)"
+        condition: template
+        value_template: "{{ trigger.to_state is not none }}"
     actions:
       - alias: "Click type?"
         choose:

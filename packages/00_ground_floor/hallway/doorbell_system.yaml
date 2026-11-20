@@ -5,7 +5,7 @@ automation:
     triggers:
       - alias: "Doorbell button pressed"
         trigger: state
-        entity_id: binary_sensor.smart_doorbell_button
+        entity_id: binary_sensor.hal_deurbel
         to: "on"
     mode: restart
     max_exceeded: silent
@@ -54,11 +54,11 @@ automation:
               entity_id: media_player.nvidia_shield
       - alias: "Chime off and someone home?"
         choose:
-          # Blink lights when chime is off and someone is home
+        # Blink lights when chime is off and someone is home
           - conditions:
               - alias: "Chime off?"
                 condition: state
-                entity_id: switch.smart_doorbell_chime_active
+                entity_id: switch.hal_deurbel_chime_active
                 state: "off"
               - alias: "Someone home?"
                 condition: state
@@ -71,28 +71,28 @@ automation:
               - parallel:
                   - sequence:
                       - variables:
-                          light_state: "{{ states('light.voordeur') }}"
+                          light_state: "{{ states('light.voor_het_huis_buitenlamp') }}"
                       - alias: "Blink front door light"
                         repeat:
                           count: 8
                           sequence:
                             - action: light.toggle
                               target:
-                                entity_id: light.voordeur
+                                entity_id: light.voor_het_huis_buitenlamp
                             - delay: 1
                       - alias: "Restore state"
                         action: light.turn_{{ light_state }}
                         target:
-                          entity_id: light.voordeur
+                          entity_id: light.voor_het_huis_buitenlamp
                   - alias: "Blink lights using script"
                     action: script.turn_on
                     target:
                       entity_id: script.light_blink_alert
-          # Blink front door light when nobody is home
+        # Blink front door light when nobody is home
           - conditions:
               - alias: "Chime not active"
                 condition: state
-                entity_id: switch.smart_doorbell_chime_active
+                entity_id: switch.hal_deurbel_chime_active
                 state: "off"
               - alias: "Nobobdy home?"
                 condition: state
@@ -102,13 +102,13 @@ automation:
               - alias: "Blink front door light"
                 action: light.turn_on
                 target:
-                  entity_id: light.voordeur
+                  entity_id: light.voor_het_huis_buitenlamp
                 data:
                   effect: Slow Pulse
           - conditions:
               - alias: "Chime active"
                 condition: state
-                entity_id: switch.smart_doorbell_chime_active
+                entity_id: switch.hal_deurbel_chime_active
                 state: "on"
               - alias: "Someone home"
                 condition: numeric_state
@@ -132,7 +132,7 @@ automation:
                   message: >
                     {{ ('Is dit misschien visite voor ' ~ name ~ '?!') if birthday_today else ' ' }}
                   sat_id: >
-                    {% set reject_list = ['assist_satellite.grandstream_woonkamer', 'assist_satellite.grandstream_martijn'] %}
+                    {% set reject_list = integration_entities('voip') %}
                     {% set reject_list = (reject_list + ['assist_satellite.pepijn']) if is_state('binary_sensor.pepijn_sleeping', 'on') else reject_list %}
                     {% set reject_list = (reject_list + ['assist_satellite.floris']) if is_state('binary_sensor.floris_sleeping', 'on') else reject_list %}
                     {{
@@ -188,7 +188,7 @@ automation:
                     data:
                       volume_level: "{{ sb_vol }}"
 
-  # From doorbell_on_off.yaml
+# From doorbell_on_off.yaml
   - id: 86f3e0f1-cbaf-4897-a603-cb0e33f76793
     alias: "Turn doorbell sound on and off"
     mode: single
@@ -199,7 +199,7 @@ automation:
         event: start
       - alias: "Doorbell chime became available"
         trigger: state
-        entity_id: switch.smart_doorbell_chime_active
+        entity_id: switch.hal_deurbel_chime_active
         from: unavailable
       - alias: "Schedule time for chime control"
         trigger: time
@@ -218,7 +218,7 @@ automation:
               - alias: "Turn chime off"
                 action: switch.turn_off
                 data:
-                  entity_id: switch.smart_doorbell_chime_active
+                  entity_id: switch.hal_deurbel_chime_active
           - conditions:
               - alias: "Daytime?"
                 condition: time
@@ -228,8 +228,7 @@ automation:
               - alias: "Turn chime on"
                 action: switch.turn_on
                 data:
-                  entity_id: switch.smart_doorbell_chime_active
-
+                  entity_id: switch.hal_deurbel_chime_active
 script:
   # script to blink lights in case of an alert (eg doorbell)
   light_blink_alert:

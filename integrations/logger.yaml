@@ -2,3 +2,6 @@ logger:
   default: warning
   logs:
     homeassistant.components.esphome.coordinator: critical
+  filters:
+    homeassistant.components.rest_command:
+      - "apikey="

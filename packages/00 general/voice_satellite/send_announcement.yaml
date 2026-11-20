@@ -51,6 +51,7 @@ script:
     - parallel:
       - alias: Send announcement
         action: assist_satellite.announce
+        continue_on_error: true
         data: "{{ data }}"
         target:
           entity_id: "{{ satellite }}"

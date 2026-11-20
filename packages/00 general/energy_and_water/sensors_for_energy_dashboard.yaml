@@ -34,8 +34,8 @@ template:
         icon: mdi:meter-gas
       - unique_id: 75e6a99a-9a36-43e2-ab7e-6fdda9b44c8d
         name: Water Consumption
-        state: "{{ states('sensor.watermeter_total_consumption') }}"
-        availability: "{{ 'sensor.watermeter_total_consumption' | has_value }}"
+        state: "{{ states('sensor.meterkast_watermeter_total_consumption') }}"
+        availability: "{{ 'sensor.meterkast_watermeter_total_consumption' | has_value }}"
         device_class: water
         state_class: total_increasing
         unit_of_measurement: "m³"

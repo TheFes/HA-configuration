@@ -3,7 +3,7 @@ automation:
     id: 24622ebc-3be8-4ca2-a4ae-0920b97dc11b
     triggers:
       - trigger: state
-        entity_id: light.bedside_lamp
+        entity_id: light.slaapkamer_nachtlampje_nachtlampje
         to: "unavailable"
         for:
           minutes: 5
@@ -13,7 +13,7 @@ automation:
           - "09:00:00"
     conditions:
       - condition: state
-        entity_id: light.bedside_lamp
+        entity_id: light.slaapkamer_nachtlampje_nachtlampje
         state: "unavailable"
       - condition: time
         after: "09:00:00"

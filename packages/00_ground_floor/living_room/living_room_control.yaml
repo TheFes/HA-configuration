@@ -8,7 +8,7 @@ automation:
         entity_id: event.knop_tv_hoek_action
         not_from: unavailable
         variables:
-          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) if trigger.to_state else 'unknown' }}"
     actions:
       - alias: "Which click type"
         choose:
@@ -77,7 +77,7 @@ automation:
               - alias: "Turn on dining table light dimmed"
                 action: light.turn_on
                 target:
-                  entity_id: light.eettafel
+                  entity_id: light.eettafel_plafondlamp
                 data:
                   brightness: 100
           - conditions:
@@ -153,7 +153,7 @@ automation:
                           entity_id:
                             - light.eettafel_template
                         data:
-                          brightness_pct: "{{ states('number.light_eettafel_start_brightness') }}"
+                          brightness_pct: "{{ states('number.eettafel_plafondlamp_start_brightness') }}"
                       - alias: "Dim eethoek light"
                         action: light.turn_on
                         target:
@@ -225,8 +225,8 @@ template:
         default_entity_id: media_player.shield_en_soundbar
         device_class: tv
 
-      # The Shield counts as "on" only when it is not off/unavailable/unknown; otherwise everything follows the soundbar
-      # An unknown/unavailable soundbar shows as off
+    # The Shield counts as "on" only when it is not off/unavailable/unknown; otherwise everything follows the soundbar
+    # An unknown/unavailable soundbar shows as off
         state: >
           {% if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] %}
             {{ states('media_player.nvidia_shield') }}
@@ -240,7 +240,7 @@ template:
             {{ states('media_player.samsung_soundbar') }}
           {% endif %}
 
-      # --- Power ---
+    # --- Power ---
         turn_on:
           action: media_player.turn_on
           target:
@@ -261,7 +261,7 @@ template:
                 target:
                   entity_id: media_player.samsung_soundbar
 
-      # --- Volume: always the soundbar (same 0.2 cap as the universal config) ---
+    # --- Volume: always the soundbar (same 0.2 cap as the universal config) ---
         volume_level: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') }}"
         is_volume_muted: "{{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
         volume_set:
@@ -291,7 +291,7 @@ template:
           data:
             is_volume_muted: "{{ is_volume_muted }}"
 
-      # --- Playback: Shield > Voice PE (soundbar on Aux) > soundbar ---
+    # --- Playback: Shield > Voice PE (soundbar on Aux) > soundbar ---
         media_play:
           action: media_player.media_play
           target:
@@ -334,18 +334,25 @@ template:
             media_content_type: "{{ media_content_type }}"
             media_content_id: "{{ media_content_id }}"
 
-      # --- Source: Shield (when on) or soundbar. Never the Voice PE. ---
+    # --- Source: Shield (when on) or soundbar. Never the Voice PE. ---
+    # Only report a source that is in BOTH lists:
+    # - sl: the list source_list renders from the same inputs right now. Covers the Shield
+    #   dropping its source_list (e.g. while turning off) while its source is still an app.
+    # - this entity's current source_list. Covers the Shield turning on, when source can
+    #   render before source_list has picked up the Shield apps; the template re-renders
+    #   once source_list has updated.
         source: >
           {% set p = 'media_player.nvidia_shield'
              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
              else 'media_player.samsung_soundbar' %}
           {% set s = state_attr(p, 'source') %}
-          {{ s if s in (state_attr(p, 'source_list') or []) else none }}
+          {% set sl = (state_attr('media_player.nvidia_shield', 'source_list') or [])
+             + (state_attr('media_player.samsung_soundbar', 'source_list') or []) %}
+          {{ s if s in sl and s in (state_attr('media_player.shield_en_soundbar', 'source_list') or []) else none }}
         source_list: >
-          {% set p = 'media_player.nvidia_shield'
-             if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-             else 'media_player.samsung_soundbar' %}
-          {{ state_attr(p, 'source_list') or [] }}
+          {{ ((state_attr('media_player.nvidia_shield', 'source_list') or [])
+            + (state_attr('media_player.samsung_soundbar', 'source_list') or []))
+            | unique | list }}
         select_source:
           action: media_player.select_source
           target:
@@ -358,7 +365,7 @@ template:
           data:
             source: "{{ source }}"
 
-      # --- Media info: follows the playback target ---
+    # --- Media info: follows the playback target ---
         media_title: >
           {% set p = 'media_player.nvidia_shield'
              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
@@ -388,7 +395,7 @@ template:
              else 'media_player.samsung_soundbar' %}
           {{ state_attr(p, 'app_name') }}
 
-      # Artwork, duration and position only exist for the Voice PE (Music Assistant)
+    # Artwork, duration and position only exist for the Voice PE (Music Assistant)
         media_image_url: >
           {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
                 and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}

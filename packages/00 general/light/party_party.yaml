@@ -165,7 +165,7 @@ automation:
           area_list:
             - slaapkamer_pepijn
           exclude_lights:
-            - light.pepijn
+            - light.pepijn_plafondlamp
         media_player.floris:
           area_list:
             - slaapkamer_floris
@@ -219,7 +219,6 @@ automation:
                       exclude_lights: "{{ exclude_lights }}"
                       set_by: "song"
                 - delay: 0.5
-
 template:
   - light:
       - unique_id: 71f830d4-7786-4f58-9a81-76e63b8961e0
@@ -241,7 +240,7 @@ template:
                 area: "{{ area_id(this.entity_id) }}"
                 exclude_lights:
                   slaapkamer_pepijn:
-                    - light.pepijn
+                    - light.pepijn_plafondlamp
             - action: script.turn_on
               target:
                 entity_id: script.party_party

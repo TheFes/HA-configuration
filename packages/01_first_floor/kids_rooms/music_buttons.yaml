@@ -9,6 +9,10 @@ automation:
           - event.knop_muziek_floris_action
         not_from: unavailable
         not_to: unavailable
+    conditions:
+      - alias: "Event entity still exists (not removed)"
+        condition: template
+        value_template: "{{ trigger.to_state is not none }}"
     actions:
       - alias: Define variables
         variables:
@@ -24,7 +28,7 @@ automation:
               player: media_player.pepijn
               exclude_lights:
                 - light.pepijn_template
-                - light.pepijn
+                - light.pepijn_plafondlamp
           player: >
             {{
               integration_entities('music_assistant')

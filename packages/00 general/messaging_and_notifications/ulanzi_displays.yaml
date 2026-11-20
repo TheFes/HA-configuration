@@ -7,7 +7,7 @@ automation:
       - alias: Monitor Ulanzi battery level changes
         trigger: state
         entity_id: sensor.awtrix_martijn_battery
-        to: ~
+        to:
         variables:
           show: "{{ trigger.to_state.state != '100' }}"
           app: bat
@@ -35,7 +35,7 @@ automation:
               ] | to_json
             }}
 
-  # From: ulanzi_indicator.yaml
+# From: ulanzi_indicator.yaml
   - id: 52dd10e9-7bf6-4778-b4b7-a8967a4b5fb8
     alias: "Ulanzi indicators"
     mode: queued
@@ -43,7 +43,7 @@ automation:
       - alias: Monitor WhatsApp notification status
         trigger: state
         entity_id: binary_sensor.whatsapp_notification_active
-        to: ~
+        to:
         variables:
           action: "{{ trigger.to_state.state }}"
           indicator: 1
@@ -51,7 +51,7 @@ automation:
       - alias: Monitor rain data status
         trigger: state
         entity_id: binary_sensor.raindata
-        to: ~
+        to:
         variables:
           action: "{{ trigger.to_state.state }}"
           indicator: 2
@@ -59,7 +59,7 @@ automation:
       - alias: Monitor net power consumption status
         trigger: state
         entity_id: binary_sensor.net_power_consumption
-        to: ~
+        to:
         variables:
           action: "{{ trigger.to_state.state in ['on', 'off'] }}"
           indicator: 3
@@ -84,16 +84,16 @@ automation:
             target:
               entity_id: light.awtrix_martijn_indicator_{{ indicator }}
 
-  # From: ulanzi_notify_and_custom_app.yaml
+# From: ulanzi_notify_and_custom_app.yaml
   - id: 10d5d325-1ed3-47a8-9352-b1b1d121802e
     alias: "Ulanzi notificatons and custom apps"
     mode: queued
     triggers:
-      # apps - text
+    # apps - text
       - alias: Monitor weather changes for display
         trigger: state
         entity_id: weather.combined
-        to: ~
+        to:
         variables: &weather
           app: weather
           text: "{{ state_attr('weather.combined', 'temperature') }} °C"
@@ -125,11 +125,11 @@ automation:
               temp-normal
             {% endif %}
 
-      # notifications - text
+    # notifications - text
       - alias: Monitor phone notification changes
         trigger: state
         entity_id: sensor.pixel_10_pro_last_notification
-        to: ~
+        to:
         variables:
           sender_name: !secret name_gf
           update: >
@@ -151,14 +151,14 @@ automation:
           pushIcon: 2
       - alias: Monitor doorbell button press
         trigger: state
-        entity_id: binary_sensor.smart_doorbell_button
+        entity_id: binary_sensor.hal_deurbel
         to: "on"
         variables:
           icon: dingdong
           text: Ding Dong!
           background: 4CBEFC
 
-      # app - graph
+    # app - graph
       - alias: Monitor rain data for graph display
         trigger: state
         entity_id: binary_sensor.raindata
@@ -231,7 +231,7 @@ automation:
                 {%- set data = dict(data.items() | rejectattr('1', 'none')) %}
                 {{ data | to_json }}
 
-  # From: ulanzi_screen.yaml
+# From: ulanzi_screen.yaml
   - id: 964ca72d-0e82-488d-b6e8-0ac72a5eabc0
     alias: "Ulanzi turn screen on and off"
     mode: queued
@@ -239,7 +239,7 @@ automation:
       - alias: Monitor house mode changes for screen control
         trigger: state
         entity_id: sensor.house_mode
-        to: ~
+        to:
         variables:
           action: >
             {{
@@ -272,7 +272,7 @@ automation:
       - alias: Monitor person presence for screen control
         trigger: state
         entity_id: person.martijn
-        to: ~
+        to:
         variables:
           action: "{{ is_state('person.martijn', 'home') }}"
           update: >
@@ -291,7 +291,7 @@ automation:
         target:
           entity_id: light.awtrix_martijn_matrix
 
-  # From: awtrix_button_press.yaml
+# From: awtrix_button_press.yaml
   - id: 630ae4fd-f5fd-41f9-8d83-837e991a08c8
     alias: Run actions on Awtrix button press
     mode: single

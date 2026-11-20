@@ -97,7 +97,7 @@ template:
               {{ current }}
             {% endif %}
 
-  # switch to light + add effects
+# switch to light + add effects
   - use_blueprint:
       path: TheFes/switch_to_light.yaml
       input:
@@ -167,7 +167,7 @@ template:
   - use_blueprint:
       path: TheFes/switch_to_light.yaml
       input:
-        switch: switch.shelly_badkamerspiegel_relay
+        switch: switch.badkamer_schakelaar_spiegel
         icon_on: mdi:mirror-rectangle
         icon_off: mdi:mirror-rectangle
         add_effects: true
@@ -178,7 +178,7 @@ template:
   - use_blueprint:
       path: TheFes/switch_to_light.yaml
       input:
-        switch: switch.shelly1_technische_ruimte_relay
+        switch: switch.technische_ruimte_schakelaar_plafond
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         add_effects: true
@@ -189,7 +189,7 @@ template:
   - use_blueprint:
       path: TheFes/switch_to_light.yaml
       input:
-        switch: switch.sonoff_badkamerspiegel_zolder_relay
+        switch: switch.badkamer_zolder_schakelaar_spiegel
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         add_effects: true

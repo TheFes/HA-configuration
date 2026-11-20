@@ -4,7 +4,7 @@ template:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
         source_light: light.trapkast
-        relay_switch: switch.sonoff_trapkast_relay
+        relay_switch: switch.trapkast_schakelaar_wand
         icon_on: mdi:bulkhead-light
         icon_off: mdi:bulkhead-light
         default_entity_id: light.trapkast_template
@@ -14,7 +14,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.keuken
+        source_light: light.keuken_dimmer_plafond_plafondlamp
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.keuken_template
@@ -24,7 +24,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.woonkamer_plafond
+        source_light: light.woonkamer_dimmer_plafond
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.woonkamer_plafond_template
@@ -34,7 +34,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.hal
+        source_light: light.hal_dimmer_plafond
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.hal_template
@@ -44,7 +44,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.badkamer
+        source_light: light.badkamer_dimmer_plafond_plafondlamp
         icon_on: mdi:ceiling-light-multiple
         icon_off: mdi:ceiling-light-multiple-outline
         default_entity_id: light.badkamer_template
@@ -54,7 +54,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.overloop
+        source_light: light.overloop_dimmer_plafond
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         default_entity_id: light.overloop_template
@@ -64,7 +64,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_brightness.yaml
       input:
-        source_light: light.zolder
+        source_light: light.overloop_zolder_dimmer_wand
         icon_on: mdi:bulkhead-light
         icon_off: mdi:bulkhead-light
         default_entity_id: light.zolder_template
@@ -96,7 +96,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.floris_plafondlamp
-        relay_switch: switch.sonoff_floris_relay
+        relay_switch: switch.floris_schakelaar_plafond
         max_ct_kelvin: 4000
         max_brightness: 254
         icon_on: mdi:ceiling-light
@@ -108,8 +108,8 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
-        source_light: light.voordeur
-        relay_switch: switch.sonoff_voordeur_relay
+        source_light: light.voor_het_huis_buitenlamp
+        relay_switch: switch.voor_het_huis_schakelaar_buiten
         icon_on: mdi:coach-lamp
         icon_off: mdi:coach-lamp
         min_brightness: 37
@@ -130,7 +130,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
-        source_light: light.eettafel
+        source_light: light.eettafel_plafondlamp
         relay_switch: switch.eettafel_relay
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
@@ -142,8 +142,8 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
-        source_light: light.pepijn
-        relay_switch: switch.shelly1_pepijn_relay
+        source_light: light.pepijn_plafondlamp
+        relay_switch: switch.pepijn_schakelaar_plafond
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
@@ -155,7 +155,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.slaapkamer_plafond
-        relay_switch: switch.sonoff_slaapkamer_plafond_relay
+        relay_switch: switch.slaapkamer_schakelaar_plafond
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.slaapkamer_plafond_template
@@ -166,7 +166,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.wasmachinehoek
-        relay_switch: switch.sonoff_wasmachinehoek_relay
+        relay_switch: switch.overloop_zolder_schakelaar_plafond
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.wasmachinehoek_template
@@ -177,7 +177,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.badkamer_zolder
-        relay_switch: switch.sonoff_badkamer_zolder_relay
+        relay_switch: switch.badkamer_zolder_schakelaar_plafond
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.badkamer_zolder_template
@@ -199,8 +199,8 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
-        source_light: light.werkkamer_marleen
-        relay_switch: switch.shelly1_werkkamer_marleen_relay
+        source_light: light.werkkamer_marleen_plafondlamp
+        relay_switch: switch.werkkamer_marleen_schakelaar_plafond
         icon_on: mdi:ceiling-light
         icon_off: mdi:ceiling-light-outline
         min_brightness: 37
@@ -212,7 +212,7 @@ template:
       path: TheFes/light_relay_effect_colortemp.yaml
       input:
         source_light: light.werkkamer_martijn_plafond
-        relay_switch: switch.sonoff_badkamerspiegel_zolder_relay
+        relay_switch: switch.werkkamer_martijn_schakelaar_plafond
         icon_on: mdi:wall-sconce-flat
         icon_off: mdi:wall-sconce-flat-outline
         default_entity_id: light.werkkamer_martijn_plafond_template
@@ -223,7 +223,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_colortemp_rgb.yaml
       input:
-        source_light: light.bedside_lamp
+        source_light: light.slaapkamer_nachtlampje_nachtlampje
         icon_on: mdi:lamp
         icon_off: mdi:lamp-outline
         default_entity_id: light.bedside_lamp_template
@@ -244,7 +244,7 @@ template:
   - use_blueprint:
       path: TheFes/light_relay_effect_rgb.yaml
       input:
-        source_light: light.vliering_led
+        source_light: light.vliering_led_strip
         icon_on: mdi:led-strip-variant
         icon_off: mdi:led-strip-variant-off
         default_entity_id: light.vliering_led_template

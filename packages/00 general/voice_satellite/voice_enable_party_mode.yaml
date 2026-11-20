@@ -22,7 +22,8 @@ automation:
         value_template: >
           {{
             trigger.id == 'sentence'
-            or trigger.to_state.attributes.event_type == 'triple_press'
+            or (trigger.to_state is not none
+                and trigger.to_state.attributes.event_type == 'triple_press')
           }}
     actions:
       - alias: Set response

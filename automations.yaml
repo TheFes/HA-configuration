@@ -862,3 +862,59 @@
         zondag: 6
       you_word: je
     path: TheFes/1_voice_reminder_local.yaml
+- id: '1794951662177'
+  alias: Music Assistant - Lokale spraakbesturing (NL)
+  description: Lokale Nederlandse spraakopdrachten voor Music Assistant (blueprint
+    TheFes/mass_assist_local_v2).
+  max: 10
+  mode: parallel
+  use_blueprint:
+    input:
+      album_trigger:
+      - (shuffle|speel|luister naar|zet) [(de|het|een) ](album|ep|plaat|compilatie|single)
+        {media_name} [van [(de|het) ](artiest|band|groep) {artist}] [(in|op|bij) [(de|het)
+        ]{area_or_player_name}][ met radiomodus]
+      area_and_player_response: '{{ ''Ik shuffle'' if shuffle else ''Ik speel'' }}
+        <media_info> in <area_info> en op <player_info>'
+      area_response: '{{ ''Ik shuffle'' if shuffle else ''Ik speel'' }} <media_info>
+        in <area_info>'
+      artist_split: van
+      artist_text: van
+      artist_trigger:
+      - (shuffle|speel|luister naar|zet) [(de|het) ](artiest|band|groep) {media_name}
+        [(in|op|bij) [(de|het) ]{area_or_player_name}][ met radiomodus]
+      audiobook_trigger:
+      - (speel|luister naar|zet) [(de|het) ](boek|luisterboek|audioboek) {media_name}
+        [(in|op|bij) [(de|het) ]{area_or_player_name}]
+      combine_text: en
+      favorites_text: je favoriete nummers
+      favorites_trigger:
+      - (shuffle|speel|luister naar|zet) [mijn ]favoriete (nummers|liedjes|muziek)
+        [(in|op|bij) [(de|het) ]{area_or_player_name}]
+      no_target_response: Ik kon geen Music Assistant speler vinden om dit op af te
+        spelen
+      not_found_response: Sorry, ik kan <media_info> niet vinden
+      nothing_playing_response: Er speelt geen muziek die ik kan verplaatsen
+      player_response: '{{ ''Ik shuffle'' if shuffle else ''Ik speel'' }} <media_info>
+        op <player_info>'
+      playlist_trigger:
+      - (shuffle|speel|luister naar|zet) [(de|het) ](afspeellijst|playlist) {media_name}
+        [(in|op|bij) [(de|het) ]{area_or_player_name}][ met radiomodus]
+      podcast_trigger:
+      - (speel|luister naar|zet) [(de|het) ]podcast {media_name} [(in|op|bij) [(de|het)
+        ]{area_or_player_name}]
+      radio_mode_regex: \s*met radiomodus\s*$
+      radio_trigger:
+      - (shuffle|speel|luister naar|zet) [(de|het) ]((radiozender)|(radio)|(zender))
+        {media_name} [(in|op|bij) [(de|het) ]{area_or_player_name}]
+      shuffle_regex: ^\s*shuffle\b
+      track_trigger:
+      - (shuffle|speel|luister naar|zet) [(de|het|een) ](nummer|liedje|lied|track|song)
+        {media_name} [van [(de|het) ](artiest|band|groep) {artist}] [(in|op|bij) [(de|het)
+        ]{area_or_player_name}][ met radiomodus]
+      transfer_response: Ik heb de muziek verplaatst naar <area_info> <player_info>
+      transfer_trigger:
+      - (verplaats|verhuis|stuur) [de ]muziek naar [(de|het) ]{area_or_player_name}
+      unknown_target_response: Ik ken geen ruimte, verdieping of speler met de naam
+        <target_name>
+    path: TheFes/mass_assist_local_v2.yaml

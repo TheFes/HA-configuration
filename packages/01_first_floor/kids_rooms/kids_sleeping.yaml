@@ -17,7 +17,7 @@ template:
           - alias: "Set Pepijn dimmer start brightness based on sleep state"
             action: number.set_value
             target:
-              entity_id: number.light_pepijn_start_brightness
+              entity_id: number.pepijn_plafondlamp_start_brightness
             data:
               value: 30
     binary_sensor:
@@ -51,7 +51,6 @@ template:
         name: Floris Sleeping
         state: "{{ trigger.id | bool }}"
         icon: "{{ 'mdi:sleep' if trigger.id | bool else 'mdi:sleep-off' }}"
-
 script:
   bedtime_floris_routine:
     icon: mdi:bed

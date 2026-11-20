@@ -7,7 +7,7 @@ automation:
         entity_id: event.knop_logeerbed_action
         not_from: unavailable
         variables:
-          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) if trigger.to_state else 'unknown' }}"
     actions:
       - alias: "Which click type"
         choose:
@@ -296,7 +296,7 @@ automation:
         entity_id: event.magic_cube_action
         not_from: unavailable
         variables:
-          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) if trigger.to_state else 'unknown' }}"
     actions:
       - alias: "Which action"
         choose:

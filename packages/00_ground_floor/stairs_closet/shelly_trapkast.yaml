@@ -6,12 +6,15 @@ automation:
     triggers:
       - alias: "Sonoff stairs closet button pressed"
         trigger: state
-        entity_id: event.sonoff_trapkast_sonoff_trapkast
+        entity_id: event.trapkast_schakelaar_wand
         not_from: unavailable
     conditions:
+      - alias: "Event entity still exists (not removed)"
+        condition: template
+        value_template: "{{ trigger.to_state is not none }}"
       - alias: "Check if button is in detached mode"
         condition: state
-        entity_id: select.sonoff_trapkast_button_type
+        entity_id: select.trapkast_schakelaar_wand_button_type
         state: Detached
     actions:
       - alias: "Check if light entity is available"
@@ -43,4 +46,4 @@ automation:
           - alias: "Toggle Sonoff relay as fallback"
             action: switch.toggle
             target:
-              entity_id: switch.sonoff_trapkast_relay
+              entity_id: switch.trapkast_schakelaar_wand

@@ -67,7 +67,7 @@ automation:
         entity_id: event.knop_keuken_action
         not_from: unavailable
         variables:
-          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) }}"
+          event: "{{ trigger.to_state.attributes.event_type | default('unknown', true) if trigger.to_state else 'unknown' }}"
     actions:
       - alias: "Which click type"
         choose:
@@ -82,7 +82,7 @@ automation:
               - alias: "Toggle main kitchen light"
                 action: light.toggle
                 target:
-                  entity_id: light.keuken
+                  entity_id: light.keuken_dimmer_plafond_plafondlamp
           - conditions: "{{ event == 'hold' }}"
             sequence: []
           - conditions: "{{ event == 'release' }}"
@@ -167,10 +167,10 @@ template:
         name: Extractor hood status
         state: >-
           {%- if is_state('switch.afzuigkap', 'on') 
-              and states('sensor.afzuigkap_power') | float > 5 %}
+              and states('sensor.afzuigkap_power') | float(0) > 5 %}
             Afzuigen
           {%- elif is_state('switch.afzuigkap', 'on') 
-              and states('sensor.afzuigkap_power') | float > 0.5 %}
+              and states('sensor.afzuigkap_power') | float(0) > 0.5 %}
             Licht aan
           {%- elif is_state('switch.afzuigkap', 'on') %}
             Inactief
