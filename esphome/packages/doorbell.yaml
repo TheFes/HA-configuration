@@ -1,6 +1,7 @@
 # ESPHome settings
 esphome:
-  name: smart-doorbell
+  name: ${lower_name}
+  friendly_name: ${name}
   project:
     name: zuidwijk.smart-doorbell
     version: "1.0"
@@ -27,7 +28,7 @@ switch:
     pin:
       number: GPIO5
       inverted: false
-    name: "Doorbell Relay"
+    name: ""
     id: relay
     internal: true
     icon: mdi:alarm-bell
@@ -52,7 +53,7 @@ binary_sensor:
       number: GPIO4
       mode: INPUT_PULLUP
       inverted: true
-    name: "Doorbell"
+    name: ""
     filters:
       # Small filter, to debounce the button press.
       - delayed_on: 25ms

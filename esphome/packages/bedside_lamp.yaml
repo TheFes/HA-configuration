@@ -11,12 +11,6 @@ packages:
   basic: !include 0_general/basic.yaml # defines some basic sensors I use for all my ESPHome devices
   button_press_defaults: !include 0_general/button_press_defaults.yaml
   
-external_components:
-  source:
-    type: git
-    url: https://github.com/mmakaay/esphome-xiaomi_bslamp2
-    ref: e9eece7ef7a23bf3a6d458fd27609926b876d9a4
-
 globals:
   - id: current_brightness
     type: float

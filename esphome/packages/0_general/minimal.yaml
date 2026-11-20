@@ -1,5 +1,10 @@
 substitutions:
   log_level: DEBUG
+  area: "" # set per device, leave empty for no area
+
+packages:
+  # only adds esphome > area when the device sets the area substitution
+  area: '${ {"esphome": {"area": area}} if area else {} }'
 
 wifi:
   ssid: !secret wifi_ssid
