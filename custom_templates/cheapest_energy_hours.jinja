@@ -1,4 +1,4 @@
-{%- set _version = 'v7.3.3'-%}
+{%- set _version = 'v7.3.4'-%}
 
 {#- set settings for source sensors -#}
 {#- list values are 'attr_today', 'attr_tomorrow', 'attr_all', 'time_key', 'value_key' -#}
@@ -125,29 +125,44 @@
             {%- set rebuild.data = rebuild.data + [{time_key: time, value_key: item[value_key] * price_factor}] -%}
         {%- endfor -%}
         {%- set output = rebuild.data | sort(attribute=time_key) -%}
-        {# check if all days use same datapoints per hour #}
-        {%- set dph_ystrd = (output | map(attribute=time_key) | map('as_local') | map('string') | select('search', (time.date() - timedelta(days=1)) | string) | list | count / 24) | round | int -%}
-        {%- set dph_today = (output | map(attribute=time_key) | map('as_local') | map('string') | select('search', time.date() | string) | list | count / 24) | round | int -%}
-        {%- set dph_tmrw = (output | map(attribute=time_key) | map('as_local') | map('string') | select('search', (time.date() + timedelta(days=1)) | string) | list | count / 24) | round | int -%}
-        {%- set dph_list = [dph_ystrd, dph_today, dph_tmrw, force_dph] | select | list -%}
-        {%- endif -%}
+        {#- determine datapoints per hour for each day based on the smallest gap between consecutive datapoints
+            (counting the datapoints per day fails when price_data doesn't cover full days) -#}
+        {%- set gaps = namespace(data=[]) -%}
+        {%- for item in output -%}
+            {%- set gap = (loop.nextitem[time_key] - item[time_key]).total_seconds() if not loop.last else 0 -%}
+            {%- if gap > 0 -%}
+                {%- set gaps.data = gaps.data + [dict(day=(item[time_key] | as_local).date() | string, gap=gap)] -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- set dph_ns = namespace(dph_list=[]) -%}
+        {%- for day in gaps.data | map(attribute='day') | unique -%}
+            {%- set min_gap = gaps.data | selectattr('day', 'eq', day) | map(attribute='gap') | min -%}
+            {%- set dph_ns.dph_list = dph_ns.dph_list + [(3600 / min_gap) | round | int] -%}
+        {%- endfor -%}
+        {#- check if all days use same datapoints per hour -#}
+        {%- set dph_list = dph_ns.dph_list | select | list or [1] -%}
+    {%- endif -%}
     {%- set dph = force_dph or use_hourly_avg | int or dph_list | max -%}
     {# rebuild data if needed #}
     {%- if force_dph or dph_list | reject('eq', dph) | list | count > 0 -%}
+        {#- use the processed (sorted, price_factor applied) data, or the provided data when force_dph is used -#}
+        {%- set source = output | default(data) -%}
         {%- set rebuild.data = [] -%}
-        {%- for item in output | default(data) -%}
+        {%- for item in source -%}
             {%- if not loop.last -%}
-                {%- set item_dph = (3600 / (loop.nextitem[time_key] - item[time_key]).seconds) | int -%}
+                {%- set gap = (loop.nextitem[time_key] - item[time_key]).total_seconds() -%}
             {%- else -%}
-                {%- set item_dph = (3600 / (item[time_key] -loop.previtem[time_key]).seconds) | int -%}
+                {%- set gap = (item[time_key] - loop.previtem[time_key]).total_seconds() -%}
             {%- endif -%}
+            {#- item_dph is used for range() and slicing so it needs to be an int, use at least 1 to prevent division by zero on gaps of more than an hour -#}
+            {%- set item_dph = [(3600 / gap) | int, 1] | max -%}
             {%- if item_dph < dph -%}
                 {%- for i in range((dph/item_dph)|int) -%}
                     {%- set time = item[time_key] + timedelta(hours=i*(1/dph)) -%}
                     {%- set rebuild.data = rebuild.data + [{time_key:time, value_key:item[value_key]}] -%}
                 {%- endfor -%}
             {%- elif item_dph > dph and loop.index0 % item_dph == 0 -%}
-                {% set avg = data[loop.index0:loop.index0+item_dph] | map(attribute=value_key) | average | round(5) %}
+                {% set avg = source[loop.index0:loop.index0+item_dph] | map(attribute=value_key) | average | round(5) %}
                 {% set rebuild.data= rebuild.data + [{time_key:item[time_key], value_key:avg}] %}
             {%- elif item_dph == dph -%}
                 {%- set rebuild.data = rebuild.data + [item] -%}
