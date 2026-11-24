@@ -108,18 +108,20 @@ automation:
       - alias: Monitor office temperature and humidity sensors
         trigger: state
         entity_id:
-          - sensor.werkkamer_martijn_temp
-          - sensor.werkkamer_martijn_vocht
+          - sensor.werkkamer_martijn_ble_multisensor_temperature
+          - sensor.werkkamer_martijn_ble_multisensor_humidity
         not_to: unavailable
         variables:
-          app: "{{ trigger.to_state.attributes.device_class }}"
+          app: "{{ trigger.to_state.attributes.device_class if trigger.to_state else 'none' }}"
+          update: "{{ trigger.to_state is not none }}"
           text: "{{ states(trigger.entity_id, with_unit=true) }}"
           icon: >
+            {% set value = trigger.to_state.state | float(20) if trigger.to_state else 20 %}
             {% if app == 'humidity' %}
               humidity
-            {% elif trigger.to_state.state | float >= 25 %}
+            {% elif value >= 25 %}
               temp-hot
-            {% elif trigger.to_state.state | float <= 18 %}
+            {% elif value <= 18 %}
               temp-cold
             {% else %}
               temp-normal

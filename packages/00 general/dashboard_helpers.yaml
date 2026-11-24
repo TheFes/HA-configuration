@@ -1,6 +1,6 @@
 template:
   - sensor:
-      # template sensors for area state use /config/custom_templates/helpers.jinja
+    # template sensors for area state use /config/custom_templates/helpers.jinja
       - unique_id: area_data_template_slaapkamer_floris
         default_entity_id: sensor.area_data_slaapkamer_floris
         name: Floris
@@ -271,7 +271,7 @@ template:
             {% from 'helpers.jinja' import area_data %}
             {{ area_data(this.name, 'device_list', media=false) }}
 
-      # sensors for dashboard messages
+    # sensors for dashboard messages
       - unique_id: d187a334-2fb9-4045-9904-68efdaa4955f
         icon: mdi:delete
         default_entity_id: sensor.dashboard_next_trash
@@ -313,9 +313,9 @@ template:
             {{ eta }}
           {% endif %}
 
-  # =============================================================================
-  # FLOOR DATA SENSORS - 5 MINUTE UPDATE INTERVAL
-  # =============================================================================
+# =============================================================================
+# FLOOR DATA SENSORS - 5 MINUTE UPDATE INTERVAL
+# =============================================================================
   - triggers:
       - alias: "5 minute update interval"
         trigger: time_pattern
@@ -324,7 +324,7 @@ template:
         trigger: homeassistant
         event: start
     sensor:
-      # template sensors for floor mini badges
+    # template sensors for floor mini badges
       - unique_id: floor_data_eerste_verdieping_temperature
         name: Floor Data Eerste Verdieping Temperature
         device_class: temperature
@@ -380,9 +380,9 @@ template:
         unit_of_measurement: "lx"
         state: *floor_state
 
-      # =============================================================================
-      # BEDROOM AIR QUALITY SENSORS - 5 MINUTE UPDATE INTERVAL
-      # =============================================================================
+    # =============================================================================
+    # BEDROOM AIR QUALITY SENSORS - 5 MINUTE UPDATE INTERVAL
+    # =============================================================================
 
       - unique_id: 91dfc560-f68d-4537-93e0-bc6482b37833
         name: "{{ 'Dashboard Bedroom ' if this.state == 'unknown' }}Temp"
@@ -572,7 +572,7 @@ template:
             {{ states('sensor.awair_slaapkamer_pm2_5', with_unit=true) if s2 < 0 else states('sensor.luchtreiniger_slaapkamer_pm25', with_unit=true) }}
 
   - binary_sensor:
-      # template binary sensors to revert active icon color for covers
+    # template binary sensors to revert active icon color for covers
       - unique_id: 21bc3453-4f48-479a-a216-f50fdc23b79b
         name: Cover Floris Dashboard Helper
         state: "{{ state_attr('cover.floris', 'current_position') | default(0, true) < 100 }}"
@@ -598,7 +598,7 @@ template:
         state: "{{ state_attr('cover.slaapkamer_zolder_template', 'current_position') | default(0, true) < 100 }}"
         icon: "{{ 'mdi:blinds' if this.state | bool(false) else 'mdi:blinds-open' }}"
         availability: "{{ 'cover.slaapkamer_zolder_template' | has_value }}"
-      # other binary sensors for dashboard
+    # other binary sensors for dashboard
       - unique_id: dd81d5ca-6c8a-4824-9611-75cfd6a1d368
         name: Dashboard Afzuigkap
         icon: "{{ 'mdi:pot-steam' if is_state('sensor.extractor_hood_status', 'Afzuigen') else 'mdi:pot-steam-outline' }}"
@@ -607,7 +607,7 @@ template:
           text: >
             {{ states('sensor.extractor_hood_status') if is_state('switch.afzuigkap', 'on') else 'Uit' }} {{ (' | ' ~ states('sensor.afzuigkap_power', with_unit=true)) if is_state('switch.afzuigkap', 'on') }}
 
-      # binary sensor for dasbboard messages
+    # binary sensor for dasbboard messages
       - unique_id: 262f459f-0d43-4b72-b8b1-67667fe73f5f
         icon: mdi:dishwasher
         name: >
@@ -639,18 +639,24 @@ template:
           {% if this.state == 'unknown' %}
             Dashboard Washing Machine Status
           {% else %}
-            {%- if states('sensor.wasmachine_current_status') in ['running', 'rinsing', 'spinning'] %}
-              {{ 'Wasmachine klaar rond ' ~ (states('sensor.wasmachine_resterende_tijd') | as_datetime | as_local).strftime('%H:%M') }}
-            {% elif is_state('input_boolean.wasmachine_remote_start', 'on') %}
-              {% set start = states('sensor.wasmachine_start_time') | as_datetime | as_local %}
-              Ingepland, start {{ 'morgen ' if start.date() != now().date() }}{{ start.strftime('%H:%M') }}
+            {%- set status = states('sensor.overloop_zolder_wasmachine_current_status') %}
+            {%- set end = states('sensor.overloop_zolder_wasmachine_remaining_time') | as_datetime %}
+            {%- set start = states('sensor.wasmachine_start_time') | as_datetime %}
+            {%- if is_state('binary_sensor.wasmachine_actief', 'on') %}
+              {{ 'Wasmachine klaar rond ' ~ (end | as_local).strftime('%H:%M') if end is not none else 'Wasmachine is bezig' }}
+            {%- elif (status == 'reserved' or is_state('input_boolean.wasmachine_remote_start', 'on')) and start is not none %}
+              Ingepland, start {{ 'morgen ' if (start | as_local).date() != now().date() }}{{ (start | as_local).strftime('%H:%M') }}
+            {%- elif is_state('binary_sensor.wasmachine_finished', 'on') %}
+              Was is klaar
             {%- else -%}
               Inactief
             {%- endif %}
           {% endif %}
         icon: mdi:washing-machine
         state: >
-          {{ states('sensor.wasmachine_current_status') in ['running', 'rinsing', 'spinning'] or is_state('input_boolean.wasmachine_remote_start', 'on') }}
+          {{ is_state('binary_sensor.wasmachine_actief', 'on')
+             or is_state('input_boolean.wasmachine_remote_start', 'on')
+             or is_state('sensor.overloop_zolder_wasmachine_current_status', 'reserved') }}
 
       - unique_id: sensor_anniversary_martijn
         default_entity_id: binary_sensor.dashboard_anniversary_martijn
@@ -724,8 +730,6 @@ template:
         name: Dashboard Werkkamer Martijn Satellite Available
         state: "{{ 'media_player.martijn' | has_value }}"
         icon: mdi:cast
-
-# small script to toggle vacuum
 script:
   vacuum_toggle:
     alias: Vacuum toggle

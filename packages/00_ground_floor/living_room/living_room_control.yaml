@@ -219,19 +219,59 @@ media_player:
     power_options: true
 
 template:
-  - media_player:
+# Trigger-based: every template renders in one pass from the same snapshot of the
+# source players, so source and source_list can no longer get out of sync.
+  - triggers:
+      - alias: "Any source player changes (state or attributes)"
+        trigger: state
+        entity_id:
+          - media_player.nvidia_shield
+          - media_player.shield
+          - media_player.samsung_soundbar
+          - media_player.woonkamer
+      - alias: "Render after startup"
+        trigger: homeassistant
+        event: start
+      - alias: "Render after template reload"
+        trigger: event
+        event_type: event_template_reloaded
+    variables:
+    # Shield (ADB) counts as on when not off/unavailable/unknown.
+    # Fallback: ADB unavailable/unknown and Android TV Remote (media_player.shield) on.
+      n: "{{ states('media_player.nvidia_shield') }}"
+      adb_on: "{{ n not in ['off', 'unavailable', 'unknown'] }}"
+      fb: "{{ n in ['unavailable', 'unknown'] and is_state('media_player.shield', 'on') }}"
+      app: "{{ state_attr('media_player.shield', 'app_name') }}"
+      aux: "{{ is_state_attr('media_player.samsung_soundbar', 'source', 'aux') }}"
+    # Entity that provides media info: Shield (ADB) > Shield (Remote) > Voice PE (soundbar on Aux) > soundbar
+      info: >
+        {{ 'media_player.nvidia_shield' if adb_on
+           else 'media_player.shield' if fb
+           else 'media_player.woonkamer' if aux
+           else 'media_player.samsung_soundbar' }}
+    # Sources: Shield (ADB source, or Remote app_name in fallback) or soundbar. Never the Voice PE.
+      sl: >
+        {{ ((state_attr('media_player.nvidia_shield', 'source_list') or [])
+            + ([app] if fb and app else [])
+            + (state_attr('media_player.samsung_soundbar', 'source_list') or []))
+           | unique | list }}
+      s: >
+        {{ state_attr('media_player.nvidia_shield', 'source') if adb_on
+           else app if fb
+           else state_attr('media_player.samsung_soundbar', 'source') }}
+    media_player:
       - name: "Shield en Soundbar"
         unique_id: 8d2f6c1e-4b7a-4f0e-9a35-2c6e1b7d90a4
         default_entity_id: media_player.shield_en_soundbar
         device_class: tv
-
-        # The Shield counts as "on" only when it is not off/unavailable/unknown; otherwise everything follows the soundbar
-        # An unknown/unavailable soundbar shows as off
+      # Shield > Voice PE (soundbar on Aux and playing something) > soundbar.
+      # An unknown/unavailable soundbar shows as off.
         state: >
-          {% if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] %}
-            {{ states('media_player.nvidia_shield') }}
-          {% elif is_state('media_player.samsung_soundbar', 'on')
-                  and is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
+          {% if adb_on %}
+            {{ n }}
+          {% elif fb %}
+            on
+          {% elif is_state('media_player.samsung_soundbar', 'on') and aux
                   and states('media_player.woonkamer') in ['idle', 'playing', 'paused', 'buffering'] %}
             {{ states('media_player.woonkamer') }}
           {% elif states('media_player.samsung_soundbar') in ['unavailable', 'unknown'] %}
@@ -239,12 +279,35 @@ template:
           {% else %}
             {{ states('media_player.samsung_soundbar') }}
           {% endif %}
+        source_list: "{{ sl }}"
+        source: "{{ s if s in sl else none }}"
 
-        # --- Power ---
+      # --- Volume: always the soundbar (0.2 cap) ---
+      # The soundbar integration reports raw volume / max_volume (20). When the volume is raised
+      # outside HA (Shield remote via CEC, soundbar remote) that exceeds 1, so clamp it to 0..1.
+        volume_level: >-
+          {% set v = state_attr('media_player.samsung_soundbar', 'volume_level') %}
+          {{ none if v is none else [[v | float(0), 1] | min, 0] | max }}
+        is_volume_muted: "{{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
+
+      # --- Media info: follows the playback entity ---
+        media_title: "{{ state_attr(info, 'media_title') }}"
+        media_artist: "{{ state_attr(info, 'media_artist') }}"
+        media_album_name: "{{ state_attr(info, 'media_album_name') }}"
+        app_name: "{{ state_attr(info, 'app_name') }}"
+      # Artwork, duration and position only exist for the Voice PE (Music Assistant)
+        media_image_url: "{{ state_attr('media_player.woonkamer', 'entity_picture') if info == 'media_player.woonkamer' else none }}"
+        media_duration: "{{ state_attr('media_player.woonkamer', 'media_duration') if info == 'media_player.woonkamer' else none }}"
+        media_position: "{{ state_attr('media_player.woonkamer', 'media_position') if info == 'media_player.woonkamer' else none }}"
+
+      # --- Actions: render at call time from current states ---
         turn_on:
           action: media_player.turn_on
           target:
-            entity_id: media_player.nvidia_shield
+            entity_id: >-
+              {{ 'media_player.shield'
+                 if states('media_player.nvidia_shield') in ['unavailable', 'unknown']
+                 else 'media_player.nvidia_shield' }}
         turn_off:
           - if: "{{ states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] }}"
             then:
@@ -252,18 +315,22 @@ template:
                 target:
                   entity_id: media_player.nvidia_shield
             else:
-              - if: "{{ states('media_player.woonkamer') in ['playing', 'paused', 'buffering'] }}"
+              - if: >-
+                  {{ states('media_player.nvidia_shield') in ['unavailable', 'unknown']
+                     and is_state('media_player.shield', 'on') }}
                 then:
-                  - action: media_player.media_stop
+                  - action: media_player.turn_off
                     target:
-                      entity_id: media_player.woonkamer
-              - action: media_player.turn_off
-                target:
-                  entity_id: media_player.samsung_soundbar
-
-        # --- Volume: always the soundbar (same 0.2 cap as the universal config) ---
-        volume_level: "{{ state_attr('media_player.samsung_soundbar', 'volume_level') }}"
-        is_volume_muted: "{{ state_attr('media_player.samsung_soundbar', 'is_volume_muted') }}"
+                      entity_id: media_player.shield
+                else:
+                  - if: "{{ states('media_player.woonkamer') in ['playing', 'paused', 'buffering'] }}"
+                    then:
+                      - action: media_player.media_stop
+                        target:
+                          entity_id: media_player.woonkamer
+                  - action: media_player.turn_off
+                    target:
+                      entity_id: media_player.samsung_soundbar
         volume_set:
           - action: media_player.volume_set
             target:
@@ -290,14 +357,17 @@ template:
               entity_id: media_player.samsung_soundbar
             data:
               is_volume_muted: "{{ is_volume_muted }}"
-
-        # --- Playback: Shield > Voice PE (soundbar on Aux) > soundbar ---
+      # Playback: Shield (ADB, else Remote fallback) > Voice PE (soundbar on Aux) > soundbar.
+      # The Remote entity has no seek; media_seek fails while the fallback is active.
         media_play:
           - action: media_player.media_play
             target:
               entity_id: &playback >-
-                {% if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown'] %}
+                {% set n = states('media_player.nvidia_shield') %}
+                {% if n not in ['off', 'unavailable', 'unknown'] %}
                   media_player.nvidia_shield
+                {% elif n in ['unavailable', 'unknown'] and is_state('media_player.shield', 'on') %}
+                  media_player.shield
                 {% elif is_state('media_player.samsung_soundbar', 'on')
                         and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
                   media_player.woonkamer
@@ -333,87 +403,13 @@ template:
             data:
               media_content_type: "{{ media_content_type }}"
               media_content_id: "{{ media_content_id }}"
-
-        # --- Source: Shield (when on) or soundbar. Never the Voice PE. ---
-        # Only report a source that is in BOTH lists:
-        # - sl: the list source_list renders from the same inputs right now. Covers the Shield
-        #   dropping its source_list (e.g. while turning off) while its source is still an app.
-        # - this entity's current source_list. Covers the Shield turning on, when source can
-        #   render before source_list has picked up the Shield apps; the template re-renders
-        #   once source_list has updated.
-        source: >
-          {% set p = 'media_player.nvidia_shield'
-              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-              else 'media_player.samsung_soundbar' %}
-          {% set s = state_attr(p, 'source') %}
-          {% set sl = (state_attr('media_player.nvidia_shield', 'source_list') or [])
-              + (state_attr('media_player.samsung_soundbar', 'source_list') or []) %}
-          {{ s if s in sl and s in (state_attr('media_player.shield_en_soundbar', 'source_list') or []) else none }}
-        source_list: >
-          {{ ((state_attr('media_player.nvidia_shield', 'source_list') or [])
-            + (state_attr('media_player.samsung_soundbar', 'source_list') or []))
-            | unique | list }}
+      # The Remote entity cannot select sources, so in fallback only soundbar inputs work.
         select_source:
           - action: media_player.select_source
             target:
               entity_id: >-
-                {{
-                  'media_player.nvidia_shield'
-                  if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-                  else 'media_player.samsung_soundbar'
-                }}
+                {{ 'media_player.nvidia_shield'
+                   if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
+                   else 'media_player.samsung_soundbar' }}
             data:
               source: "{{ source }}"
-
-        # --- Media info: follows the playback target ---
-        media_title: >
-          {% set p = 'media_player.nvidia_shield'
-              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-              else 'media_player.woonkamer'
-              if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
-              else 'media_player.samsung_soundbar' %}
-          {{ state_attr(p, 'media_title') }}
-        media_artist: >
-          {% set p = 'media_player.nvidia_shield'
-              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-              else 'media_player.woonkamer'
-              if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
-              else 'media_player.samsung_soundbar' %}
-          {{ state_attr(p, 'media_artist') }}
-        media_album_name: >
-          {% set p = 'media_player.nvidia_shield'
-              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-              else 'media_player.woonkamer'
-              if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
-              else 'media_player.samsung_soundbar' %}
-          {{ state_attr(p, 'media_album_name') }}
-        app_name: >
-          {% set p = 'media_player.nvidia_shield'
-              if states('media_player.nvidia_shield') not in ['off', 'unavailable', 'unknown']
-              else 'media_player.woonkamer'
-              if is_state_attr('media_player.samsung_soundbar', 'source', 'aux')
-              else 'media_player.samsung_soundbar' %}
-          {{ state_attr(p, 'app_name') }}
-
-        # Artwork, duration and position only exist for the Voice PE (Music Assistant)
-        media_image_url: >
-          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
-                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
-            {{ state_attr('media_player.woonkamer', 'entity_picture') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        media_duration: >
-          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
-                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
-            {{ state_attr('media_player.woonkamer', 'media_duration') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        media_position: >
-          {% if states('media_player.nvidia_shield') in ['off', 'unavailable', 'unknown']
-                and is_state_attr('media_player.samsung_soundbar', 'source', 'aux') %}
-            {{ state_attr('media_player.woonkamer', 'media_position') }}
-          {% else %}
-            {{ none }}
-          {% endif %}

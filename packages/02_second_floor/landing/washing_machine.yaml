@@ -2,16 +2,32 @@
 automation:
   - id: 991bfa0a-ba49-462b-b78a-2aed72317903
     alias: "Notifications washing machine when done"
+    description: >
+      Notifies when the wash is done. LG ThinQ does not always send the washing_is_complete
+      event, so the end of binary_sensor.wasmachine_actief is used as fallback when no
+      completion event was received in the last 10 minutes.
     mode: single
     max_exceeded: silent
     triggers:
       - trigger: event.received
         target:
-          entity_id: event.wasmachine_notification
+          entity_id: event.overloop_zolder_wasmachine_notification
         options:
           event_type:
             - washing_is_complete
-        id: start
+        id: event
+      - trigger: state
+        entity_id: binary_sensor.wasmachine_actief
+        from: "on"
+        to: "off"
+        id: fallback
+    conditions:
+      - alias: Fallback only when LG did not send the completion event
+        condition: or
+        conditions:
+          - condition: trigger
+            id: event
+          - "{{ state_attr('event.overloop_zolder_wasmachine_notification', 'event_type') != 'washing_is_complete' or (now() - (states('event.overloop_zolder_wasmachine_notification') | as_datetime(as_datetime(0)))).total_seconds() > 600 }}"
     actions:
       - alias: "Notification to phones"
         action: notify.all_phones
@@ -31,16 +47,65 @@ automation:
     mode: single
     max_exceeded: silent
     triggers:
-      - trigger: state
-        entity_id: event.wasmachine_error
-        not_from:
-          - unavailable
+      - trigger: event.received
+        target:
+          entity_id: event.overloop_zolder_wasmachine_error
+        options:
+          event_type:
+            - power_fail_error
+            - temperature_sensor_error
+            - locked_motor_error
+            - water_level_sensor_error
+            - unable_to_lock_error
+            - out_of_balance_error
+            - water_drain_error
+            - water_supply_error
+            - door_open_error
+            - overfill_error
+        id: error
+      - trigger: event.received
+        target:
+          entity_id: event.overloop_zolder_wasmachine_notification
+        options:
+          event_type:
+            - error_during_washing
+        id: error_during_washing
     actions:
       - alias: "Notification to phones"
         action: notify.all_phones
         data:
-          title: "🛑 Wasmachine is heeft een error"
-          message: "Wasmachine geeft de fout: {{ state_attr('event.wasmachine_error', 'event_type')}}"
+          title: "🛑 Wasmachine heeft een fout"
+          message: >
+            {% if trigger.id == 'error' %}
+              Wasmachine geeft de fout: {{ state_attr('event.overloop_zolder_wasmachine_error', 'event_type') | replace('_', ' ') }}
+            {% else %}
+              Er is een fout opgetreden tijdens het wassen.
+            {% endif %}
           data:
             channel: Washing machine
-            notification_icon: mdi:washing-machine
+            notification_icon: mdi:washing-machine-alert
+template:
+# Replaces the door lock sensor the LG ThinQ integration no longer provides.
+# Uses the LG status, falls back on the Z-Wave plug power when LG is offline.
+# delay_off bridges the short power dips (< 20 W) during washing.
+  - binary_sensor:
+      - unique_id: 6d1f3c2e-8a4b-4e7d-9c51-2b7a0e9f4d13
+        name: Wasmachine actief
+        default_entity_id: binary_sensor.wasmachine_actief
+        device_class: running
+        icon: mdi:washing-machine
+        delay_off:
+          minutes: 3
+        state: >
+          {% set status = states('sensor.overloop_zolder_wasmachine_current_status') %}
+          {% set active = ['detecting', 'running', 'rinsing', 'spinning', 'drying', 'cool_down', 'steam_softening', 'refreshing', 'rinse_hold'] %}
+          {% if status in active %}
+            true
+          {% elif status not in ['unavailable', 'unknown'] %}
+            false
+          {% else %}
+            {{ states('sensor.wasmachine_power') | float(0) > 20 }}
+          {% endif %}
+        attributes:
+          source: >
+            {{ 'power' if states('sensor.overloop_zolder_wasmachine_current_status') in ['unavailable', 'unknown'] else 'lg_thinq' }}

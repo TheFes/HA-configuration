@@ -101,20 +101,26 @@ current_device_state:
 
             '
         washing_machine:
-          currently_active: '{{ iif(states(''sensor.wasmachine'') | bool(false),''Yes'',
-            ''No'') }}'
-          current_program: '{%- set prog = states(''sensor.wasmachine_current_course'')
-            %} {%- set error = ''Error'' if is_state(''binary_sensor.wasmachine_error_state'',
-            ''on'') %} {%- set running = states(''sensor.wasmachine'') | bool %} {{
-            error or prog if running else ''Inactive'' }}
+          currently_active: '{{ iif(is_state(''binary_sensor.wasmachine_actief'',
+            ''on''), ''Yes'', ''No'') }}'
+          current_program: '{%- set status = states(''sensor.overloop_zolder_wasmachine_current_status'')
+            %} {%- set minutes = states(''sensor.overloop_zolder_wasmachine_total_time'')
+            | int(0) %} {%- if is_state(''binary_sensor.wasmachine_actief'', ''on'')
+            %} {{ status | replace(''_'', '' '') }}{{ '' (program of '' ~ minutes
+            ~ '' minutes)'' if minutes > 0 }} {%- elif status == ''reserved'' %} Delayed
+            start set {%- else %} Inactive {%- endif %}
 
             '
-          ready_at: '{{ now().replace(second=0, microsecond=0) + as_timedelta(states(''sensor.wasmachine_remain_time''))
-            if  is_state(''sensor.wasmachine'', ''on'') else ''Inactive'' }}
+          ready_at: '{%- set end = states(''sensor.overloop_zolder_wasmachine_remaining_time'')
+            | as_datetime %} {{ (end | as_local).replace(second=0, microsecond=0)
+            if is_state(''binary_sensor.wasmachine_actief'', ''on'') and end is not
+            none else ''Inactive'' }}
 
             '
-          minutes_left: '{{ (as_timedelta(states(''sensor.wasmachine_remain_time'')).total_seconds()
-            // 60) | int }}
+          minutes_left: '{%- set end = states(''sensor.overloop_zolder_wasmachine_remaining_time'')
+            | as_datetime %} {{ [((end - now()).total_seconds() // 60) | int, 0] |
+            max if is_state(''binary_sensor.wasmachine_actief'', ''on'') and end is
+            not none else 0 }}
 
             '
       response: '{{ mapping[device] }}'

@@ -8,6 +8,12 @@ template:
         to: above_horizon
       - trigger: homeassistant
         event: start
+    # A template reload doesn't fire homeassistant start, and the attributes were lost after a reload
+      - trigger: event
+        event_type: event_template_reloaded
+    # Refresh shortly before the display automation runs (at :00), so the data self-heals after an API outage
+      - trigger: time_pattern
+        minutes: "55"
       - trigger: event
         event_type: update_weather_display_data
     actions:
@@ -28,24 +34,58 @@ template:
             - weather.knmi
         response_variable: weather_hourly
       - variables:
-          weather_entity: "{{ 'weather.combined' if weather_daily['weather.combined'].forecast | count > 0 else 'weather.knmi' }}"
+          weather_entity: >
+            {{
+              'weather.combined'
+              if weather_daily['weather.combined'].forecast | count > 0
+                and weather_hourly['weather.combined'].forecast | count > 0
+              else 'weather.knmi'
+            }}
           weather_data: >
-            {% set is_night = states('sun.sun') == 'below_horizon' %}
-            {% set sunset = (state_attr('sun.sun', 'next_setting') | as_datetime | as_local + timedelta(days=-1 if is_night else 0)).isoformat() %}
-            {% set sunrise = (state_attr('sun.sun', 'next_rising') | as_datetime | as_local).isoformat()  %}
-            {% set hourly_data = weather_hourly[weather_entity].forecast | selectattr('datetime', '>', sunset) | selectattr('datetime', '<', sunrise) | list %}
-            {% set night_temp = hourly_data | map(attribute='temperature') | list | min | round(1) %}
-            {% set night_condition = hourly_data | map(attribute='condition') | list | statistical_mode %}
+            {% set n = now() %}
+            {% set is_night = is_state('sun.sun', 'below_horizon') %}
+            {% set rising = state_attr('sun.sun', 'next_rising') | as_datetime | as_local %}
+            {% set setting = state_attr('sun.sun', 'next_setting') | as_datetime | as_local %}
+            {# Right at sunrise/sunset the sun attributes can still point to the event that just happened #}
+            {% set rising = rising + timedelta(days=1) if rising <= n else rising %}
+            {% set setting = setting + timedelta(days=1) if setting <= n else setting %}
+            {% set night_start = setting - timedelta(days=1) if is_night else setting %}
 
-            {% set use_tomorrow = (is_night and (sunrise | as_datetime).date() != now().date()) | int %}
-            {% set daily_data = weather_daily[weather_entity].forecast[use_tomorrow] %}
-            {% set day_temp = daily_data.temperature %}
-            {% set day_condition = daily_data.condition %}
+            {# Night: hourly forecast between sunset and next sunrise #}
+            {% set ns = namespace(night=[], day=none) %}
+            {% for f in weather_hourly[weather_entity].forecast %}
+              {% set dt = f.datetime | as_datetime | as_local %}
+              {% if dt >= night_start and dt < rising %}
+                {% set ns.night = ns.night + [f] %}
+              {% endif %}
+            {% endfor %}
+            {% set night_temps = ns.night | map(attribute='temperature') | select('is_number') | list %}
 
-            {{ dict(night_temp=night_temp, night_condition=night_condition, day_temp=day_temp, day_condition=day_condition, day=iif(use_tomorrow, 'morgen', 'vandaag')) }}
+            {# Day: today, or tomorrow when it's night and sunrise is tomorrow #}
+            {% set target_date = rising.date() if is_night else n.date() %}
+            {% set daily = weather_daily[weather_entity].forecast %}
+            {% for f in daily if ns.day is none and (f.datetime | as_datetime | as_local).date() == target_date %}
+              {% set ns.day = f %}
+            {% endfor %}
+            {% set day_data = ns.day if ns.day is not none else (daily | first | default({}, true)) %}
+
+            {{
+              dict(
+                night_temp=(night_temps | min | round(1)) if night_temps else none,
+                night_condition=(ns.night | map(attribute='condition') | list | statistical_mode(none)) if ns.night else none,
+                day_temp=day_data.get('temperature'),
+                day_condition=day_data.get('condition'),
+                day='vandaag' if target_date == n.date() else 'morgen'
+              )
+            }}
     sensor:
       - unique_id: 788724cc-324c-4195-ba74-c8af26bd022a
         name: Weather Display Data
         state: "{{ now() }}"
         device_class: timestamp
-        attributes: "{{ weather_data }}"
+        attributes:
+          night_temp: "{{ weather_data.night_temp }}"
+          night_condition: "{{ weather_data.night_condition }}"
+          day_temp: "{{ weather_data.day_temp }}"
+          day_condition: "{{ weather_data.day_condition }}"
+          day: "{{ weather_data.day }}"

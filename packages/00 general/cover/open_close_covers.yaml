@@ -5,7 +5,7 @@ automation:
     alias: "Open and close cover Pepijn when needed"
     trigger_variables:
       cover: cover.pepijn_template
-      temp: sensor.pepijn_temp
+      temp: sensor.pepijn_temperature
       manual: binary_sensor.screen_pepijn_manual
       close_time_workday: "07:00"
       close_time_weekend: "07:00"
@@ -38,7 +38,7 @@ automation:
           entity_id: weather.combined
           to:
             - sunny
-            - partycloudy
+            - partlycloudy
           id: close
         - alias: "no rain for 15 minutes"
           trigger: state
@@ -87,7 +87,7 @@ automation:
                   entity_id: weather.combined
                   state:
                     - sunny
-                    - partycloudy
+                    - partlycloudy
                 - alias: "no rain for 15 minutes"
                   condition: state
                   entity_id: binary_sensor.rain
@@ -117,12 +117,12 @@ automation:
                   target:
                     entity_id: "{{ cover }}"
 
-  # Floris
+# Floris
   - id: 4711e349-f3e2-4e7d-adcb-e3b000162fd8
     alias: "Open or close covers Floris when needed"
     trigger_variables:
       cover: cover.floris
-      temp: sensor.floris_temp
+      temp: sensor.floris_ble_multisensor_temperature
       manual: binary_sensor.screen_floris_manual
       close_time_workday: "07:00"
       close_time_weekend: "07:00"
@@ -130,19 +130,19 @@ automation:
       sun_sensor: binary_sensor.sun_front
     <<: *config
 
-  # Office Marleen
+# Office Marleen
   - id: dd78d7db-7bd2-48ce-9543-64ee16d98732
     alias: "Open or close covers office Marleen when needed"
     trigger_variables:
       cover: cover.werkkamer_marleen
-      temp: sensor.werkkamer_marleen_temp
+      temp: sensor.werkkamer_marleen_ble_multisensor_temperature
       manual: binary_sensor.screen_werkkamer_marleen_manual
       close_time_workday: "07:00"
       close_time_weekend: "07:00"
       sun_sensor: binary_sensor.sun_back
     <<: *config
 
-  # Bedroom
+# Bedroom
   - id: aab636cd-dac7-4837-82a8-720affe3879f
     alias: "Open or close covers bedroom when needed"
     trigger_variables:
@@ -154,7 +154,7 @@ automation:
       sun_sensor: binary_sensor.sun_back
     <<: *config
 
-  # Landing attic
+# Landing attic
   - id: 04423f6c-4db1-4375-8f94-1b1b4438920d
     alias: "Open or close covers landing when needed"
     trigger_variables:
@@ -166,7 +166,7 @@ automation:
       sun_sensor: binary_sensor.sun_back
     <<: *config
 
-  # Open all screens when it starts raining
+# Open all screens when it starts raining
   - id: 48718b8b-2768-4e79-9ac6-fa4f3a10cabe
     alias: "Screens up with upcoming rain"
     triggers:
@@ -234,7 +234,7 @@ automation:
             {%- endif %}
           message: >
             {%- if screens_unavailable | count > 0 and screens_down | count > 0 %}
-              {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, deze {{ iff(screens_down | count > 1, 'gaan', 'gaat') }} open: {{ screens_down | join(', ') }}"
+              {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, deze {{ iif(screens_down | count > 1, 'gaan', 'gaat') }} open: {{ screens_down | join(', ') }}
             {%- elif screens_unavailable | count > 0 %}
               {{ screens_unavailable | join(', ') }} {{ iif(screens_unavailable | count > 1, 'zijn', 'is') }} niet beschikbaar, er gaan geen screens open
             {%- else %}
@@ -245,8 +245,6 @@ automation:
             priority: high
             channel: Screens
             notification_icon: mdi:weather-rainy
-
-# binary template sensors to check if covers were manually changed
 template:
   - triggers:
       - alias: "Monitor Floris covers for manual changes"

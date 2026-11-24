@@ -8,12 +8,12 @@ template:
             (
               (
                 states('sensor.tablet_battery_level') | float < 20
-                and not is_state('binary_sensor.tablet_is_charging', 'on')
+                and not is_state('sensor.tablet_battery_state', 'charging')
               )
               or
               (
                 states('sensor.tablet_battery_level') | float(0) == 100
-                and not is_state('binary_sensor.tablet_is_charging', 'off')
+                and not is_state('sensor.tablet_battery_state', 'discharging')
               )
             )
             and is_state('person.martijn', 'home')

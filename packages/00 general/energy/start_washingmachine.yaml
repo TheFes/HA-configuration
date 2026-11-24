@@ -10,36 +10,42 @@ template:
         state: "{{ trigger.event.data.time }}"
         device_class: timestamp
         icon: mdi:washing-machine
-  # wash completed, door not opened yet
+# wash completed, machine not switched on again yet
+# (no door sensor available anymore, switching the machine on is the reset)
+# LG does not always send washing_is_complete, so the end of wasmachine_actief is a fallback
   - triggers:
-      - trigger: state
-        entity_id: binary_sensor.wasmachinedeur_contact
-        to: "on"
-        from: "off"
-        id: "off"
       - trigger: event.received
         target:
-          entity_id: event.wasmachine_notification
+          entity_id: event.overloop_zolder_wasmachine_notification
         options:
           event_type:
             - washing_is_complete
         id: "on"
-    conditions:
-      - condition: state
-        entity_id: binary_sensor.wasmachinedeur_contact
-        state:
-          - "on"
-          - "off"
+      - trigger: state
+        entity_id: binary_sensor.wasmachine_actief
+        from: "on"
+        to: "off"
+        id: "on"
+      - trigger: state
+        entity_id: sensor.overloop_zolder_wasmachine_current_status
+        to:
+          - initial
+          - pause
+          - sleep
+          - reserved
+          - detecting
+          - running
+        id: "off"
     binary_sensor:
       - unique_id: 234e7fb5-0611-4770-8259-3db5d6c9e644
         name: Wasmachine Finished
         icon: "{{ 'mdi:washing-machine-alert' if trigger.id == 'on' else 'mdi:washing-machine-off' }}"
         state: "{{ trigger.id }}"
-
 automation:
   - id: f552a54e-5d2f-4f0b-bef7-053ee25ae6be
     alias: Start Washing machine
-    mode: parallel
+    mode: queued
+    max: 10
     trace:
       stored_traces: 25
     triggers:
@@ -47,63 +53,57 @@ automation:
         at: sensor.wasmachine_start_time
         id: start
       - trigger: state
-        entity_id: binary_sensor.wasmachine_remote_start_2
+        entity_id: binary_sensor.overloop_zolder_wasmachine_remote_start
         to: "off"
-        id: reset
-      - trigger: state
-        entity_id: binary_sensor.wasmachine_remote_start_2
-        to: "on"
-        from: "off"
-        id: set
-      - trigger: state
-        entity_id: sensor.wasmachine_delay_ends_in
-        from: "unknown"
-        not_to: "unavailable"
-        for:
-          minutes: 1
-        id: set
-      - trigger: state
-        entity_id: sensor.wasmachine_resterende_tijd
-        not_to:
+        not_from:
           - unavailable
           - unknown
-        enabled: false
+        id: reset
+      - trigger: state
+        entity_id: binary_sensor.overloop_zolder_wasmachine_remote_start
+        to: "on"
         id: set
       - trigger: state
-        entity_id: sensor.wasmachine_current_status
+        entity_id: sensor.overloop_zolder_wasmachine_current_status
         to:
           - initial
           - pause
           - sleep
         id: set
+      - trigger: state
+        entity_id: sensor.overloop_zolder_wasmachine_current_status
+        to: reserved
+        id: delayed
+      - trigger: state
+        entity_id: sensor.overloop_zolder_wasmachine_delayed_end
+        not_to:
+          - unavailable
+          - unknown
+        id: delayed_update
       - trigger: time
-        at: "00:00"
+        at: "00:00:00"
         id: helper_reset
       - trigger: template
         value_template: >
-          {% set no_washes = states('input_number.aantal_wassen') | int -%}
-          {% set washes_done = states('counter.aantal_wassen') | int -%}
-          {{ no_washes == washes_done }}
+          {{ states('input_number.aantal_wassen') | int(1) == states('counter.aantal_wassen') | int(0) }}
         for:
           seconds: 30
-        id: helper_reset
-      - trigger: time
-        at: "00:00"
         id: helper_reset
 
     actions:
       - choose:
-          - conditions:
+          - alias: Planned start time reached, start the machine
+            conditions:
               - condition: trigger
                 id: start
               - condition: state
                 entity_id: input_boolean.wasmachine_remote_start
                 state: "on"
               - condition: state
-                entity_id: binary_sensor.wasmachine_remote_start_2
+                entity_id: binary_sensor.overloop_zolder_wasmachine_remote_start
                 state: "on"
               - condition: state
-                entity_id: sensor.wasmachine_current_status
+                entity_id: sensor.overloop_zolder_wasmachine_current_status
                 state:
                   - initial
                   - pause
@@ -111,19 +111,19 @@ automation:
             sequence:
               - if:
                   - condition: state
-                    entity_id: sensor.wasmachine_current_status
+                    entity_id: sensor.overloop_zolder_wasmachine_current_status
                     state: sleep
                 then:
                   - action: select.select_option
                     target:
-                      entity_id: select.wasmachine_operation
+                      entity_id: select.overloop_zolder_wasmachine_operation
                     data:
                       option: wake_up
                   - delay: 2
               - alias: Start washing machine
                 action: select.select_option
                 target:
-                  entity_id: select.wasmachine_operation
+                  entity_id: select.overloop_zolder_wasmachine_operation
                 data:
                   option: start
               - action: notify.send_message
@@ -136,9 +136,14 @@ automation:
                 action: input_boolean.turn_off
                 target:
                   entity_id: input_boolean.wasmachine_remote_start
-          - conditions:
+
+          - alias: Planned remote start could not be executed
+            conditions:
               - condition: trigger
                 id: start
+              - condition: state
+                entity_id: input_boolean.wasmachine_remote_start
+                state: "on"
             sequence:
               - action: notify.send_message
                 target:
@@ -150,7 +155,9 @@ automation:
                 action: input_boolean.turn_off
                 target:
                   entity_id: input_boolean.wasmachine_remote_start
-          - conditions:
+
+          - alias: Remote start disabled on the machine
+            conditions:
               - condition: trigger
                 id: reset
             sequence:
@@ -158,27 +165,72 @@ automation:
                 action: input_boolean.turn_off
                 target:
                   entity_id: input_boolean.wasmachine_remote_start
-          - conditions:
+
+          - alias: Delayed end set on the machine itself, store expected start time
+            conditions:
+              - condition: trigger
+                id:
+                  - delayed
+                  - delayed_update
+              - condition: state
+                entity_id: sensor.overloop_zolder_wasmachine_current_status
+                state: reserved
+              - condition: not
+                conditions:
+                  - condition: state
+                    entity_id: sensor.overloop_zolder_wasmachine_delayed_end
+                    state:
+                      - unavailable
+                      - unknown
+            sequence:
+              - variables:
+                  end_time: "{{ states('sensor.overloop_zolder_wasmachine_delayed_end') | as_datetime | as_local }}"
+                  date_time: >
+                    {% set minutes = states('sensor.overloop_zolder_wasmachine_total_time') | int(0) %}
+                    {{ (end_time | as_datetime - timedelta(minutes=minutes)).replace(second=0, microsecond=0).isoformat() }}
+              - alias: Send event to set sensor
+                event: wasmachine_set_start
+                event_data:
+                  time: "{{ date_time }}"
+              - alias: Only notify when the delay is set, not on every update
+                condition: trigger
+                id: delayed
+              - action: notify.send_message
+                target:
+                  entity_id: notify.thefes_casa_alert_martijn
+                data:
+                  title: 🌊 Wasmachine uitgestelde start
+                  message: >
+                    De wasmachine gaat {{ 'morgen ' if (date_time | as_datetime).date() != now().date() }}rond
+                    {{ (date_time | as_datetime).strftime('%H:%M') }} aan en is rond
+                    {{ (end_time | as_datetime).strftime('%H:%M') }} klaar.
+
+          - alias: Remote start enabled, plan cheapest start time
+            conditions:
               - condition: trigger
                 id: set
               - condition: state
                 entity_id: input_boolean.wasmachine_remote_start
                 state: "off"
-              - not:
+              - condition: not
+                conditions:
                   - condition: state
                     entity_id: binary_sensor.wasmachine_finished
                     state: "on"
               - condition: state
-                entity_id: binary_sensor.wasmachine_remote_start_2
+                entity_id: binary_sensor.overloop_zolder_wasmachine_remote_start
                 state: "on"
               - condition: state
-                entity_id: sensor.wasmachine_current_status
+                entity_id: sensor.overloop_zolder_wasmachine_current_status
                 state:
                   - initial
                   - pause
                   - sleep
             sequence:
-              - if: "{{ states('input_number.aantal_wassen') | float(0) == 0 }}"
+              - if:
+                  - condition: numeric_state
+                    entity_id: input_number.aantal_wassen
+                    below: 1
                 then:
                   - action: input_number.set_value
                     target:
@@ -186,32 +238,36 @@ automation:
                     data:
                       value: 1
               - variables:
+                  total_minutes: "{{ states('sensor.overloop_zolder_wasmachine_total_time') | int(0) }}"
+              - variables:
+                  profile: >
+                    {% set plots = state_attr('sensor.energy_plots', 'energy_plots') or {} %}
+                    {% set measured = plots.get('wasmachine_' ~ total_minutes ~ 'min', {}) %}
+                    {% set fallback = plots.get('wasmachine_turbowash_standaard' if is_state('input_boolean.wasmachine_kort', 'on') else 'wasmachine_katoen_standaard', {}) %}
+                    {{ measured if measured.get('data') and measured.get('duration', 0) > 0 else fallback }}
+              - if:
+                  - "{{ not profile.get('data') or profile.get('duration', 0) <= 0 }}"
+                then:
+                  - action: notify.send_message
+                    target:
+                      entity_id: notify.thefes_casa_alert_martijn
+                    data:
+                      title: 🛑 Wasmachine niet ingepland
+                      message: Er is geen energieprofiel beschikbaar om de goedkoopste tijd te bepalen.
+                  - stop: No energy profile available
+              - variables:
                   date_time: >
-                    {% if trigger.entity_id == 'sensor.wasmachine_delay_ends_in' %}
-                      {% set delta = states('sensor.wasmachine_resterende_tijd') | as_datetime - (now() - timedelta(minutes=1)) %}
-                      {{ (states('sensor.wasmachine_delay_ends_in') | as_datetime | as_local - delta).replace(second=0, microsecond=0) }}
-                    {% else %}
-                      {% set no_washes = states('input_number.aantal_wassen') | int -%}
-                      {% set washes_done = states('counter.aantal_wassen') | int -%}
-                      {% set remote_active = is_state('binary_sensor.wasmachine_remote_start_2', 'on') -%}
-                      {% set washes_after = (no_washes - washes_done) | default(1, true) -%}
-                      {% set short = is_state('input_boolean.wasmachine_kort', 'on') -%}
-                      {% set long_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_katoen_standaard') -%}
-                      {% set short_data = state_attr('sensor.energy_plots', 'energy_plots').get('wasmachine_turbowash_standaard') -%}
-                      {% set data = short_data if short else long_data -%}
-                      {% set only_today = is_state('input_boolean.wasmachine_vandaag', 'on') %}
-                      {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
-                      {% set start = now() -%}
-                      {% set end_time = states('input_number.wasmachine_eindtijd') | float | default(24, true) -%}
-                      {% set end = today_at() + timedelta(hours=end_time + 0 if only_today else 24) -%}
-                      {% set hours = data.duration / 3600 * washes_after -%}
-                      {% set weight = data.data * washes_after -%}
-                      {% set kwh = data.kwh_used * washes_after -%}
-                      {% set no_weight_points = data.no_weight_points * washes_after -%}
-                      {% set no_time_today = data.duration > (end-now()).total_seconds() -%}
-                      {% set end = end + timedelta(days=1 if no_time_today else 0) -%}
-                      {{ cheapest_energy_hours('sensor.zonneplan_prices', start=start, hours=hours, weight=weight, kwh=kwh, no_weight_points=no_weight_points, end=end, min_split_hours=data.duration/3600, split=true) }}
-                    {% endif %}
+                    {% set no_washes = states('input_number.aantal_wassen') | int(1) -%}
+                    {% set washes_done = states('counter.aantal_wassen') | int(0) -%}
+                    {% set washes_after = [no_washes - washes_done, 1] | max -%}
+                    {% set only_today = is_state('input_boolean.wasmachine_vandaag', 'on') -%}
+                    {% set end_time = states('input_number.wasmachine_eindtijd') | float(24) -%}
+                    {% set end = today_at() + timedelta(hours=end_time + (0 if only_today else 24)) -%}
+                    {% set hours = profile.duration / 3600 * washes_after -%}
+                    {% set no_time_today = hours * 3600 > (end - now()).total_seconds() -%}
+                    {% set end = end + timedelta(days=1 if no_time_today else 0) -%}
+                    {% from 'cheapest_energy_hours.jinja' import cheapest_energy_hours %}
+                    {{ cheapest_energy_hours('sensor.zonneplan_prices', start=now(), hours=hours, weight=profile.data * washes_after, kwh=profile.kwh_used * washes_after, no_weight_points=profile.no_weight_points * washes_after, end=end, min_split_hours=profile.duration / 3600, split=true) }}
               - alias: toggle input boolean
                 action: input_boolean.turn_on
                 target:
@@ -226,7 +282,9 @@ automation:
                 event: wasmachine_set_start
                 event_data:
                   time: "{{ date_time }}"
-          - conditions:
+
+          - alias: Reset helpers at midnight or when all washes are done
+            conditions:
               - condition: trigger
                 id: helper_reset
             sequence:

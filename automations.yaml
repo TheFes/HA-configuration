@@ -1,10 +1,3 @@
-- id: '1737968496160'
-  alias: Voice - Weather Forecast - Local Assist Blueprint
-  description: ''
-  use_blueprint:
-    path: TheFes/1_voice_weather_forecast_local.yaml
-    input:
-      weather_entity: weather.combined
 - id: '1738179908517'
   alias: Voice - Calendar Entries - Local Assist Blueprint
   description: ''
@@ -169,25 +162,6 @@
       - event: proxmox_server_state
         event_data:
           type: Automatic boot
-- id: '1763041373153'
-  alias: Alert numeric test
-  description: ''
-  use_blueprint:
-    path: TheFes/telegram_alert.yaml
-    input:
-      trigger_entity: sensor.test_sensor_for_alert
-      problem_state: '10'
-      problem_type: above
-      repeat: 1
-      target:
-      - event.thefes_casa_alert_update_event
-      alert_title: Test numeric alert
-      alert_message: The value is wrong
-      done_message: It's done
-      acknowledge_message: It's acknowledged
-      alert_data_sensor: sensor.thefes_alert_data
-      can_acknowledge: true
-      attribute_key: attribute
 - id: '1763123011049'
   alias: Telegram alert for trash collection
   description: ''
@@ -387,145 +361,6 @@
       - event: stop_holiday_alert
         event_data: {}
       alert_data_sensor: sensor.thefes_alert_data
-- id: '1774357937830'
-  alias: Voice - Weather Forecast - Local Assist Blueprint - NL
-  description: ''
-  use_blueprint:
-    path: TheFes/1_voice_weather_forecast_local.yaml
-    input:
-      weather_entity: weather.combined
-      trigger:
-      - Wat is het {phrase} weer
-      - Wat is het weer {phrase}
-      - Wat voor weer (is|wordt) het [[deze|komende] {phrase}]
-      - Wat is de [weers]voorspelling [[voor] [deze|komende] {phrase}]
-      today:
-      - vandaag
-      tomorrow:
-      - morgen
-      day_after_tomorrow:
-      - overmorgen
-      monday:
-      - maandag
-      tuesday:
-      - dinsdag
-      wednesday:
-      - woensdag
-      thursday:
-      - donderdag
-      friday:
-      - vrijdag
-      saturday:
-      - zaterdag
-      sunday:
-      - zondag
-      current:
-      - nu
-      - op dit moment
-      - huidige
-      night:
-      - vannacht
-      - morgennacht
-      - morgen nacht
-      morning:
-      - ochtend
-      - morgenvroeg
-      - morgen vroeg
-      afternoon:
-      - middag
-      - vanmiddag
-      - morgenmiddag
-      evening:
-      - morgenavond
-      - vanavond
-      - morgen avond
-      clear: en helder
-      clear-night: en helder
-      cloudy: en bewolkt
-      fog: en misting
-      hail: met hagel
-      lightning: met onweer
-      lightning-rainy: met onweer en regen
-      partlycloudy: en gedeeltelijk bewolkt
-      pouring: met stortregen
-      rainy: met regen
-      snowy: met sneeuw
-      snowy-rainy: met sneeuw en regen
-      sunny: en zonnig
-      windy: en winderig
-      windy-variant: met wind en wolken
-      exceptional: met zeer uitzonderlijk weer
-      wind_phrases:
-        windstil: 0
-        zwak: 1
-        matig: 12
-        vrij krachtig: 29
-        krachtig: 39
-        hard: 50
-        stormachtig: 62
-        een storm: 75
-        een zware storm: 89
-        een zeer zware storm: 103
-        een orkaan: 118
-      wind_direction:
-        N: noorden
-        NE: noordoosten
-        E: oosten
-        SE: zuidoosten
-        S: zuiden
-        SW: zuidwesten
-        W: westen
-        NW: noordwesten
-      response_invalid_phrase: Ik kan geen weersvoorspelling ophalen voor {{ phrase
-        }}
-      response_no_data: Geen weersvoorspelling beschikbaar voor {{ phrase }}
-      response_forecast: 'Het {{ ''is'' if current else ''wordt'' }} {{ temperature
-        }} graden {{ condition_translated }}.  {% if temperature != apparent_temperature
-        %}Het voelt als {{ apparent_temperature }} graden. {% endif %} {% if rain_expected
-        %}Er is {{ precipitation_probability }}%  kans op {% if precipitation | float(0)
-        > 0 %}{{ precipitation }} millimeter {% endif %}regen, dus neem een paraplu
-        mee als je naar buiten gaat.{% endif %} {% if uv_index | float(-1) > 3 and
-        condition in [''sunny'', ''partlycloudy'', ''clear''] %} De zon schijnt fel
-        vandaag, dus doe zonnebrand op als je naar buiten gaat.{% endif %}  {% if
-        wind_speed | float(0) >= wind_threshold %} De wind wordt {{ wind_phrase }}{%
-        if wind_direction is not none %}  en komt uit het {{ wind_direction}}{% endif
-        %}. {% endif %} {% if wind_speed | float(0) >= wind_warning_threshold %} Dus
-        als je niet per se naar buiten hoeft, blijf dan vooral lekker binnen.{% elif
-        wind_speed | float(0) >= wind_joke_threshold %}Dus zorg dat je {% if rain_expected
-        %}paraplu {% else %}''t {% endif %}niet weg waait!{% endif %}
-
-        '
-      response_current: 'Het is nu {{ current_temperature }} graden {{ current_condition_translated
-        }}.  De temperatuur zal vandaag tussen de {{ templow }} en {{ temperature
-        }} graden zijn. {% if current_temperature != current_apparent_temperature
-        %} Het voelt nu als {{ current_apparent_temperature }} graden.{% endif %}  {%
-        if rain_expected %} Er is {{ precipitation_probability }}% kans op {% if precipitation
-        | float(0) > 0 %}{{ precipitation }} mm {% endif %}regen,  dus neem een paraplu
-        mee naar buiten.{% endif %} {% if current_uv_index | float(-1)  > 3 and current_condition
-        in [''sunny'', ''partlycloudy'', ''clear''] %}De zon schijnt fel vandaag,  dus
-        doe zonnebrand op als je naar buiten gaat.{% endif %} {%- if current_wind_speed  is
-        not none -%} {% if current_wind_speed >= wind_threshold %} De wind is  {{
-        current_wind_phrase }}{% if current_wind_direction is not none %} en komt
-        uit  het {{ current_wind_direction}}{% endif %}.{% endif %} {% if current_wind_speed
-        >= wind_warning_threshold %}Dus als je niet per se naar buiten hoeft, kun
-        je dat beter niet doen.{% elif current_wind_speed >= wind_joke_threshold %}Dus
-        houd je paraplu goed vast!{% endif %}{%- endif %}
-
-        '
-      wind_threshold: 0
-- id: '1774534626234'
-  alias: TEst throw
-  description: ''
-  triggers:
-  - trigger: event.received
-    target:
-      entity_id: event.magic_cube_action
-    options:
-      event_type:
-      - fall
-  conditions: []
-  actions: []
-  mode: single
 - id: '1778596824719'
   alias: Sync DND with watch
   description: ''
@@ -588,27 +423,6 @@
       name: '{{ trigger.to_state.name }}
 
         '
-  mode: single
-- id: '1784139221284'
-  alias: Test battery threshold
-  description: ''
-  triggers:
-  - trigger: battery.level_crossed_threshold
-    target:
-      area_id: weer
-    options:
-      threshold:
-        type: below
-        value:
-          active_choice: number
-          number: 20
-      behavior: each
-  conditions: []
-  actions:
-  - action: persistent_notification.create
-    metadata: {}
-    data:
-      message: The {{ trigger.to_state.name }} is below 20%
   mode: single
 - id: '1788876661139'
   alias: Gewicht
@@ -918,3 +732,48 @@
       unknown_target_response: Ik ken geen ruimte, verdieping of speler met de naam
         <target_name>
     path: TheFes/mass_assist_local_v2.yaml
+- id: '1795510768955'
+  alias: Docker VM (108) – automatically start when stopped
+  description: Restarts the Docker VM on Proxmox (pve) when it has stopped, for example
+    after an OOM kill on the host, and sends a notification to the Pixel 10 Pro.
+  triggers:
+  - entity_id: sensor.werkkamer_martijn_qemu_docker_108_status
+    for:
+      minutes: 1
+    note: The 1-minute wait keeps a normal reboot from Proxmox from triggering this.
+    to: stopped
+    trigger: state
+  actions:
+  - action: button.press
+    target:
+      entity_id: button.qemu_docker_108_start
+  - action: notify.mobile_app_pixel_10_pro
+    data:
+      data:
+        tag: docker-vm-108
+      message: VM 108 (docker) stopped at {{ (trigger.to_state.last_changed | as_local).strftime('%H:%M')
+        }}. Starting it again…
+      title: ⚠️ Docker VM stopped
+  - timeout:
+      minutes: 5
+    wait_for_trigger:
+    - entity_id: sensor.werkkamer_martijn_qemu_docker_108_status
+      to: running
+      trigger: state
+  - else:
+    - action: notify.mobile_app_pixel_10_pro
+      data:
+        data:
+          tag: docker-vm-108
+        message: VM 108 (docker) is still not running after 5 minutes. Check Proxmox.
+        title: ❌ Docker VM did not start
+    if:
+    - '{{ wait.completed }}'
+    then:
+    - action: notify.mobile_app_pixel_10_pro
+      data:
+        data:
+          tag: docker-vm-108
+        message: VM 108 (docker) was started successfully.
+        title: ✅ Docker VM running again
+  mode: single

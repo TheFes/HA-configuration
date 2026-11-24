@@ -144,12 +144,14 @@ automation:
         {{ is_state('input_boolean.gast', 'on') }}
       holiday: >
         {{ is_state('input_boolean.vakantie', 'on') }}
+      current_mode: >
+        {{ states('sensor.house_mode') }}
+      sleeping: >
+        {{ current_mode in ['Slapen', 'Tandenpoetsen'] }}
       mode: >
-        {% if home 
-          and trigger.id != 'niet_slapen'
-          and now() > today_at('21:00')
-          and is_state('sensor.house_mode', ['Slapen', 'Tandenpoetsen'])
-        %}
+        {% if home and sleeping and trigger.id == 'wellicht_slapen' %}
+          {{ current_mode }}
+        {% elif home and sleeping and trigger.id == 'slapen' %}
           Slapen
         {% elif home
           and today_at('06:30') < now() < today_at('07:30')

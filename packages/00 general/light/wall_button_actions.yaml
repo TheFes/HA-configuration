@@ -499,10 +499,9 @@ script:
           - alias: Long press actions for Eettafel button
             conditions: "{{ area == 'eettafel' }}"
             sequence:
-              - alias: "Turn off long press entities"
-                action: homeassistant.turn_off
-                target:
-                  entity_id: >
+              - alias: "Determine long press entities that are still on"
+                variables:
+                  off_entities: >
                     {{
                       label_entities('off_long_press')
                         | reject('is_state', 'off')
@@ -510,6 +509,13 @@ script:
                         | select('in', floor_entities(floor))
                         | list
                     }}
+              - alias: "Any long press entities to turn off?"
+                if: "{{ off_entities | count > 0 }}"
+                then:
+                  - alias: "Turn off long press entities"
+                    action: homeassistant.turn_off
+                    target:
+                      entity_id: "{{ off_entities }}"
               - alias: "Extractor hood off if needed?"
                 if:
                   - alias: "Extractor hood active"

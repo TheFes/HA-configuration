@@ -181,8 +181,8 @@ template:
         device_class: heat
         state: >-
           {{ 
-            states('sensor.pepijn_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
-            and states('sensor.pepijn_temp') | float(0.0) > 21
+            states('sensor.pepijn_temperature') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.pepijn_temperature') | float(0.0) > 21
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
@@ -203,8 +203,8 @@ template:
         device_class: heat
         state: >-
           {{ 
-            states('sensor.floris_temp') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
-            and states('sensor.floris_temp') | float(0.0) > 21
+            states('sensor.floris_ble_multisensor_temperature') | float(0.0) > states('sensor.br_temperature') | float(0.0) 
+            and states('sensor.floris_ble_multisensor_temperature') | float(0.0) > 21
           }}
         delay_on: "00:05:00"
         delay_off: "00:05:00"
@@ -219,17 +219,17 @@ binary_sensor:
     sensors:
       trend_werkkamer_marleen_temp:
         unique_id: 2980cae6-8b1f-4de4-b293-6471a3a0cd8a
-        entity_id: sensor.werkkamer_marleen_temp
+        entity_id: sensor.werkkamer_marleen_ble_multisensor_temperature
         device_class: heat
 
       trend_pepijn_temp:
         unique_id: 4c3e1fe1-2a8b-4407-b580-c5aba886cc9d
-        entity_id: sensor.pepijn_temp
+        entity_id: sensor.pepijn_temperature
         device_class: heat
 
       trend_floris_temp:
         unique_id: 694c3d35-19a3-4163-ad10-f5d4fb4c4736
-        entity_id: sensor.floris_temp
+        entity_id: sensor.floris_ble_multisensor_temperature
         device_class: heat
 
       trend_slaapkamer_temp:

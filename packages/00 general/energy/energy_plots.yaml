@@ -172,36 +172,44 @@ template:
 automation:
   - id: 2794cd64-a5d0-48e3-9edb-08527ac231bc
     alias: "Plot Wasmachine Energy"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.wasmachine_door_lock
+    description: >
+      Records the energy profile of a wash, named after the program duration from LG ThinQ
+      (the integration no longer provides the program name). Used by Start Washing machine.
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.wasmachine_actief
         from: "off"
         to: "on"
-    action:
-      - service: script.turn_on
+    actions:
+      - alias: LG sets the program time just after the status changes to running
+        wait_template: "{{ has_value('sensor.overloop_zolder_wasmachine_total_time') }}"
+        timeout:
+          seconds: 30
+        continue_on_timeout: true
+      - action: script.turn_on
         target:
           entity_id: script.plot_energy_usage
         data:
           variables:
             description: >
-              {%- set m = state_attr('sensor.wasmachine', 'current_course').split(' ')[0] | lower -%}
-              {%- set t = state_attr('sensor.wasmachine', 'water_temp') | slugify -%}
-              {%- set state = state_attr('sensor.wasmachine', 'spin_speed') -%}
-              wasmachine_{{ m }}_{{ t }}_{{ state }}
+              {%- set t = states('sensor.overloop_zolder_wasmachine_total_time') | int(0) -%}
+              wasmachine_{{ t ~ 'min' if t > 0 else 'onbekend' }}
             no_weight_points: 4
             stop_state: "off"
             sensor: sensor.wasmachine_energy
-            stop_entity: sensor.wasmachine
+            stop_entity: binary_sensor.wasmachine_actief
 
   - id: e6a37361-f675-4b92-8882-af73f9f49ac7
     alias: "Plot Dishwasher Energy"
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.dishwasher_active
         from: "off"
         to: "on"
-    action:
-      - service: script.turn_on
+    actions:
+      - action: script.turn_on
         target:
           entity_id: script.plot_energy_usage
         data:

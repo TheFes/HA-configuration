@@ -1,6 +1,6 @@
 automation:
   - id: fa1ca856-95ab-4317-bb6e-7681d74f136f
-    alias: Voice - Remaing time dishwasher
+    alias: Voice - Remaining time dishwasher
     mode: parallel
     triggers:
       - alias: Trigger sentence
@@ -28,7 +28,7 @@ automation:
           {%- endif %}
 
   - id: f9e73c28-8d45-4148-8a9c-2b4e5323334b
-    alias: Voice - Remaing time washing machine
+    alias: Voice - Remaining time washing machine
     mode: parallel
     triggers:
       - alias: Trigger sentence
@@ -39,18 +39,25 @@ automation:
     actions:
       - alias: Set response
         set_conversation_response: >
-          {% set delta = as_timedelta(states('sensor.wasmachine_remain_time')) %}
-          {% if delta is none %}
-            Kan de wasmachine nu niet bereiken
-          {% else %}
-            {%- set seconds = delta.seconds %}
-            {%- set hours = (seconds / 3600) | int %}
-            {%- set minutes = (((seconds / 3600) - hours) * 60) | int %}
-            {%- if seconds == 0 %}
-              De wasmachine is niet actief
-            {%- elif hours == 0 %}
-              De wasmachine is over {{ minutes ~ (' minuut' if minutes == 1 else ' minuten') }} klaar.
+          {%- set status = states('sensor.overloop_zolder_wasmachine_current_status') %}
+          {%- set active = is_state('binary_sensor.wasmachine_actief', 'on') %}
+          {%- set end = states('sensor.overloop_zolder_wasmachine_remaining_time') | as_datetime %}
+          {%- set start = states('sensor.wasmachine_start_time') | as_datetime %}
+          {%- if active and end is not none %}
+            {%- set minutes = ((end - now()).total_seconds() / 60) | round(0) | int %}
+            {%- if minutes <= 1 %}
+              De wasmachine is nu elk moment klaar.
+            {%- elif minutes < 60 %}
+              De wasmachine is over {{ minutes }} minuten klaar.
             {%- else %}
-              De wasmachine is klaar rond {{ (now() + delta).strftime('%H:%M') }}.
+              De wasmachine is klaar rond {{ (end | as_local).strftime('%H:%M') }}.
             {%- endif %}
-          {% endif %}
+          {%- elif active %}
+            De wasmachine is bezig, maar de eindtijd is niet bekend.
+          {%- elif status in ['unavailable', 'unknown'] %}
+            Ik kan de wasmachine nu niet bereiken.
+          {%- elif (status == 'reserved' or is_state('input_boolean.wasmachine_remote_start', 'on')) and start is not none and start > now() %}
+            De wasmachine is ingepland en gaat rond {{ (start | as_local).strftime('%H:%M') }} aan.
+          {%- else %}
+            De wasmachine is niet actief.
+          {%- endif %}
